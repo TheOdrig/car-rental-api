@@ -2,6 +2,7 @@ package com.akif.dto.response;
 
 import com.akif.enums.CarStatusType;
 import com.akif.enums.CurrencyType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
@@ -37,11 +38,22 @@ public class CarResponseDto implements Serializable {
     private Long kilometer;
     private Integer doors;
     private Integer seats;
+
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate registrationDate;
+
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate lastServiceDate;
+
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate nextServiceDate;
+
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate insuranceExpiryDate;
+
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate inspectionExpiryDate;
+
     private String notes;
     private String imageUrl;
     private String thumbnailUrl;
@@ -50,7 +62,11 @@ public class CarResponseDto implements Serializable {
     private BigDecimal rating;
     private Long viewCount;
     private Long likeCount;
+
+    @JsonFormat(pattern = "dd-MM-yyyy'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime createTime;
+
+    @JsonFormat(pattern = "dd-MM-yyyy'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime updateTime;
     private Long version;
 
