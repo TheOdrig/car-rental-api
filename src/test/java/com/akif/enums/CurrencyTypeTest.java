@@ -1,4 +1,4 @@
-package enums;
+package com.akif.enums;
 
 import com.akif.enums.CurrencyType;
 import org.junit.jupiter.api.DisplayName;

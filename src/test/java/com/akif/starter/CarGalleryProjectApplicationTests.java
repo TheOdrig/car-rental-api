@@ -1,4 +1,4 @@
-package com.akif.cargalleryproject;
+package com.akif.starter;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

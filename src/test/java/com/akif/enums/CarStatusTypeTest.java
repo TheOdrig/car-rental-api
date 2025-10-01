@@ -1,4 +1,4 @@
-package enums;
+package com.akif.enums;
 
 import com.akif.enums.CarStatusType;
 import org.junit.jupiter.api.DisplayName;
