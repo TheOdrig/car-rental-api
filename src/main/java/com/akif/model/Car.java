@@ -4,6 +4,7 @@ import com.akif.enums.CarStatusType;
 import com.akif.enums.CurrencyType;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,7 +27,7 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Car extends BaseEntity{
 
     @Column(name = "license_plate", nullable = false, length = 11,  unique = true)
