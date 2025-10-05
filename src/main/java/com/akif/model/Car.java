@@ -288,7 +288,7 @@ public class Car extends BaseEntity{
     public String toString() {
         return "Car{" +
                 "id=" + getId() +
-                ", plaka='" + licensePlate + '\'' +
+                ", licensePlate='" + licensePlate + '\'' +
                 ", brand='" + brand + '\'' +
                 ", model='" + model + '\'' +
                 ", productionYear=" + productionYear +
