@@ -1,6 +1,7 @@
 package com.akif.exception;
 
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -12,12 +13,22 @@ public class CarValidationException extends BaseException {
     private final List<String> validationErrors;
 
     public CarValidationException(String message) {
-        super(ERROR_CODE, message);
+        super(ERROR_CODE, message, HttpStatus.BAD_REQUEST);
         this.validationErrors = List.of(message);
     }
 
     public CarValidationException(List<String> validationErrors) {
-        super(ERROR_CODE, "Car validation failed: " + String.join(", ", validationErrors));
+        super(ERROR_CODE, "Car validation failed: " + (validationErrors != null ? String.join(", ", validationErrors) : ""), HttpStatus.BAD_REQUEST);
+        this.validationErrors = validationErrors;
+    }
+
+    public CarValidationException(String message, HttpStatus httpStatus) {
+        super(ERROR_CODE, message, httpStatus);
+        this.validationErrors = List.of(message);
+    }
+
+    public CarValidationException(List<String> validationErrors, HttpStatus httpStatus) {
+        super(ERROR_CODE, "Car validation failed: " + (validationErrors != null ? String.join(", ", validationErrors) : ""), httpStatus);
         this.validationErrors = validationErrors;
     }
 
