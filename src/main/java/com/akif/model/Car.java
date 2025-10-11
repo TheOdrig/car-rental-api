@@ -48,12 +48,14 @@ public class Car extends BaseEntity{
     @Column(name = "price", nullable = false, precision = 12, scale = 2)
     private BigDecimal price;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "currency_type",  nullable = false, length = 10)
     private CurrencyType currencyType;
 
     @Column(name = "damage_price", precision = 12, scale = 2)
     private BigDecimal damagePrice = BigDecimal.ZERO;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "car_status_type",  nullable = false, length = 10)
     private CarStatusType carStatusType;
 
