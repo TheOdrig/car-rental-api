@@ -31,3 +31,25 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Environment Variables & Security ###
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+*.env
+
+### Database Files ###
+*.db
+*.sqlite
+*.sqlite3
+
+### Logs ###
+logs/
+*.log
+application-*.log
+
+### Temporary Files ###
+*.tmp
+*.temp
