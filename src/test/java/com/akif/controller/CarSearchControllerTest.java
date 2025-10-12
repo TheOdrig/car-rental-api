@@ -7,6 +7,7 @@ import com.akif.dto.response.CarSummaryResponseDto;
 import com.akif.enums.CarStatusType;
 import com.akif.enums.CurrencyType;
 import com.akif.service.ICarService;
+import com.akif.config.SecurityConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -33,7 +35,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CarSearchController.class)
-@ContextConfiguration(classes = CarSearchController.class)
+@ContextConfiguration(classes = {CarSearchController.class, SecurityConfig.class})
 @DisplayName("CarSearchController Unit Tests")
 public class CarSearchControllerTest {
 
@@ -89,6 +91,7 @@ public class CarSearchControllerTest {
     class SearchCarsTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should search cars with valid criteria")
         void shouldSearchCarsWithValidCriteria() throws Exception {
 
@@ -112,6 +115,7 @@ public class CarSearchControllerTest {
     class GetCarsByStatusTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should return cars by status")
         void shouldReturnCarsByStatus() throws Exception {
 
@@ -136,6 +140,7 @@ public class CarSearchControllerTest {
     class GetCarsByBrandTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should return cars by brand")
         void shouldReturnCarsByBrand() throws Exception {
 
@@ -158,6 +163,7 @@ public class CarSearchControllerTest {
     class GetCarsByPriceRangeTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should return cars by price range")
         void shouldReturnCarsByPriceRange() throws Exception {
 
@@ -182,6 +188,7 @@ public class CarSearchControllerTest {
     class GetFeaturedCarsTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should return featured cars")
         void shouldReturnFeaturedCars() throws Exception {
 
@@ -202,6 +209,7 @@ public class CarSearchControllerTest {
     class GetMostViewedCarsTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should return most viewed cars")
         void shouldReturnMostViewedCars() throws Exception {
 

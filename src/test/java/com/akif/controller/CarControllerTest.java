@@ -5,6 +5,7 @@ import com.akif.dto.response.CarResponseDto;
 import com.akif.enums.CarStatusType;
 import com.akif.enums.CurrencyType;
 import com.akif.service.ICarService;
+import com.akif.config.SecurityConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +23,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,7 +35,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CarController.class)
-@ContextConfiguration(classes = CarController.class)
+@ContextConfiguration(classes = {CarController.class, SecurityConfig.class})
 @DisplayName("CarController Unit Tests")
 public class CarControllerTest {
 
@@ -90,6 +93,7 @@ public class CarControllerTest {
     class GetCarByIdTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should return car when valid ID provided")
         void shouldReturnCarWhenValidIdProvided() throws Exception {
 
@@ -114,6 +118,7 @@ public class CarControllerTest {
     class GetCarByLicensePlateTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should return car when valid license plate provided")
         void shouldReturnCarWhenValidLicensePlateProvided() throws Exception {
 
@@ -135,6 +140,7 @@ public class CarControllerTest {
     class CreateCarTests {
 
         @Test
+        @WithMockUser(roles = "ADMIN")
         @DisplayName("Should create car when valid data provided")
         void shouldCreateCarWhenValidDataProvided() throws Exception {
 
@@ -152,6 +158,7 @@ public class CarControllerTest {
         }
 
         @Test
+        @WithMockUser(roles = "ADMIN")
         @DisplayName("Should return 400 when invalid data provided")
         void shouldReturn400WhenInvalidDataProvided() throws Exception {
 
@@ -178,6 +185,7 @@ public class CarControllerTest {
     class UpdateCarTests {
 
         @Test
+        @WithMockUser(roles = "ADMIN")
         @DisplayName("Should update car when valid data provided")
         void shouldUpdateCarWhenValidDataProvided() throws Exception {
 
@@ -200,6 +208,7 @@ public class CarControllerTest {
     class DeleteCarTests {
 
         @Test
+        @WithMockUser(roles = "ADMIN")
         @DisplayName("Should delete car when valid ID provided")
         void shouldDeleteCarWhenValidIdProvided() throws Exception {
 
@@ -218,6 +227,7 @@ public class CarControllerTest {
     class GetAllCarsTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should return paginated cars")
         void shouldReturnPaginatedCars() throws Exception {
 

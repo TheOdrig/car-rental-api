@@ -4,6 +4,7 @@ import com.akif.dto.request.CarRequestDto;
 import com.akif.enums.CarStatusType;
 import com.akif.enums.CurrencyType;
 import com.akif.service.ICarService;
+import com.akif.config.SecurityConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -30,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @WebMvcTest(CarStatisticsController.class)
-@ContextConfiguration(classes = CarStatisticsController.class)
+@ContextConfiguration(classes = {CarStatisticsController.class, SecurityConfig.class})
 @DisplayName("CarStatisticsController Unit Tests")
 public class CarStatisticsControllerTest {
 
@@ -92,6 +94,7 @@ public class CarStatisticsControllerTest {
     class GetCarStatisticsTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should return car statistics")
         void shouldReturnCarStatistics() throws Exception {
 
@@ -113,6 +116,7 @@ public class CarStatisticsControllerTest {
     class GetCarsCountByStatusTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should return cars count by status")
         void shouldReturnCarsCountByStatus() throws Exception {
 
@@ -134,6 +138,7 @@ public class CarStatisticsControllerTest {
     class GetCarsCountByBrandTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should return cars count by brand")
         void shouldReturnCarsCountByBrand() throws Exception {
 
@@ -155,6 +160,7 @@ public class CarStatisticsControllerTest {
     class GetAveragePriceByBrandTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should return average prices by brand")
         void shouldReturnAveragePricesByBrand() throws Exception {
 
@@ -176,6 +182,7 @@ public class CarStatisticsControllerTest {
     class GetCarCountTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should return total car count")
         void shouldReturnTotalCarCount() throws Exception {
 
@@ -195,6 +202,7 @@ public class CarStatisticsControllerTest {
     class ValidateCarDataTests {
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should validate car data successfully")
         void shouldValidateCarDataSuccessfully() throws Exception {
 
@@ -212,6 +220,7 @@ public class CarStatisticsControllerTest {
         }
 
         @Test
+        @WithMockUser(roles = "USER")
         @DisplayName("Should return validation errors when invalid data provided")
         void shouldReturnValidationErrorsWhenInvalidDataProvided() throws Exception {
 
