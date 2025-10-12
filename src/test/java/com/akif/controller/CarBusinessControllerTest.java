@@ -6,6 +6,7 @@ import com.akif.dto.response.CarResponseDto;
 import com.akif.enums.CarStatusType;
 import com.akif.enums.CurrencyType;
 import com.akif.service.ICarService;
+import com.akif.config.SecurityConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +22,7 @@ import static org.mockito.ArgumentMatchers.eq;
 
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.math.BigDecimal;
 
@@ -29,7 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CarBusinessController.class)
-@ContextConfiguration(classes = CarBusinessController.class)
+@ContextConfiguration(classes = {CarBusinessController.class, SecurityConfig.class})
 @DisplayName("CarBusinessController Unit Tests")
 public class CarBusinessControllerTest {
 
@@ -65,6 +67,7 @@ public class CarBusinessControllerTest {
     class SellCarTests {
 
         @Test
+        @WithMockUser(roles = "ADMIN")
         @DisplayName("Should sell car when valid ID provided")
         void shouldSellCarWhenValidIdProvided() throws Exception {
 
@@ -91,6 +94,7 @@ public class CarBusinessControllerTest {
     class ReserveCarTests {
 
         @Test
+        @WithMockUser(roles = "ADMIN")
         @DisplayName("Should reserve car when valid ID provided")
         void shouldReserveCarWhenValidIdProvided() throws Exception {
 
@@ -117,6 +121,7 @@ public class CarBusinessControllerTest {
     class UpdateCarStatusTests {
 
         @Test
+        @WithMockUser(roles = "ADMIN")
         @DisplayName("Should update car status when valid data provided")
         void shouldUpdateCarStatusWhenValidDataProvided() throws Exception {
 
@@ -145,6 +150,7 @@ public class CarBusinessControllerTest {
     class UpdateCarPriceTests {
 
         @Test
+        @WithMockUser(roles = "ADMIN")
         @DisplayName("Should update car price when valid data provided")
         void shouldUpdateCarPriceWhenValidDataProvided() throws Exception {
 
@@ -173,6 +179,7 @@ public class CarBusinessControllerTest {
     class IncrementViewCountTests {
 
         @Test
+        @WithMockUser(roles = "ADMIN")
         @DisplayName("Should increment view count when valid ID provided")
         void shouldIncrementViewCountWhenValidIdProvided() throws Exception {
 
@@ -191,6 +198,7 @@ public class CarBusinessControllerTest {
     class CanCarBeSoldTests {
 
         @Test
+        @WithMockUser(roles = "ADMIN")
         @DisplayName("Should return can sell status")
         void shouldReturnCanSellStatus() throws Exception {
 
