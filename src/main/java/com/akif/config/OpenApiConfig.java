@@ -22,11 +22,12 @@ public class OpenApiConfig {
                 .contact(new Contact()
                     .name("API Support")
                     .email("support@cargallery.com")))
-            .addSecurityItem(new SecurityRequirement().addList("basicAuth"))
+            .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
             .components(new Components()
-                .addSecuritySchemes("basicAuth",
+                .addSecuritySchemes("bearerAuth",
                     new SecurityScheme()
                         .type(SecurityScheme.Type.HTTP)
-                        .scheme("basic")));
+                        .scheme("bearer")
+                        .bearerFormat("JWT")));
     }
 }
