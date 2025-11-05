@@ -41,6 +41,8 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     Page<Car> findByIsDeletedFalse(Pageable pageable);
     long countByIsDeletedFalse();
 
+    Optional<Car> findByIdAndIsDeletedFalse(Long id);
+
     Page<Car> findByIsDeletedFalseOrderByViewCountDesc(Pageable pageable);
     Page<Car> findByIsDeletedFalseOrderByLikeCountDesc(Pageable pageable);
 

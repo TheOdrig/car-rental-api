@@ -23,6 +23,8 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
     Optional<Rental> findByIdAndIsDeletedFalse(Long id);
 
+    Page<Rental> findByIsDeletedFalse(Pageable pageable);
+
     @Query("SELECT COUNT(r) FROM Rental r " +
             "WHERE r.car.id = :carId " +
             "AND r.status IN (com.akif.enums.RentalStatus.CONFIRMED, com.akif.enums.RentalStatus.IN_USE) " +
