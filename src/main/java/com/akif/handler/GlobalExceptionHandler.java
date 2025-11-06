@@ -199,8 +199,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex, WebRequest request) {
-        log.error("Method argument validation failed: {}", ex.getMessage());
-        return buildErrorResponse(ERROR_CODE_VALIDATION_FAILED, "Validation failed", HttpStatus.BAD_REQUEST, request);
+        log.error("Bean validation failed: {}", ex.getMessage());
+
+        Map<String, String> fieldErrors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                fieldErrors.put(error.getField(), error.getDefaultMessage())
+        );
+
+        return buildErrorResponse(ERROR_CODE_VALIDATION_FAILED, "Validation failed", HttpStatus.BAD_REQUEST, request, fieldErrors);
     }
 
     @ExceptionHandler(Exception.class)
@@ -209,6 +215,45 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ERROR_CODE_INTERNAL_SERVER_ERROR, 
                 "An unexpected error occurred. Please try again later.", 
                 HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
+
+
+    @ExceptionHandler(RentalNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleRentalNotFoundException(RentalNotFoundException ex, WebRequest request) {
+        log.error("Rental not found: {}", ex.getMessage());
+        return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
+    }
+
+    @ExceptionHandler(RentalValidationException.class)
+    public ResponseEntity<ErrorResponseDto> handleRentalValidationException(RentalValidationException ex, WebRequest request) {
+        log.error("Rental validation failed: {}", ex.getMessage());
+
+        Map<String, String> validationErrors = convertValidationErrorsToMap(ex.getValidationErrors());
+        return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request, validationErrors);
+    }
+
+    @ExceptionHandler(InvalidRentalStateException.class)
+    public ResponseEntity<ErrorResponseDto> handleInvalidRentalStateException(InvalidRentalStateException ex, WebRequest request) {
+        log.error("Invalid rental state: {}", ex.getMessage());
+        return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
+    }
+
+    @ExceptionHandler(CarNotAvailableException.class)
+    public ResponseEntity<ErrorResponseDto> handleCarNotAvailableException(CarNotAvailableException ex, WebRequest request) {
+        log.error("Car not available: {}", ex.getMessage());
+        return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
+    }
+
+    @ExceptionHandler(RentalDateOverlapException.class)
+    public ResponseEntity<ErrorResponseDto> handleRentalDateOverlapException(RentalDateOverlapException ex, WebRequest request) {
+        log.error("Rental date overlap: {}", ex.getMessage());
+        return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
+    }
+
+    @ExceptionHandler(PaymentFailedException.class)
+    public ResponseEntity<ErrorResponseDto> handlePaymentFailedException(PaymentFailedException ex, WebRequest request) {
+        log.error("Payment failed: {}", ex.getMessage());
+        return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
     }
 
 
