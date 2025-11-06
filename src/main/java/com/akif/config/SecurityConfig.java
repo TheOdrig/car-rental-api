@@ -34,6 +34,15 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
+                .requestMatchers(HttpMethod.POST, "/api/rentals/request").hasRole("USER")
+                .requestMatchers(HttpMethod.POST, "/api/rentals/*/confirm").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/rentals/*/pickup").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/rentals/*/return").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/rentals/*/cancel").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/rentals/me").hasRole("USER")
+                .requestMatchers(HttpMethod.GET, "/api/rentals/admin").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/rentals/*").authenticated()
+
                 .requestMatchers("/api/cars/business/**").hasRole("ADMIN")
 
                 .requestMatchers(HttpMethod.GET, "/api/cars").permitAll()
