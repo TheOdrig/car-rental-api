@@ -1,6 +1,7 @@
 package com.akif.model;
 
 import jakarta.persistence.*;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -37,6 +38,7 @@ public abstract class BaseEntity {
     private Long version;
 
     @Column(name = "is_deleted", nullable = false)
+    @Default
     private Boolean isDeleted = false;
 
     @Column(name = "created_by", length = 100)
