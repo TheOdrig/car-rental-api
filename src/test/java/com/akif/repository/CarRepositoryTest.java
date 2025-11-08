@@ -52,7 +52,6 @@ public class CarRepositoryTest {
                 .carStatusType(CarStatusType.AVAILABLE)
                 .isFeatured(true)
                 .isTestDriveAvailable(true)
-                .isDeleted(false)
                 .viewCount(10L)
                 .likeCount(5L)
                 .build();
@@ -69,7 +68,6 @@ public class CarRepositoryTest {
                 .carStatusType(CarStatusType.AVAILABLE)
                 .isFeatured(false)
                 .isTestDriveAvailable(false)
-                .isDeleted(false)
                 .viewCount(5L)
                 .likeCount(2L)
                 .build();
@@ -86,7 +84,6 @@ public class CarRepositoryTest {
                 .carStatusType(CarStatusType.SOLD)
                 .isFeatured(true)
                 .isTestDriveAvailable(false)
-                .isDeleted(false)
                 .viewCount(25L)
                 .likeCount(15L)
                 .build();

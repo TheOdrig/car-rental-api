@@ -83,7 +83,6 @@ class RentalServiceTest {
                 .password("encodedPassword")
                 .roles(Set.of(Role.USER))
                 .enabled(true)
-                .isDeleted(false)
                 .build();
 
         testCar = Car.builder()
@@ -94,7 +93,6 @@ class RentalServiceTest {
                 .price(new BigDecimal("500.00"))
                 .currencyType(CurrencyType.TRY)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .isDeleted(false)
                 .build();
 
         rentalRequest = RentalRequestDto.builder()

@@ -66,7 +66,6 @@ public class SecurityConfigTest {
                 .apply(springSecurity())
                 .build();
 
-        // Clean database before each test
         carRepository.deleteAll();
         userRepository.deleteAll();
 
@@ -76,7 +75,6 @@ public class SecurityConfigTest {
                 .password(passwordEncoder.encode("password123"))
                 .roles(Set.of(Role.USER))
                 .enabled(true)
-                .isDeleted(false)
                 .build();
 
         adminUser = User.builder()
@@ -85,7 +83,6 @@ public class SecurityConfigTest {
                 .password(passwordEncoder.encode("password123"))
                 .roles(Set.of(Role.USER, Role.ADMIN))
                 .enabled(true)
-                .isDeleted(false)
                 .build();
 
         userRepository.saveAll(Set.of(testUser, adminUser));
@@ -98,7 +95,6 @@ public class SecurityConfigTest {
                 .productionYear(2023)
                 .carStatusType(CarStatusType.AVAILABLE)
                 .licensePlate("34TEST1234")
-                .isDeleted(false)
                 .isFeatured(false)
                 .isTestDriveAvailable(true)
                 .viewCount(0L)

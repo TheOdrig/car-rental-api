@@ -51,7 +51,6 @@ public class AuthControllerIntegrationTest {
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        // Clean database and create test user
         userRepository.deleteAll();
 
         User adminUser = User.builder()
@@ -60,7 +59,6 @@ public class AuthControllerIntegrationTest {
                 .password(passwordEncoder.encode("admin123"))
                 .roles(Set.of(Role.USER, Role.ADMIN))
                 .enabled(true)
-                .isDeleted(false)
                 .build();
 
         userRepository.save(adminUser);

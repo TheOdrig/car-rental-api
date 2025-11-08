@@ -52,7 +52,6 @@ class RentalRepositoryTest {
                 .password("encodedPassword")
                 .roles(Set.of(com.akif.enums.Role.USER))
                 .enabled(true)
-                .isDeleted(false)
                 .build();
         testUser = userRepository.save(testUser);
 
@@ -68,7 +67,6 @@ class RentalRepositoryTest {
                 .isTestDriveAvailable(true)
                 .viewCount(0L)
                 .likeCount(0L)
-                .isDeleted(false)
                 .build();
         testCar = carRepository.save(testCar);
     }

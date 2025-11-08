@@ -84,7 +84,6 @@ class RentalControllerIntegrationTest {
                 .password(passwordEncoder.encode("password123"))
                 .roles(Set.of(Role.USER))
                 .enabled(true)
-                .isDeleted(false)
                 .build();
         testUser = userRepository.save(testUser);
 
@@ -94,7 +93,6 @@ class RentalControllerIntegrationTest {
                 .password(passwordEncoder.encode("admin123"))
                 .roles(Set.of(Role.USER, Role.ADMIN))
                 .enabled(true)
-                .isDeleted(false)
                 .build();
         adminUser = userRepository.save(adminUser);
 
@@ -110,7 +108,6 @@ class RentalControllerIntegrationTest {
                 .isTestDriveAvailable(true)
                 .viewCount(0L)
                 .likeCount(0L)
-                .isDeleted(false)
                 .build();
         testCar = carRepository.save(testCar);
 

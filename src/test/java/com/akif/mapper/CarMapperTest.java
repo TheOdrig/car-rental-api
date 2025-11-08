@@ -144,7 +144,7 @@ public class CarMapperTest {
         assertThat(result.getCreateTime()).isNull();
         assertThat(result.getUpdateTime()).isNull();
         assertThat(result.getVersion()).isNull();
-        assertThat(result.getIsDeleted()).isNull();
+        assertThat(result.getIsDeleted()).isFalse();
         assertThat(result.getViewCount()).isNull();
         assertThat(result.getLikeCount()).isNull();
     }
@@ -161,7 +161,6 @@ public class CarMapperTest {
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
                 .version(1L)
-                .isDeleted(false)
                 .viewCount(100L)
                 .likeCount(50L)
                 .build();

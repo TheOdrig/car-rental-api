@@ -83,7 +83,6 @@ public class AuthServiceTest {
                 .password("encodedPassword")
                 .roles(Set.of(Role.USER))
                 .enabled(true)
-                .isDeleted(false)
                 .build();
 
         authentication = new UsernamePasswordAuthenticationToken(

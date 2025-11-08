@@ -45,7 +45,6 @@ public class CustomUserDetailsServiceTest {
                 .password("encodedPassword")
                 .roles(Set.of(Role.USER))
                 .enabled(true)
-                .isDeleted(false)
                 .build();
 
         adminUser = User.builder()
@@ -55,7 +54,6 @@ public class CustomUserDetailsServiceTest {
                 .password("encodedPassword")
                 .roles(Set.of(Role.USER, Role.ADMIN))
                 .enabled(true)
-                .isDeleted(false)
                 .build();
 
         disabledUser = User.builder()
@@ -65,7 +63,6 @@ public class CustomUserDetailsServiceTest {
                 .password("encodedPassword")
                 .roles(Set.of(Role.USER))
                 .enabled(false)
-                .isDeleted(false)
                 .build();
     }
 
@@ -136,7 +133,6 @@ public class CustomUserDetailsServiceTest {
                     .password("encodedPassword")
                     .roles(Set.of(Role.ADMIN))
                     .enabled(true)
-                    .isDeleted(false)
                     .build();
 
             when(userRepository.findByUsername("adminonly")).thenReturn(Optional.of(adminOnlyUser));
@@ -211,7 +207,6 @@ public class CustomUserDetailsServiceTest {
                     .password("encodedPassword")
                     .roles(Set.of(Role.ADMIN))
                     .enabled(true)
-                    .isDeleted(false)
                     .build();
 
             when(userRepository.findByUsername("adminonly")).thenReturn(Optional.of(adminOnlyUser));
@@ -231,7 +226,6 @@ public class CustomUserDetailsServiceTest {
                     .email("norole@example.com")
                     .password("encodedPassword")
                     .enabled(true)
-                    .isDeleted(false)
                     .build();
 
             when(userRepository.findByUsername("noroleuser")).thenReturn(Optional.of(noRoleUser));
@@ -289,7 +283,6 @@ public class CustomUserDetailsServiceTest {
                     .password("encodedPassword")
                     .roles(Set.of(Role.USER))
                     .enabled(true)
-                    .isDeleted(false)
                     .build();
 
             when(userRepository.findByUsername(longUsername)).thenReturn(Optional.of(longUsernameUser));
@@ -311,7 +304,6 @@ public class CustomUserDetailsServiceTest {
                     .password("encodedPassword")
                     .roles(Set.of(Role.USER))
                     .enabled(true)
-                    .isDeleted(false)
                     .build();
 
             when(userRepository.findByUsername(specialUsername)).thenReturn(Optional.of(specialUser));
@@ -332,7 +324,6 @@ public class CustomUserDetailsServiceTest {
                     .password("")
                     .roles(Set.of(Role.USER))
                     .enabled(true)
-                    .isDeleted(false)
                     .build();
 
             when(userRepository.findByUsername("emptypass")).thenReturn(Optional.of(emptyPasswordUser));

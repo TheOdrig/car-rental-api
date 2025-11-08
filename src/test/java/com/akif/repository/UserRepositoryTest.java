@@ -43,7 +43,6 @@ public class UserRepositoryTest {
                 .password("encodedPassword1")
                 .roles(Set.of(Role.USER))
                 .enabled(true)
-                .isDeleted(false)
                 .build();
 
         testUser2 = User.builder()
@@ -52,7 +51,6 @@ public class UserRepositoryTest {
                 .password("encodedPassword2")
                 .roles(Set.of(Role.USER))
                 .enabled(true)
-                .isDeleted(false)
                 .build();
 
         adminUser = User.builder()
@@ -61,7 +59,6 @@ public class UserRepositoryTest {
                 .password("encodedPassword")
                 .roles(Set.of(Role.USER, Role.ADMIN))
                 .enabled(true)
-                .isDeleted(false)
                 .build();
 
         disabledUser = User.builder()
@@ -70,7 +67,6 @@ public class UserRepositoryTest {
                 .password("encodedPassword")
                 .roles(Set.of(Role.USER))
                 .enabled(false)
-                .isDeleted(false)
                 .build();
 
         userRepository.saveAll(Set.of(testUser1, testUser2, adminUser, disabledUser));
@@ -293,7 +289,6 @@ public class UserRepositoryTest {
                     .password("encodedPassword")
                     .roles(Set.of(Role.USER))
                     .enabled(true)
-                    .isDeleted(false)
                     .build();
 
             User savedUser = userRepository.save(newUser);
@@ -373,7 +368,6 @@ public class UserRepositoryTest {
                     .password("encodedPassword")
                     .roles(Set.of(Role.USER))
                     .enabled(true)
-                    .isDeleted(false)
                     .build();
 
             userRepository.save(singleRoleUser);
@@ -395,7 +389,6 @@ public class UserRepositoryTest {
                     .password("encodedPassword")
                     .roles(Set.of(Role.USER, Role.ADMIN))
                     .enabled(true)
-                    .isDeleted(false)
                     .build();
 
             userRepository.save(multiRoleUser);
@@ -417,7 +410,6 @@ public class UserRepositoryTest {
                     .password("encodedPassword")
                     .roles(Set.of())
                     .enabled(true)
-                    .isDeleted(false)
                     .build();
 
             userRepository.save(noRoleUser);
@@ -444,7 +436,6 @@ public class UserRepositoryTest {
                     .password("encodedPassword")
                     .roles(Set.of(Role.USER))
                     .enabled(true)
-                    .isDeleted(false)
                     .build();
 
             org.junit.jupiter.api.Assertions.assertThrows(
@@ -466,7 +457,6 @@ public class UserRepositoryTest {
                     .password("encodedPassword")
                     .roles(Set.of(Role.USER))
                     .enabled(true)
-                    .isDeleted(false)
                     .build();
 
             userRepository.save(specialUser);
@@ -487,7 +477,6 @@ public class UserRepositoryTest {
                     .password("encodedPassword")
                     .roles(Set.of(Role.USER))
                     .enabled(true)
-                    .isDeleted(false)
                     .build();
 
             userRepository.save(caseUser);
