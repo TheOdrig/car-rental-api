@@ -1,11 +1,10 @@
 package com.akif.controller;
 
-import com.akif.dto.request.CarSearchRequestDto;
 import com.akif.enums.CarStatusType;
 import com.akif.enums.CurrencyType;
+import com.akif.model.Car;
 import com.akif.repository.CarRepository;
 import com.akif.starter.CarGalleryProjectApplication;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -32,16 +30,12 @@ public class CarSearchControllerIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     private CarRepository carRepository;
 
     @BeforeEach
     void setUp() {
         carRepository.deleteAll();
-        
-        // Create test cars
+
         createTestCar("34ABC123", "Toyota", "Corolla", 2020, new BigDecimal("250000"), CarStatusType.AVAILABLE);
         createTestCar("34XYZ456", "Honda", "Civic", 2021, new BigDecimal("280000"), CarStatusType.AVAILABLE);
         createTestCar("34DEF789", "BMW", "320i", 2022, new BigDecimal("450000"), CarStatusType.RESERVED);
@@ -53,7 +47,7 @@ public class CarSearchControllerIntegrationTest {
     }
 
     private void createTestCar(String licensePlate, String brand, String model, int year, BigDecimal price, CarStatusType status) {
-        var car = new com.akif.model.Car();
+        Car car = new Car();
         car.setLicensePlate(licensePlate);
         car.setVinNumber("VIN" + licensePlate);
         car.setBrand(brand);
@@ -66,14 +60,6 @@ public class CarSearchControllerIntegrationTest {
         car.setIsFeatured(false);
         car.setIsTestDriveAvailable(true);
         carRepository.save(car);
-    }
-
-    @Test
-    @DisplayName("Should search cars with criteria")
-    void shouldSearchCars() throws Exception {
-        // Note: POST /api/cars/search requires authentication in SecurityConfig
-        // Skipping this test as it's a POST endpoint that should be protected
-        // Use GET /api/cars/search/criteria instead for public search
     }
 
     @Test

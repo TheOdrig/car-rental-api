@@ -1,10 +1,10 @@
 package com.akif.controller;
 
 import com.akif.dto.request.CarPriceUpdateRequestDto;
-import com.akif.dto.request.CarRequestDto;
 import com.akif.dto.request.CarStatusUpdateRequestDto;
 import com.akif.enums.CarStatusType;
 import com.akif.enums.CurrencyType;
+import com.akif.model.Car;
 import com.akif.repository.CarRepository;
 import com.akif.starter.CarGalleryProjectApplication;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,7 +46,7 @@ public class CarBusinessControllerIntegrationTest {
     void setUp() {
         carRepository.deleteAll();
         
-        var car = new com.akif.model.Car();
+        Car car = new Car();
         car.setLicensePlate("34TEST123");
         car.setVinNumber("TEST123456789");
         car.setBrand("Toyota");

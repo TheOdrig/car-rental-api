@@ -1,19 +1,14 @@
 package com.akif.controller;
 
-import com.akif.dto.request.CarRequestDto;
 import com.akif.enums.CarStatusType;
 import com.akif.enums.CurrencyType;
+import com.akif.model.Car;
 import com.akif.repository.CarRepository;
 import com.akif.starter.CarGalleryProjectApplication;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -32,16 +27,12 @@ public class CarStatisticsControllerIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     private CarRepository carRepository;
 
     @BeforeEach
     void setUp() {
         carRepository.deleteAll();
-        
-        // Create test cars with different brands and statuses
+
         createTestCar("34ABC123", "Toyota", "Corolla", new BigDecimal("250000"), CarStatusType.AVAILABLE);
         createTestCar("34XYZ456", "Toyota", "Camry", new BigDecimal("350000"), CarStatusType.AVAILABLE);
         createTestCar("34DEF789", "Honda", "Civic", new BigDecimal("280000"), CarStatusType.SOLD);
@@ -54,7 +45,7 @@ public class CarStatisticsControllerIntegrationTest {
     }
 
     private void createTestCar(String licensePlate, String brand, String model, BigDecimal price, CarStatusType status) {
-        var car = new com.akif.model.Car();
+        Car car = new Car();
         car.setLicensePlate(licensePlate);
         car.setVinNumber("VIN" + licensePlate);
         car.setBrand(brand);
@@ -119,17 +110,4 @@ public class CarStatisticsControllerIntegrationTest {
                 .andExpect(jsonPath("$.count").value(4));
     }
 
-    @Test
-    @DisplayName("Should validate car data successfully")
-    void shouldValidateCarData() throws Exception {
-        // Note: POST /api/cars/statistics/validate requires authentication
-        // Skipping as this is a protected endpoint
-    }
-
-    @Test
-    @DisplayName("Should return validation errors for invalid data")
-    void shouldReturnValidationErrors() throws Exception {
-        // Note: POST /api/cars/statistics/validate requires authentication
-        // Skipping as this is a protected endpoint
-    }
 }

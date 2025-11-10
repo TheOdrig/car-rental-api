@@ -45,10 +45,9 @@ public class CarControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Clean database
+
         carRepository.deleteAll();
 
-        // Create test car
         testCar = Car.builder()
                 .licensePlate("34ABC123")
                 .vinNumber("1HGBH41JXMN109186")
@@ -160,7 +159,6 @@ public class CarControllerIntegrationTest {
                         .with(csrf()))
                 .andExpect(status().isNoContent());
 
-        // Verify car is deleted
         mockMvc.perform(get("/api/cars/{id}", testCar.getId()))
                 .andExpect(status().isNotFound());
     }
