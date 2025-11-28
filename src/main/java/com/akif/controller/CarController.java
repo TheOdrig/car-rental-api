@@ -1,8 +1,11 @@
 package com.akif.controller;
 
+import com.akif.dto.currency.ConversionResult;
 import com.akif.dto.request.CarRequestDto;
 import com.akif.dto.response.CarResponseDto;
+import com.akif.enums.CurrencyType;
 import com.akif.service.ICarService;
+import com.akif.service.currency.ICurrencyConversionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,20 +31,23 @@ import org.springframework.web.bind.annotation.*;
 public class CarController {
 
     private final ICarService carService;
+    private final ICurrencyConversionService currencyConversionService;
 
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get car by ID", description = "Retrieve a car by its unique identifier")
+    @Operation(summary = "Get car by ID", description = "Retrieve a car by its unique identifier with optional currency conversion")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Car found successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarResponseDto.class))),
             @ApiResponse(responseCode = "404", description = "Car not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid car ID")
+            @ApiResponse(responseCode = "400", description = "Invalid car ID or currency")
     })
     public ResponseEntity<CarResponseDto> getCarById(
-            @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        log.debug("GET /api/cars/{}", id);
+            @Parameter(description = "Car ID", required = true) @PathVariable Long id,
+            @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
+        log.debug("GET /api/cars/{} with currency={}", id, currency);
         CarResponseDto car = carService.getCarById(id);
+        applyPriceConversion(car, currency);
         log.info("Successfully retrieved car: ID={}", id);
         return ResponseEntity.ok(car);
     }
@@ -140,30 +146,60 @@ public class CarController {
 
 
     @GetMapping
-    @Operation(summary = "Get all cars", description = "Retrieve all cars with pagination")
+    @Operation(summary = "Get all cars", description = "Retrieve all cars with pagination and optional currency conversion")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Cars retrieved successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters")
+            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters or currency")
     })
     public ResponseEntity<Page<CarResponseDto>> getAllCars(
-            @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable) {
-        log.debug("GET /api/cars - Getting all cars with page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+            @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable,
+            @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
+        log.debug("GET /api/cars - Getting all cars with page: {}, size: {}, currency: {}", pageable.getPageNumber(), pageable.getPageSize(), currency);
         Page<CarResponseDto> cars = carService.getAllCars(pageable);
+        if (currency != null) {
+            cars.forEach(car -> applyPriceConversion(car, currency));
+        }
         log.info("Successfully retrieved {} cars", cars.getTotalElements());
         return ResponseEntity.ok(cars);
     }
 
     @GetMapping(value = "/active")
-    @Operation(summary = "Get active cars", description = "Retrieve all active (not deleted) cars with pagination")
+    @Operation(summary = "Get active cars", description = "Retrieve all active (not deleted) cars with pagination and optional currency conversion")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Active cars retrieved successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters")
+            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters or currency")
     })
     public ResponseEntity<Page<CarResponseDto>> getAllActiveCars(
-            @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable) {
+            @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable,
+            @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
         Page<CarResponseDto> cars = carService.getAllActiveCars(pageable);
+        if (currency != null) {
+            cars.forEach(car -> applyPriceConversion(car, currency));
+        }
         return ResponseEntity.ok(cars);
+    }
+
+    private void applyPriceConversion(CarResponseDto car, CurrencyType targetCurrency) {
+        if (targetCurrency == null || car.getPrice() == null) {
+            return;
+        }
+
+        CurrencyType originalCurrency = car.getCurrencyType() != null ? car.getCurrencyType() : CurrencyType.TRY;
+
+        if (originalCurrency.equals(targetCurrency)) {
+            car.setDisplayCurrency(targetCurrency);
+            car.setConvertedPrice(car.getPrice());
+            car.setExchangeRate(java.math.BigDecimal.ONE);
+            car.setRateSource("LIVE");
+            return;
+        }
+
+        ConversionResult result = currencyConversionService.convert(car.getPrice(), originalCurrency, targetCurrency);
+        car.setConvertedPrice(result.convertedAmount());
+        car.setDisplayCurrency(targetCurrency);
+        car.setExchangeRate(result.exchangeRate());
+        car.setRateSource(result.source().getDisplayName());
     }
 }

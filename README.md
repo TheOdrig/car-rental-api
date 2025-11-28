@@ -31,6 +31,7 @@ This project was developed as a learning exercise to solidify Spring Boot knowle
 - Input validation and error handling
 - API documentation with Swagger/OpenAPI
 - Caffeine cache for performance
+- Real-time currency conversion with fallback rates
 - Integration test coverage
 
 ## 🛠️ Tech Stack
@@ -152,11 +153,28 @@ GET    /api/cars/brand/{brand}      # Filter by brand
 ```http
 POST   /api/rentals/request           # Request rental (user)
 GET    /api/rentals/me                # My rentals (user)
+GET    /api/rentals/me?currency=USD   # My rentals with USD prices
 POST   /api/rentals/{id}/confirm      # Confirm rental (admin)
 POST   /api/rentals/{id}/pickup       # Mark as picked up (admin)
 POST   /api/rentals/{id}/return       # Mark as returned (admin)
 GET    /api/rentals/admin             # All rentals (admin)
 ```
+
+### Currency Conversion
+
+```http
+GET    /api/exchange-rates              # Get all exchange rates
+GET    /api/exchange-rates/{from}/{to}  # Get specific rate (e.g., USD/TRY)
+POST   /api/exchange-rates/convert      # Convert amount between currencies
+POST   /api/exchange-rates/refresh      # Force refresh rates (admin)
+
+# Currency parameter on other endpoints
+GET    /api/cars?currency=USD           # Car prices in USD
+GET    /api/cars/{id}?currency=EUR      # Car details with EUR prices
+GET    /api/rentals/me?currency=GBP     # Rental prices in GBP
+```
+
+**Supported Currencies:** TRY, USD, EUR, GBP, JPY
 
 ### Example Request
 
@@ -303,6 +321,7 @@ Through this project, I gained practical experience with:
 **✅ Completed Features:**
 - Core rental functionality
 - JWT authentication
+- Real-time currency conversion (TRY, USD, EUR, GBP, JPY)
 - Integration tests
 - API documentation
 - Docker support

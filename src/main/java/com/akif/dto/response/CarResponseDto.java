@@ -88,4 +88,9 @@ public class CarResponseDto implements Serializable {
     private Boolean isInsuranceExpired;
     private Boolean isInspectionExpired;
     private Boolean hasExpiredDocuments;
+
+    private BigDecimal convertedPrice;
+    private CurrencyType displayCurrency;
+    private BigDecimal exchangeRate;
+    private String rateSource;
 }

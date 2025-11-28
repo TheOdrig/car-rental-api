@@ -1,10 +1,13 @@
 package com.akif.controller;
 
+import com.akif.dto.currency.ConversionResult;
 import com.akif.dto.request.PickupRequestDto;
 import com.akif.dto.request.RentalRequestDto;
 import com.akif.dto.request.ReturnRequestDto;
 import com.akif.dto.response.RentalResponseDto;
+import com.akif.enums.CurrencyType;
 import com.akif.service.IRentalService;
+import com.akif.service.currency.ICurrencyConversionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 public class RentalController {
 
     private final IRentalService rentalService;
+    private final ICurrencyConversionService currencyConversionService;
 
     @PostMapping("/request")
     @Operation(summary = "Request a rental", description = "Create a new rental request")
@@ -156,7 +160,7 @@ public class RentalController {
 
 
     @GetMapping("/me")
-    @Operation(summary = "Get my rentals", description = "Get current user's rental list")
+    @Operation(summary = "Get my rentals", description = "Get current user's rental list with optional currency conversion")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Rentals retrieved successfully",
                     content = @Content(mediaType = "application/json")),
@@ -165,12 +169,17 @@ public class RentalController {
     public ResponseEntity<Page<RentalResponseDto>> getMyRentals(
             @Parameter(description = "Pagination information")
             @PageableDefault(size = 20) Pageable pageable,
+            @Parameter(description = "Target currency for price conversion")
+            @RequestParam(required = false) CurrencyType currency,
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.debug("GET /api/rentals/me - User: {}", username);
+        log.debug("GET /api/rentals/me - User: {}, currency: {}", username, currency);
 
         Page<RentalResponseDto> rentals = rentalService.getMyRentals(username, pageable);
+        if (currency != null) {
+            rentals.forEach(rental -> applyPriceConversion(rental, currency));
+        }
 
         log.info("Retrieved {} rentals for user: {}", rentals.getTotalElements(), username);
         return ResponseEntity.ok(rentals);
@@ -178,7 +187,7 @@ public class RentalController {
 
 
     @GetMapping("/admin")
-    @Operation(summary = "Get all rentals (Admin)", description = "Get all rentals (admin only)")
+    @Operation(summary = "Get all rentals (Admin)", description = "Get all rentals (admin only) with optional currency conversion")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Rentals retrieved successfully",
                     content = @Content(mediaType = "application/json")),
@@ -186,11 +195,16 @@ public class RentalController {
     })
     public ResponseEntity<Page<RentalResponseDto>> getAllRentals(
             @Parameter(description = "Pagination information")
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PageableDefault(size = 20) Pageable pageable,
+            @Parameter(description = "Target currency for price conversion")
+            @RequestParam(required = false) CurrencyType currency) {
 
-        log.debug("GET /api/rentals/admin");
+        log.debug("GET /api/rentals/admin with currency: {}", currency);
 
         Page<RentalResponseDto> rentals = rentalService.getAllRentals(pageable);
+        if (currency != null) {
+            rentals.forEach(rental -> applyPriceConversion(rental, currency));
+        }
 
         log.info("Retrieved {} rentals", rentals.getTotalElements());
         return ResponseEntity.ok(rentals);
@@ -198,7 +212,7 @@ public class RentalController {
 
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get rental by ID", description = "Get rental details (user can view own, admin can view any)")
+    @Operation(summary = "Get rental by ID", description = "Get rental details with optional currency conversion (user can view own, admin can view any)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Rental found successfully",
                     content = @Content(mediaType = "application/json",
@@ -209,14 +223,40 @@ public class RentalController {
     public ResponseEntity<RentalResponseDto> getRentalById(
             @Parameter(description = "Rental ID", required = true)
             @PathVariable Long id,
+            @Parameter(description = "Target currency for price conversion")
+            @RequestParam(required = false) CurrencyType currency,
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.debug("GET /api/rentals/{} - User: {}", id, username);
+        log.debug("GET /api/rentals/{} - User: {}, currency: {}", id, username, currency);
 
         RentalResponseDto rental = rentalService.getRentalById(id, username);
+        applyPriceConversion(rental, currency);
 
         log.info("Retrieved rental: {}", id);
         return ResponseEntity.ok(rental);
+    }
+
+    private void applyPriceConversion(RentalResponseDto rental, CurrencyType targetCurrency) {
+        if (targetCurrency == null || rental.getTotalPrice() == null) {
+            return;
+        }
+
+        CurrencyType originalCurrency = rental.getCurrency() != null ? rental.getCurrency() : CurrencyType.TRY;
+
+        if (originalCurrency.equals(targetCurrency)) {
+            rental.setDisplayCurrency(targetCurrency);
+            rental.setConvertedTotalPrice(rental.getTotalPrice());
+            rental.setExchangeRate(java.math.BigDecimal.ONE);
+            rental.setRateSource("LIVE");
+            return;
+        }
+
+        ConversionResult result = currencyConversionService.convert(
+                rental.getTotalPrice(), originalCurrency, targetCurrency);
+        rental.setConvertedTotalPrice(result.convertedAmount());
+        rental.setDisplayCurrency(targetCurrency);
+        rental.setExchangeRate(result.exchangeRate());
+        rental.setRateSource(result.source().getDisplayName());
     }
 }
