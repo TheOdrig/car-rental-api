@@ -1,6 +1,7 @@
 package com.akif.service.currency.impl;
 
 import com.akif.config.CacheConfig;
+import com.akif.config.FallbackRatesConfig;
 import com.akif.dto.currency.ExchangeRateResponse;
 import com.akif.enums.CurrencyType;
 import com.akif.enums.RateSource;
@@ -27,17 +28,7 @@ public class ExchangeRateCacheServiceImpl implements IExchangeRateCacheService {
     private static final CurrencyType BASE_CURRENCY = CurrencyType.USD;
 
     private final IExchangeRateClient exchangeRateClient;
-
-    private static final Map<CurrencyType, BigDecimal> FALLBACK_RATES;
-
-    static {
-        FALLBACK_RATES = new EnumMap<>(CurrencyType.class);
-        FALLBACK_RATES.put(CurrencyType.USD, BigDecimal.ONE);
-        FALLBACK_RATES.put(CurrencyType.TRY, new BigDecimal("42.49"));
-        FALLBACK_RATES.put(CurrencyType.EUR, new BigDecimal("0.87"));
-        FALLBACK_RATES.put(CurrencyType.GBP, new BigDecimal("0.76"));
-        FALLBACK_RATES.put(CurrencyType.JPY, new BigDecimal("156.00"));
-    }
+    private final FallbackRatesConfig fallbackRatesConfig;
 
     @Override
     @Cacheable(value = CacheConfig.EXCHANGE_RATES_CACHE, key = "#baseCurrency")
@@ -66,14 +57,15 @@ public class ExchangeRateCacheServiceImpl implements IExchangeRateCacheService {
     private ExchangeRateResponse createFallbackResponse(CurrencyType baseCurrency) {
         log.warn("Using fallback rates for base: {}", baseCurrency);
 
+        Map<CurrencyType, BigDecimal> configRates = fallbackRatesConfig.getRates();
         Map<CurrencyType, BigDecimal> rates = new EnumMap<>(CurrencyType.class);
 
         if (baseCurrency == BASE_CURRENCY) {
-            rates.putAll(FALLBACK_RATES);
+            rates.putAll(configRates);
         } else {
-            BigDecimal baseToUsd = FALLBACK_RATES.get(baseCurrency);
+            BigDecimal baseToUsd = configRates.get(baseCurrency);
             if (baseToUsd != null && baseToUsd.compareTo(BigDecimal.ZERO) > 0) {
-                for (Map.Entry<CurrencyType, BigDecimal> entry : FALLBACK_RATES.entrySet()) {
+                for (Map.Entry<CurrencyType, BigDecimal> entry : configRates.entrySet()) {
                     BigDecimal rate = entry.getValue().divide(baseToUsd, 6, RoundingMode.HALF_UP);
                     rates.put(entry.getKey(), rate);
                 }
