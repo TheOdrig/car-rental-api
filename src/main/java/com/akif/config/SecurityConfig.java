@@ -61,8 +61,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/exchange-rates/refresh").hasRole("ADMIN")
 
                 .requestMatchers(HttpMethod.GET, "/api/pricing/preview").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/pricing/strategies").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/pricing/calculate").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/pricing/strategies").hasRole("ADMIN")
 
                 .anyRequest().authenticated()
             )
