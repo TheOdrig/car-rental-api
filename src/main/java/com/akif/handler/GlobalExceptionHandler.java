@@ -1,5 +1,6 @@
 package com.akif.handler;
 
+import com.akif.dto.oauth2.OAuth2ErrorResponse;
 import com.akif.dto.response.ErrorResponseDto;
 import com.akif.exception.*;
 import lombok.extern.slf4j.Slf4j;
@@ -132,7 +133,19 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ex.getErrorCode(), ex.getErrorMessage(), ex.getHttpStatus(), request);
     }
 
-
+    @ExceptionHandler(OAuth2AuthenticationException.class)
+    public ResponseEntity<OAuth2ErrorResponse> handleOAuth2AuthenticationException(OAuth2AuthenticationException ex) {
+        log.error("OAuth2 authentication error: {} - {} (provider: {})", 
+                ex.getErrorType().getCode(), ex.getMessage(), ex.getProvider());
+        
+        OAuth2ErrorResponse errorResponse = OAuth2ErrorResponse.builder()
+                .error(ex.getErrorType().getCode())
+                .message(ex.getMessage())
+                .provider(ex.getProvider())
+                .build();
+        
+        return ResponseEntity.status(ex.getHttpStatus()).body(errorResponse);
+    }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponseDto> handleConstraintViolationException(ConstraintViolationException ex, WebRequest request) {
