@@ -16,6 +16,8 @@ import com.akif.repository.UserRepository;
 import com.akif.service.impl.RentalServiceImpl;
 import com.akif.service.gateway.IPaymentGateway;
 import com.akif.service.gateway.PaymentResult;
+import com.akif.service.pricing.IDynamicPricingService;
+import com.akif.service.pricing.PricingResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -64,6 +66,9 @@ class RentalServiceTest {
 
     @Mock
     private RentalMapper rentalMapper;
+
+    @Mock
+    private IDynamicPricingService dynamicPricingService;
 
     @InjectMocks
     private RentalServiceImpl rentalService;
@@ -137,6 +142,15 @@ class RentalServiceTest {
             when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
             when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(0L);
             when(rentalRepository.save(any(Rental.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            
+            PricingResult pricingResult = PricingResult.builder()
+                    .basePrice(new BigDecimal("500.00"))
+                    .rentalDays(5)
+                    .appliedModifiers(Collections.emptyList())
+                    .combinedMultiplier(BigDecimal.ONE)
+                    .finalPrice(new BigDecimal("2500.00"))
+                    .build();
+            when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any())).thenReturn(pricingResult);
 
             RentalResponseDto responseDto = RentalResponseDto.builder()
                     .id(1L)
@@ -217,6 +231,16 @@ class RentalServiceTest {
             when(userRepository.findByUsernameAndIsDeletedFalse("testuser")).thenReturn(Optional.of(testUser));
             when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
             when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(0L);
+            
+            PricingResult pricingResult = PricingResult.builder()
+                    .basePrice(new BigDecimal("500.00"))
+                    .rentalDays(5)
+                    .appliedModifiers(Collections.emptyList())
+                    .combinedMultiplier(BigDecimal.ONE)
+                    .finalPrice(new BigDecimal("2500.00"))
+                    .build();
+            when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any())).thenReturn(pricingResult);
+            
             when(rentalRepository.save(any(Rental.class))).thenAnswer(invocation -> {
                 Rental rental = invocation.getArgument(0);
                 assertThat(rental.getDays()).isEqualTo(5);
@@ -427,7 +451,7 @@ class RentalServiceTest {
             User otherUser = User.builder()
                     .id(2L)
                     .username("otheruser")
-                    .roles(Set.of(com.akif.enums.Role.USER))
+                    .roles(Set.of(Role.USER))
                     .build();
 
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
@@ -528,6 +552,16 @@ class RentalServiceTest {
             when(userRepository.findByUsernameAndIsDeletedFalse("testuser")).thenReturn(Optional.of(testUser));
             when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
             when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(0L);
+            
+            PricingResult pricingResult = PricingResult.builder()
+                    .basePrice(new BigDecimal("500.00"))
+                    .rentalDays(1)
+                    .appliedModifiers(Collections.emptyList())
+                    .combinedMultiplier(BigDecimal.ONE)
+                    .finalPrice(new BigDecimal("500.00"))
+                    .build();
+            when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any())).thenReturn(pricingResult);
+            
             when(rentalRepository.save(any(Rental.class))).thenAnswer(invocation -> {
                 Rental rental = invocation.getArgument(0);
                 assertThat(rental.getDays()).isEqualTo(1);

@@ -4,9 +4,11 @@ import com.akif.dto.request.LoginRequestDto;
 import com.akif.dto.request.RefreshTokenRequestDto;
 import com.akif.dto.request.RegisterRequestDto;
 import com.akif.dto.response.AuthResponseDto;
+import com.akif.enums.AuthProvider;
 import com.akif.enums.Role;
 import com.akif.exception.UserAlreadyExistsException;
 import com.akif.exception.InvalidTokenException;
+import com.akif.exception.SocialLoginRequiredException;
 import com.akif.exception.TokenExpiredException;
 import com.akif.model.User;
 import com.akif.repository.UserRepository;
@@ -22,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -72,6 +75,17 @@ public class AuthServiceImpl implements IAuthService {
     public AuthResponseDto login(LoginRequestDto loginRequest) {
         log.info("User attempting to login with username: {}", loginRequest.getUsername());
 
+        Optional<User> userOpt = userRepository.findByUsername(loginRequest.getUsername());
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (isSocialOnlyUser(user)) {
+                log.warn("Social-only user attempted password login: {}", loginRequest.getUsername());
+                String provider = user.getAuthProvider() != null ? user.getAuthProvider().name().toLowerCase() : "social";
+                throw new SocialLoginRequiredException(provider, 
+                    "This account was created via social login. Please use " + provider + " to sign in.");
+            }
+        }
+
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -88,6 +102,13 @@ public class AuthServiceImpl implements IAuthService {
             throw e;
         }
     }
+
+    private boolean isSocialOnlyUser(User user) {
+        return user.getPassword() == null && 
+               user.getAuthProvider() != null && 
+               user.getAuthProvider() != AuthProvider.LOCAL;
+    }
+
 
     @Override
     public AuthResponseDto refreshToken(RefreshTokenRequestDto refreshTokenRequest) {

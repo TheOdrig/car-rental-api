@@ -33,6 +33,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/health", "/actuator/health").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/oauth2/authorize/**").permitAll()
+                .requestMatchers("/api/oauth2/callback/**").permitAll()
+                .requestMatchers("/api/oauth2/link/**").authenticated()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
                 .requestMatchers(HttpMethod.POST, "/api/rentals/request").hasRole("USER")

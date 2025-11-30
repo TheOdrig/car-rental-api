@@ -17,7 +17,7 @@ This project was developed as a learning exercise to solidify Spring Boot knowle
 ## ✨ Features
 
 ### Core Functionality
-- **User Management** - Registration, authentication with JWT
+- **User Management** - Registration, authentication with JWT, OAuth2 social login (Google, GitHub)
 - **Car Catalog** - Browse available vehicles with filtering and pagination
 - **Rental Process** - Request → Confirm → Pickup → Return workflow
 - **Dynamic Pricing** - Intelligent pricing with 5 strategies (season, early booking, duration, weekend, demand)
@@ -88,6 +88,14 @@ DB_PASSWORD=your_password
 JWT_SECRET=your-secure-secret-key-here-minimum-256-bits
 JWT_ACCESS_TOKEN_EXPIRATION=900000
 JWT_REFRESH_TOKEN_EXPIRATION=604800000
+
+# OAuth2 Social Login (Optional)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+OAUTH2_STATE_SECRET=your-random-secret-key-here
+APP_BASE_URL=http://localhost:8082
 ```
 
 ### Pricing Configuration (Optional)
@@ -146,6 +154,27 @@ POST /api/auth/register
 POST /api/auth/login
 POST /api/auth/refresh
 ```
+
+### OAuth2 Social Login
+
+```http
+GET    /api/oauth2/authorize/{provider}    # Initiate login (google/github)
+GET    /api/oauth2/callback/{provider}     # OAuth2 callback
+POST   /api/oauth2/link/{provider}         # Link social account (authenticated)
+```
+
+**Supported Providers:** Google, GitHub
+
+**Setup:** Get OAuth2 credentials from [Google Cloud Console](https://console.cloud.google.com/) or [GitHub Developer Settings](https://github.com/settings/developers). Add to `.env`:
+
+```bash
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+GITHUB_CLIENT_ID=your-client-id
+GITHUB_CLIENT_SECRET=your-client-secret
+```
+
+**Features:** Single sign-on, account linking, multi-provider support, automatic user creation
 
 ### Car Management
 
@@ -305,12 +334,14 @@ src/
 **Main Tables:**
 - `users` - User accounts and credentials
 - `user_roles` - Role assignments
+- `linked_accounts` - OAuth2 social account links
 - `cars` - Vehicle inventory
 - `rentals` - Rental transactions
 - `payments` - Payment records
 
 **Relationships:**
 - User → Rentals (one-to-many)
+- User → LinkedAccounts (one-to-many)
 - Car → Rentals (one-to-many)
 - Rental → Payments (one-to-many)
 - User → Roles (one-to-many)
@@ -368,6 +399,7 @@ Through this project, I gained practical experience with:
 **✅ Completed Features:**
 - Core rental functionality
 - JWT authentication
+- OAuth2 social login (Google, GitHub)
 - Dynamic pricing engine with 5 strategies
 - Real-time currency conversion (TRY, USD, EUR, GBP, JPY)
 - Integration tests
