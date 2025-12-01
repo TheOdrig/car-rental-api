@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/oauth2/authorize/**").permitAll()
                 .requestMatchers("/api/oauth2/callback/**").permitAll()
                 .requestMatchers("/api/oauth2/link/**").authenticated()
+                .requestMatchers("/api/webhooks/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
                 .requestMatchers(HttpMethod.POST, "/api/rentals/request").hasRole("USER")

@@ -46,6 +46,21 @@ public class Payment extends BaseEntity {
     @Column(name = "gateway_response", columnDefinition = "TEXT")
     private String gatewayResponse;
 
+    @Column(name = "stripe_session_id", length = 255)
+    private String stripeSessionId;
+
+    @Column(name = "stripe_payment_intent_id", length = 255)
+    private String stripePaymentIntentId;
+
+    @Column(name = "idempotency_key", length = 255)
+    private String idempotencyKey;
+
+    @Column(name = "refunded_amount", precision = 12, scale = 2)
+    private BigDecimal refundedAmount;
+
+    @Column(name = "failure_reason", length = 500)
+    private String failureReason;
+
 
     public void updateStatus(PaymentStatus newStatus) {
         this.status = newStatus;

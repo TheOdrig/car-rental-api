@@ -21,6 +21,7 @@ This project was developed as a learning exercise to solidify Spring Boot knowle
 - **Car Catalog** - Browse available vehicles with filtering and pagination
 - **Rental Process** - Request → Confirm → Pickup → Return workflow
 - **Dynamic Pricing** - Intelligent pricing with 5 strategies (season, early booking, duration, weekend, demand)
+- **Payment Processing** - Stripe integration with secure checkout, webhook handling, and reconciliation
 - **Role-Based Access** - Separate permissions for users and administrators
 - **Admin Operations** - Manage cars, rentals, and users via REST API
 
@@ -29,6 +30,9 @@ This project was developed as a learning exercise to solidify Spring Boot knowle
 - JWT-based stateless authentication
 - Role-based authorization (USER, ADMIN)
 - Dynamic pricing engine with strategy pattern
+- Stripe payment gateway with webhook verification
+- Idempotent payment operations
+- Payment reconciliation with discrepancy detection
 - Database migrations with Flyway
 - Input validation and error handling
 - API documentation with Swagger/OpenAPI
@@ -96,6 +100,11 @@ GITHUB_CLIENT_ID=your-github-client-id
 GITHUB_CLIENT_SECRET=your-github-client-secret
 OAUTH2_STATE_SECRET=your-random-secret-key-here
 APP_BASE_URL=http://localhost:8082
+
+# Stripe Payment Gateway
+STRIPE_API_KEY=your-stripe-secret-key
+STRIPE_PUBLISHABLE_KEY=your-stripe-publishable-key
+STRIPE_WEBHOOK_SECRET=your-webhook-signing-secret
 ```
 
 ### Pricing Configuration (Optional)
@@ -241,6 +250,29 @@ GET    /api/pricing/strategies          # List enabled pricing strategies
 
 **Configuration:** All multipliers and thresholds are configurable via `application.properties`
 
+### Payment Processing
+
+```http
+POST   /api/webhooks/stripe             # Stripe webhook endpoint (public)
+```
+
+**Stripe Integration:**
+- **Checkout Sessions** - Secure payment flow with Stripe Checkout
+- **Webhook Events** - Real-time payment status updates (checkout.session.completed, checkout.session.expired, payment_intent.payment_failed)
+- **Signature Verification** - Webhook authenticity validation
+- **Idempotency** - Duplicate payment prevention with idempotency keys
+- **Reconciliation** - Scheduled daily job for Stripe-database sync with discrepancy detection (runs at midnight)
+
+**Setup:** Get API keys from [Stripe Dashboard](https://dashboard.stripe.com/apikeys). Add to `.env`:
+
+```bash
+STRIPE_API_KEY=sk_test_...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+**Features:** Secure checkout, automatic payment sync, webhook handling, daily reconciliation reports (logged)
+
 ### Example Requests
 
 ```bash
@@ -337,7 +369,8 @@ src/
 - `linked_accounts` - OAuth2 social account links
 - `cars` - Vehicle inventory
 - `rentals` - Rental transactions
-- `payments` - Payment records
+- `payments` - Payment records with Stripe integration
+- `webhook_events` - Idempotent webhook event processing
 
 **Relationships:**
 - User → Rentals (one-to-many)
@@ -401,6 +434,7 @@ Through this project, I gained practical experience with:
 - JWT authentication
 - OAuth2 social login (Google, GitHub)
 - Dynamic pricing engine with 5 strategies
+- Stripe payment gateway integration
 - Real-time currency conversion (TRY, USD, EUR, GBP, JPY)
 - Integration tests
 - API documentation

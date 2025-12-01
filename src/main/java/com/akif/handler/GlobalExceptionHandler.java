@@ -269,6 +269,24 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
     }
 
+    @ExceptionHandler(StripeIntegrationException.class)
+    public ResponseEntity<ErrorResponseDto> handleStripeIntegrationException(StripeIntegrationException ex, WebRequest request) {
+        log.error("Stripe integration error: {} - {}", ex.getStripeErrorCode(), ex.getStripeErrorMessage());
+        return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
+    }
+
+    @ExceptionHandler(WebhookSignatureException.class)
+    public ResponseEntity<ErrorResponseDto> handleWebhookSignatureException(WebhookSignatureException ex, WebRequest request) {
+        log.error("Webhook signature verification failed for event: {}", ex.getEventId());
+        return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
+    }
+
+    @ExceptionHandler(ReconciliationException.class)
+    public ResponseEntity<ErrorResponseDto> handleReconciliationException(ReconciliationException ex, WebRequest request) {
+        log.error("Reconciliation failed for date: {}", ex.getReconciliationDate());
+        return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
+    }
+
 
     private ResponseEntity<ErrorResponseDto> buildErrorResponse(String errorCode, String message, 
                                                              HttpStatus status, WebRequest request) {
