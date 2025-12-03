@@ -3,6 +3,9 @@ package com.akif.service;
 import com.akif.dto.request.RentalRequestDto;
 import com.akif.dto.response.RentalResponseDto;
 import com.akif.enums.*;
+import com.akif.event.PaymentCapturedEvent;
+import com.akif.event.RentalCancelledEvent;
+import com.akif.event.RentalConfirmedEvent;
 import com.akif.exception.*;
 import com.akif.mapper.RentalMapper;
 import com.akif.model.Car;
@@ -291,6 +294,34 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should publish RentalConfirmedEvent when rental is confirmed")
+        void shouldPublishRentalConfirmedEventWhenRentalIsConfirmed() {
+
+            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(paymentGateway.authorize(any(), any(), anyString()))
+                    .thenReturn(PaymentResult.success("STUB-ABC123", "Authorized"));
+            when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(rentalRepository.save(any(Rental.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            RentalResponseDto responseDto = RentalResponseDto.builder()
+                    .id(1L)
+                    .status(RentalStatus.CONFIRMED)
+                    .build();
+            when(rentalMapper.toDto(any(Rental.class))).thenReturn(responseDto);
+
+            rentalService.confirmRental(1L);
+
+            verify(eventPublisher).publishEvent(argThat(event ->
+                event instanceof RentalConfirmedEvent &&
+                ((RentalConfirmedEvent) event).getRentalId().equals(1L) &&
+                ((RentalConfirmedEvent) event).getCustomerEmail().equals("test@example.com") &&
+                ((RentalConfirmedEvent) event).getCarBrand().equals("Toyota") &&
+                ((RentalConfirmedEvent) event).getCarModel().equals("Corolla") &&
+                ((RentalConfirmedEvent) event).getTotalPrice().equals(new BigDecimal("2500.00"))
+            ));
+        }
+
+        @Test
         @DisplayName("Should throw exception when rental not found")
         void shouldThrowExceptionWhenRentalNotFound() {
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.empty());
@@ -352,6 +383,37 @@ class RentalServiceTest {
 
             verify(paymentGateway).capture(eq("STUB-ABC123DEF456"), eq(new BigDecimal("2500.00")));
             verify(paymentRepository).save(any(Payment.class));
+        }
+
+        @Test
+        @DisplayName("Should publish PaymentCapturedEvent when payment is captured")
+        void shouldPublishPaymentCapturedEventWhenPaymentIsCaptured() {
+
+            testRental.setStatus(RentalStatus.CONFIRMED);
+
+            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(paymentRepository.findByRentalIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testPayment));
+            when(paymentGateway.capture(anyString(), any()))
+                    .thenReturn(PaymentResult.success("STUB-ABC123", "Captured"));
+            when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(rentalRepository.save(any(Rental.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            RentalResponseDto responseDto = RentalResponseDto.builder()
+                    .id(1L)
+                    .status(RentalStatus.IN_USE)
+                    .build();
+            when(rentalMapper.toDto(any(Rental.class))).thenReturn(responseDto);
+
+            rentalService.pickupRental(1L, "Pickup notes");
+
+            verify(eventPublisher).publishEvent(argThat(event ->
+                event instanceof PaymentCapturedEvent &&
+                ((PaymentCapturedEvent) event).getPaymentId().equals(1L) &&
+                ((PaymentCapturedEvent) event).getRentalId().equals(1L) &&
+                ((PaymentCapturedEvent) event).getCustomerEmail().equals("test@example.com") &&
+                ((PaymentCapturedEvent) event).getAmount().equals(new BigDecimal("2500.00")) &&
+                ((PaymentCapturedEvent) event).getTransactionId().equals("STUB-ABC123DEF456")
+            ));
         }
 
         @Test
@@ -419,6 +481,30 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should publish RentalCancelledEvent when rental is cancelled without refund")
+        void shouldPublishRentalCancelledEventWhenRentalIsCancelledWithoutRefund() {
+
+            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(userRepository.findByUsernameAndIsDeletedFalse("testuser")).thenReturn(Optional.of(testUser));
+            when(rentalRepository.save(any(Rental.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            RentalResponseDto responseDto = RentalResponseDto.builder()
+                    .id(1L)
+                    .status(RentalStatus.CANCELLED)
+                    .build();
+            when(rentalMapper.toDto(any(Rental.class))).thenReturn(responseDto);
+
+            rentalService.cancelRental(1L, "testuser");
+
+            verify(eventPublisher).publishEvent(argThat(event ->
+                event instanceof RentalCancelledEvent &&
+                ((RentalCancelledEvent) event).getRentalId().equals(1L) &&
+                ((RentalCancelledEvent) event).getCustomerEmail().equals("test@example.com") &&
+                !((RentalCancelledEvent) event).isRefundProcessed()
+            ));
+        }
+
+        @Test
         @DisplayName("Should successfully cancel CONFIRMED rental with refund")
         void shouldSuccessfullyCancelConfirmedRentalWithRefund() {
 
@@ -447,6 +533,40 @@ class RentalServiceTest {
 
             verify(paymentGateway).refund(eq("STUB-ABC123DEF456"), eq(new BigDecimal("2500.00")));
             verify(rentalRepository).save(any(Rental.class));
+        }
+
+        @Test
+        @DisplayName("Should publish RentalCancelledEvent with refund details when rental is cancelled with refund")
+        void shouldPublishRentalCancelledEventWithRefundDetailsWhenRentalIsCancelledWithRefund() {
+
+            testRental.setStatus(RentalStatus.CONFIRMED);
+            testCar.setCarStatusType(CarStatusType.RESERVED);
+            testPayment.setStatus(PaymentStatus.CAPTURED);
+
+            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(userRepository.findByUsernameAndIsDeletedFalse("testuser")).thenReturn(Optional.of(testUser));
+            when(paymentRepository.findByRentalIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testPayment));
+            when(paymentGateway.refund(anyString(), any()))
+                    .thenReturn(PaymentResult.success("STUB-REFUND123", "Refunded"));
+            when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(rentalRepository.save(any(Rental.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            RentalResponseDto responseDto = RentalResponseDto.builder()
+                    .id(1L)
+                    .status(RentalStatus.CANCELLED)
+                    .build();
+            when(rentalMapper.toDto(any(Rental.class))).thenReturn(responseDto);
+
+            rentalService.cancelRental(1L, "testuser");
+
+            verify(eventPublisher).publishEvent(argThat(event ->
+                event instanceof RentalCancelledEvent &&
+                ((RentalCancelledEvent) event).getRentalId().equals(1L) &&
+                ((RentalCancelledEvent) event).getCustomerEmail().equals("test@example.com") &&
+                ((RentalCancelledEvent) event).isRefundProcessed() &&
+                ((RentalCancelledEvent) event).getRefundAmount().equals(new BigDecimal("2500.00")) &&
+                ((RentalCancelledEvent) event).getRefundTransactionId().equals("STUB-REFUND123")
+            ));
         }
 
         @Test
