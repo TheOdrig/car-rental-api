@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
         indexes = {
                 @Index(name = "idx_webhook_event_id", columnList = "event_id", unique = true),
                 @Index(name = "idx_webhook_status", columnList = "status"),
-                @Index(name = "idx_webhook_created", columnList = "created_at")
+                @Index(name = "idx_webhook_created", columnList = "create_time")
         })
 @Getter
 @Setter

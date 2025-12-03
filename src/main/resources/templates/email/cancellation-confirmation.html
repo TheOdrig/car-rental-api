@@ -31,7 +31,7 @@
         
         <div class="detail-row">
             <span class="label">Cancellation Date:</span>
-            <span class="value" th:text="${#temporals.format(cancellationDate, 'dd MMM yyyy HH:mm')}">15 Jan 2024 10:30</span>
+            <span class="value" th:text="${cancellationDate}">15 Jan 2024 10:30</span>
         </div>
         
         <div th:if="${refundProcessed}" class="refund-box">
