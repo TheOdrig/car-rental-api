@@ -39,5 +39,7 @@ public interface RentalMapper {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "pickupNotes", ignore = true)
     @Mapping(target = "returnNotes", ignore = true)
+    @Mapping(target = "pickupReminderSent", ignore = true)
+    @Mapping(target = "returnReminderSent", ignore = true)
     Rental toEntity(RentalRequestDto dto);
 }

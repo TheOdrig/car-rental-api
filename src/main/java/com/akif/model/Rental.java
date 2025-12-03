@@ -62,6 +62,14 @@ public class Rental extends BaseEntity {
     @Column(name = "return_notes", columnDefinition = "TEXT")
     private String returnNotes;
 
+    @Column(name = "pickup_reminder_sent")
+    @Builder.Default
+    private boolean pickupReminderSent = false;
+
+    @Column(name = "return_reminder_sent")
+    @Builder.Default
+    private boolean returnReminderSent = false;
+
 
     public void updateStatus(RentalStatus newStatus) {
         this.status = newStatus;

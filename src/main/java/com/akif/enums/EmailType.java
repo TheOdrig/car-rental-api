@@ -1,0 +1,10 @@
+package com.akif.enums;
+
+public enum EmailType {
+
+    RENTAL_CONFIRMATION,
+    PAYMENT_RECEIPT,
+    PICKUP_REMINDER,
+    RETURN_REMINDER,
+    CANCELLATION_CONFIRMATION
+}
