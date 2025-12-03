@@ -3,6 +3,9 @@ package com.akif.service.impl;
 import com.akif.dto.request.RentalRequestDto;
 import com.akif.dto.response.RentalResponseDto;
 import com.akif.enums.*;
+import com.akif.event.PaymentCapturedEvent;
+import com.akif.event.RentalCancelledEvent;
+import com.akif.event.RentalConfirmedEvent;
 import com.akif.exception.*;
 import com.akif.mapper.RentalMapper;
 import com.akif.model.Car;
@@ -21,6 +24,7 @@ import com.akif.service.pricing.PriceModifier;
 import com.akif.service.pricing.PricingResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -30,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Service
@@ -47,6 +52,7 @@ public class RentalServiceImpl implements IRentalService {
     private final IPaymentGateway paymentGateway;
     private final RentalMapper rentalMapper;
     private final IDynamicPricingService dynamicPricingService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -185,6 +191,22 @@ public class RentalServiceImpl implements IRentalService {
         Rental updatedRental = rentalRepository.save(rental);
         RentalResponseDto result = rentalMapper.toDto(updatedRental);
 
+        RentalConfirmedEvent event = new RentalConfirmedEvent(
+                this,
+                updatedRental.getId(),
+                updatedRental.getUser().getEmail(),
+                LocalDateTime.now(),
+                updatedRental.getCar().getBrand(),
+                updatedRental.getCar().getModel(),
+                updatedRental.getStartDate(),
+                updatedRental.getEndDate(),
+                updatedRental.getTotalPrice(),
+                updatedRental.getCurrency(),
+                "Main Office"
+        );
+        eventPublisher.publishEvent(event);
+        log.info("Published RentalConfirmedEvent for rental: {}", updatedRental.getId());
+
         logRentalOperationSuccess("confirmed", result, "TransactionId: " + authResult.transactionId());
         return result;
     }
@@ -223,12 +245,25 @@ public class RentalServiceImpl implements IRentalService {
         }
 
         payment.updateStatus(PaymentStatus.CAPTURED);
-        paymentRepository.save(payment);
+        Payment savedPayment = paymentRepository.save(payment);
 
         rental.updateStatus(RentalStatus.IN_USE);
         rental.setPickupNotes(pickupNotes);
         Rental updatedRental = rentalRepository.save(rental);
         RentalResponseDto result = rentalMapper.toDto(updatedRental);
+
+        PaymentCapturedEvent event = new PaymentCapturedEvent(
+                this,
+                savedPayment.getId(),
+                updatedRental.getId(),
+                updatedRental.getUser().getEmail(),
+                savedPayment.getAmount(),
+                savedPayment.getCurrency(),
+                savedPayment.getTransactionId(),
+                LocalDateTime.now()
+        );
+        eventPublisher.publishEvent(event);
+        log.info("Published PaymentCapturedEvent for payment: {}, rental: {}", savedPayment.getId(), updatedRental.getId());
 
         logRentalOperationSuccess("picked up", result, "Notes: " + (pickupNotes != null ? pickupNotes : "None"));
         return result;
@@ -283,8 +318,9 @@ public class RentalServiceImpl implements IRentalService {
 
         RentalStatus currentStatus = rental.getStatus();
 
+        RefundInfo refundInfo = new RefundInfo(false, BigDecimal.ZERO, null);
         if (currentStatus == RentalStatus.CONFIRMED) {
-            refundPayment(rentalId);
+            refundInfo = refundPayment(rentalId);
         }
 
         rental.updateStatus(RentalStatus.CANCELLED);
@@ -297,11 +333,25 @@ public class RentalServiceImpl implements IRentalService {
         Rental updatedRental = rentalRepository.save(rental);
         RentalResponseDto result = rentalMapper.toDto(updatedRental);
 
+        RentalCancelledEvent event = new RentalCancelledEvent(
+                this,
+                updatedRental.getId(),
+                updatedRental.getUser().getEmail(),
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                "Cancelled by " + (currentUser.getRoles().contains(Role.ADMIN) ? "admin" : "customer"),
+                refundInfo.refundProcessed(),
+                refundInfo.refundAmount(),
+                refundInfo.refundTransactionId()
+        );
+        eventPublisher.publishEvent(event);
+        log.info("Published RentalCancelledEvent for rental: {}", updatedRental.getId());
+
         logRentalOperationSuccess("cancelled", result, "By user: " + username);
         return result;
     }
 
-    private void refundPayment(Long rentalId) {
+    private RefundInfo refundPayment(Long rentalId) {
         Payment payment = findPaymentByRentalId(rentalId);
 
         if (payment.getStatus() == PaymentStatus.CAPTURED) {
@@ -320,13 +370,21 @@ public class RentalServiceImpl implements IRentalService {
 
             payment.updateStatus(PaymentStatus.REFUNDED);
             paymentRepository.save(payment);
+            
+            return new RefundInfo(true, payment.getAmount(), refundResult.transactionId());
         } else if (payment.getStatus() == PaymentStatus.AUTHORIZED) {
 
             payment.updateStatus(PaymentStatus.REFUNDED);
             paymentRepository.save(payment);
             log.info("Payment was only authorized, no refund needed. RentalId: {}", rentalId);
+            
+            return new RefundInfo(true, payment.getAmount(), payment.getTransactionId());
         }
+        
+        return new RefundInfo(false, BigDecimal.ZERO, null);
     }
+    
+    private record RefundInfo(boolean refundProcessed, BigDecimal refundAmount, String refundTransactionId) {}
 
     @Override
     public Page<RentalResponseDto> getMyRentals(String username, Pageable pageable) {

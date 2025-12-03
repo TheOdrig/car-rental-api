@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pickup Reminder</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #FF9800; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+        .content { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 5px 5px; }
+        .detail-row { margin: 10px 0; padding: 10px; background-color: white; border-left: 3px solid #FF9800; }
+        .label { font-weight: bold; color: #555; }
+        .value { color: #333; }
+        .highlight { background-color: #FFF3E0; padding: 15px; border-radius: 5px; margin: 15px 0; border: 2px solid #FF9800; }
+        .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #777; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⏰ Pickup Reminder</h1>
+    </div>
+    <div class="content">
+        <p>Dear Customer,</p>
+        <p>This is a friendly reminder that your rental pickup is scheduled for tomorrow!</p>
+        
+        <div class="highlight">
+            <strong>Don't forget to pick up your vehicle tomorrow!</strong>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Rental ID:</span>
+            <span class="value" th:text="${rentalId}">12345</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Pickup Date:</span>
+            <span class="value" th:text="${pickupDate}">15 Jan 2024</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Time Window:</span>
+            <span class="value">09:00 AM - 06:00 PM</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Pickup Location:</span>
+            <span class="value" th:text="${pickupLocation}">Downtown Office</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Vehicle:</span>
+            <span class="value" th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
+        </div>
+        
+        <p style="margin-top: 20px;"><strong>What to bring:</strong></p>
+        <ul>
+            <li>Valid driver's license</li>
+            <li>Payment method (if not already processed)</li>
+            <li>Booking confirmation (this email)</li>
+        </ul>
+    </div>
+    <div class="footer">
+        <p>We look forward to serving you!</p>
+        <p>If you need to modify your booking, please contact us immediately.</p>
+    </div>
+</body>
+</html>

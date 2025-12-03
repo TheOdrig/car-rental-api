@@ -33,4 +33,22 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     long countOverlappingRentals(@Param("carId") Long carId,
                                  @Param("startDate") LocalDate startDate,
                                  @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT r FROM Rental r " +
+            "WHERE r.startDate = :tomorrow " +
+            "AND r.status = :status " +
+            "AND r.pickupReminderSent = false " +
+            "AND r.isDeleted = false")
+    Page<Rental> findRentalsForPickupReminder(@Param("tomorrow") LocalDate tomorrow,
+                                               @Param("status") RentalStatus status,
+                                               Pageable pageable);
+
+    @Query("SELECT r FROM Rental r " +
+            "WHERE r.endDate = :today " +
+            "AND r.status = :status " +
+            "AND r.returnReminderSent = false " +
+            "AND r.isDeleted = false")
+    Page<Rental> findRentalsForReturnReminder(@Param("today") LocalDate today,
+                                               @Param("status") RentalStatus status,
+                                               Pageable pageable);
 }

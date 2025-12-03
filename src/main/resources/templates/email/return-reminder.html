@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Return Reminder</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #F44336; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+        .content { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 5px 5px; }
+        .detail-row { margin: 10px 0; padding: 10px; background-color: white; border-left: 3px solid #F44336; }
+        .label { font-weight: bold; color: #555; }
+        .value { color: #333; }
+        .warning { background-color: #FFEBEE; padding: 15px; border-radius: 5px; margin: 15px 0; border: 2px solid #F44336; }
+        .penalty { background-color: #FFF9C4; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #FFC107; }
+        .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #777; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚗 Return Reminder</h1>
+    </div>
+    <div class="content">
+        <p>Dear Customer,</p>
+        <p>Your rental return is due <strong>TODAY</strong>. Please return the vehicle on time to avoid late fees.</p>
+        
+        <div class="warning">
+            <strong>⚠️ Return your vehicle today to avoid penalties!</strong>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Rental ID:</span>
+            <span class="value" th:text="${rentalId}">12345</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Return Date:</span>
+            <span class="value" th:text="${returnDate}">20 Jan 2024</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Return Location:</span>
+            <span class="value" th:text="${returnLocation}">Downtown Office</span>
+        </div>
+        
+        <div class="penalty">
+            <strong>Late Return Penalty:</strong>
+            <span th:text="|${dailyPenaltyRate} per day|">50.00 USD per day</span>
+        </div>
+        
+        <p style="margin-top: 20px;"><strong>Before returning:</strong></p>
+        <ul>
+            <li>Refuel the vehicle to the same level as pickup</li>
+            <li>Remove all personal belongings</li>
+            <li>Check for any damage and report immediately</li>
+            <li>Return all keys and documents</li>
+        </ul>
+    </div>
+    <div class="footer">
+        <p>Thank you for choosing our service!</p>
+        <p>If you need to extend your rental, please contact us immediately.</p>
+    </div>
+</body>
+</html>

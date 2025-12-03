@@ -22,6 +22,7 @@ This project was developed as a learning exercise to solidify Spring Boot knowle
 - **Rental Process** - Request → Confirm → Pickup → Return workflow
 - **Dynamic Pricing** - Intelligent pricing with 5 strategies (season, early booking, duration, weekend, demand)
 - **Payment Processing** - Stripe integration with secure checkout, webhook handling, and reconciliation
+- **Email Notifications** - Event-driven automated emails (confirmation, receipt, reminders, cancellation)
 - **Role-Based Access** - Separate permissions for users and administrators
 - **Admin Operations** - Manage cars, rentals, and users via REST API
 
@@ -33,6 +34,9 @@ This project was developed as a learning exercise to solidify Spring Boot knowle
 - Stripe payment gateway with webhook verification
 - Idempotent payment operations
 - Payment reconciliation with discrepancy detection
+- Event-driven email notifications with async processing
+- Automatic retry logic with exponential backoff
+- Scheduled reminder system with duplicate prevention
 - Database migrations with Flyway
 - Input validation and error handling
 - API documentation with Swagger/OpenAPI
@@ -47,6 +51,9 @@ This project was developed as a learning exercise to solidify Spring Boot knowle
 - Spring Security
 - Spring Data JPA
 - Spring Validation
+- Spring Mail
+- Spring Retry
+- Thymeleaf (email templates)
 
 **Database:**
 - PostgreSQL
@@ -273,6 +280,87 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 
 **Features:** Secure checkout, automatic payment sync, webhook handling, daily reconciliation reports (logged)
 
+### Email Notifications
+
+```http
+# No direct endpoints - emails are sent automatically via event-driven system
+```
+
+**Email Types:**
+1. **Rental Confirmation** - Sent when rental is confirmed (includes rental ID, car details, dates, total price, pickup location)
+2. **Payment Receipt** - Sent after payment capture (includes transaction ID, amount, currency, payment date, rental reference)
+3. **Pickup Reminder** - Sent 1 day before pickup date at 8 AM (includes pickup date, time window, location, car details)
+4. **Return Reminder** - Sent on return date at 9 AM (includes return date, location, late penalty information)
+5. **Cancellation Confirmation** - Sent when rental is cancelled (includes cancellation date, refund details if applicable)
+
+**Architecture:**
+- **Event-Driven** - Uses Spring Events for decoupled notification system
+- **Async Processing** - Non-blocking email delivery with dedicated thread pool (2-10 threads)
+- **Retry Logic** - Automatic retry up to 3 times with exponential backoff (1s, 2s, 4s)
+- **Template Engine** - Thymeleaf HTML templates for professional email formatting
+- **Scheduled Reminders** - Daily cron jobs for pickup (8 AM) and return (9 AM) reminders
+
+**Configuration:**
+
+Development mode (logs emails without sending):
+```properties
+spring.profiles.active=dev
+email.enabled=true
+```
+
+Production mode (SendGrid SMTP):
+```properties
+spring.profiles.active=prod
+email.enabled=true
+email.from=noreply@yourcompany.com
+
+# SendGrid SMTP Configuration
+spring.mail.host=smtp.sendgrid.net
+spring.mail.port=587
+spring.mail.username=apikey
+spring.mail.password=${SENDGRID_API_KEY}
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+```
+
+**Environment Variables:**
+```bash
+# Email Configuration
+EMAIL_FROM=noreply@yourcompany.com
+EMAIL_ENABLED=true
+
+# SendGrid (Production only)
+SENDGRID_API_KEY=SG.your-sendgrid-api-key
+SENDGRID_HOST=smtp.sendgrid.net
+SENDGRID_PORT=587
+SENDGRID_USERNAME=apikey
+```
+
+**SendGrid Setup (Production):**
+1. Create account at [SendGrid](https://sendgrid.com/)
+2. Generate API key in Settings → API Keys
+3. Verify sender email in Settings → Sender Authentication
+4. Add API key to `.env` file as `SENDGRID_API_KEY`
+5. Configure `email.from` with verified sender email
+
+**Features:**
+- Automatic email sending on rental lifecycle events
+- Professional HTML email templates
+- Retry mechanism for failed deliveries
+- Development mode with mock sender (logs only)
+- Production mode with SendGrid SMTP
+- Scheduled daily reminders with duplicate prevention
+- Comprehensive logging for troubleshooting
+
+**Email Flow:**
+```
+Rental Confirmed → RentalConfirmedEvent → EmailEventListener → EmailNotificationService → SendGrid
+Payment Captured → PaymentCapturedEvent → EmailEventListener → EmailNotificationService → SendGrid
+Scheduler (8 AM) → PickupReminderEvent → EmailEventListener → EmailNotificationService → SendGrid
+Scheduler (9 AM) → ReturnReminderEvent → EmailEventListener → EmailNotificationService → SendGrid
+Rental Cancelled → RentalCancelledEvent → EmailEventListener → EmailNotificationService → SendGrid
+```
+
 ### Example Requests
 
 ```bash
@@ -330,24 +418,30 @@ mvn jacoco:report
 src/
 ├── main/
 │   ├── java/com/akif/
-│   │   ├── config/          # Security, Swagger, CORS configs
+│   │   ├── config/          # Security, Swagger, CORS, Async configs
 │   │   ├── controller/      # REST endpoints
 │   │   ├── dto/             # Request/Response objects
 │   │   │   ├── request/     # Request DTOs
-│   │   │   └── response/    # Response DTOs
-│   │   ├── enums/           # Status types, currencies, roles
+│   │   │   ├── response/    # Response DTOs
+│   │   │   └── email/       # Email message DTOs
+│   │   ├── enums/           # Status types, currencies, roles, email types
+│   │   ├── event/           # Domain events (rental, payment)
 │   │   ├── exception/       # Custom exceptions
 │   │   ├── handler/         # Global exception handler
+│   │   ├── listener/        # Event listeners (email)
 │   │   ├── mapper/          # Entity-DTO mappers (MapStruct)
 │   │   ├── model/           # JPA entities
 │   │   ├── repository/      # Data access layer
+│   │   ├── scheduler/       # Scheduled tasks (reminders, reconciliation)
 │   │   ├── security/        # JWT, UserDetails, filters
 │   │   ├── service/         # Business logic
+│   │   │   ├── email/       # Email notification services
 │   │   │   ├── gateway/     # Payment gateway interfaces
 │   │   │   └── impl/        # Service implementations
 │   │   └── starter/         # Application entry point
 │   └── resources/
 │       ├── db/migration/    # Flyway SQL scripts
+│       ├── templates/email/ # Thymeleaf email templates
 │       └── application.properties
 └── test/                    # Integration tests
 ```
@@ -368,7 +462,7 @@ src/
 - `user_roles` - Role assignments
 - `linked_accounts` - OAuth2 social account links
 - `cars` - Vehicle inventory
-- `rentals` - Rental transactions
+- `rentals` - Rental transactions with reminder tracking (pickup_reminder_sent, return_reminder_sent)
 - `payments` - Payment records with Stripe integration
 - `webhook_events` - Idempotent webhook event processing
 
@@ -418,10 +512,15 @@ Through this project, I gained practical experience with:
 
 - **Spring Boot Architecture** - Understanding auto-configuration, starters, and conventions
 - **Spring Security** - Implementing JWT authentication from scratch
-- **Design Patterns** - Strategy pattern for dynamic pricing, dependency injection
+- **Design Patterns** - Strategy pattern for dynamic pricing, event-driven architecture, dependency injection
+- **Event-Driven Systems** - Spring Events for decoupled communication between components
+- **Async Processing** - Non-blocking operations with thread pools and @Async
+- **Retry Logic** - Implementing resilience with Spring Retry and exponential backoff
 - **JPA/Hibernate** - Entity relationships, query optimization, N+1 problem
 - **RESTful Design** - Proper HTTP methods, status codes, and API versioning
 - **Database Migrations** - Managing schema changes with Flyway
+- **Template Engines** - Thymeleaf for dynamic HTML email generation
+- **Scheduled Tasks** - Cron-based scheduling for automated reminders
 - **Testing Strategies** - Unit tests, integration tests, API testing
 - **Error Handling** - Global exception handling and meaningful error responses
 - **Documentation** - API documentation with Swagger/OpenAPI
@@ -436,6 +535,7 @@ Through this project, I gained practical experience with:
 - Dynamic pricing engine with 5 strategies
 - Stripe payment gateway integration
 - Real-time currency conversion (TRY, USD, EUR, GBP, JPY)
+- Email notification system (event-driven, async, with retry logic)
 - Integration tests
 - API documentation
 - Docker support
