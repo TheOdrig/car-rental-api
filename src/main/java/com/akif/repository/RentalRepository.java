@@ -64,4 +64,11 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             @Param("statuses") List<RentalStatus> statuses);
+
+    @Query("SELECT r FROM Rental r " +
+            "WHERE r.status = com.akif.enums.RentalStatus.IN_USE " +
+            "AND r.endDate < :currentDate " +
+            "AND r.isDeleted = false")
+    Page<Rental> findOverdueRentals(@Param("currentDate") LocalDate currentDate,
+                                     Pageable pageable);
 }
