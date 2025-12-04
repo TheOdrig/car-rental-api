@@ -161,6 +161,8 @@ public class RentalServiceImpl implements IRentalService {
             );
         }
 
+        checkDateOverlap(rental.getCar().getId(), rental.getStartDate(), rental.getEndDate());
+
         PaymentResult authResult = paymentGateway.authorize(
                 rental.getTotalPrice(),
                 rental.getCurrency(),
