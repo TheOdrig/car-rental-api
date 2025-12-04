@@ -43,6 +43,7 @@ public class GlobalExceptionHandler {
     private static final String ERROR_CODE_ENDPOINT_NOT_FOUND = "ENDPOINT_NOT_FOUND";
     private static final String ERROR_CODE_INVALID_ARGUMENT = "INVALID_ARGUMENT";
     private static final String ERROR_CODE_INVALID_STATE = "INVALID_STATE";
+    private static final String ERROR_CODE_INVALID_DATE_FORMAT = "INVALID_DATE_FORMAT";
     private static final String ERROR_CODE_INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
 
 
@@ -202,6 +203,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDto> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
         log.error("Illegal argument: {}", ex.getMessage());
         return buildErrorResponse(ERROR_CODE_INVALID_ARGUMENT, ex.getMessage(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler(java.time.format.DateTimeParseException.class)
+    public ResponseEntity<ErrorResponseDto> handleDateTimeParseException(java.time.format.DateTimeParseException ex, WebRequest request) {
+        log.error("Invalid date format: {}", ex.getMessage());
+        return buildErrorResponse(ERROR_CODE_INVALID_DATE_FORMAT, "Invalid date or month format. Please use yyyy-MM-dd for dates and yyyy-MM for months.", HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(IllegalStateException.class)

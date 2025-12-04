@@ -263,11 +263,16 @@ public class CarAvailabilityServiceImpl implements ICarAvailabilityService {
     }
 
     private Pageable createPageable(AvailabilitySearchRequestDto request) {
+        String sortBy = request.getSortBy() != null ? request.getSortBy() : "price";
+        String sortDirection = request.getSortDirection() != null ? request.getSortDirection() : "asc";
+        int page = request.getPage() != null ? request.getPage() : 0;
+        int size = request.getSize() != null ? request.getSize() : 20;
+        
         Sort sort = Sort.by(
-                "desc".equalsIgnoreCase(request.getSortDirection()) ? Sort.Direction.DESC : Sort.Direction.ASC,
-                request.getSortBy()
+                "desc".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC,
+                sortBy
         );
-        return PageRequest.of(request.getPage(), request.getSize(), sort);
+        return PageRequest.of(page, size, sort);
     }
 
     private AvailableCarDto convertToAvailableCarDto(Car car, LocalDate startDate, LocalDate endDate, CurrencyType targetCurrency) {
