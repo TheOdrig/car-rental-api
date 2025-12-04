@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -51,4 +52,16 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     Page<Rental> findRentalsForReturnReminder(@Param("today") LocalDate today,
                                                @Param("status") RentalStatus status,
                                                Pageable pageable);
+
+    @Query("SELECT r FROM Rental r WHERE " +
+            "r.car.id = :carId AND " +
+            "r.startDate <= :endDate AND " +
+            "r.endDate >= :startDate AND " +
+            "r.status IN :statuses AND " +
+            "r.isDeleted = false")
+    List<Rental> findOverlappingRentalsForCar(
+            @Param("carId") Long carId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("statuses") List<RentalStatus> statuses);
 }

@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -89,4 +90,55 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     @Query("SELECT c.carStatusType, COUNT(c) FROM Car c WHERE c.isDeleted = false GROUP BY c.carStatusType")
     List<Object[]> getCarsCountByStatus();
+
+
+    @Query("SELECT c FROM Car c WHERE " +
+            "c.isDeleted = false AND " +
+            "c.carStatusType NOT IN :blockingStatuses AND " +
+            "(:brand IS NULL OR LOWER(c.brand) = LOWER(:brand)) AND " +
+            "(:model IS NULL OR LOWER(c.model) = LOWER(:model)) AND " +
+            "(:fuelType IS NULL OR LOWER(c.fuelType) = LOWER(:fuelType)) AND " +
+            "(:transmissionType IS NULL OR LOWER(c.transmissionType) = LOWER(:transmissionType)) AND " +
+            "(:bodyType IS NULL OR LOWER(c.bodyType) = LOWER(:bodyType)) AND " +
+            "(:minSeats IS NULL OR c.seats >= :minSeats) AND " +
+            "(:minPrice IS NULL OR c.price >= :minPrice) AND " +
+            "(:maxPrice IS NULL OR c.price <= :maxPrice) AND " +
+            "(:minProductionYear IS NULL OR c.productionYear >= :minProductionYear) AND " +
+            "(:maxProductionYear IS NULL OR c.productionYear <= :maxProductionYear) AND " +
+            "NOT EXISTS (" +
+            "   SELECT r FROM Rental r WHERE " +
+            "   r.car.id = c.id AND " +
+            "   r.status IN (com.akif.enums.RentalStatus.CONFIRMED, com.akif.enums.RentalStatus.IN_USE) AND " +
+            "   r.isDeleted = false AND " +
+            "   r.startDate <= :endDate AND r.endDate >= :startDate" +
+            ")")
+    Page<Car> findAvailableCarsForDateRange(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("blockingStatuses") List<CarStatusType> blockingStatuses,
+            @Param("brand") String brand,
+            @Param("model") String model,
+            @Param("fuelType") String fuelType,
+            @Param("transmissionType") String transmissionType,
+            @Param("bodyType") String bodyType,
+            @Param("minSeats") Integer minSeats,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("minProductionYear") Integer minProductionYear,
+            @Param("maxProductionYear") Integer maxProductionYear,
+            Pageable pageable);
+
+    @Query("SELECT c FROM Car c WHERE " +
+            "c.isDeleted = false AND " +
+            "c.id != :excludeCarId AND " +
+            "c.carStatusType NOT IN :blockingStatuses AND " +
+            "(LOWER(c.bodyType) = LOWER(:bodyType) OR " +
+            "(c.price >= :minPrice AND c.price <= :maxPrice))")
+    Page<Car> findSimilarCars(
+            @Param("bodyType") String bodyType,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("excludeCarId") Long excludeCarId,
+            @Param("blockingStatuses") List<CarStatusType> blockingStatuses,
+            Pageable pageable);
 }
