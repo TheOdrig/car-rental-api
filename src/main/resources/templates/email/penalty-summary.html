@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Late Return Penalty Summary</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #2196F3; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+        .content { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 5px 5px; }
+        .detail-row { margin: 10px 0; padding: 10px; background-color: white; border-left: 3px solid #2196F3; }
+        .label { font-weight: bold; color: #555; }
+        .value { color: #333; }
+        .summary-box { background-color: #E3F2FD; border: 2px solid #2196F3; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .penalty-total { font-size: 32px; font-weight: bold; color: #1976D2; text-align: center; margin: 20px 0; }
+        .breakdown-box { background-color: white; border: 1px solid #BBDEFB; padding: 15px; margin: 15px 0; border-radius: 5px; }
+        .breakdown-box pre { margin: 0; font-family: 'Courier New', monospace; font-size: 13px; white-space: pre-wrap; }
+        .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #777; text-align: center; }
+        .cap-notice { background-color: #FFF9C4; border-left: 4px solid #FBC02D; padding: 10px; margin: 15px 0; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 Late Return Penalty Summary</h1>
+    </div>
+    <div class="content">
+        <p>Dear Customer,</p>
+        <p>Your vehicle has been returned. Below is the summary of late return penalties applied to your rental.</p>
+        
+        <div class="summary-box">
+            <p style="margin: 0; text-align: center; font-size: 14px; color: #666;">Final Penalty Amount</p>
+            <div class="penalty-total" th:text="|${finalPenaltyAmount} ${currency}|">450.00 USD</div>
+            <p th:if="${cappedAtMax}" class="cap-notice">
+                ⚠️ This penalty has been capped at the maximum allowed amount.
+            </p>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Rental ID:</span>
+            <span class="value" th:text="${rentalId}">12345</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Vehicle:</span>
+            <span class="value" th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">License Plate:</span>
+            <span class="value" th:text="${licensePlate}">34ABC123</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Scheduled Return:</span>
+            <span class="value" th:text="${#temporals.format(scheduledReturnTime, 'dd MMM yyyy HH:mm')}">15 Jan 2024 18:00</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Actual Return:</span>
+            <span class="value" th:text="${#temporals.format(actualReturnTime, 'dd MMM yyyy HH:mm')}">17 Jan 2024 14:30</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Total Late Hours:</span>
+            <span class="value" th:text="${lateHours}">44</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Total Late Days:</span>
+            <span class="value" th:text="${lateDays}">2</span>
+        </div>
+        
+        <div class="breakdown-box">
+            <h4 style="margin-top: 0; color: #1976D2;">Penalty Calculation Breakdown:</h4>
+            <pre th:text="${penaltyBreakdown}">
+Grace Period: 1 hour (no charge)
+Hours 1-6: 6 hours × 10% × $100/day = $60.00
+Day 1: 150% × $100/day = $150.00
+Day 2: 150% × $100/day = $150.00
+Total: $360.00
+            </pre>
+        </div>
+        
+        <div style="background-color: #E8F5E9; border: 2px solid #4CAF50; padding: 15px; margin: 20px 0; border-radius: 5px;">
+            <p style="margin: 0; font-weight: bold; color: #2E7D32;">✓ Payment Processing</p>
+            <p style="margin: 10px 0 0 0; font-size: 14px;">
+                The penalty amount will be automatically charged to your payment method on file. 
+                You will receive a separate payment receipt once the transaction is processed.
+            </p>
+        </div>
+        
+        <p style="margin-top: 20px; font-size: 14px;">
+            If you have any questions about these charges or believe there has been an error, 
+            please contact our customer support team within 7 days.
+        </p>
+    </div>
+    <div class="footer">
+        <p>Thank you for returning the vehicle.</p>
+        <p>We appreciate your business and hope to serve you again in the future.</p>
+    </div>
+</body>
+</html>

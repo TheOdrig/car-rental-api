@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Severely Late - Urgent Action Required</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #B71C1C; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+        .content { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 5px 5px; }
+        .detail-row { margin: 10px 0; padding: 10px; background-color: white; border-left: 3px solid #B71C1C; }
+        .label { font-weight: bold; color: #555; }
+        .value { color: #333; }
+        .urgent-box { background-color: #FFCDD2; border: 3px solid #B71C1C; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .urgent-box h3 { margin-top: 0; color: #B71C1C; }
+        .penalty-amount { font-size: 28px; font-weight: bold; color: #B71C1C; text-align: center; margin: 15px 0; }
+        .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #777; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚨 URGENT: Severely Late Return</h1>
+    </div>
+    <div class="content">
+        <p>Dear Customer,</p>
+        
+        <div class="urgent-box">
+            <h3>⚠️ IMMEDIATE ACTION REQUIRED</h3>
+            <p th:text="${escalationWarning}">Your rental is severely overdue. Please return the vehicle immediately to avoid further penalties and potential legal action.</p>
+        </div>
+        
+        <p style="font-weight: bold; color: #B71C1C;">
+            Your rental is now more than 24 hours overdue. This is a serious violation of the rental agreement.
+        </p>
+        
+        <div class="penalty-amount" th:text="|Current Penalty: ${currentPenaltyAmount} ${currency}|">
+            Current Penalty: 750.00 USD
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Rental ID:</span>
+            <span class="value" th:text="${rentalId}">12345</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Vehicle:</span>
+            <span class="value" th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">License Plate:</span>
+            <span class="value" th:text="${licensePlate}">34ABC123</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Scheduled Return Time:</span>
+            <span class="value" th:text="${#temporals.format(scheduledReturnTime, 'dd MMM yyyy HH:mm')}">15 Jan 2024 18:00</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Hours Late:</span>
+            <span class="value" th:text="${lateHours}">36</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Days Late:</span>
+            <span class="value" th:text="${lateDays}">2</span>
+        </div>
+        
+        <div style="background-color: #FFF9C4; border: 2px solid #F57F17; padding: 15px; margin: 20px 0; border-radius: 5px;">
+            <p style="margin: 0; font-weight: bold; color: #F57F17;">⚠️ Next Steps:</p>
+            <ul style="margin: 10px 0;">
+                <li>Return the vehicle immediately to any of our locations</li>
+                <li>Contact our support team at once if there are extenuating circumstances</li>
+                <li>Failure to return may result in vehicle recovery and legal action</li>
+                <li>Additional penalties continue to accrue daily</li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer">
+        <p style="color: #B71C1C; font-weight: bold;">URGENT: Contact our support team immediately</p>
+        <p>This is a final warning before escalation procedures begin.</p>
+    </div>
+</body>
+</html>
