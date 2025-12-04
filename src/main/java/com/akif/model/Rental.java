@@ -1,6 +1,7 @@
 package com.akif.model;
 
 import com.akif.enums.CurrencyType;
+import com.akif.enums.LateReturnStatus;
 import com.akif.enums.RentalStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,6 +9,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "rentals",
@@ -69,6 +71,26 @@ public class Rental extends BaseEntity {
     @Column(name = "return_reminder_sent")
     @Builder.Default
     private boolean returnReminderSent = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "late_return_status", length = 20)
+    private LateReturnStatus lateReturnStatus;
+
+    @Column(name = "late_detected_at")
+    private LocalDateTime lateDetectedAt;
+
+    @Column(name = "actual_return_time")
+    private LocalDateTime actualReturnTime;
+
+    @Column(name = "late_hours")
+    private Integer lateHours;
+
+    @Column(name = "penalty_amount", precision = 12, scale = 2)
+    private BigDecimal penaltyAmount;
+
+    @Column(name = "penalty_paid")
+    @Builder.Default
+    private Boolean penaltyPaid = false;
 
 
     public void updateStatus(RentalStatus newStatus) {
