@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -159,6 +160,8 @@ public class RentalServiceImpl implements IRentalService {
                     RentalStatus.REQUESTED.name()
             );
         }
+
+        checkDateOverlap(rental.getCar().getId(), rental.getStartDate(), rental.getEndDate());
 
         PaymentResult authResult = paymentGateway.authorize(
                 rental.getTotalPrice(),
@@ -321,6 +324,8 @@ public class RentalServiceImpl implements IRentalService {
         RefundInfo refundInfo = new RefundInfo(false, BigDecimal.ZERO, null);
         if (currentStatus == RentalStatus.CONFIRMED) {
             refundInfo = refundPayment(rentalId);
+        } else if (currentStatus == RentalStatus.IN_USE) {
+            refundInfo = refundPartialPayment(rental);
         }
 
         rental.updateStatus(RentalStatus.CANCELLED);
@@ -382,6 +387,52 @@ public class RentalServiceImpl implements IRentalService {
         }
         
         return new RefundInfo(false, BigDecimal.ZERO, null);
+    }
+
+    private RefundInfo refundPartialPayment(Rental rental) {
+        Payment payment = findPaymentByRentalId(rental.getId());
+
+        if (payment.getStatus() != PaymentStatus.CAPTURED) {
+            log.warn("Cannot refund payment in status: {} for rental: {}", 
+                    payment.getStatus(), rental.getId());
+            return new RefundInfo(false, BigDecimal.ZERO, null);
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate endDate = rental.getEndDate();
+        long remainingDays = ChronoUnit.DAYS.between(today, endDate);
+        
+        if (remainingDays <= 0) {
+            log.info("No remaining days for refund. RentalId: {}", rental.getId());
+            return new RefundInfo(false, BigDecimal.ZERO, null);
+        }
+
+        long totalDays = rental.getDays();
+        BigDecimal refundPercentage = BigDecimal.valueOf(remainingDays)
+                .divide(BigDecimal.valueOf(totalDays), 4, RoundingMode.HALF_UP);
+        BigDecimal refundAmount = payment.getAmount()
+                .multiply(refundPercentage)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        log.info("Calculating partial refund: totalDays={}, remainingDays={}, percentage={}, amount={}", 
+                totalDays, remainingDays, refundPercentage, refundAmount);
+
+        PaymentResult refundResult = paymentGateway.refund(
+                payment.getTransactionId(),
+                refundAmount
+        );
+
+        if (!refundResult.success()) {
+            throw new PaymentFailedException(
+                    payment.getTransactionId(),
+                    "Partial refund failed: " + refundResult.message()
+            );
+        }
+
+        payment.updateStatus(PaymentStatus.REFUNDED);
+        paymentRepository.save(payment);
+        
+        return new RefundInfo(true, refundAmount, refundResult.transactionId());
     }
     
     private record RefundInfo(boolean refundProcessed, BigDecimal refundAmount, String refundTransactionId) {}

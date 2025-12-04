@@ -398,10 +398,12 @@ curl -X POST http://localhost:8082/api/pricing/calculate \
 
 ## 🧪 Testing
 
-### Run Tests
 ```bash
 # Run all tests
 mvn clean test
+
+# Run only E2E tests
+mvn test -Dtest="com.akif.e2e.**"
 
 # Generate coverage report
 mvn jacoco:report
@@ -409,6 +411,35 @@ mvn jacoco:report
 # View coverage report
 # Open: target/site/jacoco/index.html
 ```
+
+**Test Types:**
+- **Unit Tests** - Service layer, mappers, utilities (JUnit 5, Mockito)
+- **Integration Tests** - REST controllers with MockMvc
+- **E2E Tests** - Complete user scenarios across all system components
+
+**E2E Test Coverage:**
+- Complete rental lifecycle (request → confirm → pickup → return)
+- Cancellation and refund flows (REQUESTED, CONFIRMED, IN_USE states)
+- Dynamic pricing integration (all 5 strategies combined)
+- Currency conversion with fallback rates
+- Payment gateway operations (authorize, capture, refund)
+- Email event publishing verification
+- Role-based authorization (USER vs ADMIN)
+- Date overlap prevention and availability
+- Error handling and edge cases
+- Concurrent operations and idempotency
+
+**Test Infrastructure:**
+- `E2ETestBase` - Base class with MockMvc, JWT token generation
+- `TestDataBuilder` - Utility for creating test data
+- `TestEventCaptor` - Captures domain events for verification
+- `TestFixtures` - Common test constants
+
+**Test Configuration:**
+- H2 in-memory database (isolated per test)
+- MockEmailSender (logs only, no actual sending)
+- StubPaymentGateway (no Stripe API key required)
+- Mocked scheduler (no scheduled tasks during tests)
 
 **Current Coverage:** ~70-90% across controllers and services
 
