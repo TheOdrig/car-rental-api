@@ -19,6 +19,7 @@ This project was developed as a learning exercise to solidify Spring Boot knowle
 ### Core Functionality
 - **User Management** - Registration, authentication with JWT, OAuth2 social login (Google, GitHub)
 - **Car Catalog** - Browse available vehicles with filtering and pagination
+- **Availability Calendar** - Date-based availability search, monthly calendar view, similar car recommendations
 - **Rental Process** - Request → Confirm → Pickup → Return workflow
 - **Dynamic Pricing** - Intelligent pricing with 5 strategies (season, early booking, duration, weekend, demand)
 - **Payment Processing** - Stripe integration with secure checkout, webhook handling, and reconciliation
@@ -210,6 +211,56 @@ POST   /api/cars/{id}/maintenance   # Mark as maintenance (admin)
 GET    /api/cars/search             # Advanced search
 GET    /api/cars/statistics         # Car statistics (admin)
 GET    /api/cars/brand/{brand}      # Filter by brand
+```
+
+### Availability & Smart Search
+
+```http
+POST   /api/cars/availability/search           # Search available cars by date range
+GET    /api/cars/{id}/availability/calendar    # Get monthly availability calendar
+GET    /api/cars/{id}/similar                  # Get similar car recommendations
+```
+
+**Availability Search:**
+- **Date-based filtering** - Find cars available for specific rental period
+- **Smart filtering** - Combine date availability with brand, model, price, body type, seats
+- **Dynamic pricing** - Real-time price calculation for selected dates
+- **Currency conversion** - View prices in preferred currency (TRY, USD, EUR, GBP, JPY)
+- **Pagination** - Efficient result browsing (default 20, max 100 per page)
+
+**Calendar View:**
+- **Monthly availability** - Day-by-day availability status for up to 3 months ahead
+- **Rental tracking** - See which days are booked vs available
+- **Blocking status** - Automatically marks cars in maintenance/damaged as unavailable
+
+**Similar Cars:**
+- **Smart recommendations** - Up to 5 similar cars when preferred car is unavailable
+- **Similarity scoring** - Body type match (+50), brand match (+30), price match (+20)
+- **Availability filtering** - Only shows cars available for selected dates
+- **Price comparison** - Compare prices across similar vehicles
+
+**Example Requests:**
+
+```bash
+# Search available cars for date range
+curl -X POST http://localhost:8082/api/cars/availability/search \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startDate": "2024-07-15",
+    "endDate": "2024-07-22",
+    "bodyType": "SUV",
+    "minPrice": 100,
+    "maxPrice": 300,
+    "targetCurrency": "USD",
+    "page": 0,
+    "size": 20
+  }'
+
+# Get monthly availability calendar
+curl -X GET "http://localhost:8082/api/cars/1/availability/calendar?month=2024-07"
+
+# Get similar car recommendations
+curl -X GET "http://localhost:8082/api/cars/1/similar?startDate=2024-07-15&endDate=2024-07-22&limit=5"
 ```
 
 ### Rental Operations
@@ -420,6 +471,8 @@ mvn jacoco:report
 **E2E Test Coverage:**
 - Complete rental lifecycle (request → confirm → pickup → return)
 - Cancellation and refund flows (REQUESTED, CONFIRMED, IN_USE states)
+- Availability search and calendar generation
+- Similar car recommendations with similarity scoring
 - Dynamic pricing integration (all 5 strategies combined)
 - Currency conversion with fallback rates
 - Payment gateway operations (authorize, capture, refund)
@@ -543,11 +596,11 @@ Through this project, I gained practical experience with:
 
 - **Spring Boot Architecture** - Understanding auto-configuration, starters, and conventions
 - **Spring Security** - Implementing JWT authentication from scratch
-- **Design Patterns** - Strategy pattern for dynamic pricing, event-driven architecture, dependency injection
+- **Design Patterns** - Strategy pattern for dynamic pricing, event-driven architecture, dependency injection, service composition
 - **Event-Driven Systems** - Spring Events for decoupled communication between components
 - **Async Processing** - Non-blocking operations with thread pools and @Async
 - **Retry Logic** - Implementing resilience with Spring Retry and exponential backoff
-- **JPA/Hibernate** - Entity relationships, query optimization, N+1 problem
+- **JPA/Hibernate** - Entity relationships, query optimization, N+1 problem, complex queries with NOT EXISTS subqueries
 - **RESTful Design** - Proper HTTP methods, status codes, and API versioning
 - **Database Migrations** - Managing schema changes with Flyway
 - **Template Engines** - Thymeleaf for dynamic HTML email generation
@@ -563,6 +616,7 @@ Through this project, I gained practical experience with:
 - Core rental functionality
 - JWT authentication
 - OAuth2 social login (Google, GitHub)
+- Availability calendar & smart search (date-based filtering, similar car recommendations)
 - Dynamic pricing engine with 5 strategies
 - Stripe payment gateway integration
 - Real-time currency conversion (TRY, USD, EUR, GBP, JPY)
