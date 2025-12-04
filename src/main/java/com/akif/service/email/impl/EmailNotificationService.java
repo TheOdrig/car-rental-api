@@ -204,4 +204,148 @@ public class EmailNotificationService implements IEmailNotificationService {
         log.error("Cancellation confirmation email failed after all retries. RentalId: {}, Recipient: {}, Error: {}, SMTP Code: {}", 
             event.getRentalId(), event.getCustomerEmail(), e.getMessage(), e.getSmtpErrorCode());
     }
+    
+    @Override
+    @Retryable(
+        retryFor = EmailSendException.class,
+        maxAttempts = 4,
+        backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
+    public void sendGracePeriodWarning(GracePeriodWarningEvent event) {
+        log.info("Queuing grace period warning email. RentalId: {}, Recipient: {}", 
+            event.getRentalId(), event.getCustomerEmail());
+        
+        String body = templateService.renderGracePeriodWarningEmail(event);
+        EmailMessage message = new EmailMessage(
+            event.getCustomerEmail(),
+            "⚠️ Grace Period Warning - Rental #" + event.getRentalId(),
+            body,
+            EmailType.RETURN_REMINDER,
+            event.getRentalId()
+        );
+        
+        try {
+            emailSender.send(message);
+            log.info("Grace period warning email sent successfully. RentalId: {}, To: {}, Timestamp: {}", 
+                event.getRentalId(), event.getCustomerEmail(), LocalDateTime.now());
+        } catch (EmailSendException e) {
+            log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}", 
+                event.getRentalId(), e.getMessage(), e.getSmtpErrorCode());
+            throw e;
+        }
+    }
+    
+    @Override
+    @Retryable(
+        retryFor = EmailSendException.class,
+        maxAttempts = 4,
+        backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
+    public void sendLateReturnNotification(LateReturnNotificationEvent event) {
+        log.info("Queuing late return notification email. RentalId: {}, Recipient: {}", 
+            event.getRentalId(), event.getCustomerEmail());
+        
+        String body = templateService.renderLateReturnNotificationEmail(event);
+        EmailMessage message = new EmailMessage(
+            event.getCustomerEmail(),
+            "🚨 Late Return - Penalty Applied - Rental #" + event.getRentalId(),
+            body,
+            EmailType.RETURN_REMINDER,
+            event.getRentalId()
+        );
+        
+        try {
+            emailSender.send(message);
+            log.info("Late return notification email sent successfully. RentalId: {}, To: {}, Timestamp: {}", 
+                event.getRentalId(), event.getCustomerEmail(), LocalDateTime.now());
+        } catch (EmailSendException e) {
+            log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}", 
+                event.getRentalId(), e.getMessage(), e.getSmtpErrorCode());
+            throw e;
+        }
+    }
+    
+    @Override
+    @Retryable(
+        retryFor = EmailSendException.class,
+        maxAttempts = 4,
+        backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
+    public void sendSeverelyLateNotification(SeverelyLateNotificationEvent event) {
+        log.info("Queuing severely late notification email. RentalId: {}, Recipient: {}", 
+            event.getRentalId(), event.getCustomerEmail());
+        
+        String body = templateService.renderSeverelyLateNotificationEmail(event);
+        EmailMessage message = new EmailMessage(
+            event.getCustomerEmail(),
+            "🚨 URGENT: Severely Late Return - Rental #" + event.getRentalId(),
+            body,
+            EmailType.RETURN_REMINDER,
+            event.getRentalId()
+        );
+        
+        try {
+            emailSender.send(message);
+            log.info("Severely late notification email sent successfully. RentalId: {}, To: {}, Timestamp: {}", 
+                event.getRentalId(), event.getCustomerEmail(), LocalDateTime.now());
+        } catch (EmailSendException e) {
+            log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}", 
+                event.getRentalId(), e.getMessage(), e.getSmtpErrorCode());
+            throw e;
+        }
+    }
+    
+    @Override
+    @Retryable(
+        retryFor = EmailSendException.class,
+        maxAttempts = 4,
+        backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
+    public void sendPenaltySummary(PenaltySummaryEvent event) {
+        log.info("Queuing penalty summary email. RentalId: {}, Recipient: {}", 
+            event.getRentalId(), event.getCustomerEmail());
+        
+        String body = templateService.renderPenaltySummaryEmail(event);
+        EmailMessage message = new EmailMessage(
+            event.getCustomerEmail(),
+            "📋 Late Return Penalty Summary - Rental #" + event.getRentalId(),
+            body,
+            EmailType.PAYMENT_RECEIPT,
+            event.getRentalId()
+        );
+        
+        try {
+            emailSender.send(message);
+            log.info("Penalty summary email sent successfully. RentalId: {}, To: {}, Timestamp: {}", 
+                event.getRentalId(), event.getCustomerEmail(), LocalDateTime.now());
+        } catch (EmailSendException e) {
+            log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}", 
+                event.getRentalId(), e.getMessage(), e.getSmtpErrorCode());
+            throw e;
+        }
+    }
+    
+    @Recover
+    public void recoverFromGracePeriodWarningFailure(EmailSendException e, GracePeriodWarningEvent event) {
+        log.error("Grace period warning email failed after all retries. RentalId: {}, Recipient: {}, Error: {}, SMTP Code: {}", 
+            event.getRentalId(), event.getCustomerEmail(), e.getMessage(), e.getSmtpErrorCode());
+    }
+    
+    @Recover
+    public void recoverFromLateReturnNotificationFailure(EmailSendException e, LateReturnNotificationEvent event) {
+        log.error("Late return notification email failed after all retries. RentalId: {}, Recipient: {}, Error: {}, SMTP Code: {}", 
+            event.getRentalId(), event.getCustomerEmail(), e.getMessage(), e.getSmtpErrorCode());
+    }
+    
+    @Recover
+    public void recoverFromSeverelyLateNotificationFailure(EmailSendException e, SeverelyLateNotificationEvent event) {
+        log.error("Severely late notification email failed after all retries. RentalId: {}, Recipient: {}, Error: {}, SMTP Code: {}", 
+            event.getRentalId(), event.getCustomerEmail(), e.getMessage(), e.getSmtpErrorCode());
+    }
+    
+    @Recover
+    public void recoverFromPenaltySummaryFailure(EmailSendException e, PenaltySummaryEvent event) {
+        log.error("Penalty summary email failed after all retries. RentalId: {}, Recipient: {}, Error: {}, SMTP Code: {}", 
+            event.getRentalId(), event.getCustomerEmail(), e.getMessage(), e.getSmtpErrorCode());
+    }
 }

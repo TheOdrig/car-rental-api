@@ -54,4 +54,36 @@ public class EmailEventListener {
             event.getRentalId(), event.getCustomerEmail(), event.isRefundProcessed());
         emailNotificationService.sendCancellationConfirmation(event);
     }
+    
+    @Async("emailTaskExecutor")
+    @EventListener
+    public void handleGracePeriodWarning(GracePeriodWarningEvent event) {
+        log.debug("Received GracePeriodWarningEvent. RentalId: {}, CustomerEmail: {}, RemainingMinutes: {}", 
+            event.getRentalId(), event.getCustomerEmail(), event.getRemainingGraceMinutes());
+        emailNotificationService.sendGracePeriodWarning(event);
+    }
+    
+    @Async("emailTaskExecutor")
+    @EventListener
+    public void handleLateReturnNotification(LateReturnNotificationEvent event) {
+        log.debug("Received LateReturnNotificationEvent. RentalId: {}, CustomerEmail: {}, LateHours: {}, Penalty: {}", 
+            event.getRentalId(), event.getCustomerEmail(), event.getLateHours(), event.getCurrentPenaltyAmount());
+        emailNotificationService.sendLateReturnNotification(event);
+    }
+    
+    @Async("emailTaskExecutor")
+    @EventListener
+    public void handleSeverelyLateNotification(SeverelyLateNotificationEvent event) {
+        log.debug("Received SeverelyLateNotificationEvent. RentalId: {}, CustomerEmail: {}, LateDays: {}, Penalty: {}", 
+            event.getRentalId(), event.getCustomerEmail(), event.getLateDays(), event.getCurrentPenaltyAmount());
+        emailNotificationService.sendSeverelyLateNotification(event);
+    }
+    
+    @Async("emailTaskExecutor")
+    @EventListener
+    public void handlePenaltySummary(PenaltySummaryEvent event) {
+        log.debug("Received PenaltySummaryEvent. RentalId: {}, CustomerEmail: {}, FinalPenalty: {}", 
+            event.getRentalId(), event.getCustomerEmail(), event.getFinalPenaltyAmount());
+        emailNotificationService.sendPenaltySummary(event);
+    }
 }
