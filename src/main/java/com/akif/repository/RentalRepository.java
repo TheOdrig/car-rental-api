@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -64,4 +65,75 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             @Param("statuses") List<RentalStatus> statuses);
+
+    @Query("SELECT r FROM Rental r " +
+            "WHERE r.status = com.akif.enums.RentalStatus.IN_USE " +
+            "AND r.endDate < :currentDate " +
+            "AND r.isDeleted = false")
+    Page<Rental> findOverdueRentals(@Param("currentDate") LocalDate currentDate,
+                                     Pageable pageable);
+
+    @Query("SELECT r FROM Rental r " +
+            "WHERE r.lateReturnStatus IN (:statuses) " +
+            "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
+            "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
+            "AND r.isDeleted = false")
+    Page<Rental> findLateReturns(@Param("statuses") List<com.akif.enums.LateReturnStatus> statuses,
+                                  @Param("startDate") LocalDate startDate,
+                                  @Param("endDate") LocalDate endDate,
+                                  Pageable pageable);
+
+    @Query("SELECT COUNT(r) FROM Rental r " +
+            "WHERE r.lateReturnStatus IN (:statuses) " +
+            "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
+            "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
+            "AND r.isDeleted = false")
+    long countLateReturns(@Param("statuses") List<com.akif.enums.LateReturnStatus> statuses,
+                          @Param("startDate") LocalDate startDate,
+                          @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COUNT(r) FROM Rental r " +
+            "WHERE r.lateReturnStatus = com.akif.enums.LateReturnStatus.SEVERELY_LATE " +
+            "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
+            "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
+            "AND r.isDeleted = false")
+    long countSeverelyLateReturns(@Param("startDate") LocalDate startDate,
+                                   @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COALESCE(SUM(r.penaltyAmount), 0) FROM Rental r " +
+            "WHERE r.lateReturnStatus IN (:statuses) " +
+            "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
+            "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
+            "AND r.isDeleted = false")
+    BigDecimal sumTotalPenaltyAmount(@Param("statuses") List<com.akif.enums.LateReturnStatus> statuses,
+                                     @Param("startDate") LocalDate startDate,
+                                     @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COALESCE(SUM(r.penaltyAmount), 0) FROM Rental r " +
+            "WHERE r.lateReturnStatus IN (:statuses) " +
+            "AND r.penaltyPaid = true " +
+            "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
+            "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
+            "AND r.isDeleted = false")
+    BigDecimal sumCollectedPenaltyAmount(@Param("statuses") List<com.akif.enums.LateReturnStatus> statuses,
+                                         @Param("startDate") LocalDate startDate,
+                                         @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COALESCE(AVG(r.lateHours), 0.0) FROM Rental r " +
+            "WHERE r.lateReturnStatus IN (:statuses) " +
+            "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
+            "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
+            "AND r.lateHours IS NOT NULL " +
+            "AND r.isDeleted = false")
+    Double averageLateHours(@Param("statuses") List<com.akif.enums.LateReturnStatus> statuses,
+                            @Param("startDate") LocalDate startDate,
+                            @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COUNT(r) FROM Rental r " +
+            "WHERE (:startDate IS NULL OR r.endDate >= :startDate) " +
+            "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
+            "AND r.status = com.akif.enums.RentalStatus.RETURNED " +
+            "AND r.isDeleted = false")
+    long countTotalReturns(@Param("startDate") LocalDate startDate,
+                           @Param("endDate") LocalDate endDate);
 }

@@ -24,8 +24,9 @@ This project was developed as a learning exercise to solidify Spring Boot knowle
 - **Dynamic Pricing** - Intelligent pricing with 5 strategies (season, early booking, duration, weekend, demand)
 - **Payment Processing** - Stripe integration with secure checkout, webhook handling, and reconciliation
 - **Email Notifications** - Event-driven automated emails (confirmation, receipt, reminders, cancellation)
+- **Late Return & Penalty** - Automated detection, grace period, smart penalty calculation, admin waiver system
 - **Role-Based Access** - Separate permissions for users and administrators
-- **Admin Operations** - Manage cars, rentals, and users via REST API
+- **Admin Operations** - Manage cars, rentals, users, penalties via REST API
 
 ### Technical Highlights
 - RESTful API design with proper HTTP methods and status codes
@@ -275,6 +276,48 @@ POST   /api/rentals/{id}/return       # Mark as returned (admin)
 GET    /api/rentals/admin             # All rentals (admin)
 ```
 
+### Late Return & Penalty Management
+
+```http
+GET    /api/admin/late-returns                    # Late return report (admin)
+GET    /api/admin/late-returns/statistics         # Late return statistics (admin)
+POST   /api/admin/rentals/{id}/penalty/waive      # Waive penalty (admin)
+GET    /api/admin/rentals/{id}/penalty/history    # Penalty history (admin)
+```
+
+**Late Return System:**
+- **Automated Detection** - Scheduled job runs every 15 minutes to detect overdue rentals
+- **Grace Period** - Configurable tolerance (default 1 hour, range 0-120 minutes)
+- **Smart Penalty Calculation:**
+  - 1-6 hours late: 10% per hour × daily rate
+  - 7-24 hours late: 150% × daily rate (flat)
+  - 1+ days late: 150% per day × daily rate
+  - Maximum cap: 5× daily rate
+- **Status Tracking** - ON_TIME → GRACE_PERIOD → LATE → SEVERELY_LATE (24+ hours)
+- **Automated Notifications** - 4 email types (grace period warning, late notification, severely late alert, penalty summary)
+- **Payment Integration** - Automatic penalty charge via Stripe, failed payment handling
+- **Admin Waiver** - Full or partial penalty waiver with mandatory reason, refund support
+- **Reporting** - Filterable reports, statistics (total late returns, penalty amounts, average late duration)
+
+**Configuration:**
+```properties
+# Grace period (minutes)
+penalty.grace-period-minutes=60
+
+# Penalty rates
+penalty.hourly-penalty-rate=0.10
+penalty.daily-penalty-rate=1.50
+penalty.penalty-cap-multiplier=5.0
+penalty.severely-late-threshold-hours=24
+```
+
+**Features:**
+- Event-driven architecture (4 domain events)
+- Pagination for large datasets
+- Error recovery and retry logic
+- Comprehensive audit trail
+- Currency consistency with original rental
+
 ### Currency Conversion
 
 ```http
@@ -476,6 +519,7 @@ mvn jacoco:report
 - Dynamic pricing integration (all 5 strategies combined)
 - Currency conversion with fallback rates
 - Payment gateway operations (authorize, capture, refund)
+- Late return & penalty flow (detection, calculation, payment, waiver)
 - Email event publishing verification
 - Role-based authorization (USER vs ADMIN)
 - Date overlap prevention and availability
@@ -546,8 +590,9 @@ src/
 - `user_roles` - Role assignments
 - `linked_accounts` - OAuth2 social account links
 - `cars` - Vehicle inventory
-- `rentals` - Rental transactions with reminder tracking (pickup_reminder_sent, return_reminder_sent)
+- `rentals` - Rental transactions with reminder tracking and late return fields (late_return_status, late_detected_at, penalty_amount)
 - `payments` - Payment records with Stripe integration
+- `penalty_waivers` - Penalty waiver records with audit trail
 - `webhook_events` - Idempotent webhook event processing
 
 **Relationships:**
@@ -621,6 +666,7 @@ Through this project, I gained practical experience with:
 - Stripe payment gateway integration
 - Real-time currency conversion (TRY, USD, EUR, GBP, JPY)
 - Email notification system (event-driven, async, with retry logic)
+- Late return & penalty system (automated detection, grace period, smart calculation, admin waiver)
 - Integration tests
 - API documentation
 - Docker support

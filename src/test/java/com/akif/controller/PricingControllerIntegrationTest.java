@@ -214,13 +214,13 @@ class PricingControllerIntegrationTest {
 
         @Test
         @WithMockUser
-        @DisplayName("Should return 500 for invalid date format")
-        void shouldReturn500ForInvalidDateFormat() throws Exception {
+        @DisplayName("Should return 400 for invalid date format")
+        void shouldReturn400ForInvalidDateFormat() throws Exception {
             mockMvc.perform(get("/api/pricing/preview")
                             .param("carId", testCar.getId().toString())
                             .param("startDate", "invalid-date")
                             .param("endDate", LocalDate.now().plusDays(15).toString()))
-                    .andExpect(status().isInternalServerError());
+                    .andExpect(status().isBadRequest());
         }
     }
 

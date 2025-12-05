@@ -95,4 +95,76 @@ public class EmailTemplateService implements IEmailTemplateService {
         
         return templateEngine.process("email/cancellation-confirmation", context);
     }
+    
+    @Override
+    public String renderGracePeriodWarningEmail(GracePeriodWarningEvent event) {
+        log.debug("Rendering grace period warning email for rental ID: {}", event.getRentalId());
+        
+        Context context = new Context();
+        context.setVariable("rentalId", event.getRentalId());
+        context.setVariable("carBrand", event.getCarBrand());
+        context.setVariable("carModel", event.getCarModel());
+        context.setVariable("licensePlate", event.getLicensePlate());
+        context.setVariable("scheduledReturnTime", event.getScheduledReturnTime());
+        context.setVariable("remainingGraceMinutes", event.getRemainingGraceMinutes());
+        
+        return templateEngine.process("email/grace-period-warning", context);
+    }
+    
+    @Override
+    public String renderLateReturnNotificationEmail(LateReturnNotificationEvent event) {
+        log.debug("Rendering late return notification email for rental ID: {}", event.getRentalId());
+        
+        Context context = new Context();
+        context.setVariable("rentalId", event.getRentalId());
+        context.setVariable("carBrand", event.getCarBrand());
+        context.setVariable("carModel", event.getCarModel());
+        context.setVariable("licensePlate", event.getLicensePlate());
+        context.setVariable("scheduledReturnTime", event.getScheduledReturnTime());
+        context.setVariable("lateHours", event.getLateHours());
+        context.setVariable("currentPenaltyAmount", event.getCurrentPenaltyAmount());
+        context.setVariable("currency", event.getCurrency().name());
+        
+        return templateEngine.process("email/late-return-notification", context);
+    }
+    
+    @Override
+    public String renderSeverelyLateNotificationEmail(SeverelyLateNotificationEvent event) {
+        log.debug("Rendering severely late notification email for rental ID: {}", event.getRentalId());
+        
+        Context context = new Context();
+        context.setVariable("rentalId", event.getRentalId());
+        context.setVariable("carBrand", event.getCarBrand());
+        context.setVariable("carModel", event.getCarModel());
+        context.setVariable("licensePlate", event.getLicensePlate());
+        context.setVariable("scheduledReturnTime", event.getScheduledReturnTime());
+        context.setVariable("lateHours", event.getLateHours());
+        context.setVariable("lateDays", event.getLateDays());
+        context.setVariable("currentPenaltyAmount", event.getCurrentPenaltyAmount());
+        context.setVariable("currency", event.getCurrency().name());
+        context.setVariable("escalationWarning", event.getEscalationWarning());
+        
+        return templateEngine.process("email/severely-late-notification", context);
+    }
+    
+    @Override
+    public String renderPenaltySummaryEmail(PenaltySummaryEvent event) {
+        log.debug("Rendering penalty summary email for rental ID: {}", event.getRentalId());
+        
+        Context context = new Context();
+        context.setVariable("rentalId", event.getRentalId());
+        context.setVariable("carBrand", event.getCarBrand());
+        context.setVariable("carModel", event.getCarModel());
+        context.setVariable("licensePlate", event.getLicensePlate());
+        context.setVariable("scheduledReturnTime", event.getScheduledReturnTime());
+        context.setVariable("actualReturnTime", event.getActualReturnTime());
+        context.setVariable("lateHours", event.getLateHours());
+        context.setVariable("lateDays", event.getLateDays());
+        context.setVariable("finalPenaltyAmount", event.getFinalPenaltyAmount());
+        context.setVariable("currency", event.getCurrency().name());
+        context.setVariable("penaltyBreakdown", event.getPenaltyBreakdown());
+        context.setVariable("cappedAtMax", event.isCappedAtMax());
+        
+        return templateEngine.process("email/penalty-summary", context);
+    }
 }
