@@ -13,4 +13,12 @@ public interface IEmailTemplateService {
     String renderReturnReminderEmail(ReturnReminderEvent event);
 
     String renderCancellationEmail(RentalCancelledEvent event);
+    
+    String renderGracePeriodWarningEmail(GracePeriodWarningEvent event);
+    
+    String renderLateReturnNotificationEmail(LateReturnNotificationEvent event);
+    
+    String renderSeverelyLateNotificationEmail(SeverelyLateNotificationEvent event);
+    
+    String renderPenaltySummaryEmail(PenaltySummaryEvent event);
 }

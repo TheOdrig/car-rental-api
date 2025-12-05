@@ -71,6 +71,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/pricing/strategies").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/pricing/calculate").authenticated()
 
+                .requestMatchers("/api/admin/late-returns/**").hasRole("ADMIN")
+                .requestMatchers("/api/admin/rentals/*/penalty/**").hasRole("ADMIN")
+
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -1,9 +1,11 @@
 package com.akif.service.impl;
 
+import com.akif.dto.penalty.PenaltyResult;
 import com.akif.dto.request.RentalRequestDto;
 import com.akif.dto.response.RentalResponseDto;
 import com.akif.enums.*;
 import com.akif.event.PaymentCapturedEvent;
+import com.akif.event.PenaltySummaryEvent;
 import com.akif.event.RentalCancelledEvent;
 import com.akif.event.RentalConfirmedEvent;
 import com.akif.exception.*;
@@ -54,6 +56,8 @@ public class RentalServiceImpl implements IRentalService {
     private final RentalMapper rentalMapper;
     private final IDynamicPricingService dynamicPricingService;
     private final ApplicationEventPublisher eventPublisher;
+    private final com.akif.service.penalty.IPenaltyCalculationService penaltyCalculationService;
+    private final com.akif.service.penalty.IPenaltyPaymentService penaltyPaymentService;
 
     @Override
     @Transactional
@@ -286,6 +290,16 @@ public class RentalServiceImpl implements IRentalService {
             );
         }
 
+        LocalDateTime actualReturnTime = LocalDateTime.now();
+        rental.setActualReturnTime(actualReturnTime);
+
+        if (rental.getLateReturnStatus() != null && 
+            rental.getLateReturnStatus() != LateReturnStatus.ON_TIME) {
+            
+            log.info("Processing late return penalty for rental: {}", rentalId);
+            processPenaltyForLateReturn(rental, actualReturnTime);
+        }
+
         rental.updateStatus(RentalStatus.RETURNED);
         rental.setReturnNotes(returnNotes);
 
@@ -512,5 +526,72 @@ public class RentalServiceImpl implements IRentalService {
     private void logRentalOperationSuccess(String operation, RentalResponseDto result, String extraInfo) {
         log.info("Successfully {} rental: ID={}, Status={}, {}", 
                 operation, result.getId(), result.getStatus(), extraInfo);
+    }
+
+    private void processPenaltyForLateReturn(Rental rental, LocalDateTime actualReturnTime) {
+        log.debug("Processing penalty for late rental: {}", rental.getId());
+
+        try {
+            PenaltyResult penaltyResult = penaltyCalculationService.calculatePenalty(
+                    rental, actualReturnTime);
+
+            log.info("Calculated penalty for rental {}: Amount={} {}, Late Hours={}, Late Days={}", 
+                    rental.getId(), 
+                    penaltyResult.penaltyAmount(), 
+                    rental.getCurrency(),
+                    penaltyResult.lateHours(),
+                    penaltyResult.lateDays());
+
+            rental.setPenaltyAmount(penaltyResult.penaltyAmount());
+            rental.setLateHours(penaltyResult.lateHours());
+
+            Payment penaltyPayment = penaltyPaymentService.createPenaltyPayment(
+                    rental, penaltyResult.penaltyAmount());
+
+            PaymentResult chargeResult = penaltyPaymentService.chargePenalty(penaltyPayment);
+
+            if (chargeResult.success()) {
+                rental.setPenaltyPaid(true);
+                log.info("Successfully charged penalty for rental: {}", rental.getId());
+            } else {
+                rental.setPenaltyPaid(false);
+                penaltyPaymentService.handleFailedPenaltyPayment(penaltyPayment);
+                log.warn("Failed to charge penalty for rental: {}, Reason: {}", 
+                        rental.getId(), chargeResult.message());
+            }
+
+            publishPenaltySummaryEvent(rental, penaltyResult, actualReturnTime);
+
+        } catch (Exception e) {
+            log.error("Error processing penalty for rental {}: {}", 
+                     rental.getId(), e.getMessage(), e);
+            rental.setPenaltyPaid(false);
+        }
+    }
+
+    private void publishPenaltySummaryEvent(Rental rental, PenaltyResult penaltyResult, 
+                                           LocalDateTime actualReturnTime) {
+        LocalDateTime scheduledReturnTime = rental.getEndDate().atTime(23, 59, 59);
+        
+        PenaltySummaryEvent event = new PenaltySummaryEvent(
+                this,
+                rental.getId(),
+                rental.getUser().getEmail(),
+                LocalDateTime.now(),
+                rental.getCar().getBrand(),
+                rental.getCar().getModel(),
+                rental.getCar().getLicensePlate(),
+                scheduledReturnTime,
+                actualReturnTime,
+                penaltyResult.lateHours(),
+                penaltyResult.lateDays(),
+                penaltyResult.penaltyAmount(),
+                rental.getCurrency(),
+                penaltyResult.breakdown(),
+                penaltyResult.cappedAtMax()
+        );
+
+        eventPublisher.publishEvent(event);
+        log.info("Published PenaltySummaryEvent for rental: {}", rental.getId());
     }
 }

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Late Return Notification</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #F44336; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+        .content { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 5px 5px; }
+        .detail-row { margin: 10px 0; padding: 10px; background-color: white; border-left: 3px solid #F44336; }
+        .label { font-weight: bold; color: #555; }
+        .value { color: #333; }
+        .penalty-box { background-color: #FFEBEE; border: 2px solid #F44336; padding: 15px; margin: 20px 0; border-radius: 5px; text-align: center; }
+        .penalty-amount { font-size: 24px; font-weight: bold; color: #D32F2F; }
+        .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #777; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚨 Late Return - Penalty Applied</h1>
+    </div>
+    <div class="content">
+        <p>Dear Customer,</p>
+        <p>Your rental is now overdue. Late return penalties are being applied.</p>
+        
+        <div class="penalty-box">
+            <p style="margin: 0; font-size: 14px; color: #666;">Current Penalty Amount</p>
+            <p class="penalty-amount" th:text="|${currentPenaltyAmount} ${currency}|">150.00 USD</p>
+            <p style="margin: 0; font-size: 12px; color: #999;">This amount will increase the longer the vehicle remains unreturned</p>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Rental ID:</span>
+            <span class="value" th:text="${rentalId}">12345</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Vehicle:</span>
+            <span class="value" th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">License Plate:</span>
+            <span class="value" th:text="${licensePlate}">34ABC123</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Scheduled Return Time:</span>
+            <span class="value" th:text="${#temporals.format(scheduledReturnTime, 'dd MMM yyyy HH:mm')}">15 Jan 2024 18:00</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Hours Late:</span>
+            <span class="value" th:text="${lateHours}">5</span>
+        </div>
+        
+        <p style="margin-top: 20px; color: #D32F2F; font-weight: bold;">
+            Please return the vehicle immediately to minimize additional charges.
+        </p>
+        
+        <p style="margin-top: 15px; font-size: 14px;">
+            The penalty will be automatically charged to your payment method on file when you return the vehicle.
+        </p>
+    </div>
+    <div class="footer">
+        <p>For immediate assistance, please contact our support team.</p>
+    </div>
+</body>
+</html>

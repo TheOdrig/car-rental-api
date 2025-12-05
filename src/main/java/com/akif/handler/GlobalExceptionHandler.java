@@ -294,6 +294,30 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
     }
 
+    @ExceptionHandler(PenaltyWaiverException.class)
+    public ResponseEntity<ErrorResponseDto> handlePenaltyWaiverException(PenaltyWaiverException ex, WebRequest request) {
+        log.error("Penalty waiver error: {}", ex.getMessage());
+        return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
+    }
+
+    @ExceptionHandler(LateReturnException.class)
+    public ResponseEntity<ErrorResponseDto> handleLateReturnException(LateReturnException ex, WebRequest request) {
+        log.error("Late return error: {}", ex.getMessage());
+        return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
+    }
+
+    @ExceptionHandler(PenaltyCalculationException.class)
+    public ResponseEntity<ErrorResponseDto> handlePenaltyCalculationException(PenaltyCalculationException ex, WebRequest request) {
+        log.error("Penalty calculation error: {}", ex.getMessage());
+        return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
+    }
+
+    @ExceptionHandler(InvalidPenaltyConfigException.class)
+    public ResponseEntity<ErrorResponseDto> handleInvalidPenaltyConfigException(InvalidPenaltyConfigException ex, WebRequest request) {
+        log.error("Invalid penalty configuration: {}", ex.getMessage());
+        return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
+    }
+
 
     private ResponseEntity<ErrorResponseDto> buildErrorResponse(String errorCode, String message, 
                                                              HttpStatus status, WebRequest request) {
