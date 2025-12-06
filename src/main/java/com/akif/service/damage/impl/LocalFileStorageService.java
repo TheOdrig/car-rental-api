@@ -3,6 +3,7 @@ package com.akif.service.damage.impl;
 import com.akif.exception.FileUploadException;
 import com.akif.service.damage.IFileUploadService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,12 +21,16 @@ import java.util.UUID;
 @Slf4j
 public class LocalFileStorageService implements IFileUploadService {
 
-    private static final String BASE_UPLOAD_DIR = "uploads";
+    private final String baseUploadDir;
+
+    public LocalFileStorageService(@Value("${file.upload.base-dir:uploads}") String baseUploadDir) {
+        this.baseUploadDir = baseUploadDir;
+    }
 
     @Override
     public String uploadFile(MultipartFile file, String directory) {
         try {
-            Path uploadPath = Paths.get(BASE_UPLOAD_DIR, directory);
+            Path uploadPath = Paths.get(baseUploadDir, directory);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
