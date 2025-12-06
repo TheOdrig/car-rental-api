@@ -95,7 +95,42 @@ public class DamageAssessmentServiceImpl implements IDamageAssessmentService {
             throw DamageAssessmentException.alreadyCharged();
         }
 
-        return assessDamage(damageId, request, username);
+        User user = userRepository.findByUsernameAndIsDeletedFalse(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+
+        DamageSeverity severity = request.severity() != null
+                ? request.severity()
+                : determineSeverity(request.repairCostEstimate());
+
+        boolean hasInsurance = Boolean.TRUE.equals(request.insuranceCoverage());
+        BigDecimal deductible = request.insuranceDeductible() != null
+                ? request.insuranceDeductible()
+                : damageConfig.getDefaultInsuranceDeductible();
+
+        BigDecimal customerLiability = calculateCustomerLiability(
+                request.repairCostEstimate(),
+                hasInsurance,
+                deductible
+        );
+
+        damageReport.setSeverity(severity);
+        damageReport.setCategory(request.category());
+        damageReport.setRepairCostEstimate(request.repairCostEstimate());
+        damageReport.setCustomerLiability(customerLiability);
+        damageReport.setInsuranceCoverage(hasInsurance);
+        damageReport.setInsuranceDeductible(deductible);
+        damageReport.setAssessmentNotes(request.assessmentNotes());
+        damageReport.setAssessedBy(user.getId());
+        damageReport.setAssessedAt(LocalDateTime.now());
+
+        damageReport = damageReportRepository.save(damageReport);
+
+        String carStatusUpdated = updateCarStatusBasedOnSeverity(damageReport.getCar(), severity);
+
+        log.info("Assessment updated: id={}, severity={}, liability={}",
+                damageId, severity, customerLiability);
+
+        return buildResponseDto(damageReport, carStatusUpdated);
     }
 
     @Override
