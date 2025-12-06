@@ -28,6 +28,8 @@ public interface DamageReportRepository extends JpaRepository<DamageReport, Long
 
     Page<DamageReport> findByStatusAndIsDeletedFalse(DamageStatus status, Pageable pageable);
 
+    Optional<DamageReport> findByPaymentId(Long paymentId);
+
     @Query("SELECT d FROM DamageReport d WHERE " +
             "d.isDeleted = false " +
             "AND (:startDate IS NULL OR CAST(d.reportedAt AS date) >= :startDate) " +
