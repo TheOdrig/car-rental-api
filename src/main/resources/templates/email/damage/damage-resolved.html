@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispute Resolved</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .detail-row {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: white;
+            border-left: 3px solid #4CAF50;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .value {
+            color: #333;
+        }
+
+        .amount {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .refund {
+            color: #4CAF50;
+        }
+
+        .charge {
+            color: #f44336;
+        }
+
+        .footer {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+
+        .resolution-box {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            border-left: 4px solid #4CAF50;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>✅ Dispute Resolved</h1>
+    </div>
+    <div class="content">
+        <p>Dear Customer,</p>
+        <p>Your dispute has been reviewed and resolved. Please see the outcome below:</p>
+
+        <div class="detail-row">
+            <span class="label">Rental ID:</span>
+            <span class="value" th:text="${rentalId}">12345</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="label">Vehicle:</span>
+            <span class="value" th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="label">Original Charge:</span>
+            <span class="value" th:text="|${originalCharge} ${currency}|">250.00 TRY</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="label">Adjusted Charge:</span>
+            <span class="amount charge" th:text="|${adjustedCharge} ${currency}|">100.00 TRY</span>
+        </div>
+
+        <div th:if="${refundAmount != null and refundAmount > 0}" class="detail-row">
+            <span class="label">Refund Amount:</span>
+            <span class="amount refund" th:text="|${refundAmount} ${currency}|">150.00 TRY</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="label">Resolution Notes:</span>
+            <span class="value" th:text="${resolutionNotes}">After review, damage was partially pre-existing</span>
+        </div>
+
+        <div class="resolution-box">
+            <p th:if="${refundAmount != null and refundAmount > 0}">
+                ✓ A refund of <strong th:text="|${refundAmount} ${currency}|">150.00 TRY</strong> has been initiated to
+                your original payment method.
+            </p>
+            <p th:if="${refundAmount == null or refundAmount == 0}">
+                ✓ After careful review, the original charge has been maintained.
+            </p>
+        </div>
+    </div>
+    <div class="footer">
+        <p>Refunds typically appear within 5-10 business days.</p>
+        <p>Thank you for your patience during the review process.</p>
+    </div>
+</body>
+
+</html>

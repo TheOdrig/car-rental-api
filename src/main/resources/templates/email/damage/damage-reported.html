@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Damage Report Received</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #ff9800; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+        .content { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 5px 5px; }
+        .detail-row { margin: 10px 0; padding: 10px; background-color: white; border-left: 3px solid #ff9800; }
+        .label { font-weight: bold; color: #555; }
+        .value { color: #333; }
+        .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #777; text-align: center; }
+        .warning { background-color: #fff3e0; padding: 15px; border-radius: 5px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚠️ Damage Report Received</h1>
+    </div>
+    <div class="content">
+        <p>Dear Customer,</p>
+        <p>We have received a damage report for your rental. Our team will assess the damage and notify you of the outcome.</p>
+        
+        <div class="detail-row">
+            <span class="label">Rental ID:</span>
+            <span class="value" th:text="${rentalId}">12345</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Vehicle:</span>
+            <span class="value" th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">License Plate:</span>
+            <span class="value" th:text="${licensePlate}">34ABC123</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Report Date:</span>
+            <span class="value" th:text="${reportDate}">15 Jan 2024</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="label">Description:</span>
+            <span class="value" th:text="${description}">Scratch on driver side door</span>
+        </div>
+        
+        <div class="warning">
+            <p><strong>What happens next?</strong></p>
+            <ul>
+                <li>Our team will inspect the damage and assess repair costs</li>
+                <li>You will receive an assessment notification within 24-48 hours</li>
+                <li>If charges apply, you can dispute them within 7 days</li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer">
+        <p>If you believe this report was made in error, please contact our support team immediately.</p>
+        <p>Thank you for your understanding.</p>
+    </div>
+</body>
+</html>

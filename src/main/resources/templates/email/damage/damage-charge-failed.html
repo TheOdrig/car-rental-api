@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Failed</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: #f44336;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .detail-row {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: white;
+            border-left: 3px solid #f44336;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .value {
+            color: #333;
+        }
+
+        .amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #f44336;
+        }
+
+        .footer {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+
+        .warning-box {
+            background-color: #ffebee;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            border-left: 4px solid #f44336;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>❌ Payment Failed</h1>
+    </div>
+    <div class="content">
+        <p>Dear Customer,</p>
+        <p>We were unable to process the damage charge. Please update your payment information and try again.</p>
+
+        <div class="detail-row">
+            <span class="label">Rental ID:</span>
+            <span class="value" th:text="${rentalId}">12345</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="label">Vehicle:</span>
+            <span class="value" th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="label">Amount Due:</span>
+            <span class="amount" th:text="|${amountDue} ${currency}|">250.00 TRY</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="label">Failure Reason:</span>
+            <span class="value" th:text="${failureReason}">Insufficient funds</span>
+        </div>
+
+        <div class="warning-box">
+            <p><strong>⚠️ Action Required</strong></p>
+            <ul>
+                <li>Please update your payment method</li>
+                <li>Payment will be re-attempted in 24 hours</li>
+                <li>Contact support if you need assistance</li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer">
+        <p>Failure to resolve this may result in additional penalties.</p>
+        <p>Please contact our support team if you have questions.</p>
+    </div>
+</body>
+
+</html>

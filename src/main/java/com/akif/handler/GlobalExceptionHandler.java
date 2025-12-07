@@ -229,6 +229,12 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ERROR_CODE_VALIDATION_FAILED, "Validation failed", HttpStatus.BAD_REQUEST, request, fieldErrors);
     }
 
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity<ErrorResponseDto> handleBaseException(BaseException ex, WebRequest request) {
+        log.error("{}: {}", ex.getErrorCode(), ex.getMessage());
+        return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGenericException(Exception ex, WebRequest request) {
         log.error("Unexpected error occurred: {}", ex.getMessage(), ex);

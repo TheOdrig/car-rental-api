@@ -25,8 +25,9 @@ This project was developed as a learning exercise to solidify Spring Boot knowle
 - **Payment Processing** - Stripe integration with secure checkout, webhook handling, and reconciliation
 - **Email Notifications** - Event-driven automated emails (confirmation, receipt, reminders, cancellation)
 - **Late Return & Penalty** - Automated detection, grace period, smart penalty calculation, admin waiver system
+- **Damage Management** - Complete damage lifecycle with photo evidence, assessment, charging, disputes, and resolution
 - **Role-Based Access** - Separate permissions for users and administrators
-- **Admin Operations** - Manage cars, rentals, users, penalties via REST API
+- **Admin Operations** - Manage cars, rentals, users, penalties, damage reports via REST API
 
 ### Technical Highlights
 - RESTful API design with proper HTTP methods and status codes
@@ -39,6 +40,8 @@ This project was developed as a learning exercise to solidify Spring Boot knowle
 - Event-driven email notifications with async processing
 - Automatic retry logic with exponential backoff
 - Scheduled reminder system with duplicate prevention
+- Damage management with state machine workflow
+- Photo evidence upload with local/cloud storage support
 - Database migrations with Flyway
 - Input validation and error handling
 - API documentation with Swagger/OpenAPI
@@ -318,6 +321,49 @@ penalty.severely-late-threshold-hours=24
 - Comprehensive audit trail
 - Currency consistency with original rental
 
+### Damage Management
+
+```http
+POST   /api/admin/damages                    # Create damage report (admin)
+GET    /api/admin/damages/{id}               # Get damage report details (admin)
+POST   /api/admin/damages/{id}/photos        # Upload photo evidence (admin)
+POST   /api/admin/damages/{id}/assess        # Assess damage (admin)
+POST   /api/damages/{id}/dispute             # Create dispute (rental owner)
+POST   /api/admin/damages/{id}/resolve       # Resolve dispute (admin)
+GET    /api/damages/me                       # Customer's damage history
+GET    /api/admin/damages/vehicle/{carId}    # Vehicle damage history (admin)
+GET    /api/admin/damages/search             # Search damages (admin)
+GET    /api/admin/damages/statistics         # Damage statistics (admin)
+```
+
+**Damage System:**
+- **Workflow** - REPORTED → ASSESSED → CHARGED → DISPUTED → RESOLVED
+- **Severity Classification** - MINOR (<$500), MODERATE ($500-$2000), MAJOR (>$2000), TOTAL_LOSS
+- **Photo Evidence** - Required for assessment, max 10 photos per report, 10MB limit
+- **Liability Calculation** - Without insurance: full cost, with insurance: deductible only
+- **Dispute Process** - Rental owner can dispute charges, admin resolves with adjustment
+- **Auto Car Status** - MAJOR damage automatically sets car to MAINTENANCE
+- **Event Notifications** - 5 email types (reported, assessed, charged, disputed, resolved)
+
+**Configuration:**
+```properties
+# Damage thresholds
+damage.threshold.minor=500.00
+damage.threshold.moderate=2000.00
+damage.threshold.major=5000.00
+
+# Photo limits
+damage.photo.max-count=10
+damage.photo.max-size-mb=10
+```
+
+**Features:**
+- State machine workflow management
+- Event-driven notifications (5 domain events)
+- Insurance coverage support with deductible
+- Vehicle-level damage history tracking
+- Admin dispute resolution with refunds
+
 ### Currency Conversion
 
 ```http
@@ -520,6 +566,9 @@ mvn jacoco:report
 - Currency conversion with fallback rates
 - Payment gateway operations (authorize, capture, refund)
 - Late return & penalty flow (detection, calculation, payment, waiver)
+- **Damage management lifecycle** (report → photos → assess → charge → dispute → resolve)
+- **Damage authorization** (admin-only operations, rental owner disputes)
+- **Damage history tracking** (vehicle, customer, rental)
 - Email event publishing verification
 - Role-based authorization (USER vs ADMIN)
 - Date overlap prevention and availability
@@ -594,12 +643,17 @@ src/
 - `payments` - Payment records with Stripe integration
 - `penalty_waivers` - Penalty waiver records with audit trail
 - `webhook_events` - Idempotent webhook event processing
+- `damage_reports` - Damage reports with assessment, dispute, and resolution tracking
+- `damage_photos` - Photo evidence for damage reports
 
 **Relationships:**
 - User → Rentals (one-to-many)
 - User → LinkedAccounts (one-to-many)
 - Car → Rentals (one-to-many)
+- Car → DamageReports (one-to-many)
 - Rental → Payments (one-to-many)
+- Rental → DamageReports (one-to-many)
+- DamageReport → DamagePhotos (one-to-many)
 - User → Roles (one-to-many)
 
 ## 🐳 Docker Support
@@ -667,6 +721,7 @@ Through this project, I gained practical experience with:
 - Real-time currency conversion (TRY, USD, EUR, GBP, JPY)
 - Email notification system (event-driven, async, with retry logic)
 - Late return & penalty system (automated detection, grace period, smart calculation, admin waiver)
+- Damage management system (reporting, photo evidence, assessment, disputes, resolution)
 - Integration tests
 - API documentation
 - Docker support

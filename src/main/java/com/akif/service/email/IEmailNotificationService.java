@@ -21,4 +21,16 @@ public interface IEmailNotificationService {
     void sendSeverelyLateNotification(SeverelyLateNotificationEvent event);
     
     void sendPenaltySummary(PenaltySummaryEvent event);
+    
+
+    void sendDamageReportedNotification(DamageReportedEvent event);
+    
+    void sendDamageAssessedNotification(DamageAssessedEvent event);
+    
+    void sendDamageChargedNotification(DamageChargedEvent event);
+    
+    void sendDamageDisputedNotification(DamageDisputedEvent event);
+    
+    void sendDamageResolvedNotification(DamageResolvedEvent event);
 }
+

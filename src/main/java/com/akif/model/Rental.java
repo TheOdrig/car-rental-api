@@ -92,6 +92,13 @@ public class Rental extends BaseEntity {
     @Builder.Default
     private Boolean penaltyPaid = false;
 
+    @Column(name = "has_damage_reports")
+    @Builder.Default
+    private Boolean hasDamageReports = false;
+
+    @Column(name = "damage_reports_count")
+    @Builder.Default
+    private Integer damageReportsCount = 0;
 
     public void updateStatus(RentalStatus newStatus) {
         this.status = newStatus;

@@ -86,4 +86,47 @@ public class EmailEventListener {
             event.getRentalId(), event.getCustomerEmail(), event.getFinalPenaltyAmount());
         emailNotificationService.sendPenaltySummary(event);
     }
+
+    
+    @Async("emailTaskExecutor")
+    @EventListener
+    public void handleDamageReported(DamageReportedEvent event) {
+        log.debug("Received DamageReportedEvent. DamageId: {}, RentalId: {}", 
+            event.getDamageReport().getId(), event.getDamageReport().getRental().getId());
+        emailNotificationService.sendDamageReportedNotification(event);
+    }
+    
+    @Async("emailTaskExecutor")
+    @EventListener
+    public void handleDamageAssessed(DamageAssessedEvent event) {
+        log.debug("Received DamageAssessedEvent. DamageId: {}, Severity: {}, Liability: {}", 
+            event.getDamageReport().getId(), event.getDamageReport().getSeverity(), 
+            event.getDamageReport().getCustomerLiability());
+        emailNotificationService.sendDamageAssessedNotification(event);
+    }
+    
+    @Async("emailTaskExecutor")
+    @EventListener
+    public void handleDamageCharged(DamageChargedEvent event) {
+        log.debug("Received DamageChargedEvent. DamageId: {}, PaymentId: {}", 
+            event.getDamageReport().getId(), event.getPayment().getId());
+        emailNotificationService.sendDamageChargedNotification(event);
+    }
+    
+    @Async("emailTaskExecutor")
+    @EventListener
+    public void handleDamageDisputed(DamageDisputedEvent event) {
+        log.debug("Received DamageDisputedEvent. DamageId: {}, Reason: {}", 
+            event.getDamageReport().getId(), event.getDamageReport().getDisputeReason());
+        emailNotificationService.sendDamageDisputedNotification(event);
+    }
+    
+    @Async("emailTaskExecutor")
+    @EventListener
+    public void handleDamageResolved(DamageResolvedEvent event) {
+        log.debug("Received DamageResolvedEvent. DamageId: {}, RefundAmount: {}", 
+            event.getDamageReport().getId(), event.getRefundAmount());
+        emailNotificationService.sendDamageResolvedNotification(event);
+    }
 }
+

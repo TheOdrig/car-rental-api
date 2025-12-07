@@ -21,4 +21,16 @@ public interface IEmailTemplateService {
     String renderSeverelyLateNotificationEmail(SeverelyLateNotificationEvent event);
     
     String renderPenaltySummaryEmail(PenaltySummaryEvent event);
+    
+
+    String renderDamageReportedEmail(DamageReportedEvent event);
+    
+    String renderDamageAssessedEmail(DamageAssessedEvent event);
+    
+    String renderDamageChargedEmail(DamageChargedEvent event);
+    
+    String renderDamageDisputedEmail(DamageDisputedEvent event);
+    
+    String renderDamageResolvedEmail(DamageResolvedEvent event);
 }
+

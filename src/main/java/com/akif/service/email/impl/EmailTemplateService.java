@@ -167,4 +167,110 @@ public class EmailTemplateService implements IEmailTemplateService {
         
         return templateEngine.process("email/penalty-summary", context);
     }
+
+    
+    @Override
+    public String renderDamageReportedEmail(DamageReportedEvent event) {
+        var damageReport = event.getDamageReport();
+        var rental = damageReport.getRental();
+        var car = damageReport.getCar();
+        
+        log.debug("Rendering damage reported email for damage ID: {}", damageReport.getId());
+        
+        Context context = new Context();
+        context.setVariable("rentalId", rental.getId());
+        context.setVariable("carBrand", car.getBrand());
+        context.setVariable("carModel", car.getModel());
+        context.setVariable("licensePlate", car.getLicensePlate());
+        context.setVariable("reportDate", damageReport.getReportedAt().format(DATE_TIME_FORMATTER));
+        context.setVariable("description", damageReport.getDescription());
+        context.setVariable("damageLocation", damageReport.getDamageLocation());
+        
+        return templateEngine.process("email/damage/damage-reported", context);
+    }
+    
+    @Override
+    public String renderDamageAssessedEmail(DamageAssessedEvent event) {
+        var damageReport = event.getDamageReport();
+        var rental = damageReport.getRental();
+        var car = damageReport.getCar();
+        
+        log.debug("Rendering damage assessed email for damage ID: {}", damageReport.getId());
+        
+        Context context = new Context();
+        context.setVariable("rentalId", rental.getId());
+        context.setVariable("carBrand", car.getBrand());
+        context.setVariable("carModel", car.getModel());
+        context.setVariable("severity", damageReport.getSeverity().name());
+        context.setVariable("repairCost", damageReport.getRepairCostEstimate());
+        context.setVariable("customerLiability", damageReport.getCustomerLiability());
+        context.setVariable("currency", "TRY");
+        context.setVariable("hasInsurance", damageReport.getInsuranceCoverage());
+        context.setVariable("deductible", damageReport.getInsuranceDeductible());
+        
+        return templateEngine.process("email/damage/damage-assessed", context);
+    }
+    
+    @Override
+    public String renderDamageChargedEmail(DamageChargedEvent event) {
+        var damageReport = event.getDamageReport();
+        var payment = event.getPayment();
+        var rental = damageReport.getRental();
+        var car = damageReport.getCar();
+        
+        log.debug("Rendering damage charged email for damage ID: {}", damageReport.getId());
+        
+        Context context = new Context();
+        context.setVariable("rentalId", rental.getId());
+        context.setVariable("carBrand", car.getBrand());
+        context.setVariable("carModel", car.getModel());
+        context.setVariable("transactionId", payment.getTransactionId());
+        context.setVariable("chargedAmount", payment.getAmount());
+        context.setVariable("currency", payment.getCurrency().name());
+        context.setVariable("paymentDate", payment.getUpdateTime().format(DATE_TIME_FORMATTER));
+        
+        return templateEngine.process("email/damage/damage-charged", context);
+    }
+    
+    @Override
+    public String renderDamageDisputedEmail(DamageDisputedEvent event) {
+        var damageReport = event.getDamageReport();
+        var rental = damageReport.getRental();
+        var car = damageReport.getCar();
+        
+        log.debug("Rendering damage disputed email for damage ID: {}", damageReport.getId());
+        
+        Context context = new Context();
+        context.setVariable("rentalId", rental.getId());
+        context.setVariable("carBrand", car.getBrand());
+        context.setVariable("carModel", car.getModel());
+        context.setVariable("originalCharge", damageReport.getCustomerLiability());
+        context.setVariable("currency", "TRY");
+        context.setVariable("disputeReason", damageReport.getDisputeReason());
+        context.setVariable("disputeDate", damageReport.getDisputedAt().format(DATE_TIME_FORMATTER));
+        
+        return templateEngine.process("email/damage/damage-disputed", context);
+    }
+    
+    @Override
+    public String renderDamageResolvedEmail(DamageResolvedEvent event) {
+        var damageReport = event.getDamageReport();
+        var rental = damageReport.getRental();
+        var car = damageReport.getCar();
+        
+        log.debug("Rendering damage resolved email for damage ID: {}", damageReport.getId());
+        
+        Context context = new Context();
+        context.setVariable("rentalId", rental.getId());
+        context.setVariable("carBrand", car.getBrand());
+        context.setVariable("carModel", car.getModel());
+        context.setVariable("originalCharge", damageReport.getCustomerLiability());
+        context.setVariable("adjustedCharge", damageReport.getCustomerLiability());
+        context.setVariable("refundAmount", event.getRefundAmount());
+        context.setVariable("currency", "TRY");
+        context.setVariable("resolutionNotes", damageReport.getResolutionNotes());
+        
+        return templateEngine.process("email/damage/damage-resolved", context);
+    }
 }
+

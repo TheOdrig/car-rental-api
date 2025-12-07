@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispute Received</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: #9C27B0;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .detail-row {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: white;
+            border-left: 3px solid #9C27B0;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .value {
+            color: #333;
+        }
+
+        .footer {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+
+        .info-box {
+            background-color: #f3e5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>📝 Dispute Received</h1>
+    </div>
+    <div class="content">
+        <p>Dear Customer,</p>
+        <p>We have received your dispute regarding the damage assessment. Our team will review your case and respond
+            within 3-5 business days.</p>
+
+        <div class="detail-row">
+            <span class="label">Rental ID:</span>
+            <span class="value" th:text="${rentalId}">12345</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="label">Vehicle:</span>
+            <span class="value" th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="label">Original Charge:</span>
+            <span class="value" th:text="|${originalCharge} ${currency}|">250.00 TRY</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="label">Dispute Reason:</span>
+            <span class="value" th:text="${disputeReason}">Damage was pre-existing</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="label">Dispute Date:</span>
+            <span class="value" th:text="${disputeDate}">15 Jan 2024</span>
+        </div>
+
+        <div class="info-box">
+            <p><strong>What happens next?</strong></p>
+            <ul>
+                <li>Your dispute is being reviewed by our damage assessment team</li>
+                <li>We may contact you for additional information</li>
+                <li>You will receive the resolution via email</li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer">
+        <p>Thank you for bringing this to our attention.</p>
+        <p>We appreciate your patience during the review process.</p>
+    </div>
+</body>
+
+</html>
