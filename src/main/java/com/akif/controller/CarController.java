@@ -1,11 +1,11 @@
 package com.akif.controller;
 
-import com.akif.dto.currency.ConversionResult;
+import com.akif.currency.ConversionResult;
 import com.akif.dto.request.CarRequestDto;
 import com.akif.dto.response.CarResponseDto;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.service.ICarService;
-import com.akif.service.currency.ICurrencyConversionService;
+import com.akif.currency.ICurrencyConversionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

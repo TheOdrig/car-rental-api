@@ -1,4 +1,4 @@
-package com.akif.dto.currency;
+package com.akif.currency;
 
 import com.akif.shared.enums.CurrencyType;
 import com.akif.shared.enums.RateSource;

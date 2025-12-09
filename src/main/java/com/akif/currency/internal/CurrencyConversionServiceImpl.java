@@ -1,13 +1,12 @@
-package com.akif.service.currency.impl;
+package com.akif.currency.internal;
 
-import com.akif.dto.currency.ConversionResult;
-import com.akif.dto.currency.ExchangeRate;
-import com.akif.dto.currency.ExchangeRateResponse;
-import com.akif.dto.currency.ExchangeRatesResponse;
+import com.akif.currency.ConversionResult;
+import com.akif.currency.ExchangeRate;
+import com.akif.currency.internal.dto.ExchangeRateResponse;
+import com.akif.currency.ExchangeRatesResponse;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.shared.enums.RateSource;
-import com.akif.service.currency.ICurrencyConversionService;
-import com.akif.service.currency.IExchangeRateCacheService;
+import com.akif.currency.ICurrencyConversionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

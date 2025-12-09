@@ -1,4 +1,4 @@
-package com.akif.config;
+package com.akif.currency.internal.config;
 
 import com.akif.shared.enums.CurrencyType;
 import lombok.Getter;

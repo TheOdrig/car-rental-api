@@ -1,7 +1,7 @@
 package com.akif.service.availability.impl;
 
 import com.akif.dto.availability.*;
-import com.akif.dto.currency.ConversionResult;
+import com.akif.currency.ConversionResult;
 import com.akif.shared.enums.AvailabilityStatus;
 import com.akif.shared.enums.CarStatusType;
 import com.akif.shared.enums.CurrencyType;
@@ -13,7 +13,7 @@ import com.akif.model.Rental;
 import com.akif.repository.CarRepository;
 import com.akif.repository.RentalRepository;
 import com.akif.service.availability.ICarAvailabilityService;
-import com.akif.service.currency.ICurrencyConversionService;
+import com.akif.currency.ICurrencyConversionService;
 import com.akif.service.pricing.IDynamicPricingService;
 import com.akif.service.pricing.PriceModifier;
 import com.akif.service.pricing.PricingResult;

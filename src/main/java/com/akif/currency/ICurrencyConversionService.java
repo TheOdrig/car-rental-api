@@ -1,8 +1,5 @@
-package com.akif.service.currency;
+package com.akif.currency;
 
-import com.akif.dto.currency.ConversionResult;
-import com.akif.dto.currency.ExchangeRate;
-import com.akif.dto.currency.ExchangeRatesResponse;
 import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;

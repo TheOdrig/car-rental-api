@@ -1,6 +1,6 @@
-package com.akif.service.currency;
+package com.akif.currency.internal;
 
-import com.akif.dto.currency.ExchangeRateResponse;
+import com.akif.currency.internal.dto.ExchangeRateResponse;
 import com.akif.shared.enums.CurrencyType;
 
 public interface IExchangeRateClient {

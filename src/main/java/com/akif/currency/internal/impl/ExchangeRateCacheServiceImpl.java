@@ -1,13 +1,13 @@
-package com.akif.service.currency.impl;
+package com.akif.currency.internal.impl;
 
 import com.akif.shared.config.CacheConfig;
-import com.akif.config.FallbackRatesConfig;
-import com.akif.dto.currency.ExchangeRateResponse;
+import com.akif.currency.internal.config.FallbackRatesConfig;
+import com.akif.currency.internal.dto.ExchangeRateResponse;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.shared.enums.RateSource;
 import com.akif.exception.ExchangeRateApiException;
-import com.akif.service.currency.IExchangeRateCacheService;
-import com.akif.service.currency.IExchangeRateClient;
+import com.akif.currency.internal.IExchangeRateCacheService;
+import com.akif.currency.internal.IExchangeRateClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;

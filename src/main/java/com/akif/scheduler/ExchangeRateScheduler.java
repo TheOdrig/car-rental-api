@@ -1,6 +1,6 @@
 package com.akif.scheduler;
 
-import com.akif.service.currency.ICurrencyConversionService;
+import com.akif.currency.ICurrencyConversionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
