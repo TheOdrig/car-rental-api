@@ -108,7 +108,7 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             "NOT EXISTS (" +
             "   SELECT r FROM Rental r WHERE " +
             "   r.car.id = c.id AND " +
-            "   r.status IN (com.akif.enums.RentalStatus.CONFIRMED, com.akif.enums.RentalStatus.IN_USE) AND " +
+            "   r.status IN (com.akif.shared.enums.RentalStatus.CONFIRMED, com.akif.shared.enums.RentalStatus.IN_USE) AND " +
             "   r.isDeleted = false AND " +
             "   r.startDate <= :endDate AND r.endDate >= :startDate" +
             ")")

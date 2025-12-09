@@ -1,4 +1,4 @@
-package com.akif.model;
+package com.akif.auth.domain;
 
 import com.akif.shared.enums.OAuth2Provider;
 import com.akif.shared.domain.BaseEntity;

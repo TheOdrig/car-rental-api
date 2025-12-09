@@ -1,24 +1,24 @@
-package com.akif.service.oauth2.impl;
+package com.akif.auth.internal;
 
 import com.akif.config.OAuth2Properties;
-import com.akif.dto.oauth2.LinkAccountResponseDto;
-import com.akif.dto.oauth2.OAuth2TokenResponse;
-import com.akif.dto.oauth2.OAuth2UserInfo;
-import com.akif.dto.response.AuthResponseDto;
+import com.akif.auth.internal.oauth2.dto.response.LinkAccountResponse;
+import com.akif.auth.internal.oauth2.dto.response.OAuth2TokenResponse;
+import com.akif.auth.internal.oauth2.dto.request.OAuth2UserInfo;
+import com.akif.auth.AuthResponse;
 import com.akif.shared.enums.AuthProvider;
 import com.akif.shared.enums.OAuth2Provider;
 import com.akif.shared.enums.Role;
 import com.akif.exception.AccountAlreadyLinkedException;
 import com.akif.exception.OAuth2AuthenticationException;
 import com.akif.shared.enums.OAuth2ErrorType;
-import com.akif.model.LinkedAccount;
-import com.akif.model.User;
-import com.akif.repository.LinkedAccountRepository;
-import com.akif.repository.UserRepository;
+import com.akif.auth.domain.LinkedAccount;
+import com.akif.auth.domain.User;
+import com.akif.auth.repository.LinkedAccountRepository;
+import com.akif.auth.repository.UserRepository;
 import com.akif.shared.security.JwtTokenProvider;
-import com.akif.service.oauth2.IOAuth2AuthService;
-import com.akif.service.oauth2.IOAuth2ProviderService;
-import com.akif.service.oauth2.OAuth2StateService;
+import com.akif.auth.internal.oauth2.IOAuth2AuthService;
+import com.akif.auth.internal.oauth2.IOAuth2ProviderService;
+import com.akif.auth.internal.oauth2.OAuth2StateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -102,14 +102,14 @@ public class OAuth2AuthServiceImpl implements IOAuth2AuthService {
 
     @Override
     @Transactional
-    public AuthResponseDto processOAuth2Callback(String provider, String code, String state) {
+    public AuthResponse processOAuth2Callback(String provider, String code, String state) {
 
         stateService.validateState(state);
 
         IOAuth2ProviderService providerService = getProviderService(provider);
         OAuth2TokenResponse tokenResponse = providerService.exchangeCodeForTokens(code);
 
-        OAuth2UserInfo userInfo = providerService.getUserInfo(tokenResponse.getAccessToken());
+        OAuth2UserInfo userInfo = providerService.getUserInfo(tokenResponse.accessToken());
         log.debug("Retrieved user info from {}: email={}", provider, userInfo.email());
 
         User user = findOrCreateUser(userInfo);
@@ -117,7 +117,7 @@ public class OAuth2AuthServiceImpl implements IOAuth2AuthService {
         return generateJwtTokens(user);
     }
 
-    private AuthResponseDto generateJwtTokens(User user) {
+    private AuthResponse generateJwtTokens(User user) {
         List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                 .toList();
@@ -131,7 +131,7 @@ public class OAuth2AuthServiceImpl implements IOAuth2AuthService {
 
         log.info("Generated JWT tokens for user: {}", user.getUsername());
 
-        return AuthResponseDto.builder()
+        return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
@@ -252,7 +252,7 @@ public class OAuth2AuthServiceImpl implements IOAuth2AuthService {
 
     @Override
     @Transactional
-    public LinkAccountResponseDto linkSocialAccount(String provider, String code, String state, Long userId) {
+    public LinkAccountResponse linkSocialAccount(String provider, String code, String state, Long userId) {
 
         stateService.validateState(state);
 
@@ -261,7 +261,7 @@ public class OAuth2AuthServiceImpl implements IOAuth2AuthService {
         IOAuth2ProviderService providerService = getProviderService(provider);
         OAuth2TokenResponse tokenResponse = providerService.exchangeCodeForTokens(code);
 
-        OAuth2UserInfo userInfo = providerService.getUserInfo(tokenResponse.getAccessToken());
+        OAuth2UserInfo userInfo = providerService.getUserInfo(tokenResponse.accessToken());
         log.debug("Retrieved user info from {} for account linking: email={}", provider, userInfo.email());
 
         Optional<LinkedAccount> existingLinkedAccount = linkedAccountRepository
@@ -301,12 +301,12 @@ public class OAuth2AuthServiceImpl implements IOAuth2AuthService {
         return buildLinkAccountResponse(provider, userInfo.email());
     }
 
-    private LinkAccountResponseDto buildLinkAccountResponse(String provider, String email) {
-        return LinkAccountResponseDto.builder()
-                .message("Social account linked successfully")
-                .provider(provider)
-                .providerEmail(email)
-                .linkedAt(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-                .build();
+    private LinkAccountResponse buildLinkAccountResponse(String provider, String email) {
+        return new LinkAccountResponse(
+                "Social account linked successfully",
+                provider,
+                email,
+                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        );
     }
 }

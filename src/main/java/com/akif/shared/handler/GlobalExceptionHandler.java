@@ -1,6 +1,6 @@
 package com.akif.shared.handler;
 
-import com.akif.dto.oauth2.OAuth2ErrorResponse;
+import com.akif.auth.internal.oauth2.dto.response.OAuth2ErrorResponse;
 import com.akif.dto.response.ErrorResponseDto;
 import com.akif.shared.exception.BaseException;
 import com.akif.exception.OAuth2AuthenticationException;
@@ -23,6 +23,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -47,12 +48,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<OAuth2ErrorResponse> handleOAuth2AuthenticationException(OAuth2AuthenticationException ex) {
         log.error("[{}] OAuth2 error for provider '{}': {}", 
                 ex.getErrorType().getCode(), ex.getProvider(), ex.getMessage());
-        
-        OAuth2ErrorResponse errorResponse = OAuth2ErrorResponse.builder()
-                .error(ex.getErrorType().getCode())
-                .message(ex.getMessage())
-                .provider(ex.getProvider())
-                .build();
+
+        OAuth2ErrorResponse errorResponse = OAuth2ErrorResponse.of(
+                ex.getErrorType().getCode(),
+                ex.getMessage(),
+                ex.getProvider()
+        );
         
         return ResponseEntity.status(ex.getHttpStatus()).body(errorResponse);
     }
@@ -145,6 +146,16 @@ public class GlobalExceptionHandler {
                 ERROR_CODE_INVALID_PARAMETER_TYPE, ex.getName(), expectedType);
         return buildErrorResponse(ERROR_CODE_INVALID_PARAMETER_TYPE, 
                 String.format("Invalid parameter type for '%s'. Expected: %s", ex.getName(), expectedType), 
+                HttpStatus.BAD_REQUEST, request);
+    }
+
+
+    @ExceptionHandler(DateTimeParseException.class)
+    public ResponseEntity<ErrorResponseDto> handleDateTimeParseException(
+            DateTimeParseException ex, WebRequest request) {
+        log.error("[{}] Invalid date format: {}", ERROR_CODE_INVALID_PARAMETER_TYPE, ex.getMessage());
+        return buildErrorResponse(ERROR_CODE_INVALID_PARAMETER_TYPE, 
+                "Invalid date format. Expected format: yyyy-MM-dd", 
                 HttpStatus.BAD_REQUEST, request);
     }
 

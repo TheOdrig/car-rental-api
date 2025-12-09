@@ -1,6 +1,6 @@
-package com.akif.repository;
+package com.akif.auth.repository;
 
-import com.akif.model.User;
+import com.akif.auth.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

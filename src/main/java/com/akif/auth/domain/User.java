@@ -1,4 +1,4 @@
-package com.akif.model;
+package com.akif.auth.domain;
 
 import com.akif.shared.enums.AuthProvider;
 import com.akif.shared.enums.Role;

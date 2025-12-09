@@ -1,10 +1,10 @@
-package com.akif.controller;
+package com.akif.auth.web;
 
-import com.akif.dto.oauth2.LinkAccountResponseDto;
-import com.akif.dto.response.AuthResponseDto;
-import com.akif.model.User;
-import com.akif.repository.UserRepository;
-import com.akif.service.oauth2.IOAuth2AuthService;
+import com.akif.auth.internal.oauth2.dto.response.LinkAccountResponse;
+import com.akif.auth.AuthResponse;
+import com.akif.auth.domain.User;
+import com.akif.auth.repository.UserRepository;
+import com.akif.auth.internal.oauth2.IOAuth2AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -57,7 +57,7 @@ public class OAuth2Controller {
         @ApiResponse(responseCode = "401", description = "Authentication failed"),
         @ApiResponse(responseCode = "503", description = "Provider unavailable")
     })
-    public ResponseEntity<AuthResponseDto> callback(
+    public ResponseEntity<AuthResponse> callback(
             @Parameter(description = "OAuth2 provider (google, github)")
             @PathVariable String provider,
             @Parameter(description = "Authorization code from provider")
@@ -66,7 +66,7 @@ public class OAuth2Controller {
             @RequestParam String state) {
         
         log.debug("Processing OAuth2 callback for provider: {}", provider);
-        AuthResponseDto response = oAuth2AuthService.processOAuth2Callback(provider, code, state);
+        AuthResponse response = oAuth2AuthService.processOAuth2Callback(provider, code, state);
         return ResponseEntity.ok(response);
     }
 
@@ -79,7 +79,7 @@ public class OAuth2Controller {
         @ApiResponse(responseCode = "401", description = "Not authenticated"),
         @ApiResponse(responseCode = "409", description = "Account already linked to another user")
     })
-    public ResponseEntity<LinkAccountResponseDto> linkAccount(
+    public ResponseEntity<LinkAccountResponse> linkAccount(
             @Parameter(description = "OAuth2 provider (google, github)")
             @PathVariable String provider,
             @Parameter(description = "Authorization code from provider")
@@ -93,7 +93,7 @@ public class OAuth2Controller {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
-        LinkAccountResponseDto response = oAuth2AuthService.linkSocialAccount(
+        LinkAccountResponse response = oAuth2AuthService.linkSocialAccount(
                 provider, code, state, user.getId());
         return ResponseEntity.ok(response);
     }

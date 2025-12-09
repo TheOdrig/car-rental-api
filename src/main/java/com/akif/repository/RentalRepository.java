@@ -30,7 +30,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
     @Query("SELECT COUNT(r) FROM Rental r " +
             "WHERE r.car.id = :carId " +
-            "AND r.status IN (com.akif.enums.RentalStatus.CONFIRMED, com.akif.enums.RentalStatus.IN_USE) " +
+            "AND r.status IN (com.akif.shared.enums.RentalStatus.CONFIRMED, com.akif.shared.enums.RentalStatus.IN_USE) " +
             "AND r.isDeleted = false " +
             "AND ((r.startDate <= :endDate AND r.endDate >= :startDate))")
     long countOverlappingRentals(@Param("carId") Long carId,
@@ -68,7 +68,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
             @Param("statuses") List<RentalStatus> statuses);
 
     @Query("SELECT r FROM Rental r " +
-            "WHERE r.status = com.akif.enums.RentalStatus.IN_USE " +
+            "WHERE r.status = com.akif.shared.enums.RentalStatus.IN_USE " +
             "AND r.endDate < :currentDate " +
             "AND r.isDeleted = false")
     Page<Rental> findOverdueRentals(@Param("currentDate") LocalDate currentDate,
@@ -94,7 +94,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
                           @Param("endDate") LocalDate endDate);
 
     @Query("SELECT COUNT(r) FROM Rental r " +
-            "WHERE r.lateReturnStatus = com.akif.enums.LateReturnStatus.SEVERELY_LATE " +
+            "WHERE r.lateReturnStatus = com.akif.shared.enums.LateReturnStatus.SEVERELY_LATE " +
             "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
             "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
             "AND r.isDeleted = false")
@@ -133,7 +133,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     @Query("SELECT COUNT(r) FROM Rental r " +
             "WHERE (:startDate IS NULL OR r.endDate >= :startDate) " +
             "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
-            "AND r.status = com.akif.enums.RentalStatus.RETURNED " +
+            "AND r.status = com.akif.shared.enums.RentalStatus.RETURNED " +
             "AND r.isDeleted = false")
     long countTotalReturns(@Param("startDate") LocalDate startDate,
                            @Param("endDate") LocalDate endDate);

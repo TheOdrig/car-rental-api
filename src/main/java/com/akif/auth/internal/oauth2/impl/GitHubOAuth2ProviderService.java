@@ -1,10 +1,10 @@
-package com.akif.service.oauth2.impl;
+package com.akif.auth.internal.oauth2.impl;
 
 import com.akif.config.OAuth2Properties;
-import com.akif.dto.oauth2.OAuth2TokenResponse;
-import com.akif.dto.oauth2.OAuth2UserInfo;
+import com.akif.auth.internal.oauth2.dto.response.OAuth2TokenResponse;
+import com.akif.auth.internal.oauth2.dto.request.OAuth2UserInfo;
 import com.akif.exception.OAuth2ProviderException;
-import com.akif.service.oauth2.IOAuth2ProviderService;
+import com.akif.auth.internal.oauth2.IOAuth2ProviderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -52,7 +52,7 @@ public class GitHubOAuth2ProviderService implements IOAuth2ProviderService {
                     .retrieve()
                     .body(OAuth2TokenResponse.class);
 
-            if (response == null || response.getAccessToken() == null) {
+            if (response == null || response.accessToken() == null) {
                 log.error("GitHub token exchange returned null or empty access token");
                 throw OAuth2ProviderException.authenticationFailed(PROVIDER_NAME);
             }

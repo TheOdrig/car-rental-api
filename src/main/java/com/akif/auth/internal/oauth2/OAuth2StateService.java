@@ -1,4 +1,4 @@
-package com.akif.service.oauth2;
+package com.akif.auth.internal.oauth2;
 
 import com.akif.config.OAuth2Properties;
 import com.akif.shared.enums.OAuth2ErrorType;

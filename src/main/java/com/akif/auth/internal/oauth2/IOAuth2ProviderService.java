@@ -1,7 +1,7 @@
-package com.akif.service.oauth2;
+package com.akif.auth.internal.oauth2;
 
-import com.akif.dto.oauth2.OAuth2TokenResponse;
-import com.akif.dto.oauth2.OAuth2UserInfo;
+import com.akif.auth.internal.oauth2.dto.request.OAuth2UserInfo;
+import com.akif.auth.internal.oauth2.dto.response.OAuth2TokenResponse;
 
 public interface IOAuth2ProviderService {
 

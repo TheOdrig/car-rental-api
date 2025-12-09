@@ -1,4 +1,4 @@
-package com.akif.dto.oauth2;
+package com.akif.auth.internal.oauth2.dto.request;
 
 public record OAuth2UserInfo(
         String providerId,

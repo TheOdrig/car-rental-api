@@ -1,7 +1,7 @@
 package com.akif.shared.security;
 
-import com.akif.model.User;
-import com.akif.repository.UserRepository;
+import com.akif.auth.domain.User;
+import com.akif.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
