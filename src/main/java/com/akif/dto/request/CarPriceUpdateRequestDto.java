@@ -1,6 +1,6 @@
 package com.akif.dto.request;
 
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;

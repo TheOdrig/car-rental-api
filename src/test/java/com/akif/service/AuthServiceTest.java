@@ -4,7 +4,7 @@ import com.akif.dto.request.LoginRequestDto;
 import com.akif.dto.request.RefreshTokenRequestDto;
 import com.akif.dto.request.RegisterRequestDto;
 import com.akif.dto.response.AuthResponseDto;
-import com.akif.enums.Role;
+import com.akif.shared.enums.Role;
 import com.akif.exception.UserAlreadyExistsException;
 import com.akif.exception.InvalidTokenException;
 import com.akif.exception.TokenExpiredException;

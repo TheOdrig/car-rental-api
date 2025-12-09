@@ -2,7 +2,7 @@ package com.akif.service.email;
 
 import com.akif.config.EmailProperties;
 import com.akif.dto.email.EmailMessage;
-import com.akif.enums.EmailType;
+import com.akif.shared.enums.EmailType;
 import com.akif.exception.EmailSendException;
 import com.akif.service.email.impl.SendGridEmailSender;
 import jakarta.mail.internet.MimeMessage;

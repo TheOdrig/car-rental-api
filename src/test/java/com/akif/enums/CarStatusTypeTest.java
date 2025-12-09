@@ -1,6 +1,6 @@
 package com.akif.enums;
 
-import com.akif.enums.CarStatusType;
+import com.akif.shared.enums.CarStatusType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

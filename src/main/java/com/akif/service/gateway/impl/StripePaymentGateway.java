@@ -1,7 +1,7 @@
 package com.akif.service.gateway.impl;
 
 import com.akif.config.StripeConfig;
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.exception.PaymentFailedException;
 import com.akif.model.Payment;
 import com.akif.service.gateway.CheckoutSessionResult;

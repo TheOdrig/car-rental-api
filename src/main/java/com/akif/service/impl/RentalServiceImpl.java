@@ -3,7 +3,6 @@ package com.akif.service.impl;
 import com.akif.dto.penalty.PenaltyResult;
 import com.akif.dto.request.RentalRequestDto;
 import com.akif.dto.response.RentalResponseDto;
-import com.akif.enums.*;
 import com.akif.event.PaymentCapturedEvent;
 import com.akif.event.PenaltySummaryEvent;
 import com.akif.event.RentalCancelledEvent;
@@ -24,6 +23,7 @@ import com.akif.service.gateway.PaymentResult;
 import com.akif.service.pricing.IDynamicPricingService;
 import com.akif.service.pricing.PriceModifier;
 import com.akif.service.pricing.PricingResult;
+import com.akif.shared.enums.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -482,7 +482,7 @@ public class RentalServiceImpl implements IRentalService {
         Rental rental = findRentalById(id);
         User user = findUserByUsername(username);
 
-        if (!user.getRoles().contains(com.akif.enums.Role.ADMIN) &&
+        if (!user.getRoles().contains(Role.ADMIN) &&
                 !rental.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException(
                     "You can only view your own rentals"

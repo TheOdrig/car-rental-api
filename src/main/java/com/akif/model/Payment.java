@@ -1,7 +1,7 @@
 package com.akif.model;
 
-import com.akif.enums.CurrencyType;
-import com.akif.enums.PaymentStatus;
+import com.akif.shared.enums.CurrencyType;
+import com.akif.shared.enums.PaymentStatus;
 import com.akif.shared.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,6 +1,6 @@
 package com.akif.service.detection;
 
-import com.akif.enums.LateReturnStatus;
+import com.akif.shared.enums.LateReturnStatus;
 import com.akif.model.Rental;
 
 import java.time.LocalDateTime;

@@ -1,6 +1,6 @@
 package com.akif.dto.request;
 
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import org.junit.jupiter.api.DisplayName;
 
 import jakarta.validation.ConstraintViolation;

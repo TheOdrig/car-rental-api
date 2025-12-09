@@ -1,7 +1,7 @@
 package com.akif.dto.damage.request;
 
-import com.akif.enums.DamageCategory;
-import com.akif.enums.DamageSeverity;
+import com.akif.shared.enums.DamageCategory;
+import com.akif.shared.enums.DamageSeverity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 

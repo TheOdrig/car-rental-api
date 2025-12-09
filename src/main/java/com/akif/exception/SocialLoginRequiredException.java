@@ -1,6 +1,6 @@
 package com.akif.exception;
 
-import com.akif.enums.OAuth2ErrorType;
+import com.akif.shared.enums.OAuth2ErrorType;
 
 public class SocialLoginRequiredException extends OAuth2AuthenticationException {
 

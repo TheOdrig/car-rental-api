@@ -1,6 +1,6 @@
 package com.akif.dto.damage.response;
 
-import com.akif.enums.DamageSeverity;
+import com.akif.shared.enums.DamageSeverity;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.math.BigDecimal;

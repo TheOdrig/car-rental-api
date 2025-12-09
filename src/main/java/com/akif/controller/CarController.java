@@ -3,7 +3,7 @@ package com.akif.controller;
 import com.akif.dto.currency.ConversionResult;
 import com.akif.dto.request.CarRequestDto;
 import com.akif.dto.response.CarResponseDto;
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.service.ICarService;
 import com.akif.service.currency.ICurrencyConversionService;
 import io.swagger.v3.oas.annotations.Operation;

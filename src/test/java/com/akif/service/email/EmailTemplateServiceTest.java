@@ -1,6 +1,6 @@
 package com.akif.service.email;
 
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.event.*;
 import com.akif.service.email.impl.EmailTemplateService;
 import org.junit.jupiter.api.BeforeEach;

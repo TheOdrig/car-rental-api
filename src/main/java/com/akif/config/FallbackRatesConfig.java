@@ -1,6 +1,6 @@
 package com.akif.config;
 
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;

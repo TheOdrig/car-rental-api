@@ -1,6 +1,6 @@
 package com.akif.model;
 
-import com.akif.enums.WebhookEventStatus;
+import com.akif.shared.enums.WebhookEventStatus;
 import com.akif.shared.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

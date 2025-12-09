@@ -2,8 +2,8 @@ package com.akif.service.reconciliation;
 
 import com.akif.dto.reconciliation.Discrepancy;
 import com.akif.dto.reconciliation.StripePayment;
-import com.akif.enums.DiscrepancyType;
-import com.akif.enums.PaymentStatus;
+import com.akif.shared.enums.DiscrepancyType;
+import com.akif.shared.enums.PaymentStatus;
 import com.akif.model.Payment;
 import com.akif.repository.PaymentRepository;
 import org.junit.jupiter.api.DisplayName;

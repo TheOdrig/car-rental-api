@@ -4,7 +4,7 @@ import com.akif.dto.request.CarSearchRequestDto;
 import com.akif.dto.response.CarListResponseDto;
 import com.akif.dto.response.CarResponseDto;
 import com.akif.dto.response.CarSummaryResponseDto;
-import com.akif.enums.CarStatusType;
+import com.akif.shared.enums.CarStatusType;
 import com.akif.service.ICarService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

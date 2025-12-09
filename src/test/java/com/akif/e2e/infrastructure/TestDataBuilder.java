@@ -1,9 +1,9 @@
 package com.akif.e2e.infrastructure;
 
 import com.akif.dto.request.RentalRequestDto;
-import com.akif.enums.AuthProvider;
-import com.akif.enums.CarStatusType;
-import com.akif.enums.Role;
+import com.akif.shared.enums.AuthProvider;
+import com.akif.shared.enums.CarStatusType;
+import com.akif.shared.enums.Role;
 import com.akif.model.Car;
 import com.akif.model.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

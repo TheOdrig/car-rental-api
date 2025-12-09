@@ -1,7 +1,7 @@
 package com.akif.service.email.impl;
 
 import com.akif.dto.email.EmailMessage;
-import com.akif.enums.EmailType;
+import com.akif.shared.enums.EmailType;
 import com.akif.event.*;
 import com.akif.exception.EmailSendException;
 import com.akif.service.email.IEmailNotificationService;

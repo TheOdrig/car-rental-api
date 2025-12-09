@@ -1,7 +1,7 @@
 package com.akif.controller;
 
 import com.akif.dto.currency.ConvertRequest;
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.starter.CarGalleryProjectApplication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;

@@ -1,7 +1,7 @@
 package com.akif.dto.request;
 
-import com.akif.enums.CarStatusType;
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CarStatusType;
+import com.akif.shared.enums.CurrencyType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;

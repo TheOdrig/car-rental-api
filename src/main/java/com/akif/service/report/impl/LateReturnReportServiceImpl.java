@@ -3,7 +3,7 @@ package com.akif.service.report.impl;
 import com.akif.dto.report.LateReturnFilterDto;
 import com.akif.dto.report.LateReturnReportDto;
 import com.akif.dto.report.LateReturnStatisticsDto;
-import com.akif.enums.LateReturnStatus;
+import com.akif.shared.enums.LateReturnStatus;
 import com.akif.model.Rental;
 import com.akif.repository.RentalRepository;
 import com.akif.service.report.ILateReturnReportService;

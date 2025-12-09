@@ -1,6 +1,6 @@
 package com.akif.service.gateway.impl;
 
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.service.gateway.IPaymentGateway;
 import com.akif.service.gateway.PaymentResult;
 import lombok.extern.slf4j.Slf4j;

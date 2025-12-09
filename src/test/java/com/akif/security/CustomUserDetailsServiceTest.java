@@ -1,6 +1,6 @@
 package com.akif.security;
 
-import com.akif.enums.Role;
+import com.akif.shared.enums.Role;
 import com.akif.model.User;
 import com.akif.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;

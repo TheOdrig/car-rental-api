@@ -2,7 +2,7 @@ package com.akif.service.penalty.impl;
 
 import com.akif.config.PenaltyConfig;
 import com.akif.dto.penalty.PenaltyResult;
-import com.akif.enums.LateReturnStatus;
+import com.akif.shared.enums.LateReturnStatus;
 import com.akif.model.Rental;
 import com.akif.service.penalty.IPenaltyCalculationService;
 import lombok.RequiredArgsConstructor;

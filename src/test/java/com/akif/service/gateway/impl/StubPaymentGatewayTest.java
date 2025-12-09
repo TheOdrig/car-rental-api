@@ -1,6 +1,6 @@
 package com.akif.service.gateway.impl;
 
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.service.gateway.PaymentResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

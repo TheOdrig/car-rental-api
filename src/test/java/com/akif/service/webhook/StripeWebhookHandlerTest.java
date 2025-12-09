@@ -1,8 +1,8 @@
 package com.akif.service.webhook;
 
 import com.akif.config.StripeConfig;
-import com.akif.enums.PaymentStatus;
-import com.akif.enums.WebhookEventStatus;
+import com.akif.shared.enums.PaymentStatus;
+import com.akif.shared.enums.WebhookEventStatus;
 import com.akif.model.Payment;
 import com.akif.model.Rental;
 import com.akif.model.WebhookEvent;

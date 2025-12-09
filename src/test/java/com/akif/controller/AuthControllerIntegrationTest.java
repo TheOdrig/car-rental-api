@@ -3,7 +3,7 @@ package com.akif.controller;
 import com.akif.dto.request.LoginRequestDto;
 import com.akif.dto.request.RegisterRequestDto;
 import com.akif.dto.response.AuthResponseDto;
-import com.akif.enums.Role;
+import com.akif.shared.enums.Role;
 import com.akif.model.User;
 import com.akif.repository.UserRepository;
 import com.akif.starter.CarGalleryProjectApplication;

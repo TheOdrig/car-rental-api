@@ -7,7 +7,7 @@ import com.akif.dto.request.CarStatusUpdateRequestDto;
 import com.akif.dto.response.CarListResponseDto;
 import com.akif.dto.response.CarResponseDto;
 import com.akif.dto.response.CarSummaryResponseDto;
-import com.akif.enums.CarStatusType;
+import com.akif.shared.enums.CarStatusType;
 import com.akif.exception.*;
 import com.akif.mapper.CarMapper;
 import com.akif.model.Car;

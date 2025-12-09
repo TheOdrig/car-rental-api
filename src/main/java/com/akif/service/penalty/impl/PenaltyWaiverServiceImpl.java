@@ -1,6 +1,6 @@
 package com.akif.service.penalty.impl;
 
-import com.akif.enums.PaymentStatus;
+import com.akif.shared.enums.PaymentStatus;
 import com.akif.exception.PenaltyWaiverException;
 import com.akif.exception.RentalNotFoundException;
 import com.akif.model.Payment;

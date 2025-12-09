@@ -1,4 +1,4 @@
-package com.akif.enums;
+package com.akif.shared.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

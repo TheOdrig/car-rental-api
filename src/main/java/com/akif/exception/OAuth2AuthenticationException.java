@@ -1,6 +1,6 @@
 package com.akif.exception;
 
-import com.akif.enums.OAuth2ErrorType;
+import com.akif.shared.enums.OAuth2ErrorType;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 

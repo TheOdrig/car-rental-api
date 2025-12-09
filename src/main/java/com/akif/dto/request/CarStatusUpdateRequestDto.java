@@ -1,6 +1,6 @@
 package com.akif.dto.request;
 
-import com.akif.enums.CarStatusType;
+import com.akif.shared.enums.CarStatusType;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

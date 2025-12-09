@@ -2,7 +2,7 @@ package com.akif.service.detection.impl;
 
 import com.akif.config.PenaltyConfig;
 import com.akif.dto.penalty.PenaltyResult;
-import com.akif.enums.LateReturnStatus;
+import com.akif.shared.enums.LateReturnStatus;
 import com.akif.event.GracePeriodWarningEvent;
 import com.akif.event.LateReturnNotificationEvent;
 import com.akif.event.SeverelyLateNotificationEvent;

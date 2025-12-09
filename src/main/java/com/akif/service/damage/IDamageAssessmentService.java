@@ -2,7 +2,7 @@ package com.akif.service.damage;
 
 import com.akif.dto.damage.request.DamageAssessmentRequestDto;
 import com.akif.dto.damage.response.DamageAssessmentResponseDto;
-import com.akif.enums.DamageSeverity;
+import com.akif.shared.enums.DamageSeverity;
 
 import java.math.BigDecimal;
 

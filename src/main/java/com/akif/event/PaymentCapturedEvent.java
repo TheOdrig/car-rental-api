@@ -1,6 +1,6 @@
 package com.akif.event;
 
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 

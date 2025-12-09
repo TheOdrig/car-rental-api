@@ -1,10 +1,10 @@
 package com.akif.service.availability;
 
 import com.akif.dto.availability.*;
-import com.akif.enums.AvailabilityStatus;
-import com.akif.enums.CarStatusType;
-import com.akif.enums.CurrencyType;
-import com.akif.enums.RentalStatus;
+import com.akif.shared.enums.AvailabilityStatus;
+import com.akif.shared.enums.CarStatusType;
+import com.akif.shared.enums.CurrencyType;
+import com.akif.shared.enums.RentalStatus;
 import com.akif.exception.CarNotFoundException;
 import com.akif.exception.RentalValidationException;
 import com.akif.model.Car;
@@ -18,7 +18,7 @@ import com.akif.service.pricing.IDynamicPricingService;
 import com.akif.service.pricing.PriceModifier;
 import com.akif.service.pricing.PricingResult;
 import com.akif.dto.currency.ConversionResult;
-import com.akif.enums.RateSource;
+import com.akif.shared.enums.RateSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

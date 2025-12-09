@@ -1,6 +1,6 @@
 package com.akif.dto.email;
 
-import com.akif.enums.EmailType;
+import com.akif.shared.enums.EmailType;
 
 public record EmailMessage(
     String to,

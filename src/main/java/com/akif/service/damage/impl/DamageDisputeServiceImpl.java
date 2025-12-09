@@ -3,7 +3,7 @@ package com.akif.service.damage.impl;
 import com.akif.dto.damage.request.DamageDisputeRequestDto;
 import com.akif.dto.damage.request.DamageDisputeResolutionDto;
 import com.akif.dto.damage.response.DamageDisputeResponseDto;
-import com.akif.enums.DamageStatus;
+import com.akif.shared.enums.DamageStatus;
 import com.akif.event.DamageDisputedEvent;
 import com.akif.event.DamageResolvedEvent;
 import com.akif.exception.DamageDisputeException;

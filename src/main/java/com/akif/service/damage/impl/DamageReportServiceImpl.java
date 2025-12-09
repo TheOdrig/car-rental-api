@@ -4,7 +4,7 @@ import com.akif.config.DamageConfig;
 import com.akif.dto.damage.request.DamageReportRequestDto;
 import com.akif.dto.damage.response.DamagePhotoDto;
 import com.akif.dto.damage.response.DamageReportResponseDto;
-import com.akif.enums.DamageStatus;
+import com.akif.shared.enums.DamageStatus;
 import com.akif.event.DamageReportedEvent;
 import com.akif.exception.DamageReportException;
 import com.akif.exception.FileUploadException;

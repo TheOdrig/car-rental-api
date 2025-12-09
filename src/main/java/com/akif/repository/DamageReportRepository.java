@@ -1,8 +1,8 @@
 package com.akif.repository;
 
-import com.akif.enums.DamageCategory;
-import com.akif.enums.DamageSeverity;
-import com.akif.enums.DamageStatus;
+import com.akif.shared.enums.DamageCategory;
+import com.akif.shared.enums.DamageSeverity;
+import com.akif.shared.enums.DamageStatus;
 import com.akif.model.DamageReport;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

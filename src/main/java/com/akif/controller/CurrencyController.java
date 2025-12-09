@@ -4,7 +4,7 @@ import com.akif.dto.currency.ConversionResult;
 import com.akif.dto.currency.ConvertRequest;
 import com.akif.dto.currency.ExchangeRate;
 import com.akif.dto.currency.ExchangeRatesResponse;
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.service.currency.ICurrencyConversionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

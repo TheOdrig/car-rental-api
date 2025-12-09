@@ -4,7 +4,7 @@ import com.akif.dto.request.RentalRequestDto;
 import com.akif.dto.response.RentalResponseDto;
 import com.akif.e2e.infrastructure.E2ETestBase;
 import com.akif.e2e.infrastructure.TestDataBuilder;
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.exception.ExchangeRateApiException;
 import com.akif.model.Car;
 import com.akif.model.User;

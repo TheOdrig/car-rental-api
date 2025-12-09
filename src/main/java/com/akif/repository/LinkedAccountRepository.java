@@ -1,6 +1,6 @@
 package com.akif.repository;
 
-import com.akif.enums.OAuth2Provider;
+import com.akif.shared.enums.OAuth2Provider;
 import com.akif.model.LinkedAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

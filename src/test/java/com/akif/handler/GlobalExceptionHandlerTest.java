@@ -2,7 +2,7 @@ package com.akif.handler;
 
 import com.akif.dto.oauth2.OAuth2ErrorResponse;
 import com.akif.dto.response.ErrorResponseDto;
-import com.akif.enums.OAuth2ErrorType;
+import com.akif.shared.enums.OAuth2ErrorType;
 import com.akif.exception.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;

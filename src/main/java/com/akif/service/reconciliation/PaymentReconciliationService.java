@@ -3,7 +3,7 @@ package com.akif.service.reconciliation;
 import com.akif.dto.reconciliation.Discrepancy;
 import com.akif.dto.reconciliation.ReconciliationReport;
 import com.akif.dto.reconciliation.StripePayment;
-import com.akif.enums.DiscrepancyType;
+import com.akif.shared.enums.DiscrepancyType;
 import com.akif.exception.ReconciliationException;
 import com.akif.model.Payment;
 import com.akif.repository.PaymentRepository;

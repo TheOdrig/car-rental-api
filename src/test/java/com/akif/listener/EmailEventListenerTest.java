@@ -1,6 +1,6 @@
 package com.akif.listener;
 
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.event.*;
 import com.akif.service.email.IEmailNotificationService;
 import org.junit.jupiter.api.BeforeEach;

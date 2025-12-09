@@ -2,7 +2,6 @@ package com.akif.service;
 
 import com.akif.dto.request.RentalRequestDto;
 import com.akif.dto.response.RentalResponseDto;
-import com.akif.enums.*;
 import com.akif.event.PaymentCapturedEvent;
 import com.akif.event.RentalCancelledEvent;
 import com.akif.event.RentalConfirmedEvent;
@@ -21,6 +20,7 @@ import com.akif.service.gateway.IPaymentGateway;
 import com.akif.service.gateway.PaymentResult;
 import com.akif.service.pricing.IDynamicPricingService;
 import com.akif.service.pricing.PricingResult;
+import com.akif.shared.enums.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

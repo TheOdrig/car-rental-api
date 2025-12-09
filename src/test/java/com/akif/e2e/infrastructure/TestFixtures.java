@@ -1,6 +1,6 @@
 package com.akif.e2e.infrastructure;
 
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

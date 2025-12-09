@@ -3,8 +3,8 @@ package com.akif.service.report;
 import com.akif.dto.report.LateReturnFilterDto;
 import com.akif.dto.report.LateReturnReportDto;
 import com.akif.dto.report.LateReturnStatisticsDto;
-import com.akif.enums.CurrencyType;
-import com.akif.enums.LateReturnStatus;
+import com.akif.shared.enums.CurrencyType;
+import com.akif.shared.enums.LateReturnStatus;
 import com.akif.model.Car;
 import com.akif.model.Rental;
 import com.akif.model.User;
@@ -28,7 +28,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

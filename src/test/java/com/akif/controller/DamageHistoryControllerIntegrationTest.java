@@ -1,7 +1,6 @@
 package com.akif.controller;
 
 import com.akif.dto.damage.request.DamageReportRequestDto;
-import com.akif.enums.*;
 import com.akif.model.Car;
 import com.akif.model.Rental;
 import com.akif.model.User;
@@ -9,6 +8,7 @@ import com.akif.repository.CarRepository;
 import com.akif.repository.RentalRepository;
 import com.akif.repository.UserRepository;
 import com.akif.security.JwtTokenProvider;
+import com.akif.shared.enums.*;
 import com.akif.starter.CarGalleryProjectApplication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

@@ -2,8 +2,8 @@ package com.akif.service.penalty;
 
 import com.akif.config.PenaltyConfig;
 import com.akif.dto.penalty.PenaltyResult;
-import com.akif.enums.CurrencyType;
-import com.akif.enums.LateReturnStatus;
+import com.akif.shared.enums.CurrencyType;
+import com.akif.shared.enums.LateReturnStatus;
 import com.akif.model.Car;
 import com.akif.model.Rental;
 import com.akif.service.penalty.impl.PenaltyCalculationServiceImpl;

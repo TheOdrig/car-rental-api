@@ -1,7 +1,7 @@
 package com.akif.service.damage.impl;
 
-import com.akif.enums.DamageStatus;
-import com.akif.enums.PaymentStatus;
+import com.akif.shared.enums.DamageStatus;
+import com.akif.shared.enums.PaymentStatus;
 import com.akif.event.DamageChargedEvent;
 import com.akif.exception.DamageAssessmentException;
 import com.akif.model.DamageReport;

@@ -1,8 +1,8 @@
 package com.akif.listener;
 
 import com.akif.dto.email.EmailMessage;
-import com.akif.enums.CurrencyType;
-import com.akif.enums.EmailType;
+import com.akif.shared.enums.CurrencyType;
+import com.akif.shared.enums.EmailType;
 import com.akif.event.*;
 import com.akif.service.email.IEmailSender;
 import com.akif.starter.CarGalleryProjectApplication;

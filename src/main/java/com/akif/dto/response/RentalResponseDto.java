@@ -1,7 +1,7 @@
 package com.akif.dto.response;
 
-import com.akif.enums.CurrencyType;
-import com.akif.enums.RentalStatus;
+import com.akif.shared.enums.CurrencyType;
+import com.akif.shared.enums.RentalStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

@@ -1,7 +1,7 @@
 package com.akif.repository;
 
-import com.akif.enums.CarStatusType;
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CarStatusType;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.model.Car;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

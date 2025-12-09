@@ -1,6 +1,6 @@
 package com.akif.dto.availability;
 
-import com.akif.enums.AvailabilityStatus;
+import com.akif.shared.enums.AvailabilityStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,5 @@
 package com.akif.service.damage;
 
-import com.akif.enums.*;
 import com.akif.event.DamageChargedEvent;
 import com.akif.exception.DamageAssessmentException;
 import com.akif.model.*;
@@ -9,6 +8,9 @@ import com.akif.repository.PaymentRepository;
 import com.akif.service.damage.impl.DamageChargeServiceImpl;
 import com.akif.service.gateway.IPaymentGateway;
 import com.akif.service.gateway.PaymentResult;
+import com.akif.shared.enums.CurrencyType;
+import com.akif.shared.enums.DamageStatus;
+import com.akif.shared.enums.PaymentStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

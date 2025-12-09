@@ -1,7 +1,8 @@
 package com.akif.repository;
 
-import com.akif.enums.RentalStatus;
+import com.akif.shared.enums.RentalStatus;
 import com.akif.model.Rental;
+import com.akif.shared.enums.LateReturnStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -78,7 +79,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
             "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
             "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
             "AND r.isDeleted = false")
-    Page<Rental> findLateReturns(@Param("statuses") List<com.akif.enums.LateReturnStatus> statuses,
+    Page<Rental> findLateReturns(@Param("statuses") List<LateReturnStatus> statuses,
                                   @Param("startDate") LocalDate startDate,
                                   @Param("endDate") LocalDate endDate,
                                   Pageable pageable);
@@ -88,7 +89,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
             "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
             "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
             "AND r.isDeleted = false")
-    long countLateReturns(@Param("statuses") List<com.akif.enums.LateReturnStatus> statuses,
+    long countLateReturns(@Param("statuses") List<LateReturnStatus> statuses,
                           @Param("startDate") LocalDate startDate,
                           @Param("endDate") LocalDate endDate);
 
@@ -105,7 +106,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
             "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
             "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
             "AND r.isDeleted = false")
-    BigDecimal sumTotalPenaltyAmount(@Param("statuses") List<com.akif.enums.LateReturnStatus> statuses,
+    BigDecimal sumTotalPenaltyAmount(@Param("statuses") List<LateReturnStatus> statuses,
                                      @Param("startDate") LocalDate startDate,
                                      @Param("endDate") LocalDate endDate);
 
@@ -115,7 +116,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
             "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
             "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
             "AND r.isDeleted = false")
-    BigDecimal sumCollectedPenaltyAmount(@Param("statuses") List<com.akif.enums.LateReturnStatus> statuses,
+    BigDecimal sumCollectedPenaltyAmount(@Param("statuses") List<LateReturnStatus> statuses,
                                          @Param("startDate") LocalDate startDate,
                                          @Param("endDate") LocalDate endDate);
 
@@ -125,7 +126,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
             "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
             "AND r.lateHours IS NOT NULL " +
             "AND r.isDeleted = false")
-    Double averageLateHours(@Param("statuses") List<com.akif.enums.LateReturnStatus> statuses,
+    Double averageLateHours(@Param("statuses") List<LateReturnStatus> statuses,
                             @Param("startDate") LocalDate startDate,
                             @Param("endDate") LocalDate endDate);
 

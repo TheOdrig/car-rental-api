@@ -1,6 +1,6 @@
 package com.akif.service.gateway;
 
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
 

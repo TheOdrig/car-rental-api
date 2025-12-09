@@ -1,7 +1,7 @@
 package com.akif.service.email;
 
 import com.akif.dto.email.EmailMessage;
-import com.akif.enums.EmailType;
+import com.akif.shared.enums.EmailType;
 import com.akif.service.email.impl.MockEmailSender;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

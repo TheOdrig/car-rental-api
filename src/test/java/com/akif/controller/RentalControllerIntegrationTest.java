@@ -1,9 +1,9 @@
 package com.akif.controller;
 
 import com.akif.dto.request.RentalRequestDto;
-import com.akif.enums.CarStatusType;
-import com.akif.enums.CurrencyType;
-import com.akif.enums.Role;
+import com.akif.shared.enums.CarStatusType;
+import com.akif.shared.enums.CurrencyType;
+import com.akif.shared.enums.Role;
 import com.akif.model.Car;
 import com.akif.model.User;
 import com.akif.repository.CarRepository;

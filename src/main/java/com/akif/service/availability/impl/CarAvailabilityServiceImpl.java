@@ -2,10 +2,10 @@ package com.akif.service.availability.impl;
 
 import com.akif.dto.availability.*;
 import com.akif.dto.currency.ConversionResult;
-import com.akif.enums.AvailabilityStatus;
-import com.akif.enums.CarStatusType;
-import com.akif.enums.CurrencyType;
-import com.akif.enums.RentalStatus;
+import com.akif.shared.enums.AvailabilityStatus;
+import com.akif.shared.enums.CarStatusType;
+import com.akif.shared.enums.CurrencyType;
+import com.akif.shared.enums.RentalStatus;
 import com.akif.exception.CarNotFoundException;
 import com.akif.exception.RentalValidationException;
 import com.akif.model.Car;

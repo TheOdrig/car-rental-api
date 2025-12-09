@@ -3,7 +3,7 @@ package com.akif.service.currency;
 import com.akif.dto.currency.ConversionResult;
 import com.akif.dto.currency.ExchangeRate;
 import com.akif.dto.currency.ExchangeRatesResponse;
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
 

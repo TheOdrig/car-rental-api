@@ -1,4 +1,4 @@
-package com.akif.enums;
+package com.akif.shared.enums;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonValue;

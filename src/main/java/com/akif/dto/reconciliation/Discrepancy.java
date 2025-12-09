@@ -1,6 +1,6 @@
 package com.akif.dto.reconciliation;
 
-import com.akif.enums.DiscrepancyType;
+import com.akif.shared.enums.DiscrepancyType;
 
 import java.math.BigDecimal;
 

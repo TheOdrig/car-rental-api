@@ -1,8 +1,8 @@
 package com.akif.service.gateway.impl;
 
 import com.akif.config.StripeConfig;
-import com.akif.enums.CurrencyType;
-import com.akif.enums.PaymentStatus;
+import com.akif.shared.enums.CurrencyType;
+import com.akif.shared.enums.PaymentStatus;
 import com.akif.model.Payment;
 import com.akif.model.Rental;
 import com.akif.service.gateway.IdempotencyKeyGenerator;

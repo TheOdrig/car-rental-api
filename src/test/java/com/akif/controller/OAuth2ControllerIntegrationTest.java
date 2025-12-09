@@ -2,8 +2,8 @@ package com.akif.controller;
 
 import com.akif.config.OAuth2Properties;
 import com.akif.dto.response.AuthResponseDto;
-import com.akif.enums.AuthProvider;
-import com.akif.enums.Role;
+import com.akif.shared.enums.AuthProvider;
+import com.akif.shared.enums.Role;
 import com.akif.model.User;
 import com.akif.repository.LinkedAccountRepository;
 import com.akif.repository.UserRepository;

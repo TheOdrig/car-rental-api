@@ -1,6 +1,6 @@
 package com.akif.dto.penalty;
 
-import com.akif.enums.LateReturnStatus;
+import com.akif.shared.enums.LateReturnStatus;
 
 import java.math.BigDecimal;
 

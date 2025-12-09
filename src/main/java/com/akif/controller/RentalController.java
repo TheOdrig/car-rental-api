@@ -5,7 +5,7 @@ import com.akif.dto.request.PickupRequestDto;
 import com.akif.dto.request.RentalRequestDto;
 import com.akif.dto.request.ReturnRequestDto;
 import com.akif.dto.response.RentalResponseDto;
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.service.IRentalService;
 import com.akif.service.currency.ICurrencyConversionService;
 import io.swagger.v3.oas.annotations.Operation;

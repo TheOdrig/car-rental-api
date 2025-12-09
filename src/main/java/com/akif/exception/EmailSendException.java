@@ -1,6 +1,6 @@
 package com.akif.exception;
 
-import com.akif.enums.EmailType;
+import com.akif.shared.enums.EmailType;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 

@@ -4,6 +4,7 @@ import com.akif.dto.report.LateReturnFilterDto;
 import com.akif.dto.report.LateReturnReportDto;
 import com.akif.dto.report.LateReturnStatisticsDto;
 import com.akif.service.report.ILateReturnReportService;
+import com.akif.shared.enums.LateReturnStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -61,7 +62,7 @@ public class LateReturnController {
         LateReturnFilterDto filter = LateReturnFilterDto.builder()
                 .startDate(startDate)
                 .endDate(endDate)
-                .status(status != null ? com.akif.enums.LateReturnStatus.valueOf(status) : null)
+                .status(status != null ? LateReturnStatus.valueOf(status) : null)
                 .sortBy(sortBy)
                 .sortDirection(sortDirection)
                 .build();

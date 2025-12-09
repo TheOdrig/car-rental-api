@@ -1,6 +1,6 @@
 package com.akif.dto.availability;
 
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,6 @@
 package com.akif.service.oauth2;
 
-import com.akif.enums.OAuth2ErrorType;
+import com.akif.shared.enums.OAuth2ErrorType;
 import com.akif.exception.OAuth2AuthenticationException;
 import com.akif.exception.OAuth2ProviderException;
 import org.junit.jupiter.api.DisplayName;

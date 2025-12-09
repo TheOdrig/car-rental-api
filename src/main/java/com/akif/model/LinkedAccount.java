@@ -1,6 +1,6 @@
 package com.akif.model;
 
-import com.akif.enums.OAuth2Provider;
+import com.akif.shared.enums.OAuth2Provider;
 import com.akif.shared.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

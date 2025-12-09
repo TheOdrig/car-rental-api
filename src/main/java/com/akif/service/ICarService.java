@@ -7,7 +7,7 @@ import com.akif.dto.request.CarStatusUpdateRequestDto;
 import com.akif.dto.response.CarListResponseDto;
 import com.akif.dto.response.CarResponseDto;
 import com.akif.dto.response.CarSummaryResponseDto;
-import com.akif.enums.CarStatusType;
+import com.akif.shared.enums.CarStatusType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

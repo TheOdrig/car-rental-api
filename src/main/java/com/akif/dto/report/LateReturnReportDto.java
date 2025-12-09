@@ -1,7 +1,7 @@
 package com.akif.dto.report;
 
-import com.akif.enums.CurrencyType;
-import com.akif.enums.LateReturnStatus;
+import com.akif.shared.enums.CurrencyType;
+import com.akif.shared.enums.LateReturnStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.io.Serializable;

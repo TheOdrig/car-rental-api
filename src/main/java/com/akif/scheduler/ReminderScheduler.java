@@ -1,6 +1,6 @@
 package com.akif.scheduler;
 
-import com.akif.enums.RentalStatus;
+import com.akif.shared.enums.RentalStatus;
 import com.akif.event.PickupReminderEvent;
 import com.akif.event.ReturnReminderEvent;
 import com.akif.model.Rental;

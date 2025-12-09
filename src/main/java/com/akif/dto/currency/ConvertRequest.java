@@ -1,6 +1,6 @@
 package com.akif.dto.currency;
 
-import com.akif.enums.CurrencyType;
+import com.akif.shared.enums.CurrencyType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 

@@ -1,7 +1,7 @@
 package com.akif.service.oauth2;
 
 import com.akif.config.OAuth2Properties;
-import com.akif.enums.OAuth2ErrorType;
+import com.akif.shared.enums.OAuth2ErrorType;
 import com.akif.exception.OAuth2AuthenticationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
