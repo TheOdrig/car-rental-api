@@ -7,7 +7,7 @@ import com.akif.model.Car;
 import com.akif.model.User;
 import com.akif.repository.CarRepository;
 import com.akif.repository.UserRepository;
-import com.akif.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenProvider;
 import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

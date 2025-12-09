@@ -1,4 +1,4 @@
-package com.akif.security;
+package com.akif.shared.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

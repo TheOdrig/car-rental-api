@@ -3,6 +3,7 @@ package com.akif.security;
 import com.akif.shared.enums.Role;
 import com.akif.model.User;
 import com.akif.repository.UserRepository;
+import com.akif.shared.security.CustomUserDetailsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

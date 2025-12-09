@@ -1,5 +1,6 @@
 package com.akif.security;
 
+import com.akif.shared.security.JwtTokenProvider;
 import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

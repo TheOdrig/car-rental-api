@@ -5,7 +5,7 @@ import com.akif.dto.response.RentalResponseDto;
 import com.akif.shared.enums.Role;
 import com.akif.model.User;
 import com.akif.scheduler.ReminderScheduler;
-import com.akif.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;

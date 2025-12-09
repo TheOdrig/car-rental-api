@@ -15,7 +15,7 @@ import com.akif.model.LinkedAccount;
 import com.akif.model.User;
 import com.akif.repository.LinkedAccountRepository;
 import com.akif.repository.UserRepository;
-import com.akif.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenProvider;
 import com.akif.service.oauth2.IOAuth2AuthService;
 import com.akif.service.oauth2.IOAuth2ProviderService;
 import com.akif.service.oauth2.OAuth2StateService;

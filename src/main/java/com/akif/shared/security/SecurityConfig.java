@@ -1,7 +1,5 @@
-package com.akif.config;
+package com.akif.shared.security;
 
-import com.akif.security.CorrelationIdFilter;
-import com.akif.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

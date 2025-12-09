@@ -10,7 +10,7 @@ import com.akif.shared.exception.InvalidTokenException;
 import com.akif.shared.exception.TokenExpiredException;
 import com.akif.model.User;
 import com.akif.repository.UserRepository;
-import com.akif.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenProvider;
 import com.akif.service.impl.AuthServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

@@ -12,7 +12,7 @@ import com.akif.exception.SocialLoginRequiredException;
 import com.akif.shared.exception.TokenExpiredException;
 import com.akif.model.User;
 import com.akif.repository.UserRepository;
-import com.akif.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenProvider;
 import com.akif.service.IAuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

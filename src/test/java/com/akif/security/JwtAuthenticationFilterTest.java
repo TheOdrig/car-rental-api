@@ -1,5 +1,7 @@
 package com.akif.security;
 
+import com.akif.shared.security.JwtAuthenticationFilter;
+import com.akif.shared.security.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

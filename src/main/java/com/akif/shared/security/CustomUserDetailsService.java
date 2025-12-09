@@ -1,4 +1,4 @@
-package com.akif.security;
+package com.akif.shared.security;
 
 import com.akif.model.User;
 import com.akif.repository.UserRepository;

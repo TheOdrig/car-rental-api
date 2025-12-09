@@ -13,7 +13,7 @@ import com.akif.repository.RentalRepository;
 import com.akif.repository.UserRepository;
 import com.akif.shared.enums.*;
 import jakarta.persistence.EntityManager;
-import com.akif.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenProvider;
 import com.akif.starter.CarGalleryProjectApplication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
