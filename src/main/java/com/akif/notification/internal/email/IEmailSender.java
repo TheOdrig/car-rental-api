@@ -1,4 +1,4 @@
-package com.akif.service.email;
+package com.akif.notification.internal.email;
 
 import com.akif.dto.email.EmailMessage;
 import com.akif.exception.EmailSendException;

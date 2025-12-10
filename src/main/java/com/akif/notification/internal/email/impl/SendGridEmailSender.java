@@ -1,9 +1,9 @@
-package com.akif.service.email.impl;
+package com.akif.notification.internal.email.impl;
 
-import com.akif.config.EmailProperties;
+import com.akif.notification.internal.config.EmailProperties;
 import com.akif.dto.email.EmailMessage;
 import com.akif.exception.EmailSendException;
-import com.akif.service.email.IEmailSender;
+import com.akif.notification.internal.email.IEmailSender;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;

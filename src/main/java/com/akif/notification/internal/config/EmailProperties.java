@@ -1,4 +1,4 @@
-package com.akif.config;
+package com.akif.notification.internal.config;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,7 +1,7 @@
-package com.akif.listener;
+package com.akif.notification.listener;
 
 import com.akif.event.*;
-import com.akif.notification.IEmailNotificationService;
+import com.akif.notification.EmailNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class EmailEventListener {
     
-    private final IEmailNotificationService emailNotificationService;
+    private final EmailNotificationService emailNotificationService;
 
     @Async("emailTaskExecutor")
     @EventListener

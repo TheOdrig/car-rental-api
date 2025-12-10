@@ -4,7 +4,7 @@ import com.akif.dto.email.EmailMessage;
 import com.akif.shared.enums.EmailType;
 import com.akif.event.*;
 import com.akif.exception.EmailSendException;
-import com.akif.notification.IEmailNotificationService;
+import com.akif.notification.EmailNotificationService;
 import com.akif.notification.internal.email.IEmailSender;
 import com.akif.notification.internal.email.IEmailTemplateService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class EmailNotificationService implements IEmailNotificationService {
+public class EmailNotificationServiceImpl implements EmailNotificationService {
     
     private final IEmailTemplateService templateService;
     private final IEmailSender emailSender;

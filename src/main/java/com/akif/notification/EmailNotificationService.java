@@ -2,7 +2,7 @@ package com.akif.notification;
 
 import com.akif.event.*;
 
-public interface IEmailNotificationService {
+public interface EmailNotificationService {
 
     void sendRentalConfirmation(RentalConfirmedEvent event);
 

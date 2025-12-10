@@ -1,8 +1,8 @@
-package com.akif.service.email.impl;
+package com.akif.notification.internal.email.impl;
 
 import com.akif.dto.email.EmailMessage;
 import com.akif.exception.EmailSendException;
-import com.akif.service.email.IEmailSender;
+import com.akif.notification.internal.email.IEmailSender;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
