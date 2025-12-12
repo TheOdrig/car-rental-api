@@ -4,9 +4,9 @@ import com.akif.payment.internal.config.StripeConfig;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.domain.enums.WebhookEventStatus;
 import com.akif.payment.internal.exception.WebhookSignatureException;
-import com.akif.rental.domain.model.Payment;
+import com.akif.payment.domain.Payment;
 import com.akif.payment.domain.WebhookEvent;
-import com.akif.rental.internal.repository.PaymentRepository;
+import com.akif.payment.internal.repository.PaymentRepository;
 import com.akif.payment.internal.repository.WebhookEventRepository;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
@@ -120,7 +120,7 @@ public class StripeWebhookHandler {
 
         Payment payment = findPaymentBySessionId(sessionId);
         Long paymentId = payment.getId();
-        Long rentalId = payment.getRental() != null ? payment.getRental().getId() : null;
+        Long rentalId = payment.getRentalId();
         
         payment.setStatus(PaymentStatus.CAPTURED);
         payment.setStripePaymentIntentId(paymentIntentId);
@@ -140,7 +140,7 @@ public class StripeWebhookHandler {
 
         Payment payment = findPaymentBySessionId(sessionId);
         Long paymentId = payment.getId();
-        Long rentalId = payment.getRental() != null ? payment.getRental().getId() : null;
+        Long rentalId = payment.getRentalId();
         
         payment.setStatus(PaymentStatus.FAILED);
         payment.setFailureReason("Checkout session expired");
@@ -159,7 +159,7 @@ public class StripeWebhookHandler {
 
         Payment payment = findPaymentByPaymentIntentId(paymentIntentId);
         Long paymentId = payment.getId();
-        Long rentalId = payment.getRental() != null ? payment.getRental().getId() : null;
+        Long rentalId = payment.getRentalId();
         
         payment.setStatus(PaymentStatus.FAILED);
 

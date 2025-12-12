@@ -1,6 +1,6 @@
-package com.akif.rental.internal.repository;
+package com.akif.payment.internal.repository;
 
-import com.akif.rental.domain.model.Payment;
+import com.akif.payment.domain.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

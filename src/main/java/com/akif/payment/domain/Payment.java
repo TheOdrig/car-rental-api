@@ -1,4 +1,4 @@
-package com.akif.rental.domain.model;
+package com.akif.payment.domain;
 
 import com.akif.shared.enums.CurrencyType;
 import com.akif.payment.api.PaymentStatus;
@@ -22,9 +22,14 @@ import java.math.BigDecimal;
 @SuperBuilder
 public class Payment extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rental_id", nullable = false, foreignKey = @ForeignKey(name = "fk_payment_rental"))
-    private Rental rental;
+    @Column(name = "rental_id", nullable = false)
+    private Long rentalId;
+
+    @Column(name = "user_email", length = 255)
+    private String userEmail;
+
+    @Column(name = "car_license_plate", length = 20)
+    private String carLicensePlate;
 
     @Column(name = "amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal amount;
@@ -79,11 +84,13 @@ public class Payment extends BaseEntity {
     public String toString() {
         return "Payment{" +
                 "id=" + getId() +
+                ", rentalId=" + rentalId +
+                ", userEmail='" + userEmail + '\'' +
+                ", carLicensePlate='" + carLicensePlate + '\'' +
                 ", amount=" + amount +
                 ", currency=" + currency +
                 ", status=" + status +
                 ", transactionId='" + transactionId + '\'' +
-                ", rentalId=" + (rental != null ? rental.getId() : "N/A") +
                 '}';
     }
 }

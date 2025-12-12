@@ -1,12 +1,10 @@
 package com.akif.rental.internal.service.penalty.impl;
 
-import com.akif.payment.api.PaymentStatus;
+import com.akif.payment.api.PaymentDto;
 import com.akif.rental.internal.exception.PenaltyWaiverException;
 import com.akif.rental.internal.exception.RentalNotFoundException;
-import com.akif.rental.domain.model.Payment;
 import com.akif.rental.domain.model.PenaltyWaiver;
 import com.akif.rental.domain.model.Rental;
-import com.akif.rental.internal.repository.PaymentRepository;
 import com.akif.rental.internal.repository.PenaltyWaiverRepository;
 import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.payment.api.PaymentService;
@@ -20,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +28,6 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
 
     private final RentalRepository rentalRepository;
     private final PenaltyWaiverRepository penaltyWaiverRepository;
-    private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
 
     @Override
@@ -118,46 +116,33 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
             return;
         }
 
-        Payment penaltyPayment = paymentRepository.findByRentalIdAndIsDeletedFalse(waiver.getRental().getId())
-                .orElse(null);
+        Long rentalId = waiver.getRental().getId();
+        Optional<PaymentDto> paymentOpt = paymentService.getPaymentByRentalId(rentalId);
 
-        if (penaltyPayment == null) {
-            log.warn("No payment found for rental: {}, cannot process refund", waiver.getRental().getId());
+        if (paymentOpt.isEmpty()) {
+            log.warn("No payment found for rental: {}, cannot process refund", rentalId);
             return;
         }
 
-        if (!penaltyPayment.canRefund()) {
-            log.warn("Payment {} cannot be refunded, status: {}", 
-                    penaltyPayment.getId(), penaltyPayment.getStatus());
+        PaymentDto payment = paymentOpt.get();
+
+        if (!payment.canRefund()) {
+            log.warn("Payment {} cannot be refunded, status: {}", payment.id(), payment.status());
             return;
         }
 
-        if (penaltyPayment.getTransactionId() == null || penaltyPayment.getTransactionId().isEmpty()) {
-            log.warn("Payment {} has no transaction ID, cannot process refund", penaltyPayment.getId());
+        if (payment.transactionId() == null || payment.transactionId().isEmpty()) {
+            log.warn("Payment {} has no transaction ID, cannot process refund", payment.id());
             return;
         }
 
         try {
-            PaymentResult refundResult = paymentService.refund(
-                    penaltyPayment.getTransactionId(),
-                    waiver.getWaivedAmount()
-            );
+            PaymentResult refundResult = paymentService.refundPayment(payment.id(), waiver.getWaivedAmount());
 
             if (refundResult.success()) {
                 waiver.setRefundInitiated(true);
                 waiver.setRefundTransactionId(refundResult.transactionId());
                 penaltyWaiverRepository.save(waiver);
-
-                BigDecimal currentRefunded = penaltyPayment.getRefundedAmount() != null 
-                        ? penaltyPayment.getRefundedAmount() 
-                        : BigDecimal.ZERO;
-                penaltyPayment.setRefundedAmount(currentRefunded.add(waiver.getWaivedAmount()));
-
-                if (penaltyPayment.getRefundedAmount().compareTo(penaltyPayment.getAmount()) >= 0) {
-                    penaltyPayment.updateStatus(PaymentStatus.REFUNDED);
-                }
-                
-                paymentRepository.save(penaltyPayment);
 
                 log.info("Successfully processed refund for waiver: {}, amount: {}, transaction: {}",
                         waiver.getId(), waiver.getWaivedAmount(), refundResult.transactionId());
@@ -166,6 +151,8 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
                         waiver.getId(), refundResult.message());
                 throw new PenaltyWaiverException("Refund failed: " + refundResult.message());
             }
+        } catch (PenaltyWaiverException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error processing refund for waiver: {}", waiver.getId(), e);
             throw new PenaltyWaiverException("Failed to process refund", e);
@@ -190,3 +177,4 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
         }
     }
 }
+

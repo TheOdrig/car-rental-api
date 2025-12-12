@@ -1,6 +1,6 @@
 package com.akif.rental.internal.service.penalty;
 
-import com.akif.rental.domain.model.Payment;
+import com.akif.payment.api.PaymentDto;
 import com.akif.rental.domain.model.Rental;
 import com.akif.payment.api.PaymentResult;
 
@@ -8,9 +8,9 @@ import java.math.BigDecimal;
 
 public interface PenaltyPaymentService {
 
-    Payment createPenaltyPayment(Rental rental, BigDecimal penaltyAmount);
+    PaymentDto createPenaltyPayment(Rental rental, BigDecimal penaltyAmount);
 
-    PaymentResult chargePenalty(Payment penaltyPayment);
+    PaymentResult chargePenalty(Long paymentId, Long userId);
 
-    void handleFailedPenaltyPayment(Payment penaltyPayment);
+    void handleFailedPenaltyPayment(Long paymentId, Long rentalId, String userEmail, String failureReason);
 }
