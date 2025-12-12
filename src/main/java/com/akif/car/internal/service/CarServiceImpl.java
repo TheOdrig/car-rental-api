@@ -18,6 +18,7 @@ import com.akif.shared.exception.InvalidStatusTransitionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -85,7 +86,12 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cars", allEntries = true),
+        @CacheEvict(value = "car-status-counts", allEntries = true),
+        @CacheEvict(value = "car-statistics", allEntries = true),
+        @CacheEvict(value = "car-brand-counts", allEntries = true)
+    })
     public CarResponse createCar(CarRequest carRequest) {
         log.debug("Creating new car with license plate: {}", carRequest.getLicensePlate());
 
@@ -106,7 +112,11 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cars", allEntries = true),
+        @CacheEvict(value = "car-status-counts", allEntries = true),
+        @CacheEvict(value = "car-statistics", allEntries = true)
+    })
     public CarResponse updateCar(Long id, CarRequest carRequest) {
         log.debug("Updating car with id: {}", id);
 
@@ -135,7 +145,12 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cars", allEntries = true),
+        @CacheEvict(value = "car-status-counts", allEntries = true),
+        @CacheEvict(value = "car-statistics", allEntries = true),
+        @CacheEvict(value = "car-brand-counts", allEntries = true)
+    })
     public void deleteCar(Long id) {
         log.debug("Hard deleting car with id: {}", id);
         validateCarId(id);
@@ -148,7 +163,11 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cars", allEntries = true),
+        @CacheEvict(value = "car-status-counts", allEntries = true),
+        @CacheEvict(value = "car-statistics", allEntries = true)
+    })
     public void softDeleteCar(Long id) {
         log.debug("Soft deleting car with id: {}", id);
         validateCarId(id);
@@ -163,7 +182,11 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cars", allEntries = true),
+        @CacheEvict(value = "car-status-counts", allEntries = true),
+        @CacheEvict(value = "car-statistics", allEntries = true)
+    })
     public void restoreCar(Long id) {
         log.debug("Restoring car with id: {}", id);
         validateCarId(id);
@@ -327,7 +350,11 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cars", allEntries = true),
+        @CacheEvict(value = "car-status-counts", allEntries = true),
+        @CacheEvict(value = "car-statistics", allEntries = true)
+    })
     public CarResponse sellCar(Long id) {
         log.debug("Selling car with id: {}", id);
         validateCarId(id);
@@ -351,7 +378,11 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cars", allEntries = true),
+        @CacheEvict(value = "car-status-counts", allEntries = true),
+        @CacheEvict(value = "car-statistics", allEntries = true)
+    })
     public CarResponse reserveCar(Long id) {
         log.debug("Reserving car with id: {}", id);
         validateCarId(id);
@@ -375,7 +406,11 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cars", allEntries = true),
+        @CacheEvict(value = "car-status-counts", allEntries = true),
+        @CacheEvict(value = "car-statistics", allEntries = true)
+    })
     public CarResponse cancelReservation(Long id) {
         log.debug("Cancelling reservation for car with id: {}", id);
         validateCarId(id);
@@ -399,7 +434,11 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cars", allEntries = true),
+        @CacheEvict(value = "car-status-counts", allEntries = true),
+        @CacheEvict(value = "car-statistics", allEntries = true)
+    })
     public CarResponse releaseCar(Long id) {
         log.debug("Releasing car after rental ends, id: {}", id);
         validateCarId(id);
@@ -423,7 +462,11 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cars", allEntries = true),
+        @CacheEvict(value = "car-status-counts", allEntries = true),
+        @CacheEvict(value = "car-statistics", allEntries = true)
+    })
     public CarResponse markAsMaintenance(Long id) {
         log.debug("Marking car as maintenance with id: {}", id);
         validateCarId(id);
@@ -441,7 +484,11 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cars", allEntries = true),
+        @CacheEvict(value = "car-status-counts", allEntries = true),
+        @CacheEvict(value = "car-statistics", allEntries = true)
+    })
     public CarResponse markAsAvailable(Long id) {
         log.debug("Marking car as available with id: {}", id);
         validateCarId(id);
@@ -459,7 +506,11 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cars", allEntries = true),
+        @CacheEvict(value = "car-status-counts", allEntries = true),
+        @CacheEvict(value = "car-statistics", allEntries = true)
+    })
     public CarResponse updateCarStatus(Long id, CarStatusUpdateRequest statusUpdateRequest) {
         log.debug("Updating car status for id: {} to {}", id, statusUpdateRequest.carStatusType());
         validateCarId(id);

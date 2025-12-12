@@ -201,17 +201,13 @@ public class StripeWebhookHandler {
     }
 
     private Payment findPaymentBySessionId(String sessionId) {
-        return paymentRepository.findAll().stream()
-                .filter(p -> sessionId.equals(p.getStripeSessionId()))
-                .findFirst()
+        return paymentRepository.findByStripeSessionIdAndIsDeletedFalse(sessionId)
                 .orElseThrow(() -> new IllegalStateException(
                         "Payment not found for session: " + sessionId));
     }
 
     private Payment findPaymentByPaymentIntentId(String paymentIntentId) {
-        return paymentRepository.findAll().stream()
-                .filter(p -> paymentIntentId.equals(p.getStripePaymentIntentId()))
-                .findFirst()
+        return paymentRepository.findByStripePaymentIntentIdAndIsDeletedFalse(paymentIntentId)
                 .orElseThrow(() -> new IllegalStateException(
                         "Payment not found for payment intent: " + paymentIntentId));
     }

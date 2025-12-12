@@ -29,7 +29,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     Page<Rental> findByIsDeletedFalse(Pageable pageable);
 
     @Query("SELECT COUNT(r) FROM Rental r " +
-            "WHERE r.car.id = :carId " +
+            "WHERE r.carId = :carId " +
             "AND r.status IN (com.akif.rental.domain.enums.RentalStatus.CONFIRMED, com.akif.rental.domain.enums.RentalStatus.IN_USE) " +
             "AND r.isDeleted = false " +
             "AND ((r.startDate <= :endDate AND r.endDate >= :startDate))")
@@ -56,7 +56,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
                                                Pageable pageable);
 
     @Query("SELECT r FROM Rental r WHERE " +
-            "r.car.id = :carId AND " +
+            "r.carId = :carId AND " +
             "r.startDate <= :endDate AND " +
             "r.endDate >= :startDate AND " +
             "r.status IN :statuses AND " +

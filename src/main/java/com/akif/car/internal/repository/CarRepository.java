@@ -107,8 +107,8 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             "(:maxProductionYear IS NULL OR c.productionYear <= :maxProductionYear) AND " +
             "NOT EXISTS (" +
             "   SELECT r FROM Rental r WHERE " +
-            "   r.car.id = c.id AND " +
-            "   r.status IN (com.akif.shared.enums.RentalStatus.CONFIRMED, com.akif.shared.enums.RentalStatus.IN_USE) AND " +
+            "   r.carId = c.id AND " +
+            "   r.status IN (com.akif.rental.domain.enums.RentalStatus.CONFIRMED, com.akif.rental.domain.enums.RentalStatus.IN_USE) AND " +
             "   r.isDeleted = false AND " +
             "   r.startDate <= :endDate AND r.endDate >= :startDate" +
             ")")

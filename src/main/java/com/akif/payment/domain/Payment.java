@@ -13,7 +13,9 @@ import java.math.BigDecimal;
 @Table(name = "payments",
         indexes = {
                 @Index(name = "idx_payments_rental", columnList = "rental_id"),
-                @Index(name = "idx_payments_status", columnList = "status")
+                @Index(name = "idx_payments_status", columnList = "status"),
+                @Index(name = "idx_payments_stripe_session", columnList = "stripe_session_id"),
+                @Index(name = "idx_payments_stripe_intent", columnList = "stripe_payment_intent_id")
         })
 @Getter
 @Setter

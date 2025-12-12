@@ -17,4 +17,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     @Query("SELECT p FROM Payment p WHERE p.createTime >= :startDate AND p.createTime < :endDate AND p.isDeleted = false")
     List<Payment> findByCreateTimeBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    Optional<Payment> findByStripeSessionIdAndIsDeletedFalse(String stripeSessionId);
+
+    Optional<Payment> findByStripePaymentIntentIdAndIsDeletedFalse(String stripePaymentIntentId);
 }
