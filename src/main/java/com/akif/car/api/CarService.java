@@ -17,10 +17,6 @@ public interface CarService {
 
     CarDto getCarDtoById(Long id);
 
-    boolean isCarAvailableForRental(Long carId);
-
-
-
     CarResponse getCarById(Long id);
 
     CarResponse getCarByLicensePlate(String licensePlate);
@@ -86,8 +82,6 @@ public interface CarService {
 
     List<CarSummaryResponse> getMostLikedCars(int limit);
 
-
-    boolean existsById(Long id);
 
     boolean existsByLicensePlate(String licensePlate);
 

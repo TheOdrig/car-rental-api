@@ -23,16 +23,6 @@ class DamageServiceImpl implements DamageService {
     private final DamageMapper damageMapper;
 
     @Override
-    public DamageReportDto getDamageReportById(Long damageReportId) {
-        log.debug("Getting damage report by ID for cross-module access: {}", damageReportId);
-        
-        DamageReport damageReport = damageReportRepository.findByIdAndIsDeletedFalse(damageReportId)
-                .orElseThrow(() -> DamageReportException.notFound(damageReportId));
-
-        return damageMapper.toPublicDto(damageReport);
-    }
-
-    @Override
     public List<DamageReportDto> getDamageReportsByRentalId(Long rentalId) {
         log.debug("Getting damage reports for rental: {}", rentalId);
         

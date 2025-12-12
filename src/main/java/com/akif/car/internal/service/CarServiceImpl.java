@@ -56,19 +56,6 @@ public class CarServiceImpl implements CarService {
         return result;
     }
 
-    @Override
-    public boolean isCarAvailableForRental(Long carId) {
-        log.debug("Checking if car is available for rental, id: {}", carId);
-        validateCarId(carId);
-
-        Car car = findCarById(carId);
-        boolean available = car.isAvailable() && !car.getIsDeleted() 
-                && car.getCarStatusType() == CarStatusType.AVAILABLE;
-
-        log.debug("Car {} availability for rental: {}", carId, available);
-        return available;
-    }
-
 
     @Override
     @Cacheable(value = "cars", key = "#id")
@@ -617,11 +604,6 @@ public class CarServiceImpl implements CarService {
 
         log.info("Successfully retrieved {} most liked cars", result.size());
         return result;
-    }
-
-    @Override
-    public boolean existsById(Long id) {
-        return carRepository.existsById(id);
     }
 
     @Override

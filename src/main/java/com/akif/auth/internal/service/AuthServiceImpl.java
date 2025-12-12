@@ -43,26 +43,10 @@ public class AuthServiceImpl implements AuthService {
 
     
     @Override
-    public UserDto getUserById(Long id) {
-        log.debug("Getting user by ID: {}", id);
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-        return userMapper.toDto(user);
-    }
-    
-    @Override
     public UserDto getUserByUsername(String username) {
         log.debug("Getting user by username: {}", username);
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
-        return userMapper.toDto(user);
-    }
-    
-    @Override
-    public UserDto getUserByEmail(String email) {
-        log.debug("Getting user by email: {}", email);
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
         return userMapper.toDto(user);
     }
     

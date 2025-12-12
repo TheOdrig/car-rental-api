@@ -6,11 +6,7 @@ import com.akif.auth.internal.dto.RegisterRequest;
 
 public interface AuthService {
 
-    UserDto getUserById(Long id);
-
     UserDto getUserByUsername(String username);
-
-    UserDto getUserByEmail(String email);
 
     boolean existsByUsername(String username);
 
