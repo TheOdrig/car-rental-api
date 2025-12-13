@@ -1,12 +1,12 @@
 package com.akif.e2e.edgecases;
 
-import com.akif.dto.request.RentalRequestDto;
+import com.akif.auth.domain.User;
+import com.akif.auth.internal.repository.UserRepository;
+import com.akif.car.domain.Car;
+import com.akif.car.internal.repository.CarRepository;
 import com.akif.e2e.infrastructure.E2ETestBase;
 import com.akif.e2e.infrastructure.TestDataBuilder;
-import com.akif.model.Car;
-import com.akif.model.User;
-import com.akif.repository.CarRepository;
-import com.akif.repository.UserRepository;
+import com.akif.rental.internal.dto.request.RentalRequest;
 import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -51,7 +51,7 @@ class DateOverlapE2ETest extends E2ETestBase {
 
             LocalDate startDate = LocalDate.now().plusDays(10);
             LocalDate endDate = LocalDate.now().plusDays(15);
-            RentalRequestDto firstRentalRequest = TestDataBuilder.createRentalRequest(
+            RentalRequest firstRentalRequest = TestDataBuilder.createRentalRequest(
                     testCar.getId(), startDate, endDate);
 
             Long firstRentalId = createAndGetRentalId(firstRentalRequest, userToken);
@@ -62,7 +62,7 @@ class DateOverlapE2ETest extends E2ETestBase {
 
             LocalDate overlappingStart = LocalDate.now().plusDays(12);
             LocalDate overlappingEnd = LocalDate.now().plusDays(17);
-            RentalRequestDto overlappingRentalRequest = TestDataBuilder.createRentalRequest(
+            RentalRequest overlappingRentalRequest = TestDataBuilder.createRentalRequest(
                     testCar.getId(), overlappingStart, overlappingEnd);
 
             mockMvc.perform(post("/api/rentals/request")
@@ -94,7 +94,7 @@ class DateOverlapE2ETest extends E2ETestBase {
 
             LocalDate startDate = LocalDate.now().plusDays(10);
             LocalDate endDate = LocalDate.now().plusDays(15);
-            RentalRequestDto firstRentalRequest = TestDataBuilder.createRentalRequest(
+            RentalRequest firstRentalRequest = TestDataBuilder.createRentalRequest(
                     testCar.getId(), startDate, endDate);
 
             Long firstRentalId = createAndGetRentalId(firstRentalRequest, userToken);
@@ -107,7 +107,7 @@ class DateOverlapE2ETest extends E2ETestBase {
                             .header("Authorization", "Bearer " + userToken))
                     .andExpect(status().isOk());
 
-            RentalRequestDto secondRentalRequest = TestDataBuilder.createRentalRequest(
+            RentalRequest secondRentalRequest = TestDataBuilder.createRentalRequest(
                     testCar.getId(), startDate, endDate);
 
             mockMvc.perform(post("/api/rentals/request")
@@ -145,11 +145,11 @@ class DateOverlapE2ETest extends E2ETestBase {
             LocalDate startDate = LocalDate.now().plusDays(10);
             LocalDate endDate = LocalDate.now().plusDays(15);
 
-            RentalRequestDto firstRentalRequest = TestDataBuilder.createRentalRequest(
+            RentalRequest firstRentalRequest = TestDataBuilder.createRentalRequest(
                     testCar.getId(), startDate, endDate);
             Long firstRentalId = createAndGetRentalId(firstRentalRequest, userToken1);
 
-            RentalRequestDto secondRentalRequest = TestDataBuilder.createRentalRequest(
+            RentalRequest secondRentalRequest = TestDataBuilder.createRentalRequest(
                     testCar.getId(), startDate, endDate);
 
             mockMvc.perform(post("/api/rentals/request")

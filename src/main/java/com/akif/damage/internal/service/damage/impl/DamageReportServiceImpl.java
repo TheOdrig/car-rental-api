@@ -36,7 +36,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-class DamageReportServiceImpl implements DamageReportService {
+public class DamageReportServiceImpl implements DamageReportService {
 
     private final DamageReportRepository damageReportRepository;
     private final DamagePhotoRepository damagePhotoRepository;

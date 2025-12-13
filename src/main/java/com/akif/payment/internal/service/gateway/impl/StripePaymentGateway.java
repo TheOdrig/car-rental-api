@@ -26,7 +26,7 @@ import java.util.Map;
 @Service
 @Profile("prod")
 @RequiredArgsConstructor
-class StripePaymentGateway implements PaymentGateway {
+public class StripePaymentGateway implements PaymentGateway {
 
     private final StripeConfig stripeConfig;
     private final IdempotencyKeyGenerator idempotencyKeyGenerator;

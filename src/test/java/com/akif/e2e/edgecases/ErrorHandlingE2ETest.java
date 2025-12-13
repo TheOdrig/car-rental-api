@@ -1,23 +1,23 @@
 package com.akif.e2e.edgecases;
 
-import com.akif.dto.request.PickupRequestDto;
-import com.akif.dto.request.RentalRequestDto;
+import com.akif.auth.domain.User;
+import com.akif.auth.internal.repository.UserRepository;
+import com.akif.car.domain.Car;
+import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.internal.exception.CarNotAvailableException;
+import com.akif.car.internal.exception.CarNotFoundException;
+import com.akif.car.internal.repository.CarRepository;
 import com.akif.e2e.infrastructure.E2ETestBase;
 import com.akif.e2e.infrastructure.TestDataBuilder;
-import com.akif.shared.enums.CarStatusType;
-import com.akif.shared.enums.RentalStatus;
-import com.akif.exception.CarNotAvailableException;
-import com.akif.exception.CarNotFoundException;
-import com.akif.exception.InvalidRentalStateException;
-import com.akif.exception.PaymentFailedException;
-import com.akif.model.Car;
-import com.akif.model.Rental;
-import com.akif.model.User;
-import com.akif.repository.CarRepository;
-import com.akif.repository.RentalRepository;
-import com.akif.repository.UserRepository;
-import com.akif.service.gateway.IPaymentGateway;
-import com.akif.service.gateway.PaymentResult;
+import com.akif.payment.api.PaymentResult;
+import com.akif.payment.internal.service.gateway.PaymentGateway;
+import com.akif.rental.domain.enums.RentalStatus;
+import com.akif.rental.domain.model.Rental;
+import com.akif.rental.internal.dto.request.PickupRequest;
+import com.akif.rental.internal.dto.request.RentalRequest;
+import com.akif.rental.internal.exception.InvalidRentalStateException;
+import com.akif.payment.internal.exception.PaymentFailedException;
+import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -49,7 +49,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
     private RentalRepository rentalRepository;
 
     @MockitoBean
-    private IPaymentGateway paymentGateway;
+    private PaymentGateway paymentGateway;
 
     @Nested
     @DisplayName("Non-Existent Car Tests")
@@ -63,7 +63,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             String userToken = generateUserToken(testUser);
 
             Long nonExistentCarId = 999999L;
-            RentalRequestDto rentalRequest = TestDataBuilder.createRentalRequest(nonExistentCarId);
+            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(nonExistentCarId);
 
             mockMvc.perform(post("/api/rentals/request")
                             .header("Authorization", "Bearer " + userToken)
@@ -90,7 +90,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             soldCar.setCarStatusType(CarStatusType.SOLD);
             soldCar = carRepository.save(soldCar);
 
-            RentalRequestDto rentalRequest = TestDataBuilder.createRentalRequest(soldCar.getId());
+            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(soldCar.getId());
 
             mockMvc.perform(post("/api/rentals/request")
                             .header("Authorization", "Bearer " + userToken)
@@ -112,7 +112,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             reservedCar.setCarStatusType(CarStatusType.RESERVED);
             reservedCar = carRepository.save(reservedCar);
 
-            RentalRequestDto rentalRequest = TestDataBuilder.createRentalRequest(reservedCar.getId());
+            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(reservedCar.getId());
 
             mockMvc.perform(post("/api/rentals/request")
                             .header("Authorization", "Bearer " + userToken)
@@ -142,10 +142,10 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             Car testCar = TestDataBuilder.createAvailableCar();
             testCar = carRepository.save(testCar);
 
-            RentalRequestDto rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
+            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            PickupRequestDto pickupRequest = PickupRequestDto.builder().build();
+            PickupRequest pickupRequest = new PickupRequest(null);
 
             mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
@@ -170,7 +170,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             Car testCar = TestDataBuilder.createAvailableCar();
             testCar = carRepository.save(testCar);
 
-            RentalRequestDto rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
+            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
             mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
@@ -196,7 +196,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             Car testCar = TestDataBuilder.createAvailableCar();
             testCar = carRepository.save(testCar);
 
-            RentalRequestDto rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
+            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
             when(paymentGateway.authorize(any(), any(), anyString()))
@@ -234,7 +234,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             Car testCar = TestDataBuilder.createAvailableCar();
             testCar = carRepository.save(testCar);
 
-            RentalRequestDto rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
+            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
             when(paymentGateway.authorize(any(), any(), anyString()))

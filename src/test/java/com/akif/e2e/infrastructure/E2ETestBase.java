@@ -1,10 +1,10 @@
 package com.akif.e2e.infrastructure;
 
-import com.akif.dto.request.RentalRequestDto;
-import com.akif.dto.response.RentalResponseDto;
+import com.akif.auth.domain.User;
+import com.akif.rental.api.RentalResponse;
+import com.akif.rental.internal.dto.request.RentalRequest;
+import com.akif.rental.internal.scheduler.ReminderScheduler;
 import com.akif.shared.enums.Role;
-import com.akif.model.User;
-import com.akif.scheduler.ReminderScheduler;
 import com.akif.shared.security.JwtTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,7 +72,7 @@ public abstract class E2ETestBase {
         return tokenProvider.generateAccessToken(authentication);
     }
 
-    protected Long createAndGetRentalId(RentalRequestDto request, String token) throws Exception {
+    protected Long createAndGetRentalId(RentalRequest request, String token) throws Exception {
         MvcResult result = mockMvc.perform(post("/api/rentals/request")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -81,7 +81,7 @@ public abstract class E2ETestBase {
                 .andReturn();
         
         String responseBody = result.getResponse().getContentAsString();
-        RentalResponseDto response = objectMapper.readValue(responseBody, RentalResponseDto.class);
-        return response.getId();
+        RentalResponse response = objectMapper.readValue(responseBody, RentalResponse.class);
+        return response.id();
     }
 }

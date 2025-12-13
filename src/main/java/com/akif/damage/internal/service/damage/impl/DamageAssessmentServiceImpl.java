@@ -27,7 +27,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-class DamageAssessmentServiceImpl implements DamageAssessmentService {
+public class DamageAssessmentServiceImpl implements DamageAssessmentService {
 
     private final DamageReportRepository damageReportRepository;
     private final DamageConfig damageConfig;

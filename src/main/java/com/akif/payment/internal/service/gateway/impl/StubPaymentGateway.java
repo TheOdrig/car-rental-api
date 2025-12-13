@@ -14,7 +14,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @Profile("!prod")
-class StubPaymentGateway implements PaymentGateway {
+public class StubPaymentGateway implements PaymentGateway {
 
     private static final long API_SIMULATION_DELAY_MS = 100;
 

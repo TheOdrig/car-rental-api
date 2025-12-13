@@ -1,12 +1,12 @@
 package com.akif.e2e.edgecases;
 
-import com.akif.dto.request.RentalRequestDto;
+import com.akif.auth.domain.User;
+import com.akif.auth.internal.repository.UserRepository;
+import com.akif.car.domain.Car;
+import com.akif.car.internal.repository.CarRepository;
 import com.akif.e2e.infrastructure.E2ETestBase;
 import com.akif.e2e.infrastructure.TestDataBuilder;
-import com.akif.model.Car;
-import com.akif.model.User;
-import com.akif.repository.CarRepository;
-import com.akif.repository.UserRepository;
+import com.akif.rental.internal.dto.request.RentalRequest;
 import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -55,7 +55,7 @@ class ConcurrencyE2ETest extends E2ETestBase {
                 testUser = userRepository.save(testUser);
                 String userToken = generateUserToken(testUser);
                 
-                RentalRequestDto rentalRequest = TestDataBuilder.createRentalRequest(
+                RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(
                         testCar.getId(), startDate, endDate);
                 Long rentalId = createAndGetRentalId(rentalRequest, userToken);
                 rentalIds.add(rentalId);
@@ -95,7 +95,7 @@ class ConcurrencyE2ETest extends E2ETestBase {
 
             LocalDate startDate = LocalDate.now().plusDays(10);
             LocalDate endDate = LocalDate.now().plusDays(15);
-            RentalRequestDto rentalRequest = TestDataBuilder.createRentalRequest(
+            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(
                     testCar.getId(), startDate, endDate);
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
@@ -125,7 +125,7 @@ class ConcurrencyE2ETest extends E2ETestBase {
 
             LocalDate startDate = LocalDate.now().plusDays(10);
             LocalDate endDate = LocalDate.now().plusDays(15);
-            RentalRequestDto rentalRequest = TestDataBuilder.createRentalRequest(
+            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(
                     testCar.getId(), startDate, endDate);
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 

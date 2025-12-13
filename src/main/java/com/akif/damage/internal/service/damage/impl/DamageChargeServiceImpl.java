@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-class DamageChargeServiceImpl implements DamageChargeService {
+public class DamageChargeServiceImpl implements DamageChargeService {
 
     private final DamageReportRepository damageReportRepository;
     private final ApplicationEventPublisher eventPublisher;

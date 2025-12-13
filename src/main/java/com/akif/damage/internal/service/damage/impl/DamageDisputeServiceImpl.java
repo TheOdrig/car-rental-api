@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-class DamageDisputeServiceImpl implements DamageDisputeService {
+public class DamageDisputeServiceImpl implements DamageDisputeService {
 
     private final DamageReportRepository damageReportRepository;
     private final ApplicationEventPublisher eventPublisher;

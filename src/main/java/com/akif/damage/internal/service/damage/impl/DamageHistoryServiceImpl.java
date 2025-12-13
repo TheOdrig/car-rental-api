@@ -21,7 +21,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-class DamageHistoryServiceImpl implements DamageHistoryService {
+public class DamageHistoryServiceImpl implements DamageHistoryService {
 
     private final DamageReportRepository damageReportRepository;
     private final DamageMapper damageMapper;

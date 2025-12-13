@@ -102,6 +102,8 @@ public class CarServiceImpl implements CarService {
         Car car = carMapper.toEntity(carRequest);
         car.setCreateTime(LocalDateTime.now());
         car.setIsDeleted(false);
+        car.setViewCount(0L);
+        car.setLikeCount(0L);
 
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
