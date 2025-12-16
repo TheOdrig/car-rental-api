@@ -111,7 +111,7 @@ public class DashboardController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
     public ResponseEntity<Page<PendingItemDto>> getPendingApprovals(
-            @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
+            @PageableDefault(size = 10, sort = "createTime") Pageable pageable) {
         log.info("GET /api/admin/dashboard/pending/approvals - page: {}, size: {}", 
                 pageable.getPageNumber(), pageable.getPageSize());
         Page<PendingItemDto> approvals = dashboardService.getPendingApprovals(pageable);
