@@ -20,7 +20,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-class DashboardServiceImpl implements DashboardService {
+public class DashboardServiceImpl implements DashboardService {
 
     private final DashboardQueryService queryService;
 

@@ -32,14 +32,14 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-class DashboardQueryService {
+public class DashboardQueryService {
 
     private final RentalService rentalService;
     private final CarService carService;
     private final PaymentService paymentService;
     private final DamageService damageService;
 
-    DailySummaryDto fetchDailySummary() {
+    public DailySummaryDto fetchDailySummary() {
         log.debug("Fetching daily summary data");
         
         int pendingApprovals = rentalService.countByStatus(RentalStatus.REQUESTED);
@@ -58,7 +58,7 @@ class DashboardQueryService {
         );
     }
 
-    FleetStatusDto fetchFleetStatus() {
+    public FleetStatusDto fetchFleetStatus() {
         log.debug("Fetching fleet status data");
         
         int totalCars = carService.countTotalActiveCars();
@@ -80,7 +80,7 @@ class DashboardQueryService {
         );
     }
 
-    MonthlyMetricsDto fetchMonthlyMetrics(LocalDate startDate, LocalDate endDate) {
+    public MonthlyMetricsDto fetchMonthlyMetrics(LocalDate startDate, LocalDate endDate) {
         log.debug("Fetching monthly metrics for period: {} to {}", startDate, endDate);
         
         LocalDateTime startDateTime = startDate.atStartOfDay();
@@ -109,7 +109,7 @@ class DashboardQueryService {
         );
     }
 
-    RevenueAnalyticsDto fetchRevenueAnalytics() {
+    public RevenueAnalyticsDto fetchRevenueAnalytics() {
         log.debug("Fetching revenue analytics");
         
         List<PaymentService.DailyRevenueProjection> dailyProjections = paymentService.getDailyRevenue(30);
@@ -133,22 +133,22 @@ class DashboardQueryService {
         );
     }
 
-    Page<PendingItemDto> fetchPendingApprovals(Pageable pageable) {
+    public Page<PendingItemDto> fetchPendingApprovals(Pageable pageable) {
         Page<RentalResponse> rentals = rentalService.findPendingApprovals(pageable);
         return rentals.map(this::toPendingItemDto);
     }
 
-    Page<PendingItemDto> fetchTodaysPickups(Pageable pageable) {
+    public Page<PendingItemDto> fetchTodaysPickups(Pageable pageable) {
         Page<RentalResponse> rentals = rentalService.findTodaysPickups(pageable);
         return rentals.map(this::toPendingItemDto);
     }
 
-    Page<PendingItemDto> fetchTodaysReturns(Pageable pageable) {
+    public Page<PendingItemDto> fetchTodaysReturns(Pageable pageable) {
         Page<RentalResponse> rentals = rentalService.findTodaysReturns(pageable);
         return rentals.map(this::toPendingItemDto);
     }
 
-    Page<PendingItemDto> fetchOverdueRentals(Pageable pageable) {
+    public Page<PendingItemDto> fetchOverdueRentals(Pageable pageable) {
         Page<RentalResponse> rentals = rentalService.findOverdueRentals(pageable);
         return rentals.map(this::toPendingItemDto);
     }
