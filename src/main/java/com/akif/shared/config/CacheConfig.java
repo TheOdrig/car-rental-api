@@ -25,15 +25,25 @@ public class CacheConfig {
     public static final String MOST_VIEWED_CARS_CACHE = "most-viewed-cars";
     public static final String MOST_LIKED_CARS_CACHE = "most-liked-cars";
 
-    private static final Map<String, Integer> CACHE_TTL_MINUTES = Map.of(
-            EXCHANGE_RATES_CACHE, 60,
-            CARS_CACHE, 10,
-            CAR_STATISTICS_CACHE, 30,
-            CAR_STATUS_COUNTS_CACHE, 30,
-            CAR_BRAND_COUNTS_CACHE, 30,
-            CAR_AVERAGE_PRICES_CACHE, 30,
-            MOST_VIEWED_CARS_CACHE, 15,
-            MOST_LIKED_CARS_CACHE, 15
+    public static final String DAILY_SUMMARY_CACHE = "dailySummary";
+    public static final String FLEET_STATUS_CACHE = "fleetStatus";
+    public static final String MONTHLY_METRICS_CACHE = "monthlyMetrics";
+    public static final String REVENUE_ANALYTICS_CACHE = "revenueAnalytics";
+
+    private static final Map<String, Integer> CACHE_TTL_MINUTES = Map.ofEntries(
+            Map.entry(EXCHANGE_RATES_CACHE, 60),
+            Map.entry(CARS_CACHE, 10),
+            Map.entry(CAR_STATISTICS_CACHE, 30),
+            Map.entry(CAR_STATUS_COUNTS_CACHE, 30),
+            Map.entry(CAR_BRAND_COUNTS_CACHE, 30),
+            Map.entry(CAR_AVERAGE_PRICES_CACHE, 30),
+            Map.entry(MOST_VIEWED_CARS_CACHE, 15),
+            Map.entry(MOST_LIKED_CARS_CACHE, 15),
+
+            Map.entry(DAILY_SUMMARY_CACHE, 5),
+            Map.entry(FLEET_STATUS_CACHE, 5),
+            Map.entry(MONTHLY_METRICS_CACHE, 15),
+            Map.entry(REVENUE_ANALYTICS_CACHE, 15)
     );
 
     @Bean
