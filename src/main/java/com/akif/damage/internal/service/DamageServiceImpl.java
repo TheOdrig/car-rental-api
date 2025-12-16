@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -44,4 +45,17 @@ class DamageServiceImpl implements DamageService {
         
         return damageReportRepository.existsPendingByCarId(carId);
     }
+
+
+    @Override
+    public int countPendingAssessments() {
+        return damageReportRepository.countPendingAssessments();
+    }
+
+    @Override
+    public int countUnresolvedDisputesOlderThan(int days) {
+        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(days);
+        return damageReportRepository.countUnresolvedDisputesOlderThan(cutoffDate);
+    }
 }
+

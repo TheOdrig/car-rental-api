@@ -9,4 +9,9 @@ public interface DamageService {
     boolean hasPendingDamageReports(Long rentalId);
 
     boolean hasPendingDamageReportsForCar(Long carId);
+
+
+    int countPendingAssessments();
+
+    int countUnresolvedDisputesOlderThan(int days);
 }

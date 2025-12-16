@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -141,4 +142,20 @@ public interface DamageReportRepository extends JpaRepository<DamageReport, Long
     BigDecimal averageRepairCost(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+
+    @Query("""
+            SELECT COUNT(d) FROM DamageReport d 
+            WHERE d.isDeleted = false 
+            AND d.status IN (com.akif.damage.domain.enums.DamageStatus.REPORTED, com.akif.damage.domain.enums.DamageStatus.UNDER_ASSESSMENT)
+            """)
+    int countPendingAssessments();
+
+    @Query("""
+            SELECT COUNT(d) FROM DamageReport d 
+            WHERE d.isDeleted = false 
+            AND d.status = com.akif.damage.domain.enums.DamageStatus.DISPUTED 
+            AND d.reportedAt < :cutoffDate
+            """)
+    int countUnresolvedDisputesOlderThan(@Param("cutoffDate") LocalDateTime cutoffDate);
 }
