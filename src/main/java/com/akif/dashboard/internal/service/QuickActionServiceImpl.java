@@ -21,62 +21,47 @@ public class QuickActionServiceImpl implements QuickActionService {
     public QuickActionResultDto approveRental(Long rentalId) {
         log.info("Processing quick action: approve rental {}", rentalId);
         
-        try {
-            RentalResponse response = rentalService.confirmRental(rentalId);
-            DailySummaryDto updatedSummary = dashboardQueryService.fetchDailySummary();
-            
-            log.info("Rental {} approved successfully, new status: {}", rentalId, response.status());
-            
-            return QuickActionResultDto.success(
-                "Rental approved successfully",
-                response.status().name(),
-                updatedSummary
-            );
-        } catch (Exception exception) {
-            log.error("Failed to approve rental {}: {}", rentalId, exception.getMessage());
-            return QuickActionResultDto.failure("Failed to approve rental: " + exception.getMessage());
-        }
+        RentalResponse response = rentalService.confirmRental(rentalId);
+        DailySummaryDto updatedSummary = dashboardQueryService.fetchDailySummary();
+        
+        log.info("Rental {} approved successfully, new status: {}", rentalId, response.status());
+        
+        return QuickActionResultDto.success(
+            "Rental approved successfully",
+            response.status().name(),
+            updatedSummary
+        );
     }
 
     @Override
     public QuickActionResultDto processPickup(Long rentalId) {
         log.info("Processing quick action: pickup rental {}", rentalId);
         
-        try {
-            RentalResponse response = rentalService.pickupRental(rentalId, "Processed via dashboard quick action");
-            DailySummaryDto updatedSummary = dashboardQueryService.fetchDailySummary();
-            
-            log.info("Rental {} picked up successfully, new status: {}", rentalId, response.status());
-            
-            return QuickActionResultDto.success(
-                "Pickup processed successfully",
-                response.status().name(),
-                updatedSummary
-            );
-        } catch (Exception exception) {
-            log.error("Failed to process pickup for rental {}: {}", rentalId, exception.getMessage());
-            return QuickActionResultDto.failure("Failed to process pickup: " + exception.getMessage());
-        }
+        RentalResponse response = rentalService.pickupRental(rentalId, "Processed via dashboard quick action");
+        DailySummaryDto updatedSummary = dashboardQueryService.fetchDailySummary();
+        
+        log.info("Rental {} picked up successfully, new status: {}", rentalId, response.status());
+        
+        return QuickActionResultDto.success(
+            "Pickup processed successfully",
+            response.status().name(),
+            updatedSummary
+        );
     }
 
     @Override
     public QuickActionResultDto processReturn(Long rentalId) {
         log.info("Processing quick action: return rental {}", rentalId);
         
-        try {
-            RentalResponse response = rentalService.returnRental(rentalId, "Processed via dashboard quick action");
-            DailySummaryDto updatedSummary = dashboardQueryService.fetchDailySummary();
-            
-            log.info("Rental {} returned successfully, new status: {}", rentalId, response.status());
-            
-            return QuickActionResultDto.success(
-                "Return processed successfully",
-                response.status().name(),
-                updatedSummary
-            );
-        } catch (Exception exception) {
-            log.error("Failed to process return for rental {}: {}", rentalId, exception.getMessage());
-            return QuickActionResultDto.failure("Failed to process return: " + exception.getMessage());
-        }
+        RentalResponse response = rentalService.returnRental(rentalId, "Processed via dashboard quick action");
+        DailySummaryDto updatedSummary = dashboardQueryService.fetchDailySummary();
+        
+        log.info("Rental {} returned successfully, new status: {}", rentalId, response.status());
+        
+        return QuickActionResultDto.success(
+            "Return processed successfully",
+            response.status().name(),
+            updatedSummary
+        );
     }
 }

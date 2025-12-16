@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -89,19 +90,15 @@ class QuickActionServiceImplTest {
         }
 
         @Test
-        @DisplayName("Should return failure when rental approval fails")
-        void shouldReturnFailureWhenApprovalFails() {
+        @DisplayName("Should throw exception when rental approval fails")
+        void shouldThrowExceptionWhenApprovalFails() {
             Long rentalId = 999L;
             String errorMessage = "Rental not found";
             when(rentalService.confirmRental(rentalId)).thenThrow(new RuntimeException(errorMessage));
 
-            QuickActionResultDto result = quickActionService.approveRental(rentalId);
-
-            assertThat(result.success()).isFalse();
-            assertThat(result.message()).contains("Failed to approve rental");
-            assertThat(result.message()).contains(errorMessage);
-            assertThat(result.newStatus()).isNull();
-            assertThat(result.updatedSummary()).isNull();
+            assertThatThrownBy(() -> quickActionService.approveRental(rentalId))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining(errorMessage);
         }
     }
 
@@ -128,20 +125,16 @@ class QuickActionServiceImplTest {
         }
 
         @Test
-        @DisplayName("Should return failure when pickup processing fails")
-        void shouldReturnFailureWhenPickupFails() {
+        @DisplayName("Should throw exception when pickup processing fails")
+        void shouldThrowExceptionWhenPickupFails() {
             Long rentalId = 999L;
             String errorMessage = "Invalid rental state for pickup";
             when(rentalService.pickupRental(eq(rentalId), anyString()))
                 .thenThrow(new RuntimeException(errorMessage));
 
-            QuickActionResultDto result = quickActionService.processPickup(rentalId);
-
-            assertThat(result.success()).isFalse();
-            assertThat(result.message()).contains("Failed to process pickup");
-            assertThat(result.message()).contains(errorMessage);
-            assertThat(result.newStatus()).isNull();
-            assertThat(result.updatedSummary()).isNull();
+            assertThatThrownBy(() -> quickActionService.processPickup(rentalId))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining(errorMessage);
         }
     }
 
@@ -168,20 +161,16 @@ class QuickActionServiceImplTest {
         }
 
         @Test
-        @DisplayName("Should return failure when return processing fails")
-        void shouldReturnFailureWhenReturnFails() {
+        @DisplayName("Should throw exception when return processing fails")
+        void shouldThrowExceptionWhenReturnFails() {
             Long rentalId = 999L;
             String errorMessage = "Invalid rental state for return";
             when(rentalService.returnRental(eq(rentalId), anyString()))
                 .thenThrow(new RuntimeException(errorMessage));
 
-            QuickActionResultDto result = quickActionService.processReturn(rentalId);
-
-            assertThat(result.success()).isFalse();
-            assertThat(result.message()).contains("Failed to process return");
-            assertThat(result.message()).contains(errorMessage);
-            assertThat(result.newStatus()).isNull();
-            assertThat(result.updatedSummary()).isNull();
+            assertThatThrownBy(() -> quickActionService.processReturn(rentalId))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining(errorMessage);
         }
     }
 
