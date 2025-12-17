@@ -137,4 +137,67 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
             "AND r.isDeleted = false")
     long countTotalReturns(@Param("startDate") LocalDate startDate,
                            @Param("endDate") LocalDate endDate);
+
+
+    int countByStatusAndIsDeletedFalse(RentalStatus status);
+
+    @Query("""
+            SELECT COUNT(r) FROM Rental r 
+            WHERE r.status = com.akif.rental.domain.enums.RentalStatus.CONFIRMED 
+            AND r.startDate = :today 
+            AND r.isDeleted = false
+            """)
+    int countTodaysPickups(@Param("today") LocalDate today);
+
+    @Query("""
+            SELECT COUNT(r) FROM Rental r 
+            WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE 
+            AND r.endDate = :today 
+            AND r.isDeleted = false
+            """)
+    int countTodaysReturns(@Param("today") LocalDate today);
+
+    @Query("""
+            SELECT COUNT(r) FROM Rental r 
+            WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE 
+            AND r.endDate < :today 
+            AND r.isDeleted = false
+            """)
+    int countOverdueRentals(@Param("today") LocalDate today);
+
+    @Query("""
+            SELECT r FROM Rental r 
+            WHERE r.status = com.akif.rental.domain.enums.RentalStatus.REQUESTED 
+            AND r.isDeleted = false 
+            ORDER BY r.createTime ASC
+            """)
+    Page<Rental> findPendingApprovals(Pageable pageable);
+
+    @Query("""
+            SELECT r FROM Rental r 
+            WHERE r.status = com.akif.rental.domain.enums.RentalStatus.CONFIRMED 
+            AND r.startDate = :today 
+            AND r.isDeleted = false 
+            ORDER BY r.startDate ASC
+            """)
+    Page<Rental> findTodaysPickups(@Param("today") LocalDate today, Pageable pageable);
+
+    @Query("""
+            SELECT r FROM Rental r 
+            WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE 
+            AND r.endDate = :today 
+            AND r.isDeleted = false 
+            ORDER BY r.endDate ASC
+            """)
+    Page<Rental> findTodaysReturns(@Param("today") LocalDate today, Pageable pageable);
+
+    @Query("""
+            SELECT COALESCE(AVG(r.days), 0.0) FROM Rental r 
+            WHERE r.status = com.akif.rental.domain.enums.RentalStatus.RETURNED 
+            AND (:startDate IS NULL OR r.endDate >= :startDate) 
+            AND (:endDate IS NULL OR r.endDate <= :endDate) 
+            AND r.isDeleted = false
+            """)
+    Double averageRentalDurationDays(@Param("startDate") LocalDate startDate,
+                                     @Param("endDate") LocalDate endDate);
 }

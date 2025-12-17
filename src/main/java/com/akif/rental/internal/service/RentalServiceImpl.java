@@ -659,4 +659,67 @@ public class RentalServiceImpl implements RentalService {
         log.info("Incremented damage report count for rental: {} (new count: {})", 
                 rentalId, rental.getDamageReportsCount());
     }
+
+
+    @Override
+    public int countByStatus(RentalStatus status) {
+        return rentalRepository.countByStatusAndIsDeletedFalse(status);
+    }
+
+    @Override
+    public int countTodaysPickups() {
+        return rentalRepository.countTodaysPickups(LocalDate.now());
+    }
+
+    @Override
+    public int countTodaysReturns() {
+        return rentalRepository.countTodaysReturns(LocalDate.now());
+    }
+
+    @Override
+    public int countOverdueRentals() {
+        return rentalRepository.countOverdueRentals(LocalDate.now());
+    }
+
+    @Override
+    public Page<RentalResponse> findPendingApprovals(Pageable pageable) {
+        Page<Rental> rentals = rentalRepository.findPendingApprovals(pageable);
+        return rentals.map(rentalMapper::toDto);
+    }
+
+    @Override
+    public Page<RentalResponse> findTodaysPickups(Pageable pageable) {
+        Page<Rental> rentals = rentalRepository.findTodaysPickups(LocalDate.now(), pageable);
+        return rentals.map(rentalMapper::toDto);
+    }
+
+    @Override
+    public Page<RentalResponse> findTodaysReturns(Pageable pageable) {
+        Page<Rental> rentals = rentalRepository.findTodaysReturns(LocalDate.now(), pageable);
+        return rentals.map(rentalMapper::toDto);
+    }
+
+    @Override
+    public Page<RentalResponse> findOverdueRentals(Pageable pageable) {
+        Page<Rental> rentals = rentalRepository.findOverdueRentals(LocalDate.now(), pageable);
+        return rentals.map(rentalMapper::toDto);
+    }
+
+    @Override
+    public BigDecimal sumCollectedPenaltyRevenue(LocalDate startDate, LocalDate endDate) {
+        log.debug("Calculating collected penalty revenue between {} and {}", startDate, endDate);
+        return rentalRepository.sumCollectedPenaltyAmount(
+                java.util.List.of(LateReturnStatus.LATE, LateReturnStatus.SEVERELY_LATE),
+                startDate,
+                endDate
+        );
+    }
+
+    @Override
+    public BigDecimal getAverageRentalDurationDays(LocalDate startDate, LocalDate endDate) {
+        log.debug("Calculating average rental duration between {} and {}", startDate, endDate);
+        Double avgDays = rentalRepository.averageRentalDurationDays(startDate, endDate);
+        return BigDecimal.valueOf(avgDays != null ? avgDays : 0.0)
+                .setScale(2, RoundingMode.HALF_UP);
+    }
 }
