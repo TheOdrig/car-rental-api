@@ -4,14 +4,15 @@ A production-ready REST API for car rental management, built with **Spring Boot*
 
 [![Java](https://img.shields.io/badge/Java-17-orange)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-green)](https://spring.io/projects/spring-boot)
-[![Tests](https://img.shields.io/badge/Tests-843%20passing-brightgreen)](/)
+[![Tests](https://img.shields.io/badge/Tests-800%2B%20passing-brightgreen)](/)
 [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
 ## ✨ Features
 
 | Feature | Description |
 |---------|-------------|
-| **Modular Architecture** | 8 Spring Modulith modules with enforced boundaries |
+| **Modular Architecture** | 9 Spring Modulith modules with enforced boundaries |
+| **Admin Dashboard** | Real-time metrics, alerts, quick actions, revenue analytics |
 | **Rental Lifecycle** | Request → Confirm → Pickup → Return workflow |
 | **Payment Processing** | Stripe integration with webhooks and reconciliation |
 | **Dynamic Pricing** | 5 strategies: season, early booking, duration, weekend, demand |
@@ -42,6 +43,7 @@ graph TD
         rental[📋 rental]
         damage[🔨 damage]
         payment[💳 payment]
+        dashboard[📊 dashboard]
         notification[📧 notification]
     end
     
@@ -57,8 +59,13 @@ graph TD
     damage --> rental
     damage --> car
     damage --> payment
+    dashboard --> rental
+    dashboard --> car
+    dashboard --> payment
+    dashboard --> damage
     notification -.->|events| rental
     notification -.->|events| damage
+    notification -.->|events| dashboard
 ```
 
 </details>
@@ -74,6 +81,7 @@ graph TD
 | `payment` | Stripe gateway, webhooks, reconciliation | `shared` |
 | `rental` | Rental lifecycle, late returns, penalties | `car`, `auth`, `currency`, `payment` |
 | `damage` | Damage reports, assessment, disputes | `rental`, `car`, `payment` |
+| `dashboard` | Admin metrics, alerts, quick actions | `rental`, `car`, `payment`, `damage` |
 | `notification` | Event-driven email notifications | *(events only)* |
 
 📖 See [Architecture Decision Records](docs/architecture/adr/) for design rationale and [Developer Guide](docs/architecture/DEVELOPER_GUIDE.md) for implementation details.
@@ -88,7 +96,7 @@ graph TD
 | Payment | Stripe API |
 | Email | SendGrid SMTP, Thymeleaf templates |
 | Cache | Caffeine |
-| Testing | JUnit 5, Mockito, 843+ tests |
+| Testing | JUnit 5, Mockito, 800+ tests |
 | Docs | Swagger/OpenAPI |
 
 ## 🚀 Quick Start
@@ -144,9 +152,18 @@ POST /api/rentals/{id}/return   # Admin: complete return
 
 ### Admin Operations
 ```http
-GET  /api/admin/late-returns     # Late return report
-POST /api/admin/damages          # Create damage report
-POST /api/admin/damages/{id}/assess  # Assess damage
+GET  /api/admin/dashboard/summary   # Daily summary
+GET  /api/admin/dashboard/fleet     # Fleet status
+GET  /api/admin/dashboard/metrics   # Monthly metrics
+GET  /api/admin/dashboard/revenue   # Revenue analytics
+GET  /api/admin/alerts              # Active alerts
+POST /api/admin/alerts/{id}/acknowledge  # Acknowledge alert
+POST /api/admin/quick-actions/rentals/{id}/approve  # Approve rental
+POST /api/admin/quick-actions/rentals/{id}/pickup   # Process pickup
+POST /api/admin/quick-actions/rentals/{id}/return   # Process return
+GET  /api/admin/late-returns        # Late return report
+POST /api/admin/damages             # Create damage report
+POST /api/admin/damages/{id}/assess # Assess damage
 ```
 
 📖 Full API documentation available at `/swagger-ui.html`
@@ -165,7 +182,7 @@ mvn jacoco:report
 ```
 
 **Test Coverage:**
-- 843+ tests passing
+- 800+ tests passing
 - Unit, integration, and E2E tests
 - Module boundary verification
 - Complete rental lifecycle coverage
@@ -178,6 +195,7 @@ src/main/java/com/akif/
 ├── car/            # Car management module
 ├── currency/       # Currency conversion module
 ├── damage/         # Damage management module
+├── dashboard/      # Admin dashboard module
 ├── notification/   # Email notification module
 ├── payment/        # Payment processing module
 ├── rental/         # Rental operations module
@@ -201,10 +219,11 @@ See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for detailed configuration op
 
 ## 📊 Technical Highlights
 
-- **Modular Monolith** with Spring Modulith (8 modules, enforced boundaries)
+- **Modular Monolith** with Spring Modulith (9 modules, enforced boundaries)
+- **Admin Dashboard** with real-time metrics, 5-level alert system, event-driven cache invalidation
 - **Event-Driven Architecture** for decoupled module communication
 - **ID Reference + Denormalization** pattern for cross-module entities
-- **843+ Automated Tests** with E2E coverage
+- **800+ Automated Tests** with E2E coverage
 - **CI/CD Pipeline** with module verification
 - **5 ADRs** documenting architectural decisions
 
