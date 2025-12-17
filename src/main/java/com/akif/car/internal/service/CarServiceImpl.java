@@ -782,6 +782,17 @@ public class CarServiceImpl implements CarService {
     }
 
 
+    @Override
+    public int countByStatus(CarStatusType status) {
+        return (int) carRepository.countByCarStatusTypeAndIsDeletedFalse(status);
+    }
+
+    @Override
+    public int countTotalActiveCars() {
+        return (int) carRepository.countByIsDeletedFalse();
+    }
+
+
     private void logCarRetrievalSuccess(CarResponse result) {
         log.info("Successfully retrieved car (ID: {}, Plate: {})",
                 result.getId(), result.getLicensePlate());

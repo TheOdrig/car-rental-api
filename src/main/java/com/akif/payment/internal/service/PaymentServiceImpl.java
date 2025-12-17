@@ -18,7 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.time.*;
+import java.util.stream.Collectors;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -244,5 +246,82 @@ class PaymentServiceImpl implements PaymentService {
                 paymentId, refundAmount, savedPayment.getRefundedAmount());
         
         return paymentMapper.toDto(savedPayment);
+    }
+
+
+    @Override
+    public BigDecimal sumCapturedPaymentsBetween(LocalDateTime start, LocalDateTime end) {
+        return paymentRepository.sumCapturedPaymentsBetween(start, end);
+    }
+
+    @Override
+    public List<DailyRevenueProjection> getDailyRevenue(int days) {
+        LocalDateTime startDate = LocalDateTime.now().minusDays(days);
+        List<Payment> payments = paymentRepository.findByStatusAndCreateTimeAfter(
+                PaymentStatus.CAPTURED, startDate);
+
+        Map<LocalDate, List<Payment>> grouped = payments.stream()
+                .collect(Collectors.groupingBy(
+                        p -> p.getCreateTime().toLocalDate()));
+        
+        return grouped.entrySet().stream()
+                .map(entry -> new DailyRevenueProjectionImpl(
+                        entry.getKey(),
+                        entry.getValue().stream()
+                                .map(Payment::getAmount)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add),
+                        entry.getValue().size()))
+                .sorted((a, b) -> a.getDate().compareTo(b.getDate()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MonthlyRevenueProjection> getMonthlyRevenue(int months) {
+        LocalDateTime startDate = LocalDateTime.now().minusMonths(months);
+        List<Payment> payments = paymentRepository.findByStatusAndCreateTimeAfter(
+                PaymentStatus.CAPTURED, startDate);
+
+        Map<YearMonth, List<Payment>> grouped = payments.stream()
+                .collect(Collectors.groupingBy(
+                        p -> YearMonth.from(p.getCreateTime())));
+        
+        return grouped.entrySet().stream()
+                .map(entry -> new MonthlyRevenueProjectionImpl(
+                        entry.getKey(),
+                        entry.getValue().stream()
+                                .map(Payment::getAmount)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add),
+                        entry.getValue().size()))
+                .sorted((a, b) -> a.getMonth().compareTo(b.getMonth()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public int countFailedPayments() {
+        return paymentRepository.countByStatusAndIsDeletedFalse(PaymentStatus.FAILED);
+    }
+
+    private record DailyRevenueProjectionImpl(
+            LocalDate date,
+            BigDecimal revenue, 
+            int rentalCount) implements DailyRevenueProjection {
+        @Override
+        public LocalDate getDate() { return date; }
+        @Override
+        public BigDecimal getRevenue() { return revenue; }
+        @Override
+        public int getRentalCount() { return rentalCount; }
+    }
+
+    private record MonthlyRevenueProjectionImpl(
+            YearMonth month,
+            BigDecimal revenue, 
+            int rentalCount) implements MonthlyRevenueProjection {
+        @Override
+        public YearMonth getMonth() { return month; }
+        @Override
+        public BigDecimal getRevenue() { return revenue; }
+        @Override
+        public int getRentalCount() { return rentalCount; }
     }
 }

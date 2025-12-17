@@ -14,11 +14,11 @@ This document covers the migration of the Car Rental API to a Spring Modulith-ba
 | Criteria | Target | Actual | Status |
 |----------|--------|--------|--------|
 | `modules.verify()` | PASS | PASS | ✅ |
-| All existing tests | PASS | 843 tests, 0 failures | ✅ |
+| All existing tests | PASS | 800+ tests, 0 failures | ✅ |
 | Circular dependencies | 0 | 0 | ✅ |
 | Shared kernel size | ≤ 10 classes | 21 classes | ⚠️ |
 | CI pipeline | Green | Configured | ✅ |
-| Module dependency count | ≤ 3 per module | Max 5 (rental) | ⚠️ |
+| Module dependency count | ≤ 3 per module | Max 5 (rental, dashboard) | ⚠️ |
 | Entity leak in events | 0 | 0 | ✅ |
 
 ### Notes on Deviations
@@ -73,6 +73,11 @@ com.akif/
 │   ├── domain/     # DamageReport, DamagePhoto
 │   ├── internal/   # Services, repository, mapper
 │   └── web/
+├── dashboard/      # Admin Dashboard
+│   ├── api/        # Public API (DashboardService, AlertService, QuickActionService)
+│   ├── domain/     # Alert entity, enums
+│   ├── internal/   # Query service, event listener, cache
+│   └── web/        # Controllers (13 endpoints)
 ├── notification/   # Email Notifications
 │   ├── internal/   # Email services
 │   └── listener/   # Event listeners
@@ -106,6 +111,7 @@ car        → currency, shared
 notification → shared (listens to events)
 payment    → shared
 damage     → rental, car, payment, shared
+dashboard  → rental, car, payment, damage, shared
 rental     → car, auth, currency, payment, shared
 ```
 
@@ -205,7 +211,7 @@ private String userFullName;
 
 ### Challenges
 
-1. **Test Migration:** Updating imports for 843 tests took time
+1. **Test Migration:** Updating imports for 800+ tests took time
 2. **Circular Dependencies:** Car ↔ Rental relationship required careful design
 3. **Shared Kernel Bloat:** Config and security classes exceeded expected count
 

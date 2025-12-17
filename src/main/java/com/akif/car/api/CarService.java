@@ -101,4 +101,10 @@ public interface CarService {
     Page<CarResponse> searchCarsByCriteria(String searchTerm, String brand, String model,
                                            BigDecimal minPrice, BigDecimal maxPrice,
                                            CarStatusType status, Pageable pageable);
+
+
+    int countByStatus(CarStatusType status);
+
+    int countTotalActiveCars();
 }
+
