@@ -673,46 +673,37 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @CacheEvict(value = "cars", key = "#id")
     public void incrementViewCount(Long id) {
         log.debug("Incrementing view count for car id: {}", id);
         validateCarId(id);
 
-        Car car = findCarById(id);
-        car.incrementViewCount();
-        car.setUpdateTime(LocalDateTime.now());
+        carRepository.incrementViewCount(id);
 
-        carRepository.save(car);
         log.info("Successfully incremented view count for car: ID={}", id);
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @CacheEvict(value = "cars", key = "#id")
     public void incrementLikeCount(Long id) {
         log.debug("Incrementing like count for car id: {}", id);
         validateCarId(id);
 
-        Car car = findCarById(id);
-        car.incrementLikeCount();
-        car.setUpdateTime(LocalDateTime.now());
+        carRepository.incrementLikeCount(id);
 
-        carRepository.save(car);
         log.info("Successfully incremented like count for car: ID={}", id);
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @CacheEvict(value = "cars", key = "#id")
     public void decrementLikeCount(Long id) {
         log.debug("Decrementing like count for car id: {}", id);
         validateCarId(id);
 
-        Car car = findCarById(id);
-        car.decrementLikeCount();
-        car.setUpdateTime(LocalDateTime.now());
+        carRepository.decrementLikeCount(id);
 
-        carRepository.save(car);
         log.info("Successfully decremented like count for car: ID={}", id);
     }
 
