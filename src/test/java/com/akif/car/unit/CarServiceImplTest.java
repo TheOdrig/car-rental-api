@@ -377,33 +377,47 @@ class CarServiceImplTest {
     class BusinessLogicOperations {
 
         @Test
-        @DisplayName("Should increment view count when viewing car")
-        void shouldIncrementViewCountWhenViewingCar() {
-
-            when(carRepository.findById(1L)).thenReturn(Optional.of(testCar1));
-            when(carRepository.save(testCar1)).thenReturn(testCar1);
-
+        @DisplayName("Should call atomic incrementViewCount in repository")
+        void shouldCallAtomicIncrementViewCount() {
             carService.incrementViewCount(1L);
 
-            assertThat(testCar1.getViewCount()).isEqualTo(11L);
-
-            verify(carRepository).findById(1L);
-            verify(carRepository).save(testCar1);
+            verify(carRepository).incrementViewCount(1L);
+            verify(carRepository, never()).findById(any());
+            verify(carRepository, never()).save(any());
         }
 
         @Test
-        @DisplayName("Should increment like count when liking car")
-        void shouldIncrementLikeCountWhenLikingCar() {
-
-            when(carRepository.findById(1L)).thenReturn(Optional.of(testCar1));
-            when(carRepository.save(testCar1)).thenReturn(testCar1);
-
+        @DisplayName("Should call atomic incrementLikeCount in repository")
+        void shouldCallAtomicIncrementLikeCount() {
             carService.incrementLikeCount(1L);
 
-            assertThat(testCar1.getLikeCount()).isEqualTo(6L);
+            verify(carRepository).incrementLikeCount(1L);
+            verify(carRepository, never()).findById(any());
+            verify(carRepository, never()).save(any());
+        }
 
-            verify(carRepository).findById(1L);
-            verify(carRepository).save(testCar1);
+        @Test
+        @DisplayName("Should call atomic decrementLikeCount in repository")
+        void shouldCallAtomicDecrementLikeCount() {
+            carService.decrementLikeCount(1L);
+
+            verify(carRepository).decrementLikeCount(1L);
+            verify(carRepository, never()).findById(any());
+            verify(carRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when incrementing view count on null id")
+        void shouldThrowExceptionWhenIncrementingViewCountOnNullId() {
+            assertThatThrownBy(() -> carService.incrementViewCount(null))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        @DisplayName("Should throw exception when incrementing like count on null id")
+        void shouldThrowExceptionWhenIncrementingLikeCountOnNullId() {
+            assertThatThrownBy(() -> carService.incrementLikeCount(null))
+                    .isInstanceOf(IllegalArgumentException.class);
         }
 
         @Test

@@ -24,6 +24,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -62,12 +63,14 @@ public class RentalController {
 
 
     @PostMapping("/{id}/confirm")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Confirm rental", description = "Admin confirms a rental request and authorizes payment")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Rental confirmed successfully",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = RentalResponse.class))),
             @ApiResponse(responseCode = "400", description = "Invalid rental state"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
             @ApiResponse(responseCode = "404", description = "Rental not found"),
             @ApiResponse(responseCode = "402", description = "Payment failed")
     })
@@ -85,12 +88,14 @@ public class RentalController {
 
 
     @PostMapping("/{id}/pickup")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Pickup rental", description = "Admin processes car pickup and captures payment")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Pickup processed successfully",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = RentalResponse.class))),
             @ApiResponse(responseCode = "400", description = "Invalid rental state"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
             @ApiResponse(responseCode = "404", description = "Rental not found")
     })
     public ResponseEntity<RentalResponse> pickupRental(
@@ -110,12 +115,14 @@ public class RentalController {
 
 
     @PostMapping("/{id}/return")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Return rental", description = "Admin processes car return")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Return processed successfully",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = RentalResponse.class))),
             @ApiResponse(responseCode = "400", description = "Invalid rental state"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
             @ApiResponse(responseCode = "404", description = "Rental not found")
     })
     public ResponseEntity<RentalResponse> returnRental(
