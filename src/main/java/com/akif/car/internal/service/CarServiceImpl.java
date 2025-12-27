@@ -212,6 +212,10 @@ public class CarServiceImpl implements CarService {
                 searchRequest.getSearchTerm(),
                 searchRequest.getBrand(),
                 searchRequest.getModel(),
+                searchRequest.getTransmissionType(),
+                searchRequest.getBodyType(),
+                searchRequest.getFuelType(),
+                searchRequest.getMinSeats(),
                 searchRequest.getMinProductionYear(),
                 searchRequest.getMaxProductionYear(),
                 searchRequest.getMinPrice(),
@@ -773,7 +777,7 @@ public class CarServiceImpl implements CarService {
                 searchTerm, brand, model, minPrice, maxPrice, status);
 
         Page<Car> cars = carRepository.findCarsByCriteria(
-                searchTerm, brand, model, null, null, minPrice, maxPrice, null, status, pageable
+                searchTerm, brand, model, null, null, null, null, null, null, minPrice, maxPrice, null, status, pageable
         );
         Page<CarResponse> result = cars.map(carMapper::toDto);
 

@@ -55,6 +55,10 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             "LOWER(c.model) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) AND " +
             "(:brand IS NULL OR LOWER(c.brand) = LOWER(:brand)) AND " +
             "(:model IS NULL OR LOWER(c.model) = LOWER(:model)) AND " +
+            "(:transmissionType IS NULL OR LOWER(c.transmissionType) = LOWER(:transmissionType)) AND " +
+            "(:bodyType IS NULL OR LOWER(c.bodyType) = LOWER(:bodyType)) AND " +
+            "(:fuelType IS NULL OR LOWER(c.fuelType) = LOWER(:fuelType)) AND " +
+            "(:minSeats IS NULL OR c.seats >= :minSeats) AND " +
             "(:minProductionYear IS NULL OR c.productionYear >= :minProductionYear) AND " +
             "(:maxProductionYear IS NULL OR c.productionYear <= :maxProductionYear) AND " +
             "(:minPrice IS NULL OR c.price >= :minPrice) AND " +
@@ -65,6 +69,10 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     Page<Car> findCarsByCriteria(@Param("searchTerm") String searchTerm,
                                  @Param("brand") String brand,
                                  @Param("model") String model,
+                                 @Param("transmissionType") String transmissionType,
+                                 @Param("bodyType") String bodyType,
+                                 @Param("fuelType") String fuelType,
+                                 @Param("minSeats") Integer minSeats,
                                  @Param("minProductionYear") Integer minProductionYear,
                                  @Param("maxProductionYear") Integer maxProductionYear,
                                  @Param("minPrice") BigDecimal minPrice,
