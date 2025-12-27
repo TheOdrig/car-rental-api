@@ -29,7 +29,7 @@ public interface CarService {
 
     void softDeleteCar(Long id);
 
-    void restoreCar(Long id);
+    CarResponse restoreCar(Long id);
 
 
     CarListResponse searchCars(CarSearchRequest searchRequest);

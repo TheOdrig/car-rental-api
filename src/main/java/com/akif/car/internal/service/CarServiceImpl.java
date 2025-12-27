@@ -131,7 +131,7 @@ public class CarServiceImpl implements CarService {
             checkLicensePlateUniqueness(carRequest.getLicensePlate());
         }
         
-        if (!existingCar.getVinNumber().equals(carRequest.getVinNumber())) {
+        if (!Objects.equals(existingCar.getVinNumber(), carRequest.getVinNumber())) {
             checkVinNumberUniqueness(carRequest.getVinNumber());
         }
 
@@ -189,7 +189,7 @@ public class CarServiceImpl implements CarService {
         @CacheEvict(value = "car-status-counts", allEntries = true),
         @CacheEvict(value = "car-statistics", allEntries = true)
     })
-    public void restoreCar(Long id) {
+    public CarResponse restoreCar(Long id) {
         log.debug("Restoring car with id: {}", id);
         validateCarId(id);
 
@@ -197,12 +197,15 @@ public class CarServiceImpl implements CarService {
         car.restore();
         car.setUpdateTime(LocalDateTime.now());
 
-        carRepository.save(car);
+        Car savedCar = carRepository.save(car);
+        CarResponse result = carMapper.toDto(savedCar);
+
         log.info("Successfully restored car: ID={}", id);
+        return result;
     }
 
     @Override
-    @Cacheable(value = "cars", key = "'search:' + #searchRequest.hashCode()")
+    @Cacheable(value = "cars", key = "'search:' + #searchRequest.toString()")
     public CarListResponse searchCars(CarSearchRequest searchRequest) {
         log.debug("Searching cars with criteria: {}", searchRequest);
 
