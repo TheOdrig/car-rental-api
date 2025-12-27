@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -69,11 +70,13 @@ public class CarController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create new car", description = "Create a new car with the provided information")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Car created successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarResponse.class))),
             @ApiResponse(responseCode = "400", description = "Invalid car data"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
             @ApiResponse(responseCode = "409", description = "Car already exists")
     })
     public ResponseEntity<CarResponse> createCar(
@@ -85,10 +88,12 @@ public class CarController {
     }
 
     @PutMapping(value = "/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update car", description = "Update an existing car with new information")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Car updated successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
             @ApiResponse(responseCode = "404", description = "Car not found"),
             @ApiResponse(responseCode = "400", description = "Invalid car data")
     })
@@ -102,9 +107,11 @@ public class CarController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Delete car", description = "Permanently delete a car")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Car deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
             @ApiResponse(responseCode = "404", description = "Car not found"),
             @ApiResponse(responseCode = "400", description = "Invalid car ID")
     })
@@ -118,9 +125,11 @@ public class CarController {
 
 
     @DeleteMapping("/{id}/soft")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Soft delete car", description = "Soft delete a car (mark as deleted)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Car soft deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
             @ApiResponse(responseCode = "404", description = "Car not found"),
             @ApiResponse(responseCode = "400", description = "Invalid car ID")
     })
@@ -131,17 +140,19 @@ public class CarController {
     }
 
     @PostMapping("/{id}/restore")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Restore car", description = "Restore a soft deleted car")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Car restored successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
             @ApiResponse(responseCode = "404", description = "Car not found"),
             @ApiResponse(responseCode = "400", description = "Invalid car ID")
     })
     public ResponseEntity<CarResponse> restoreCar(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        carService.restoreCar(id);
-        return ResponseEntity.noContent().build();
+        CarResponse car = carService.restoreCar(id);
+        return ResponseEntity.ok(car);
     }
 
 
