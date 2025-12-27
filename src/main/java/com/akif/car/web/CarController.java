@@ -18,9 +18,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -69,11 +71,13 @@ public class CarController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create new car", description = "Create a new car with the provided information")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Car created successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarResponse.class))),
             @ApiResponse(responseCode = "400", description = "Invalid car data"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
             @ApiResponse(responseCode = "409", description = "Car already exists")
     })
     public ResponseEntity<CarResponse> createCar(
@@ -85,10 +89,12 @@ public class CarController {
     }
 
     @PutMapping(value = "/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update car", description = "Update an existing car with new information")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Car updated successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
             @ApiResponse(responseCode = "404", description = "Car not found"),
             @ApiResponse(responseCode = "400", description = "Invalid car data")
     })
@@ -102,9 +108,11 @@ public class CarController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Delete car", description = "Permanently delete a car")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Car deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
             @ApiResponse(responseCode = "404", description = "Car not found"),
             @ApiResponse(responseCode = "400", description = "Invalid car ID")
     })
@@ -118,9 +126,11 @@ public class CarController {
 
 
     @DeleteMapping("/{id}/soft")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Soft delete car", description = "Soft delete a car (mark as deleted)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Car soft deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
             @ApiResponse(responseCode = "404", description = "Car not found"),
             @ApiResponse(responseCode = "400", description = "Invalid car ID")
     })
@@ -131,17 +141,19 @@ public class CarController {
     }
 
     @PostMapping("/{id}/restore")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Restore car", description = "Restore a soft deleted car")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Car restored successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
             @ApiResponse(responseCode = "404", description = "Car not found"),
             @ApiResponse(responseCode = "400", description = "Invalid car ID")
     })
     public ResponseEntity<CarResponse> restoreCar(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        carService.restoreCar(id);
-        return ResponseEntity.noContent().build();
+        CarResponse car = carService.restoreCar(id);
+        return ResponseEntity.ok(car);
     }
 
 
@@ -165,19 +177,45 @@ public class CarController {
     }
 
     @GetMapping(value = "/active")
-    @Operation(summary = "Get active cars", description = "Retrieve all active (not deleted) cars with pagination and optional currency conversion")
+    @Operation(summary = "Get active cars", 
+               description = "Retrieve all active (not deleted) cars with pagination, sorting, and optional currency conversion. " +
+                       "Supported sort fields: price, brand, model, productionYear, viewCount, likeCount, rating, createTime. " +
+                       "Example: ?sort=price,asc or ?sort=createTime,desc")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Active cars retrieved successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters or currency")
+            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters, sort field, or currency")
     })
     public ResponseEntity<Page<CarResponse>> getAllActiveCars(
-            @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable,
+            @Parameter(description = "Pagination and sorting. Use ?sort=field,direction (e.g., ?sort=price,asc)") 
+            @PageableDefault(size = 20, sort = "createTime", direction = Sort.Direction.DESC) Pageable pageable,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
+        log.debug("GET /api/cars/active - Getting active cars with page: {}, size: {}, sort: {}", 
+                 pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
         Page<CarResponse> cars = carService.getAllActiveCars(pageable);
         if (currency != null) {
             cars.forEach(car -> applyPriceConversion(car, currency));
         }
+        log.info("Successfully retrieved {} active cars", cars.getTotalElements());
+        return ResponseEntity.ok(cars);
+    }
+
+    @GetMapping(value = "/featured")
+    @Operation(summary = "Get featured cars", description = "Retrieve featured cars with pagination and optional currency conversion")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Featured cars retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters or currency")
+    })
+    public ResponseEntity<Page<CarResponse>> getFeaturedCars(
+            @Parameter(description = "Pagination information") @PageableDefault(size = 10) Pageable pageable,
+            @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
+        log.debug("GET /api/cars/featured - Getting featured cars with page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+        Page<CarResponse> cars = carService.getFeaturedCars(pageable);
+        if (currency != null) {
+            cars.forEach(car -> applyPriceConversion(car, currency));
+        }
+        log.info("Successfully retrieved {} featured cars", cars.getTotalElements());
         return ResponseEntity.ok(cars);
     }
 

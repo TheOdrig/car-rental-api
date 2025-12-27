@@ -110,8 +110,8 @@ graph TD
 
 ```bash
 # Clone
-git clone https://github.com/TheOdrig/car-rental.git
-cd car-rental
+git clone https://github.com/TheOdrig/car-rental-api.git
+cd car-rental-api
 
 # Configure environment
 cp .env.example .env

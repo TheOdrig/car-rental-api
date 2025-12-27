@@ -5,7 +5,9 @@ import com.akif.shared.enums.CurrencyType;
 import com.akif.car.domain.Car;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -39,6 +41,7 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     Page<Car> findByIsFeaturedTrueAndIsDeletedFalse(Pageable pageable);
     Page<Car> findByIsTestDriveAvailableTrueAndIsDeletedFalse(Pageable pageable);
 
+    @EntityGraph(attributePaths = {})
     Page<Car> findByIsDeletedFalse(Pageable pageable);
     long countByIsDeletedFalse();
 
@@ -55,6 +58,10 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             "LOWER(c.model) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) AND " +
             "(:brand IS NULL OR LOWER(c.brand) = LOWER(:brand)) AND " +
             "(:model IS NULL OR LOWER(c.model) = LOWER(:model)) AND " +
+            "(:transmissionType IS NULL OR LOWER(c.transmissionType) = LOWER(:transmissionType)) AND " +
+            "(:bodyType IS NULL OR LOWER(c.bodyType) = LOWER(:bodyType)) AND " +
+            "(:fuelType IS NULL OR LOWER(c.fuelType) = LOWER(:fuelType)) AND " +
+            "(:minSeats IS NULL OR c.seats >= :minSeats) AND " +
             "(:minProductionYear IS NULL OR c.productionYear >= :minProductionYear) AND " +
             "(:maxProductionYear IS NULL OR c.productionYear <= :maxProductionYear) AND " +
             "(:minPrice IS NULL OR c.price >= :minPrice) AND " +
@@ -65,6 +72,10 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     Page<Car> findCarsByCriteria(@Param("searchTerm") String searchTerm,
                                  @Param("brand") String brand,
                                  @Param("model") String model,
+                                 @Param("transmissionType") String transmissionType,
+                                 @Param("bodyType") String bodyType,
+                                 @Param("fuelType") String fuelType,
+                                 @Param("minSeats") Integer minSeats,
                                  @Param("minProductionYear") Integer minProductionYear,
                                  @Param("maxProductionYear") Integer maxProductionYear,
                                  @Param("minPrice") BigDecimal minPrice,
@@ -141,4 +152,17 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             @Param("excludeCarId") Long excludeCarId,
             @Param("blockingStatuses") List<CarStatusType> blockingStatuses,
             Pageable pageable);
+
+
+    @Modifying
+    @Query("UPDATE Car c SET c.viewCount = c.viewCount + 1, c.updateTime = CURRENT_TIMESTAMP WHERE c.id = :id")
+    void incrementViewCount(@Param("id") Long id);
+
+    @Modifying
+    @Query("UPDATE Car c SET c.likeCount = c.likeCount + 1, c.updateTime = CURRENT_TIMESTAMP WHERE c.id = :id")
+    void incrementLikeCount(@Param("id") Long id);
+
+    @Modifying
+    @Query("UPDATE Car c SET c.likeCount = CASE WHEN c.likeCount > 0 THEN c.likeCount - 1 ELSE 0 END, c.updateTime = CURRENT_TIMESTAMP WHERE c.id = :id")
+    void decrementLikeCount(@Param("id") Long id);
 }

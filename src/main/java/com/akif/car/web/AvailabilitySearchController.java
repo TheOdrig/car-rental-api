@@ -89,7 +89,7 @@ public class AvailabilitySearchController {
 
     @GetMapping("/{id}/similar")
     @Operation(summary = "Get similar available cars", 
-               description = "Find similar cars that are available for the specified date range")
+               description = "Find similar cars that are available for the specified date range. If dates are not provided, defaults to today + 30 days.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Similar cars retrieved successfully",
                     content = @Content(mediaType = "application/json")),
@@ -99,15 +99,19 @@ public class AvailabilitySearchController {
     public ResponseEntity<List<SimilarCarDto>> getSimilarAvailableCars(
             @Parameter(description = "Car ID", required = true) 
             @PathVariable Long id,
-            @Parameter(description = "Rental start date", required = true, example = "2025-01-15")
-            @RequestParam String startDate,
-            @Parameter(description = "Rental end date", required = true, example = "2025-01-20")
-            @RequestParam String endDate,
+            @Parameter(description = "Rental start date (default: today)", example = "2025-01-15")
+            @RequestParam(required = false) String startDate,
+            @Parameter(description = "Rental end date (default: today + 30 days)", example = "2025-01-20")
+            @RequestParam(required = false) String endDate,
             @Parameter(description = "Maximum number of similar cars to return (default: 5, max: 10)")
             @RequestParam(defaultValue = "5") int limit) {
         
-        LocalDate start = LocalDate.parse(startDate);
-        LocalDate end = LocalDate.parse(endDate);
+        LocalDate start = startDate != null 
+            ? LocalDate.parse(startDate) 
+            : LocalDate.now();
+        LocalDate end = endDate != null 
+            ? LocalDate.parse(endDate) 
+            : LocalDate.now().plusDays(30);
 
         int effectiveLimit = Math.min(limit, 10);
         

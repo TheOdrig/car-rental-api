@@ -499,5 +499,22 @@ class AvailabilitySearchControllerIntegrationTest {
                             .param("endDate", LocalDate.now().plusDays(4).toString()))
                     .andExpect(status().isBadRequest());
         }
+
+        @Test
+        @DisplayName("Should work without date parameters using defaults - Requirement 2.2")
+        void shouldWorkWithoutDateParametersUsingDefaults() throws Exception {
+            mockMvc.perform(get("/api/cars/{id}/similar", availableCar.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$").isArray());
+        }
+
+        @Test
+        @DisplayName("Should work with only startDate provided - Requirement 2.2")
+        void shouldWorkWithOnlyStartDateProvided() throws Exception {
+            mockMvc.perform(get("/api/cars/{id}/similar", availableCar.getId())
+                            .param("startDate", LocalDate.now().plusDays(5).toString()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$").isArray());
+        }
     }
 }

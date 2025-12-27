@@ -115,7 +115,8 @@ public class CarServiceImpl implements CarService {
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "cars", allEntries = true),
+        @CacheEvict(value = "cars", key = "#id"),
+        @CacheEvict(value = "cars", key = "'dto:' + #id"),
         @CacheEvict(value = "car-status-counts", allEntries = true),
         @CacheEvict(value = "car-statistics", allEntries = true)
     })
@@ -131,7 +132,7 @@ public class CarServiceImpl implements CarService {
             checkLicensePlateUniqueness(carRequest.getLicensePlate());
         }
         
-        if (!existingCar.getVinNumber().equals(carRequest.getVinNumber())) {
+        if (!Objects.equals(existingCar.getVinNumber(), carRequest.getVinNumber())) {
             checkVinNumberUniqueness(carRequest.getVinNumber());
         }
 
@@ -189,7 +190,7 @@ public class CarServiceImpl implements CarService {
         @CacheEvict(value = "car-status-counts", allEntries = true),
         @CacheEvict(value = "car-statistics", allEntries = true)
     })
-    public void restoreCar(Long id) {
+    public CarResponse restoreCar(Long id) {
         log.debug("Restoring car with id: {}", id);
         validateCarId(id);
 
@@ -197,12 +198,15 @@ public class CarServiceImpl implements CarService {
         car.restore();
         car.setUpdateTime(LocalDateTime.now());
 
-        carRepository.save(car);
+        Car savedCar = carRepository.save(car);
+        CarResponse result = carMapper.toDto(savedCar);
+
         log.info("Successfully restored car: ID={}", id);
+        return result;
     }
 
     @Override
-    @Cacheable(value = "cars", key = "'search:' + #searchRequest.hashCode()")
+    @Cacheable(value = "cars", key = "'search:' + #searchRequest.toString()")
     public CarListResponse searchCars(CarSearchRequest searchRequest) {
         log.debug("Searching cars with criteria: {}", searchRequest);
 
@@ -212,6 +216,10 @@ public class CarServiceImpl implements CarService {
                 searchRequest.getSearchTerm(),
                 searchRequest.getBrand(),
                 searchRequest.getModel(),
+                searchRequest.getTransmissionType(),
+                searchRequest.getBodyType(),
+                searchRequest.getFuelType(),
+                searchRequest.getMinSeats(),
                 searchRequest.getMinProductionYear(),
                 searchRequest.getMaxProductionYear(),
                 searchRequest.getMinPrice(),
@@ -666,46 +674,37 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @CacheEvict(value = "cars", key = "#id")
     public void incrementViewCount(Long id) {
         log.debug("Incrementing view count for car id: {}", id);
         validateCarId(id);
 
-        Car car = findCarById(id);
-        car.incrementViewCount();
-        car.setUpdateTime(LocalDateTime.now());
+        carRepository.incrementViewCount(id);
 
-        carRepository.save(car);
         log.info("Successfully incremented view count for car: ID={}", id);
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @CacheEvict(value = "cars", key = "#id")
     public void incrementLikeCount(Long id) {
         log.debug("Incrementing like count for car id: {}", id);
         validateCarId(id);
 
-        Car car = findCarById(id);
-        car.incrementLikeCount();
-        car.setUpdateTime(LocalDateTime.now());
+        carRepository.incrementLikeCount(id);
 
-        carRepository.save(car);
         log.info("Successfully incremented like count for car: ID={}", id);
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = "cars", allEntries = true)
+    @CacheEvict(value = "cars", key = "#id")
     public void decrementLikeCount(Long id) {
         log.debug("Decrementing like count for car id: {}", id);
         validateCarId(id);
 
-        Car car = findCarById(id);
-        car.decrementLikeCount();
-        car.setUpdateTime(LocalDateTime.now());
+        carRepository.decrementLikeCount(id);
 
-        carRepository.save(car);
         log.info("Successfully decremented like count for car: ID={}", id);
     }
 
@@ -773,7 +772,7 @@ public class CarServiceImpl implements CarService {
                 searchTerm, brand, model, minPrice, maxPrice, status);
 
         Page<Car> cars = carRepository.findCarsByCriteria(
-                searchTerm, brand, model, null, null, minPrice, maxPrice, null, status, pageable
+                searchTerm, brand, model, null, null, null, null, null, null, minPrice, maxPrice, null, status, pageable
         );
         Page<CarResponse> result = cars.map(carMapper::toDto);
 

@@ -9,7 +9,7 @@
         <relativePath/>
     </parent>
     <groupId>com.akif</groupId>
-    <artifactId>car-rental</artifactId>
+    <artifactId>car-rental-api</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Car Rental API</name>
     <description>Production-ready REST API for car rental management</description>
