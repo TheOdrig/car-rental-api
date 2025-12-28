@@ -1,7 +1,10 @@
 package com.akif.car.web;
 
 import com.akif.car.api.CarResponse;
+import com.akif.car.api.FilterOptionsResponse;
 import com.akif.car.internal.dto.request.CarRequest;
+import com.akif.car.internal.dto.request.CarSearchRequest;
+import com.akif.car.internal.dto.response.CarListResponse;
 import com.akif.currency.api.ConversionResult;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.car.api.CarService;
@@ -70,17 +73,32 @@ public class CarController {
         return ResponseEntity.ok(car);
     }
 
+    @GetMapping("/search")
+    @Operation(summary = "Search cars", description = "Search cars with various filters and pagination")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cars found successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarListResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid search parameters")
+    })
+    public ResponseEntity<CarListResponse> searchCars(
+            @Parameter(description = "Search filters") @Valid @ModelAttribute CarSearchRequest searchRequest) {
+        log.debug("GET /api/cars/search - Searching cars with criteria: {}", searchRequest);
+        CarListResponse response = carService.searchCars(searchRequest);
+        log.info("Successfully found {} cars", response.numberOfElements());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/filter-options")
     @Operation(summary = "Get filter options", 
                description = "Returns unique values for filter dropdowns (brands, transmission types, fuel types, body types)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Filter options retrieved successfully",
                     content = @Content(mediaType = "application/json", 
-                            schema = @Schema(implementation = com.akif.car.api.FilterOptionsResponse.class)))
+                            schema = @Schema(implementation = FilterOptionsResponse.class)))
     })
-    public ResponseEntity<com.akif.car.api.FilterOptionsResponse> getFilterOptions() {
+    public ResponseEntity<FilterOptionsResponse> getFilterOptions() {
         log.debug("GET /api/cars/filter-options");
-        com.akif.car.api.FilterOptionsResponse options = carService.getFilterOptions();
+        FilterOptionsResponse options = carService.getFilterOptions();
         log.info("Successfully retrieved filter options");
         return ResponseEntity.ok(options);
     }

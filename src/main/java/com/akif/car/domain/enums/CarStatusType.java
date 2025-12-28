@@ -10,6 +10,7 @@ public enum CarStatusType {
 
     AVAILABLE("Available", "Car is available for sale", true, false),
     SOLD("Sold", "Car has been sold to a customer", false, true),
+    RENTED("Rented", "Car is currently rented out", false, false),
     MAINTENANCE("Maintenance", "Car is under maintenance", false, false),
     RESERVED("Reserved", "Car is reserved for a customer", false, false),
     DAMAGED("Damaged", "Car is damaged and needs repair", false, false),
@@ -50,7 +51,7 @@ public enum CarStatusType {
     }
 
     public boolean isInactive() {
-        return this == SOLD || this == MAINTENANCE;
+        return this == SOLD || this == MAINTENANCE || this == RENTED;
     }
 
     public boolean requiresAttention() {
@@ -59,7 +60,7 @@ public enum CarStatusType {
 
 
     public static CarStatusType[] getUnavailableStatuses() {
-        return new CarStatusType[]{SOLD, MAINTENANCE, DAMAGED, INSPECTION};
+        return new CarStatusType[]{SOLD, RENTED, MAINTENANCE, DAMAGED, INSPECTION};
     }
 
 

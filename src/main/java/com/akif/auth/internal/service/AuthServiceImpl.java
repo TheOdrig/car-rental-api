@@ -160,7 +160,10 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private AuthResponse generateTokenResponse(Authentication authentication) {
-        String accessToken = tokenProvider.generateAccessToken(authentication);
+        User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String accessToken = tokenProvider.generateAccessToken(authentication, user.getId());
         String refreshToken = tokenProvider.generateRefreshToken(authentication);
         Long expiresIn = tokenProvider.getExpirationTime(accessToken);
 

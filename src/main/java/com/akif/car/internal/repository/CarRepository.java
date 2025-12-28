@@ -53,14 +53,14 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     @Query("SELECT c FROM Car c WHERE " +
             "(:searchTerm IS NULL OR " +
-            "LOWER(c.licensePlate) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-            "LOWER(c.brand) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-            "LOWER(c.model) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) AND " +
-            "(:brand IS NULL OR LOWER(c.brand) = LOWER(:brand)) AND " +
-            "(:model IS NULL OR LOWER(c.model) = LOWER(:model)) AND " +
-            "(:transmissionType IS NULL OR LOWER(c.transmissionType) = LOWER(:transmissionType)) AND " +
-            "(:bodyType IS NULL OR LOWER(c.bodyType) = LOWER(:bodyType)) AND " +
-            "(:fuelType IS NULL OR LOWER(c.fuelType) = LOWER(:fuelType)) AND " +
+            "LOWER(c.licensePlate) LIKE :searchTerm OR " +
+            "LOWER(c.brand) LIKE :searchTerm OR " +
+            "LOWER(c.model) LIKE :searchTerm) AND " +
+            "(:brand IS NULL OR LOWER(c.brand) = :brand) AND " +
+            "(:model IS NULL OR LOWER(c.model) = :model) AND " +
+            "(:transmissionType IS NULL OR LOWER(c.transmissionType) = :transmissionType) AND " +
+            "(:bodyType IS NULL OR LOWER(c.bodyType) = :bodyType) AND " +
+            "(:fuelType IS NULL OR LOWER(c.fuelType) = :fuelType) AND " +
             "(:minSeats IS NULL OR c.seats >= :minSeats) AND " +
             "(:minProductionYear IS NULL OR c.productionYear >= :minProductionYear) AND " +
             "(:maxProductionYear IS NULL OR c.productionYear <= :maxProductionYear) AND " +
