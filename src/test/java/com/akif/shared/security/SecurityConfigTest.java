@@ -108,7 +108,7 @@ public class SecurityConfigTest {
                         testUser.getUsername(), null, testUser.getRoles().stream()
                                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                                 .toList()
-                )
+                ), testUser.getId()
         );
 
         adminToken = jwtTokenProvider.generateAccessToken(
@@ -116,7 +116,7 @@ public class SecurityConfigTest {
                         adminUser.getUsername(), null, adminUser.getRoles().stream()
                                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                                 .toList()
-                )
+                ), adminUser.getId()
         );
     }
 

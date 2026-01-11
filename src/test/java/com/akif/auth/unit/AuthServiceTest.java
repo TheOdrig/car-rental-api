@@ -100,7 +100,7 @@ class AuthServiceTest {
             when(userRepository.save(any(User.class))).thenReturn(testUser);
             when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                     .thenReturn(authentication);
-            when(tokenProvider.generateAccessToken(authentication)).thenReturn("access.token");
+            when(tokenProvider.generateAccessToken(any(Authentication.class), any(Long.class))).thenReturn("access.token");
             when(tokenProvider.generateRefreshToken(authentication)).thenReturn("refresh.token");
             when(tokenProvider.getExpirationTime("access.token")).thenReturn(900000L);
 
@@ -159,7 +159,7 @@ class AuthServiceTest {
         void shouldLoginUserSuccessfully() {
             when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                     .thenReturn(authentication);
-            when(tokenProvider.generateAccessToken(authentication)).thenReturn("access.token");
+            when(tokenProvider.generateAccessToken(any(Authentication.class), any(Long.class))).thenReturn("access.token");
             when(tokenProvider.generateRefreshToken(authentication)).thenReturn("refresh.token");
             when(tokenProvider.getExpirationTime("access.token")).thenReturn(900000L);
 
@@ -172,7 +172,7 @@ class AuthServiceTest {
             assertThat(response.tokenType()).isEqualTo("Bearer");
 
             verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-            verify(tokenProvider).generateAccessToken(authentication);
+            verify(tokenProvider).generateAccessToken(any(Authentication.class), any(Long.class));
             verify(tokenProvider).generateRefreshToken(authentication);
         }
 
@@ -187,7 +187,7 @@ class AuthServiceTest {
                     .hasMessage("Invalid credentials");
 
             verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-            verify(tokenProvider, never()).generateAccessToken(any(Authentication.class));
+            verify(tokenProvider, never()).generateAccessToken(any(Authentication.class), any(Long.class));
         }
     }
 
@@ -201,7 +201,7 @@ class AuthServiceTest {
             when(tokenProvider.validateToken("valid.refresh.token")).thenReturn(true);
             when(tokenProvider.getUsernameFromToken("valid.refresh.token")).thenReturn("testuser");
             when(userRepository.findByUsername("testuser")).thenReturn(java.util.Optional.of(testUser));
-            when(tokenProvider.generateAccessToken(any(Authentication.class))).thenReturn("new.access.token");
+            when(tokenProvider.generateAccessToken(any(Authentication.class), any(Long.class))).thenReturn("new.access.token");
             when(tokenProvider.generateRefreshToken(any(Authentication.class))).thenReturn("new.refresh.token");
             when(tokenProvider.getExpirationTime("new.access.token")).thenReturn(900000L);
 
