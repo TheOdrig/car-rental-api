@@ -168,7 +168,7 @@ private String userFullName;
 | rental | GracePeriodWarningEvent | notification |
 | rental | LateReturnNotificationEvent | notification |
 | rental | PenaltySummaryEvent | notification |
-| payment | PaymentCapturedEvent | notification |
+| rental | PaymentCapturedEvent | notification, dashboard |
 | damage | DamageReportedEvent | notification |
 | damage | DamageAssessedEvent | notification |
 | damage | DamageChargedEvent | notification |
