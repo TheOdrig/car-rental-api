@@ -51,7 +51,7 @@ public class JwtTokenProviderTest {
         @Test
         @DisplayName("Should generate valid access token")
         void shouldGenerateValidAccessToken() {
-            String token = jwtTokenProvider.generateAccessToken(authentication);
+            String token = jwtTokenProvider.generateAccessToken(authentication, 1L);
 
             assertThat(token).isNotNull();
             assertThat(token).isNotEmpty();
@@ -77,13 +77,13 @@ public class JwtTokenProviderTest {
         @Test
         @DisplayName("Should generate different tokens for same authentication")
         void shouldGenerateDifferentTokensForSameAuthentication() {
-            String accessToken1 = jwtTokenProvider.generateAccessToken(authentication);
+            String accessToken1 = jwtTokenProvider.generateAccessToken(authentication, 1L);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-            String accessToken2 = jwtTokenProvider.generateAccessToken(authentication);
+            String accessToken2 = jwtTokenProvider.generateAccessToken(authentication, 1L);
             String refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
 
             assertThat(accessToken1).isNotEqualTo(accessToken2);
@@ -94,7 +94,7 @@ public class JwtTokenProviderTest {
         @Test
         @DisplayName("Should extract correct username from generated token")
         void shouldExtractCorrectUsernameFromGeneratedToken() {
-            String token = jwtTokenProvider.generateAccessToken(authentication);
+            String token = jwtTokenProvider.generateAccessToken(authentication, 1L);
 
             String username = jwtTokenProvider.getUsernameFromToken(token);
 
@@ -109,7 +109,7 @@ public class JwtTokenProviderTest {
         @Test
         @DisplayName("Should validate valid token")
         void shouldValidateValidToken() {
-            String token = jwtTokenProvider.generateAccessToken(authentication);
+            String token = jwtTokenProvider.generateAccessToken(authentication, 1L);
 
             boolean isValid = jwtTokenProvider.validateToken(token);
 
@@ -162,7 +162,7 @@ public class JwtTokenProviderTest {
         void shouldDetectExpiredToken() {
 
             ReflectionTestUtils.setField(jwtTokenProvider, "accessTokenExpiration", 1L);
-            String token = jwtTokenProvider.generateAccessToken(authentication);
+            String token = jwtTokenProvider.generateAccessToken(authentication, 1L);
             
             try {
                 Thread.sleep(10);
@@ -178,7 +178,7 @@ public class JwtTokenProviderTest {
         @Test
         @DisplayName("Should detect non-expired token")
         void shouldDetectNonExpiredToken() {
-            String token = jwtTokenProvider.generateAccessToken(authentication);
+            String token = jwtTokenProvider.generateAccessToken(authentication, 1L);
 
             boolean isExpired = jwtTokenProvider.isTokenExpired(token);
 
@@ -198,7 +198,7 @@ public class JwtTokenProviderTest {
         @Test
         @DisplayName("Should get correct expiration time")
         void shouldGetCorrectExpirationTime() {
-            String token = jwtTokenProvider.generateAccessToken(authentication);
+            String token = jwtTokenProvider.generateAccessToken(authentication, 1L);
             long currentTime = System.currentTimeMillis();
 
             long expirationTime = jwtTokenProvider.getExpirationTime(token);
@@ -215,7 +215,7 @@ public class JwtTokenProviderTest {
         @Test
         @DisplayName("Should extract username from valid token")
         void shouldExtractUsernameFromValidToken() {
-            String token = jwtTokenProvider.generateAccessToken(authentication);
+            String token = jwtTokenProvider.generateAccessToken(authentication, 1L);
 
             String username = jwtTokenProvider.getUsernameFromToken(token);
 
@@ -248,7 +248,7 @@ public class JwtTokenProviderTest {
         @DisplayName("Should handle null authentication")
         void shouldHandleNullAuthentication() {
 
-            assertThatThrownBy(() -> jwtTokenProvider.generateAccessToken(null))
+            assertThatThrownBy(() -> jwtTokenProvider.generateAccessToken(null, 1L))
                     .isInstanceOf(NullPointerException.class);
         }
 
@@ -257,7 +257,7 @@ public class JwtTokenProviderTest {
         void shouldHandleAuthenticationWithNullName() {
             Authentication authWithNullName = new UsernamePasswordAuthenticationToken(null, "password");
 
-            String token = jwtTokenProvider.generateAccessToken(authWithNullName);
+            String token = jwtTokenProvider.generateAccessToken(authWithNullName, 1L);
 
             assertThat(token).isNotNull();
             assertThat(jwtTokenProvider.getUsernameFromToken(token)).isNull();
@@ -269,7 +269,7 @@ public class JwtTokenProviderTest {
             String longUsername = "a".repeat(1000);
             Authentication longUsernameAuth = new UsernamePasswordAuthenticationToken(longUsername, "password");
 
-            String token = jwtTokenProvider.generateAccessToken(longUsernameAuth);
+            String token = jwtTokenProvider.generateAccessToken(longUsernameAuth, 1L);
 
             assertThat(token).isNotNull();
             assertThat(jwtTokenProvider.getUsernameFromToken(token)).isEqualTo(longUsername);

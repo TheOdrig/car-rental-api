@@ -329,4 +329,25 @@ class CarControllerIntegrationTest {
                 .andExpect(jsonPath("$.pageable.pageSize").value(5))
                 .andExpect(jsonPath("$.pageable.pageNumber").value(0));
     }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /api/cars/filter-options - Should return filter options")
+    void shouldReturnFilterOptions() throws Exception {
+        mockMvc.perform(get("/api/cars/filter-options"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.brands").isArray())
+                .andExpect(jsonPath("$.transmissionTypes").isArray())
+                .andExpect(jsonPath("$.fuelTypes").isArray())
+                .andExpect(jsonPath("$.bodyTypes").isArray());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /api/cars/filter-options - Should include test car brand")
+    void shouldIncludeTestCarBrand() throws Exception {
+        mockMvc.perform(get("/api/cars/filter-options"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.brands").isNotEmpty());
+    }
 }

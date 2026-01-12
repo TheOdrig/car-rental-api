@@ -103,8 +103,11 @@ public interface CarService {
                                            CarStatusType status, Pageable pageable);
 
 
+
     int countByStatus(CarStatusType status);
 
     int countTotalActiveCars();
+
+    FilterOptionsResponse getFilterOptions();
 }
 

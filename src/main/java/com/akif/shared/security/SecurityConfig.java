@@ -58,6 +58,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/cars/{id:\\d+}/availability/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/cars/availability/search").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/cars/{id:\\d+}/similar").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/cars/active").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/cars/featured").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/cars/filter-options").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/cars/search").permitAll()
 
                 .requestMatchers(HttpMethod.POST, "/api/cars").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/cars/**").hasRole("ADMIN")

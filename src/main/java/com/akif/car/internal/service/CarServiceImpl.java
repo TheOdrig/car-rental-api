@@ -2,6 +2,7 @@ package com.akif.car.internal.service;
 
 import com.akif.car.api.CarDto;
 import com.akif.car.api.CarService;
+import com.akif.car.api.FilterOptionsResponse;
 import com.akif.car.internal.dto.response.CarListResponse;
 import com.akif.car.api.CarSummaryResponse;
 import com.akif.car.internal.dto.request.CarRequest;
@@ -212,13 +213,21 @@ public class CarServiceImpl implements CarService {
 
         Pageable pageable = buildPageable(searchRequest);
 
+        String searchTerm = searchRequest.getSearchTerm() != null ?
+                "%" + searchRequest.getSearchTerm().trim().toLowerCase() + "%" : null;
+        String brand = searchRequest.getBrand() != null ? searchRequest.getBrand().trim().toLowerCase() : null;
+        String model = searchRequest.getModel() != null ? searchRequest.getModel().trim().toLowerCase() : null;
+        String transmissionType = searchRequest.getTransmissionType() != null ? searchRequest.getTransmissionType().trim().toLowerCase() : null;
+        String bodyType = searchRequest.getBodyType() != null ? searchRequest.getBodyType().trim().toLowerCase() : null;
+        String fuelType = searchRequest.getFuelType() != null ? searchRequest.getFuelType().trim().toLowerCase() : null;
+
         Page<Car> cars = carRepository.findCarsByCriteria(
-                searchRequest.getSearchTerm(),
-                searchRequest.getBrand(),
-                searchRequest.getModel(),
-                searchRequest.getTransmissionType(),
-                searchRequest.getBodyType(),
-                searchRequest.getFuelType(),
+                searchTerm,
+                brand,
+                model,
+                transmissionType,
+                bodyType,
+                fuelType,
                 searchRequest.getMinSeats(),
                 searchRequest.getMinProductionYear(),
                 searchRequest.getMaxProductionYear(),
@@ -886,7 +895,38 @@ public class CarServiceImpl implements CarService {
     }
 
     private Pageable buildPageable(CarSearchRequest searchRequest) {
-        Sort sort = Sort.by(Sort.Direction.fromString(searchRequest.getSortDirection()), searchRequest.getSortBy());
+        String sortBy = searchRequest.getSortBy();
+        if (sortBy == null || sortBy.trim().isEmpty()) {
+            sortBy = "createTime";
+        }
+
+        Sort.Direction direction = Sort.Direction.DESC;
+        if (searchRequest.getSortDirection() != null && "asc".equalsIgnoreCase(searchRequest.getSortDirection())) {
+            direction = Sort.Direction.ASC;
+        }
+
+        Sort sort = Sort.by(direction, sortBy);
         return PageRequest.of(searchRequest.getPage(), searchRequest.getSize(), sort);
+    }
+
+    @Override
+    @Cacheable(value = "filter-options", key = "'all'")
+    public FilterOptionsResponse getFilterOptions() {
+        log.debug("Fetching filter options from database");
+        
+        FilterOptionsResponse response = new FilterOptionsResponse(
+                carRepository.findDistinctBrands(),
+                carRepository.findDistinctTransmissionTypes(),
+                carRepository.findDistinctFuelTypes(),
+                carRepository.findDistinctBodyTypes()
+        );
+        
+        log.info("Successfully retrieved filter options: {} brands, {} transmission types, {} fuel types, {} body types",
+                response.brands().size(),
+                response.transmissionTypes().size(),
+                response.fuelTypes().size(),
+                response.bodyTypes().size());
+        
+        return response;
     }
 }

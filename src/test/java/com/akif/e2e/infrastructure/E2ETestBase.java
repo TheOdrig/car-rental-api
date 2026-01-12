@@ -69,7 +69,7 @@ public abstract class E2ETestBase {
                         .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                         .collect(Collectors.toList())
         );
-        return tokenProvider.generateAccessToken(authentication);
+        return tokenProvider.generateAccessToken(authentication, user.getId());
     }
 
     protected Long createAndGetRentalId(RentalRequest request, String token) throws Exception {

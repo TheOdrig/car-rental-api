@@ -229,12 +229,18 @@ See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for detailed configuration op
 
 ## 🤝 Contributing
 
+Contributions are welcome! Please read the [Contributing Guidelines](CONTRIBUTING.md) before submitting a pull request.
+
+Quick steps:
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/amazing-feature`)
 3. Run tests (`mvn test`)
-4. Commit changes (`git commit -m 'Add amazing feature'`)
-5. Push to branch (`git push origin feature/amazing-feature`)
-6. Open Pull Request
+4. Commit changes using [Conventional Commits](https://www.conventionalcommits.org/)
+5. Push and open Pull Request
+
+## 📋 Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history and notable changes.
 
 ## 📝 License
 

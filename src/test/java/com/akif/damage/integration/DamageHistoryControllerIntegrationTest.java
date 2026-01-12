@@ -153,8 +153,8 @@ class DamageHistoryControllerIntegrationTest {
                         .collect(Collectors.toList())
         );
 
-        userToken = "Bearer " + tokenProvider.generateAccessToken(userAuth);
-        adminToken = "Bearer " + tokenProvider.generateAccessToken(adminAuth);
+        userToken = "Bearer " + tokenProvider.generateAccessToken(userAuth, testUser.getId());
+        adminToken = "Bearer " + tokenProvider.generateAccessToken(adminAuth, adminUser.getId());
     }
 
     private void createDamageReports() throws Exception {

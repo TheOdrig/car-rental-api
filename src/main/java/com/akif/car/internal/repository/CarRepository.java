@@ -53,14 +53,14 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     @Query("SELECT c FROM Car c WHERE " +
             "(:searchTerm IS NULL OR " +
-            "LOWER(c.licensePlate) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-            "LOWER(c.brand) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-            "LOWER(c.model) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) AND " +
-            "(:brand IS NULL OR LOWER(c.brand) = LOWER(:brand)) AND " +
-            "(:model IS NULL OR LOWER(c.model) = LOWER(:model)) AND " +
-            "(:transmissionType IS NULL OR LOWER(c.transmissionType) = LOWER(:transmissionType)) AND " +
-            "(:bodyType IS NULL OR LOWER(c.bodyType) = LOWER(:bodyType)) AND " +
-            "(:fuelType IS NULL OR LOWER(c.fuelType) = LOWER(:fuelType)) AND " +
+            "LOWER(c.licensePlate) LIKE :searchTerm OR " +
+            "LOWER(c.brand) LIKE :searchTerm OR " +
+            "LOWER(c.model) LIKE :searchTerm) AND " +
+            "(:brand IS NULL OR LOWER(c.brand) = :brand) AND " +
+            "(:model IS NULL OR LOWER(c.model) = :model) AND " +
+            "(:transmissionType IS NULL OR LOWER(c.transmissionType) = :transmissionType) AND " +
+            "(:bodyType IS NULL OR LOWER(c.bodyType) = :bodyType) AND " +
+            "(:fuelType IS NULL OR LOWER(c.fuelType) = :fuelType) AND " +
             "(:minSeats IS NULL OR c.seats >= :minSeats) AND " +
             "(:minProductionYear IS NULL OR c.productionYear >= :minProductionYear) AND " +
             "(:maxProductionYear IS NULL OR c.productionYear <= :maxProductionYear) AND " +
@@ -165,4 +165,16 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     @Modifying
     @Query("UPDATE Car c SET c.likeCount = CASE WHEN c.likeCount > 0 THEN c.likeCount - 1 ELSE 0 END, c.updateTime = CURRENT_TIMESTAMP WHERE c.id = :id")
     void decrementLikeCount(@Param("id") Long id);
+
+    @Query("SELECT DISTINCT c.brand FROM Car c WHERE c.isDeleted = false AND c.brand IS NOT NULL ORDER BY c.brand")
+    List<String> findDistinctBrands();
+
+    @Query("SELECT DISTINCT c.transmissionType FROM Car c WHERE c.isDeleted = false AND c.transmissionType IS NOT NULL ORDER BY c.transmissionType")
+    List<String> findDistinctTransmissionTypes();
+
+    @Query("SELECT DISTINCT c.fuelType FROM Car c WHERE c.isDeleted = false AND c.fuelType IS NOT NULL ORDER BY c.fuelType")
+    List<String> findDistinctFuelTypes();
+
+    @Query("SELECT DISTINCT c.bodyType FROM Car c WHERE c.isDeleted = false AND c.bodyType IS NOT NULL ORDER BY c.bodyType")
+    List<String> findDistinctBodyTypes();
 }
