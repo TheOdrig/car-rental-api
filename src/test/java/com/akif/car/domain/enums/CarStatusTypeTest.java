@@ -1,6 +1,5 @@
-package com.akif.shared.enums;
+package com.akif.car.domain.enums;
 
-import com.akif.car.domain.enums.CarStatusType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,7 +25,7 @@ public class CarStatusTypeTest {
 
     @Test
     @DisplayName("canBeSold should return true for AVAILABLE and RESERVED statuses")
-    void canBeSold_ShouldReturnTrueForAvailableAndReserved(){
+    void canBeSold_ShouldReturnTrueForAvailableAndReserved() {
 
         assertThat(CarStatusType.AVAILABLE.canBeSold()).isTrue();
         assertThat(CarStatusType.RESERVED.canBeSold()).isTrue();
@@ -38,7 +37,7 @@ public class CarStatusTypeTest {
 
     @Test
     @DisplayName("canBeReserved should return true only for AVAILABLE status")
-    void canBeReserved_ShouldReturnTrueOnlyForAvailable(){
+    void canBeReserved_ShouldReturnTrueOnlyForAvailable() {
 
         assertThat(CarStatusType.AVAILABLE.canBeReserved()).isTrue();
         assertThat(CarStatusType.SOLD.canBeReserved()).isFalse();
@@ -50,7 +49,7 @@ public class CarStatusTypeTest {
 
     @Test
     @DisplayName("isSold should return true only for SOLD status")
-    void isSold_ShouldReturnTrueOnlyForSold(){
+    void isSold_ShouldReturnTrueOnlyForSold() {
 
         assertThat(CarStatusType.SOLD.isSold()).isTrue();
         assertThat(CarStatusType.AVAILABLE.isSold()).isFalse();
@@ -61,11 +60,12 @@ public class CarStatusTypeTest {
     }
 
     @Test
-    @DisplayName("isInactive should return true for SOLD and MAINTENANCE statuses")
-    void isInactive_ShouldReturnTrueForSoldAndMaintenance(){
+    @DisplayName("isInactive should return true for SOLD, MAINTENANCE and RENTED statuses")
+    void isInactive_ShouldReturnTrueForSoldMaintenanceAndRented() {
 
         assertThat(CarStatusType.SOLD.isInactive()).isTrue();
         assertThat(CarStatusType.MAINTENANCE.isInactive()).isTrue();
+        assertThat(CarStatusType.RENTED.isInactive()).isTrue();
         assertThat(CarStatusType.AVAILABLE.isInactive()).isFalse();
         assertThat(CarStatusType.RESERVED.isInactive()).isFalse();
         assertThat(CarStatusType.DAMAGED.isInactive()).isFalse();
@@ -74,7 +74,7 @@ public class CarStatusTypeTest {
 
     @Test
     @DisplayName("requiresAttention should return true for DAMAGED and INSPECTION statuses")
-    void requiresAttention_ShouldReturnTrueForDamagedAndInspection(){
+    void requiresAttention_ShouldReturnTrueForDamagedAndInspection() {
 
         assertThat(CarStatusType.DAMAGED.requiresAttention()).isTrue();
         assertThat(CarStatusType.INSPECTION.requiresAttention()).isTrue();
@@ -86,44 +86,41 @@ public class CarStatusTypeTest {
 
     @Test
     @DisplayName("getUnavailableStatuses should return all non-available statuses")
-    void getUnavailableStatuses_ShouldReturnAllNonAvailableStatuses(){
+    void getUnavailableStatuses_ShouldReturnAllNonAvailableStatuses() {
 
         CarStatusType[] unavailableStatuses = CarStatusType.getUnavailableStatuses();
 
-        assertThat(unavailableStatuses).hasSize(4);
-        assertThat(unavailableStatuses).containsExactly(
+        assertThat(unavailableStatuses).hasSize(5);
+        assertThat(unavailableStatuses).containsExactlyInAnyOrder(
                 CarStatusType.SOLD,
+                CarStatusType.RENTED,
                 CarStatusType.MAINTENANCE,
                 CarStatusType.DAMAGED,
-                CarStatusType.INSPECTION
-        );
+                CarStatusType.INSPECTION);
     }
 
-
     @ParameterizedTest
-    @ValueSource(strings = {"AVAILABLE", " available ", " Available", "SOLD", " sold ", " Sold"})
+    @ValueSource(strings = { "AVAILABLE", " available ", " Available", "SOLD", " sold ", " Sold" })
     @DisplayName("fromString should parse valid status string")
-    void fromString_WithValidString_ShouldReturnCorrectEnum(String statusString){
+    void fromString_WithValidString_ShouldReturnCorrectEnum(String statusString) {
 
         CarStatusType result = CarStatusType.fromString(statusString);
 
         assertThat(result).isNotNull();
         assertThat(result.name().equalsIgnoreCase(statusString.trim()) ||
-                   result.getDisplayName().equalsIgnoreCase(statusString.trim()))
+                result.getDisplayName().equalsIgnoreCase(statusString.trim()))
                 .isTrue();
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", " "})
+    @ValueSource(strings = { "", " " })
     @DisplayName("fromString should throw exception for invalid strings")
-    void fromString_WithInvalidStrings_ShouldThrowException(String invalidString){
+    void fromString_WithInvalidStrings_ShouldThrowException(String invalidString) {
 
         assertThatThrownBy(() -> CarStatusType.fromString(invalidString))
-            .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Status cannot be null or empty");
     }
-
-
 
     @Test
     @DisplayName("fromString with null should throw exception")
