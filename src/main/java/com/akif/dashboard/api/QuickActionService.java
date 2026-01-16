@@ -4,9 +4,11 @@ import com.akif.dashboard.api.dto.QuickActionResultDto;
 
 public interface QuickActionService {
 
-    QuickActionResultDto approveRental(Long rentalId);
+    QuickActionResultDto approveRental(Long rentalId, String notes);
 
-    QuickActionResultDto processPickup(Long rentalId);
+    QuickActionResultDto rejectRental(Long rentalId, String reason);
 
-    QuickActionResultDto processReturn(Long rentalId);
+    QuickActionResultDto processPickup(Long rentalId, String notes);
+
+    QuickActionResultDto processReturn(Long rentalId, String notes);
 }

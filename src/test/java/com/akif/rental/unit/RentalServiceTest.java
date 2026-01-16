@@ -26,7 +26,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -49,7 +48,8 @@ import com.akif.shared.enums.Role;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -102,8 +102,7 @@ class RentalServiceTest {
                 "Test",
                 "User",
                 Set.of(Role.USER),
-                true
-        );
+                true);
 
         testCar = CarResponse.builder()
                 .id(1L)
@@ -119,8 +118,7 @@ class RentalServiceTest {
                 1L,
                 LocalDate.now().plusDays(1),
                 LocalDate.now().plusDays(5),
-                "Test rental request"
-        );
+                "Test rental request");
 
         testRental = Rental.builder()
                 .id(1L)
@@ -154,8 +152,8 @@ class RentalServiceTest {
     private RentalResponse createTestRentalResponse(Rental rental) {
         return new RentalResponse(
                 rental.getId(),
-                null, // carSummary
-                null, // userSummary
+                null,
+                null,
                 rental.getStartDate(),
                 rental.getEndDate(),
                 rental.getDays(),
@@ -171,8 +169,7 @@ class RentalServiceTest {
                 rental.getPickupNotes(),
                 rental.getReturnNotes(),
                 LocalDateTime.now(),
-                LocalDateTime.now()
-        );
+                LocalDateTime.now());
     }
 
     @Nested
@@ -234,8 +231,7 @@ class RentalServiceTest {
                     1L,
                     LocalDate.now().minusDays(1),
                     LocalDate.now().plusDays(5),
-                    null
-            );
+                    null);
 
             when(authService.getUserByUsername("testuser")).thenReturn(testUser);
             when(carService.getCarById(1L)).thenReturn(testCar);
@@ -265,7 +261,7 @@ class RentalServiceTest {
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
 
-            RentalResponse result = rentalService.confirmRental(1L);
+            RentalResponse result = rentalService.confirmRental(1L, null);
 
             assertThat(result).isNotNull();
             verify(paymentService).authorize(any(), any(), any());
@@ -283,7 +279,7 @@ class RentalServiceTest {
             when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(0L);
             when(paymentService.authorize(any(), any(), any())).thenReturn(failedResult);
 
-            assertThatThrownBy(() -> rentalService.confirmRental(1L))
+            assertThatThrownBy(() -> rentalService.confirmRental(1L, null))
                     .isInstanceOf(PaymentFailedException.class);
 
             verify(carService, never()).reserveCar(anyLong());
@@ -303,7 +299,7 @@ class RentalServiceTest {
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
 
-            RentalResponse result = rentalService.cancelRental(1L, "testuser");
+            RentalResponse result = rentalService.cancelRental(1L, "testuser", null);
 
             assertThat(result).isNotNull();
             verify(paymentService, never()).refundPayment(anyLong(), any());
@@ -313,12 +309,13 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should throw exception when user tries to cancel other user's rental")
         void shouldThrowExceptionWhenUserTriesToCancelOtherUsersRental() {
-            UserDto otherUser = new UserDto(2L, "otheruser", "other@example.com", "Other", "User", Set.of(Role.USER), true);
+            UserDto otherUser = new UserDto(2L, "otheruser", "other@example.com", "Other", "User", Set.of(Role.USER),
+                    true);
 
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
             when(authService.getUserByUsername("otheruser")).thenReturn(otherUser);
 
-            assertThatThrownBy(() -> rentalService.cancelRental(1L, "otheruser"))
+            assertThatThrownBy(() -> rentalService.cancelRental(1L, "otheruser", null))
                     .isInstanceOf(AccessDeniedException.class);
         }
     }
@@ -413,7 +410,6 @@ class RentalServiceTest {
                 "TXN-123",
                 null,
                 null,
-                null
-        );
+                null);
     }
 }

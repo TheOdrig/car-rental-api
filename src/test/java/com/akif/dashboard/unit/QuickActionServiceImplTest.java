@@ -15,12 +15,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,13 +48,12 @@ class QuickActionServiceImplTest {
     @BeforeEach
     void setUp() {
         testSummary = new DailySummaryDto(
-            5,
-            3,
-            2,
-            1,
-            0,
-            LocalDateTime.now()
-        );
+                5,
+                3,
+                2,
+                1,
+                0,
+                LocalDateTime.now());
 
         confirmedRentalResponse = createRentalResponse(RentalStatus.CONFIRMED);
         inUseRentalResponse = createRentalResponse(RentalStatus.IN_USE);
@@ -61,10 +62,9 @@ class QuickActionServiceImplTest {
 
     private RentalResponse createRentalResponse(RentalStatus status) {
         return new RentalResponse(
-            1L, null, null, null, null, null, null, null, null,
-            status,
-            null, null, null, null, null, null, null, null, null, null, null, null
-        );
+                1L, null, null, null, null, null, null, null, null,
+                status,
+                null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     @Nested
@@ -75,17 +75,17 @@ class QuickActionServiceImplTest {
         @DisplayName("Should approve rental successfully")
         void shouldApproveRentalSuccessfully() {
             Long rentalId = 1L;
-            when(rentalService.confirmRental(rentalId)).thenReturn(confirmedRentalResponse);
+            when(rentalService.confirmRental(rentalId, null)).thenReturn(confirmedRentalResponse);
             when(dashboardQueryService.fetchDailySummary()).thenReturn(testSummary);
 
-            QuickActionResultDto result = quickActionService.approveRental(rentalId);
+            QuickActionResultDto result = quickActionService.approveRental(rentalId, null);
 
             assertThat(result.success()).isTrue();
             assertThat(result.message()).isEqualTo("Rental approved successfully");
             assertThat(result.newStatus()).isEqualTo("CONFIRMED");
             assertThat(result.updatedSummary()).isEqualTo(testSummary);
-            
-            verify(rentalService).confirmRental(rentalId);
+
+            verify(rentalService).confirmRental(rentalId, null);
             verify(dashboardQueryService).fetchDailySummary();
         }
 
@@ -94,11 +94,44 @@ class QuickActionServiceImplTest {
         void shouldThrowExceptionWhenApprovalFails() {
             Long rentalId = 999L;
             String errorMessage = "Rental not found";
-            when(rentalService.confirmRental(rentalId)).thenThrow(new RuntimeException(errorMessage));
+            when(rentalService.confirmRental(rentalId, null)).thenThrow(new RuntimeException(errorMessage));
 
-            assertThatThrownBy(() -> quickActionService.approveRental(rentalId))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining(errorMessage);
+            assertThatThrownBy(() -> quickActionService.approveRental(rentalId, null))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining(errorMessage);
+        }
+    }
+
+    @Nested
+    @DisplayName("Reject Rental Tests")
+    class RejectRentalTests {
+
+        @Test
+        @DisplayName("Should reject rental successfully")
+        void shouldRejectRentalSuccessfully() {
+            Long rentalId = 1L;
+            String reason = "Insufficient balance";
+            RentalResponse cancelledResponse = createRentalResponse(RentalStatus.CANCELLED);
+
+
+            Authentication auth = org.mockito.Mockito
+                    .mock(Authentication.class);
+            when(auth.getName()).thenReturn("admin");
+            SecurityContext securityContext = org.mockito.Mockito
+                    .mock(SecurityContext.class);
+            when(securityContext.getAuthentication()).thenReturn(auth);
+            SecurityContextHolder.setContext(securityContext);
+
+            when(rentalService.cancelRental(eq(rentalId), eq("admin"), eq(reason))).thenReturn(cancelledResponse);
+            when(dashboardQueryService.fetchDailySummary()).thenReturn(testSummary);
+
+            QuickActionResultDto result = quickActionService.rejectRental(rentalId, reason);
+
+            assertThat(result.success()).isTrue();
+            assertThat(result.message()).isEqualTo("Rental rejected successfully");
+            assertThat(result.newStatus()).isEqualTo("CANCELLED");
+
+            verify(rentalService).cancelRental(eq(rentalId), eq("admin"), eq(reason));
         }
     }
 
@@ -110,17 +143,18 @@ class QuickActionServiceImplTest {
         @DisplayName("Should process pickup successfully")
         void shouldProcessPickupSuccessfully() {
             Long rentalId = 1L;
-            when(rentalService.pickupRental(eq(rentalId), anyString())).thenReturn(inUseRentalResponse);
+            String notes = "Dashboard pickup";
+            when(rentalService.pickupRental(eq(rentalId), eq(notes))).thenReturn(inUseRentalResponse);
             when(dashboardQueryService.fetchDailySummary()).thenReturn(testSummary);
 
-            QuickActionResultDto result = quickActionService.processPickup(rentalId);
+            QuickActionResultDto result = quickActionService.processPickup(rentalId, notes);
 
             assertThat(result.success()).isTrue();
             assertThat(result.message()).isEqualTo("Pickup processed successfully");
             assertThat(result.newStatus()).isEqualTo("IN_USE");
             assertThat(result.updatedSummary()).isEqualTo(testSummary);
-            
-            verify(rentalService).pickupRental(eq(rentalId), anyString());
+
+            verify(rentalService).pickupRental(eq(rentalId), eq(notes));
             verify(dashboardQueryService).fetchDailySummary();
         }
 
@@ -129,12 +163,12 @@ class QuickActionServiceImplTest {
         void shouldThrowExceptionWhenPickupFails() {
             Long rentalId = 999L;
             String errorMessage = "Invalid rental state for pickup";
-            when(rentalService.pickupRental(eq(rentalId), anyString()))
-                .thenThrow(new RuntimeException(errorMessage));
+            when(rentalService.pickupRental(eq(rentalId), eq(null)))
+                    .thenThrow(new RuntimeException(errorMessage));
 
-            assertThatThrownBy(() -> quickActionService.processPickup(rentalId))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining(errorMessage);
+            assertThatThrownBy(() -> quickActionService.processPickup(rentalId, null))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining(errorMessage);
         }
     }
 
@@ -146,17 +180,18 @@ class QuickActionServiceImplTest {
         @DisplayName("Should process return successfully")
         void shouldProcessReturnSuccessfully() {
             Long rentalId = 1L;
-            when(rentalService.returnRental(eq(rentalId), anyString())).thenReturn(returnedRentalResponse);
+            String notes = "Dashboard return";
+            when(rentalService.returnRental(eq(rentalId), eq(notes))).thenReturn(returnedRentalResponse);
             when(dashboardQueryService.fetchDailySummary()).thenReturn(testSummary);
 
-            QuickActionResultDto result = quickActionService.processReturn(rentalId);
+            QuickActionResultDto result = quickActionService.processReturn(rentalId, notes);
 
             assertThat(result.success()).isTrue();
             assertThat(result.message()).isEqualTo("Return processed successfully");
             assertThat(result.newStatus()).isEqualTo("RETURNED");
             assertThat(result.updatedSummary()).isEqualTo(testSummary);
-            
-            verify(rentalService).returnRental(eq(rentalId), anyString());
+
+            verify(rentalService).returnRental(eq(rentalId), eq(notes));
             verify(dashboardQueryService).fetchDailySummary();
         }
 
@@ -165,12 +200,12 @@ class QuickActionServiceImplTest {
         void shouldThrowExceptionWhenReturnFails() {
             Long rentalId = 999L;
             String errorMessage = "Invalid rental state for return";
-            when(rentalService.returnRental(eq(rentalId), anyString()))
-                .thenThrow(new RuntimeException(errorMessage));
+            when(rentalService.returnRental(eq(rentalId), eq(null)))
+                    .thenThrow(new RuntimeException(errorMessage));
 
-            assertThatThrownBy(() -> quickActionService.processReturn(rentalId))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining(errorMessage);
+            assertThatThrownBy(() -> quickActionService.processReturn(rentalId, null))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining(errorMessage);
         }
     }
 
@@ -184,11 +219,11 @@ class QuickActionServiceImplTest {
             Long rentalId = 1L;
             DailySummaryDto initialSummary = new DailySummaryDto(10, 5, 3, 2, 1, LocalDateTime.now());
             DailySummaryDto updatedSummary = new DailySummaryDto(9, 5, 3, 2, 1, LocalDateTime.now());
-            
-            when(rentalService.confirmRental(rentalId)).thenReturn(confirmedRentalResponse);
+
+            when(rentalService.confirmRental(rentalId, null)).thenReturn(confirmedRentalResponse);
             when(dashboardQueryService.fetchDailySummary()).thenReturn(updatedSummary);
 
-            QuickActionResultDto result = quickActionService.approveRental(rentalId);
+            QuickActionResultDto result = quickActionService.approveRental(rentalId, null);
 
             assertThat(result.updatedSummary().pendingApprovals()).isEqualTo(9);
             assertThat(result.updatedSummary()).isNotEqualTo(initialSummary);

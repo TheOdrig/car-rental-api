@@ -47,25 +47,25 @@ class EmailTemplateServiceTest {
         @BeforeEach
         void setUp() {
             event = new RentalConfirmedEvent(
-                this,
-                1L,
-                "customer@example.com",
-                LocalDateTime.now(),
-                "Toyota",
-                "Corolla",
-                LocalDate.of(2025, 12, 10),
-                LocalDate.of(2025, 12, 15),
-                new BigDecimal("2500.00"),
-                CurrencyType.TRY,
-                "Istanbul Airport"
-            );
+                    this,
+                    1L,
+                    "customer@example.com",
+                    LocalDateTime.now(),
+                    "Toyota",
+                    "Corolla",
+                    LocalDate.of(2025, 12, 10),
+                    LocalDate.of(2025, 12, 15),
+                    new BigDecimal("2500.00"),
+                    CurrencyType.TRY,
+                    "Istanbul Airport",
+                    null);
         }
 
         @Test
         @DisplayName("Should render confirmation email with correct template")
         void shouldRenderConfirmationEmailWithCorrectTemplate() {
             when(templateEngine.process(eq("email/rental-confirmation"), any(Context.class)))
-                .thenReturn("<html>Confirmation Email</html>");
+                    .thenReturn("<html>Confirmation Email</html>");
 
             String result = emailTemplateService.renderConfirmationEmail(event);
 
@@ -77,11 +77,11 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include rental ID in template context")
         void shouldIncludeRentalIdInTemplateContext() {
             when(templateEngine.process(eq("email/rental-confirmation"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("rentalId")).isEqualTo(1L);
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("rentalId")).isEqualTo(1L);
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderConfirmationEmail(event);
 
@@ -92,12 +92,12 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include car details in template context")
         void shouldIncludeCarDetailsInTemplateContext() {
             when(templateEngine.process(eq("email/rental-confirmation"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("carBrand")).isEqualTo("Toyota");
-                    assertThat(context.getVariable("carModel")).isEqualTo("Corolla");
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("carBrand")).isEqualTo("Toyota");
+                        assertThat(context.getVariable("carModel")).isEqualTo("Corolla");
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderConfirmationEmail(event);
 
@@ -108,12 +108,12 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include dates in template context")
         void shouldIncludeDatesInTemplateContext() {
             when(templateEngine.process(eq("email/rental-confirmation"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("pickupDate")).isNotNull();
-                    assertThat(context.getVariable("returnDate")).isNotNull();
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("pickupDate")).isNotNull();
+                        assertThat(context.getVariable("returnDate")).isNotNull();
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderConfirmationEmail(event);
 
@@ -124,12 +124,12 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include total price and currency in template context")
         void shouldIncludeTotalPriceAndCurrencyInTemplateContext() {
             when(templateEngine.process(eq("email/rental-confirmation"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("totalPrice")).isEqualTo(new BigDecimal("2500.00"));
-                    assertThat(context.getVariable("currency")).isEqualTo("TRY");
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("totalPrice")).isEqualTo(new BigDecimal("2500.00"));
+                        assertThat(context.getVariable("currency")).isEqualTo("TRY");
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderConfirmationEmail(event);
 
@@ -140,11 +140,11 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include pickup location in template context")
         void shouldIncludePickupLocationInTemplateContext() {
             when(templateEngine.process(eq("email/rental-confirmation"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("pickupLocation")).isEqualTo("Istanbul Airport");
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("pickupLocation")).isEqualTo("Istanbul Airport");
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderConfirmationEmail(event);
 
@@ -161,22 +161,21 @@ class EmailTemplateServiceTest {
         @BeforeEach
         void setUp() {
             event = new PaymentCapturedEvent(
-                this,
-                100L,
-                1L,
-                "customer@example.com",
-                new BigDecimal("2500.00"),
-                CurrencyType.TRY,
-                "TXN-123456",
-                LocalDateTime.of(2025, 12, 5, 14, 30)
-            );
+                    this,
+                    100L,
+                    1L,
+                    "customer@example.com",
+                    new BigDecimal("2500.00"),
+                    CurrencyType.TRY,
+                    "TXN-123456",
+                    LocalDateTime.of(2025, 12, 5, 14, 30));
         }
 
         @Test
         @DisplayName("Should render payment receipt email with correct template")
         void shouldRenderPaymentReceiptEmailWithCorrectTemplate() {
             when(templateEngine.process(eq("email/payment-receipt"), any(Context.class)))
-                .thenReturn("<html>Payment Receipt</html>");
+                    .thenReturn("<html>Payment Receipt</html>");
 
             String result = emailTemplateService.renderPaymentReceiptEmail(event);
 
@@ -188,11 +187,11 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include transaction ID in template context")
         void shouldIncludeTransactionIdInTemplateContext() {
             when(templateEngine.process(eq("email/payment-receipt"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("transactionId")).isEqualTo("TXN-123456");
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("transactionId")).isEqualTo("TXN-123456");
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderPaymentReceiptEmail(event);
 
@@ -203,12 +202,12 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include amount and currency in template context")
         void shouldIncludeAmountAndCurrencyInTemplateContext() {
             when(templateEngine.process(eq("email/payment-receipt"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("amount")).isEqualTo(new BigDecimal("2500.00"));
-                    assertThat(context.getVariable("currency")).isEqualTo("TRY");
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("amount")).isEqualTo(new BigDecimal("2500.00"));
+                        assertThat(context.getVariable("currency")).isEqualTo("TRY");
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderPaymentReceiptEmail(event);
 
@@ -219,11 +218,11 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include payment date in template context")
         void shouldIncludePaymentDateInTemplateContext() {
             when(templateEngine.process(eq("email/payment-receipt"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("paymentDate")).isNotNull();
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("paymentDate")).isNotNull();
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderPaymentReceiptEmail(event);
 
@@ -234,11 +233,11 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include rental reference in template context")
         void shouldIncludeRentalReferenceInTemplateContext() {
             when(templateEngine.process(eq("email/payment-receipt"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("rentalId")).isEqualTo(1L);
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("rentalId")).isEqualTo(1L);
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderPaymentReceiptEmail(event);
 
@@ -255,22 +254,21 @@ class EmailTemplateServiceTest {
         @BeforeEach
         void setUp() {
             event = new PickupReminderEvent(
-                this,
-                1L,
-                "customer@example.com",
-                LocalDateTime.now(),
-                LocalDate.of(2025, 12, 10),
-                "Istanbul Airport",
-                "Toyota",
-                "Corolla"
-            );
+                    this,
+                    1L,
+                    "customer@example.com",
+                    LocalDateTime.now(),
+                    LocalDate.of(2025, 12, 10),
+                    "Istanbul Airport",
+                    "Toyota",
+                    "Corolla");
         }
 
         @Test
         @DisplayName("Should render pickup reminder email with correct template")
         void shouldRenderPickupReminderEmailWithCorrectTemplate() {
             when(templateEngine.process(eq("email/pickup-reminder"), any(Context.class)))
-                .thenReturn("<html>Pickup Reminder</html>");
+                    .thenReturn("<html>Pickup Reminder</html>");
 
             String result = emailTemplateService.renderPickupReminderEmail(event);
 
@@ -282,11 +280,11 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include pickup date in template context")
         void shouldIncludePickupDateInTemplateContext() {
             when(templateEngine.process(eq("email/pickup-reminder"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("pickupDate")).isNotNull();
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("pickupDate")).isNotNull();
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderPickupReminderEmail(event);
 
@@ -297,11 +295,11 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include pickup location in template context")
         void shouldIncludePickupLocationInTemplateContext() {
             when(templateEngine.process(eq("email/pickup-reminder"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("pickupLocation")).isEqualTo("Istanbul Airport");
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("pickupLocation")).isEqualTo("Istanbul Airport");
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderPickupReminderEmail(event);
 
@@ -312,12 +310,12 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include car details in template context")
         void shouldIncludeCarDetailsInTemplateContext() {
             when(templateEngine.process(eq("email/pickup-reminder"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("carBrand")).isEqualTo("Toyota");
-                    assertThat(context.getVariable("carModel")).isEqualTo("Corolla");
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("carBrand")).isEqualTo("Toyota");
+                        assertThat(context.getVariable("carModel")).isEqualTo("Corolla");
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderPickupReminderEmail(event);
 
@@ -328,11 +326,11 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include rental ID in template context")
         void shouldIncludeRentalIdInTemplateContext() {
             when(templateEngine.process(eq("email/pickup-reminder"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("rentalId")).isEqualTo(1L);
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("rentalId")).isEqualTo(1L);
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderPickupReminderEmail(event);
 
@@ -349,21 +347,20 @@ class EmailTemplateServiceTest {
         @BeforeEach
         void setUp() {
             event = new ReturnReminderEvent(
-                this,
-                1L,
-                "customer@example.com",
-                LocalDateTime.now(),
-                LocalDate.of(2025, 12, 15),
-                "Istanbul Airport",
-                new BigDecimal("100.00")
-            );
+                    this,
+                    1L,
+                    "customer@example.com",
+                    LocalDateTime.now(),
+                    LocalDate.of(2025, 12, 15),
+                    "Istanbul Airport",
+                    new BigDecimal("100.00"));
         }
 
         @Test
         @DisplayName("Should render return reminder email with correct template")
         void shouldRenderReturnReminderEmailWithCorrectTemplate() {
             when(templateEngine.process(eq("email/return-reminder"), any(Context.class)))
-                .thenReturn("<html>Return Reminder</html>");
+                    .thenReturn("<html>Return Reminder</html>");
 
             String result = emailTemplateService.renderReturnReminderEmail(event);
 
@@ -375,11 +372,11 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include return date in template context")
         void shouldIncludeReturnDateInTemplateContext() {
             when(templateEngine.process(eq("email/return-reminder"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("returnDate")).isNotNull();
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("returnDate")).isNotNull();
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderReturnReminderEmail(event);
 
@@ -390,11 +387,11 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include return location in template context")
         void shouldIncludeReturnLocationInTemplateContext() {
             when(templateEngine.process(eq("email/return-reminder"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("returnLocation")).isEqualTo("Istanbul Airport");
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("returnLocation")).isEqualTo("Istanbul Airport");
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderReturnReminderEmail(event);
 
@@ -405,11 +402,11 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include late penalty information in template context")
         void shouldIncludeLatePenaltyInformationInTemplateContext() {
             when(templateEngine.process(eq("email/return-reminder"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("dailyPenaltyRate")).isEqualTo(new BigDecimal("100.00"));
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("dailyPenaltyRate")).isEqualTo(new BigDecimal("100.00"));
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderReturnReminderEmail(event);
 
@@ -420,11 +417,11 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include rental ID in template context")
         void shouldIncludeRentalIdInTemplateContext() {
             when(templateEngine.process(eq("email/return-reminder"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("rentalId")).isEqualTo(1L);
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("rentalId")).isEqualTo(1L);
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderReturnReminderEmail(event);
 
@@ -442,35 +439,33 @@ class EmailTemplateServiceTest {
         @BeforeEach
         void setUp() {
             eventWithRefund = new RentalCancelledEvent(
-                this,
-                1L,
-                "customer@example.com",
-                LocalDateTime.now(),
-                LocalDateTime.of(2025, 12, 5, 10, 0),
-                "Customer request",
-                true,
-                new BigDecimal("2500.00"),
-                "REFUND-123456"
-            );
+                    this,
+                    1L,
+                    "customer@example.com",
+                    LocalDateTime.now(),
+                    LocalDateTime.of(2025, 12, 5, 10, 0),
+                    "Customer request",
+                    true,
+                    new BigDecimal("2500.00"),
+                    "REFUND-123456");
 
             eventWithoutRefund = new RentalCancelledEvent(
-                this,
-                2L,
-                "customer@example.com",
-                LocalDateTime.now(),
-                LocalDateTime.of(2025, 12, 5, 10, 0),
-                "Customer request",
-                false,
-                null,
-                null
-            );
+                    this,
+                    2L,
+                    "customer@example.com",
+                    LocalDateTime.now(),
+                    LocalDateTime.of(2025, 12, 5, 10, 0),
+                    "Customer request",
+                    false,
+                    null,
+                    null);
         }
 
         @Test
         @DisplayName("Should render cancellation email with correct template")
         void shouldRenderCancellationEmailWithCorrectTemplate() {
             when(templateEngine.process(eq("email/cancellation-confirmation"), any(Context.class)))
-                .thenReturn("<html>Cancellation Confirmation</html>");
+                    .thenReturn("<html>Cancellation Confirmation</html>");
 
             String result = emailTemplateService.renderCancellationEmail(eventWithRefund);
 
@@ -482,11 +477,11 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include rental ID in template context")
         void shouldIncludeRentalIdInTemplateContext() {
             when(templateEngine.process(eq("email/cancellation-confirmation"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("rentalId")).isEqualTo(1L);
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("rentalId")).isEqualTo(1L);
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderCancellationEmail(eventWithRefund);
 
@@ -497,11 +492,11 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include cancellation date in template context")
         void shouldIncludeCancellationDateInTemplateContext() {
             when(templateEngine.process(eq("email/cancellation-confirmation"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("cancellationDate")).isNotNull();
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("cancellationDate")).isNotNull();
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderCancellationEmail(eventWithRefund);
 
@@ -512,13 +507,13 @@ class EmailTemplateServiceTest {
         @DisplayName("Should include refund details when refund is processed")
         void shouldIncludeRefundDetailsWhenRefundIsProcessed() {
             when(templateEngine.process(eq("email/cancellation-confirmation"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("refundProcessed")).isEqualTo(true);
-                    assertThat(context.getVariable("refundAmount")).isEqualTo(new BigDecimal("2500.00"));
-                    assertThat(context.getVariable("refundTransactionId")).isEqualTo("REFUND-123456");
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("refundProcessed")).isEqualTo(true);
+                        assertThat(context.getVariable("refundAmount")).isEqualTo(new BigDecimal("2500.00"));
+                        assertThat(context.getVariable("refundTransactionId")).isEqualTo("REFUND-123456");
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderCancellationEmail(eventWithRefund);
 
@@ -529,13 +524,13 @@ class EmailTemplateServiceTest {
         @DisplayName("Should handle no refund scenario")
         void shouldHandleNoRefundScenario() {
             when(templateEngine.process(eq("email/cancellation-confirmation"), any(Context.class)))
-                .thenAnswer(invocation -> {
-                    Context context = invocation.getArgument(1);
-                    assertThat(context.getVariable("refundProcessed")).isEqualTo(false);
-                    assertThat(context.getVariable("refundAmount")).isNull();
-                    assertThat(context.getVariable("refundTransactionId")).isNull();
-                    return "<html>Email</html>";
-                });
+                    .thenAnswer(invocation -> {
+                        Context context = invocation.getArgument(1);
+                        assertThat(context.getVariable("refundProcessed")).isEqualTo(false);
+                        assertThat(context.getVariable("refundAmount")).isNull();
+                        assertThat(context.getVariable("refundTransactionId")).isNull();
+                        return "<html>Email</html>";
+                    });
 
             emailTemplateService.renderCancellationEmail(eventWithoutRefund);
 

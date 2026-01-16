@@ -39,7 +39,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -98,8 +97,7 @@ class AlertServiceImplTest {
                 false,
                 null,
                 null,
-                LocalDateTime.now()
-        );
+                LocalDateTime.now());
     }
 
     @Nested
@@ -331,15 +329,13 @@ class AlertServiceImplTest {
             assertThat(AlertSeverity.MEDIUM.getPriority()).isLessThan(AlertSeverity.LOW.getPriority());
         }
     }
-    
 
     private RentalResponse createOverdueRental(Long id, LocalDate endDate) {
         UserSummaryResponse userSummary = new UserSummaryResponse(1L, "testuser", "test@example.com");
         CarSummaryResponse carSummary = new CarSummaryResponse(
                 1L, "34ABC123", "Toyota", "Corolla", 2023,
                 "1000 TL", null, CarStatusType.RESERVED, "White", 50000L,
-                null, false, null, 100L, 50L, 2, "Toyota Corolla", "Toyota Corolla 2023", false, false
-        );
+                null, false, null, 100L, 50L, 2, "Toyota Corolla", "Toyota Corolla 2023", false, false);
 
         return new RentalResponse(
                 id, carSummary, userSummary,
@@ -347,7 +343,7 @@ class AlertServiceImplTest {
                 5, null, null, null, null,
                 null, null, null, null,
                 null, null, null, null,
-                null, null, null, null
-        );
+                null, null, null, null,
+                null, null);
     }
 }

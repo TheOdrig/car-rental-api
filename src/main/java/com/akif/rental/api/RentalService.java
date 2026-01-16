@@ -12,13 +12,13 @@ public interface RentalService {
 
     RentalResponse requestRental(RentalRequest request, String username);
 
-    RentalResponse confirmRental(Long rentalId);
+    RentalResponse confirmRental(Long rentalId, String notes);
 
     RentalResponse pickupRental(Long rentalId, String pickupNotes);
 
     RentalResponse returnRental(Long rentalId, String returnNotes);
 
-    RentalResponse cancelRental(Long rentalId, String username);
+    RentalResponse cancelRental(Long rentalId, String username, String reason);
 
     Page<RentalResponse> getMyRentals(String username, Pageable pageable);
 
@@ -29,7 +29,6 @@ public interface RentalService {
     RentalSummaryDto getRentalSummaryById(Long rentalId);
 
     void incrementDamageReportCount(Long rentalId);
-
 
     int countByStatus(RentalStatus status);
 
