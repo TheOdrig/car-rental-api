@@ -1,3 +1,7 @@
+-- =============================================================================
+-- V6: Dashboard Alerts
+-- =============================================================================
+
 CREATE TABLE dashboard_alerts (
     id BIGSERIAL PRIMARY KEY,
     type VARCHAR(50) NOT NULL,
@@ -17,15 +21,15 @@ CREATE TABLE dashboard_alerts (
     updated_by VARCHAR(100)
 );
 
+-- Indexes
 CREATE INDEX idx_alert_type ON dashboard_alerts(type);
 CREATE INDEX idx_alert_severity ON dashboard_alerts(severity);
 CREATE INDEX idx_alert_acknowledged ON dashboard_alerts(acknowledged);
 CREATE INDEX idx_alert_created ON dashboard_alerts(create_time);
-
 CREATE INDEX idx_alert_active ON dashboard_alerts(acknowledged, severity) WHERE acknowledged = FALSE;
 
+-- Comments
 COMMENT ON TABLE dashboard_alerts IS 'System-generated alerts for admin dashboard';
 COMMENT ON COLUMN dashboard_alerts.type IS 'Alert category: LATE_RETURN, FAILED_PAYMENT, LOW_AVAILABILITY, UNRESOLVED_DISPUTE, MAINTENANCE_REQUIRED';
 COMMENT ON COLUMN dashboard_alerts.severity IS 'Priority level: CRITICAL(1), HIGH(2), WARNING(3), MEDIUM(4), LOW(5)';
 COMMENT ON COLUMN dashboard_alerts.reference_id IS 'Related entity ID (rental, payment, etc.)';
-

@@ -108,6 +108,7 @@ public class RentalServiceImpl implements RentalService {
                 .carBrand(car.getBrand())
                 .carModel(car.getModel())
                 .carLicensePlate(car.getLicensePlate())
+                .carThumbnailUrl(car.getThumbnailUrl())
                 .userEmail(user.email())
                 .userFullName(user.firstName() + " " + user.lastName())
                 .startDate(request.startDate())
@@ -543,6 +544,14 @@ public class RentalServiceImpl implements RentalService {
 
             rental.setPenaltyAmount(penaltyResult.penaltyAmount());
             rental.setLateHours(penaltyResult.lateHours());
+
+            if (penaltyResult.penaltyAmount() == null ||
+                    penaltyResult.penaltyAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                log.info("No penalty to charge for rental {} (within grace period or no late hours)",
+                        rental.getId());
+                rental.setPenaltyPaid(false);
+                return;
+            }
 
             PaymentDto penaltyPaymentDto = penaltyPaymentService.createPenaltyPayment(
                     rental, penaltyResult.penaltyAmount());

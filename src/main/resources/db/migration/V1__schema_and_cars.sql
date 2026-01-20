@@ -1,7 +1,13 @@
+-- =============================================================================
+-- V1: Schema, Car Table, and Indexes
+-- =============================================================================
+
 CREATE SCHEMA IF NOT EXISTS gallery;
 
+-- -----------------------------------------------------------------------------
+-- Car Table
+-- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS gallery.car (
-
     id BIGSERIAL PRIMARY KEY,
 
     license_plate VARCHAR(11) NOT NULL,
@@ -12,7 +18,7 @@ CREATE TABLE IF NOT EXISTS gallery.car (
     price NUMERIC(12,2) NOT NULL,
     currency_type VARCHAR(10) NOT NULL,
     damage_price NUMERIC(12,2) DEFAULT 0,
-    car_status_type VARCHAR(10) NOT NULL,
+    car_status_type VARCHAR(15) NOT NULL,
 
     engine_type VARCHAR(20),
     engine_displacement NUMERIC(4,2),
@@ -49,6 +55,7 @@ CREATE TABLE IF NOT EXISTS gallery.car (
     updated_by VARCHAR(100)
 );
 
+-- Unique Constraints
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'uk_car_license_plate') THEN
@@ -59,9 +66,13 @@ BEGIN
     END IF;
 END $$;
 
+-- Indexes
 CREATE INDEX IF NOT EXISTS idx_car_brand ON gallery.car(brand);
 CREATE INDEX IF NOT EXISTS idx_car_status ON gallery.car(car_status_type);
 CREATE INDEX IF NOT EXISTS idx_car_price ON gallery.car(price);
 CREATE INDEX IF NOT EXISTS index_car_year ON gallery.car(production_year);
 CREATE INDEX IF NOT EXISTS index_car_create_time ON gallery.car(create_time);
-
+CREATE INDEX IF NOT EXISTS idx_car_transmission_type ON gallery.car(transmission_type);
+CREATE INDEX IF NOT EXISTS idx_car_body_type ON gallery.car(body_type);
+CREATE INDEX IF NOT EXISTS idx_car_fuel_type ON gallery.car(fuel_type);
+CREATE INDEX IF NOT EXISTS idx_car_seats ON gallery.car(seats);

@@ -66,23 +66,23 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
                 request.getStartDate(),
                 request.getEndDate(),
                 blockingStatuses,
-                request.getBrand(),
-                request.getModel(),
-                request.getFuelType(),
-                request.getTransmissionType(),
-                request.getBodyType(),
+                request.getBrand() != null ? request.getBrand().toLowerCase() : null,
+                request.getModel() != null ? request.getModel().toLowerCase() : null,
+                request.getFuelType() != null ? request.getFuelType().toLowerCase() : null,
+                request.getTransmissionType() != null ? request.getTransmissionType().toLowerCase() : null,
+                request.getBodyType() != null ? request.getBodyType().toLowerCase() : null,
                 request.getMinSeats(),
                 request.getMinPrice(),
                 request.getMaxPrice(),
                 request.getMinProductionYear(),
                 request.getMaxProductionYear(),
-                pageable
-        );
+                pageable);
 
         int rentalDays = (int) ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1;
 
         List<AvailableCarDto> carDtos = availableCars.getContent().stream()
-                .map(car -> convertToAvailableCarDto(car, request.getStartDate(), request.getEndDate(), request.getTargetCurrency()))
+                .map(car -> convertToAvailableCarDto(car, request.getStartDate(), request.getEndDate(),
+                        request.getTargetCurrency()))
                 .toList();
 
         AvailabilitySearchResponse response = new AvailabilitySearchResponse(
@@ -93,10 +93,9 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
                 availableCars.getSize(),
                 request.getStartDate(),
                 request.getEndDate(),
-                rentalDays
-        );
+                rentalDays);
 
-        log.info("Found {} available cars for date range {} to {}", 
+        log.info("Found {} available cars for date range {} to {}",
                 response.totalElements(), request.getStartDate(), request.getEndDate());
 
         return response;
@@ -140,20 +139,18 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
                 carId,
                 monthStart,
                 monthEnd,
-                Arrays.asList(RentalStatus.CONFIRMED, RentalStatus.IN_USE)
-        );
+                Arrays.asList(RentalStatus.CONFIRMED, RentalStatus.IN_USE));
 
         List<DayAvailabilityDto> days = new ArrayList<>();
         for (int day = 1; day <= month.lengthOfMonth(); day++) {
             LocalDate date = month.atDay(day);
-            
+
             DayAvailabilityDto dayDto;
             if (carBlocked) {
                 dayDto = new DayAvailabilityDto(
                         date,
                         AvailabilityStatus.UNAVAILABLE,
-                        null
-                );
+                        null);
             } else {
                 Rental overlappingRental = rentals.stream()
                         .filter(r -> !date.isBefore(r.getStartDate()) && !date.isAfter(r.getEndDate()))
@@ -164,14 +161,12 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
                     dayDto = new DayAvailabilityDto(
                             date,
                             AvailabilityStatus.UNAVAILABLE,
-                            overlappingRental.getId()
-                    );
+                            overlappingRental.getId());
                 } else {
                     dayDto = new DayAvailabilityDto(
                             date,
                             AvailabilityStatus.AVAILABLE,
-                            null
-                    );
+                            null);
                 }
             }
             days.add(dayDto);
@@ -183,8 +178,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
                 month,
                 days,
                 carBlocked,
-                blockReason
-        );
+                blockReason);
 
         log.info("Generated calendar for car: {} for month: {} with {} days", carId, month, days.size());
         return calendar;
@@ -213,8 +207,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
                 carId,
                 startDate,
                 endDate,
-                Arrays.asList(RentalStatus.CONFIRMED, RentalStatus.IN_USE)
-        );
+                Arrays.asList(RentalStatus.CONFIRMED, RentalStatus.IN_USE));
 
         for (Rental rental : rentals) {
             LocalDate rentalStart = rental.getStartDate().isBefore(startDate) ? startDate : rental.getStartDate();
@@ -232,7 +225,6 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
         log.debug("Found {} unavailable dates for car: {}", unavailableDates.size(), carId);
         return unavailableDates;
     }
-
 
     private void validateRentalDates(LocalDate startDate, LocalDate endDate) {
         if (startDate.isBefore(LocalDate.now())) {
@@ -274,21 +266,20 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
         String sortDirection = request.getSortDirection() != null ? request.getSortDirection() : "asc";
         int page = request.getPage() != null ? request.getPage() : 0;
         int size = request.getSize() != null ? request.getSize() : 20;
-        
+
         Sort sort = Sort.by(
                 "desc".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC,
-                sortBy
-        );
+                sortBy);
         return PageRequest.of(page, size, sort);
     }
 
-    private AvailableCarDto convertToAvailableCarDto(Car car, LocalDate startDate, LocalDate endDate, CurrencyType targetCurrency) {
+    private AvailableCarDto convertToAvailableCarDto(Car car, LocalDate startDate, LocalDate endDate,
+                                                     CurrencyType targetCurrency) {
         PricingResult pricingResult = dynamicPricingService.calculatePrice(
                 car.getId(),
                 startDate,
                 endDate,
-                LocalDate.now()
-        );
+                LocalDate.now());
 
         List<String> appliedDiscounts = pricingResult.appliedModifiers().stream()
                 .map(PriceModifier::description)
@@ -324,7 +315,6 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
                 dailyRate,
                 totalPrice,
                 displayCurrency,
-                appliedDiscounts
-        );
+                appliedDiscounts);
     }
 }

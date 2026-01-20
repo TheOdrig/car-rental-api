@@ -18,4 +18,6 @@ public interface DamageService {
     int countUnresolvedDisputesOlderThan(int days);
 
     BigDecimal sumDamageCharges(LocalDate startDate, LocalDate endDate);
+
+    BigDecimal sumRepairCosts(LocalDate startDate, LocalDate endDate);
 }

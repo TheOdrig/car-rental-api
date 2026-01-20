@@ -36,12 +36,12 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    @Cacheable(value = "fleetStatus", key = "'current'")
     public FleetStatusDto getFleetStatus() {
-        log.info("Fetching fleet status (cache miss)");
+        log.info("Fetching fleet status");
         FleetStatusDto status = queryService.fetchFleetStatus();
-        log.info("Fleet status: total={}, available={}, rented={}, occupancy={}%",
-            status.totalCars(), status.availableCars(), status.rentedCars(), status.occupancyRate());
+        log.info("Fleet status: total={}, available={}, rented={}, reserved={}, inspection={}, occupancy={}%",
+                status.totalCars(), status.availableCars(), status.rentedCars(),
+                status.reservedCars(), status.inspectionCars(), status.occupancyRate());
         return status;
     }
 

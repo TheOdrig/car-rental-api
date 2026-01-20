@@ -43,6 +43,9 @@ public class Rental extends BaseEntity {
     @Column(name = "car_license_plate", length = 11, nullable = false)
     private String carLicensePlate;
 
+    @Column(name = "car_thumbnail_url", length = 500)
+    private String carThumbnailUrl;
+
     @Column(name = "user_email", length = 255, nullable = false)
     private String userEmail;
 

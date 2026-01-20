@@ -67,7 +67,8 @@ class AuthControllerIntegrationTest {
     @Test
     @DisplayName("Should register new user successfully")
     void shouldRegisterNewUserSuccessfully() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest("testuser", "test@example.com", "password123");
+        RegisterRequest registerRequest = new RegisterRequest("testuser", "test@example.com", "password123",
+                "Test", "User");
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

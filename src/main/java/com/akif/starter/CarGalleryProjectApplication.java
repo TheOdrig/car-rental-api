@@ -9,9 +9,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@ComponentScan(basePackages = {"com.akif"})
-@EnableJpaRepositories(basePackages = {"com.akif"})
-@EntityScan(basePackages = {"com.akif"})
+@ComponentScan(basePackages = { "com.akif" })
+@EnableJpaRepositories(basePackages = { "com.akif" })
+@EntityScan(basePackages = { "com.akif" })
 @EnableJpaAuditing
 @EnableCaching
 @EnableScheduling

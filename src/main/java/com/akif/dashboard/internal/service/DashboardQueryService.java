@@ -41,94 +41,96 @@ public class DashboardQueryService {
 
     public DailySummaryDto fetchDailySummary() {
         log.debug("Fetching daily summary data");
-        
+
         int pendingApprovals = rentalService.countByStatus(RentalStatus.REQUESTED);
         int todaysPickups = rentalService.countTodaysPickups();
         int todaysReturns = rentalService.countTodaysReturns();
         int overdueRentals = rentalService.countOverdueRentals();
         int pendingDamageAssessments = damageService.countPendingAssessments();
-        
+
         return new DailySummaryDto(
-            pendingApprovals,
-            todaysPickups,
-            todaysReturns,
-            overdueRentals,
-            pendingDamageAssessments,
-            LocalDateTime.now()
-        );
+                pendingApprovals,
+                todaysPickups,
+                todaysReturns,
+                overdueRentals,
+                pendingDamageAssessments,
+                LocalDateTime.now());
     }
 
     public FleetStatusDto fetchFleetStatus() {
         log.debug("Fetching fleet status data");
-        
+
         int totalCars = carService.countTotalActiveCars();
         int availableCars = carService.countByStatus(CarStatusType.AVAILABLE);
-        int rentedCars = carService.countByStatus(CarStatusType.RESERVED);
+        int rentedCars = carService.countByStatus(CarStatusType.RENTED);
+        int reservedCars = carService.countByStatus(CarStatusType.RESERVED);
         int maintenanceCars = carService.countByStatus(CarStatusType.MAINTENANCE);
+        int inspectionCars = carService.countByStatus(CarStatusType.INSPECTION);
         int damagedCars = carService.countByStatus(CarStatusType.DAMAGED);
-        
-        BigDecimal occupancyRate = calculateOccupancyRate(rentedCars, totalCars);
-        
+        int soldCars = carService.countByStatus(CarStatusType.SOLD);
+
+        BigDecimal occupancyRate = calculateOccupancyRate(rentedCars + reservedCars, totalCars);
+
         return new FleetStatusDto(
-            totalCars,
-            availableCars,
-            rentedCars,
-            maintenanceCars,
-            damagedCars,
-            occupancyRate,
-            LocalDateTime.now()
-        );
+                totalCars,
+                availableCars,
+                rentedCars,
+                reservedCars,
+                maintenanceCars,
+                inspectionCars,
+                damagedCars,
+                soldCars,
+                occupancyRate,
+                LocalDateTime.now());
     }
 
     public MonthlyMetricsDto fetchMonthlyMetrics(LocalDate startDate, LocalDate endDate) {
         log.debug("Fetching monthly metrics for period: {} to {}", startDate, endDate);
-        
+
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
-        
+
         BigDecimal totalRevenue = paymentService.sumCapturedPaymentsBetween(startDateTime, endDateTime);
         int completedRentals = rentalService.countByStatus(RentalStatus.RETURNED);
         int cancelledRentals = rentalService.countByStatus(RentalStatus.CANCELLED);
-        
+
         BigDecimal penaltyRevenue = rentalService.sumCollectedPenaltyRevenue(startDate, endDate);
         BigDecimal damageCharges = damageService.sumDamageCharges(startDate, endDate);
         BigDecimal averageRentalDurationDays = rentalService.getAverageRentalDurationDays(startDate, endDate);
-        
+
         return new MonthlyMetricsDto(
-            totalRevenue,
-            completedRentals,
-            cancelledRentals,
-            penaltyRevenue,
-            damageCharges,
-            averageRentalDurationDays,
-            startDate,
-            endDate,
-            LocalDateTime.now()
-        );
+                totalRevenue,
+                completedRentals,
+                cancelledRentals,
+                penaltyRevenue,
+                damageCharges,
+                averageRentalDurationDays,
+                startDate,
+                endDate,
+                LocalDateTime.now());
     }
 
     public RevenueAnalyticsDto fetchRevenueAnalytics() {
         log.debug("Fetching revenue analytics");
-        
+
         List<PaymentService.DailyRevenueProjection> dailyProjections = paymentService.getDailyRevenue(30);
         List<PaymentService.MonthlyRevenueProjection> monthlyProjections = paymentService.getMonthlyRevenue(12);
-        
+
         List<DailyRevenueDto> dailyRevenue = dailyProjections.stream()
-            .map(p -> new DailyRevenueDto(p.getDate(), p.getRevenue(), p.getRentalCount()))
-            .toList();
-        
+                .map(p -> new DailyRevenueDto(p.getDate(), p.getRevenue(), p.getRentalCount()))
+                .toList();
+
         List<MonthlyRevenueDto> monthlyRevenue = monthlyProjections.stream()
-            .map(p -> new MonthlyRevenueDto(p.getMonth(), p.getRevenue(), p.getRentalCount(), BigDecimal.ZERO))
-            .toList();
-        
+                .map(p -> new MonthlyRevenueDto(p.getMonth(), p.getRevenue(), p.getRentalCount(), BigDecimal.ZERO))
+                .toList();
+
         RevenueBreakdownDto breakdown = calculateRevenueBreakdown();
-        
+
         return new RevenueAnalyticsDto(
-            dailyRevenue,
-            monthlyRevenue,
-            breakdown,
-            LocalDateTime.now()
-        );
+                dailyRevenue,
+                monthlyRevenue,
+                breakdown,
+                LocalDateTime.now());
     }
 
     public Page<PendingItemDto> fetchPendingApprovals(Pageable pageable) {
@@ -156,8 +158,8 @@ public class DashboardQueryService {
             return BigDecimal.ZERO;
         }
         return BigDecimal.valueOf(rentedCars)
-            .divide(BigDecimal.valueOf(totalCars), 4, RoundingMode.HALF_UP)
-            .multiply(BigDecimal.valueOf(100));
+                .divide(BigDecimal.valueOf(totalCars), 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100));
     }
 
     private RevenueBreakdownDto calculateRevenueBreakdown() {
@@ -165,55 +167,61 @@ public class DashboardQueryService {
         LocalDateTime endOfMonth = LocalDateTime.now();
         LocalDate startDate = LocalDate.now().withDayOfMonth(1);
         LocalDate endDate = LocalDate.now();
-        
+
         BigDecimal rentalRevenue = paymentService.sumCapturedPaymentsBetween(startOfMonth, endOfMonth);
         BigDecimal penaltyRevenue = rentalService.sumCollectedPenaltyRevenue(startDate, endDate);
-        BigDecimal damageCharges = damageService.sumDamageCharges(startDate, endDate);
-        
-        BigDecimal totalRevenue = rentalRevenue.add(penaltyRevenue).add(damageCharges);
-        
+        BigDecimal damageRecovered = damageService.sumDamageCharges(startDate, endDate);
+        BigDecimal damageRepairCosts = damageService.sumRepairCosts(startDate, endDate);
+
+        BigDecimal netDamageImpact = damageRecovered.subtract(damageRepairCosts);
+
+        BigDecimal totalRevenue = rentalRevenue.add(penaltyRevenue).add(damageRecovered);
+
+        BigDecimal netRevenue = rentalRevenue.add(penaltyRevenue).add(netDamageImpact);
+
         BigDecimal rentalPercentage = BigDecimal.ZERO;
         BigDecimal penaltyPercentage = BigDecimal.ZERO;
         BigDecimal damagePercentage = BigDecimal.ZERO;
-        
+
         if (totalRevenue.compareTo(BigDecimal.ZERO) > 0) {
             rentalPercentage = rentalRevenue.divide(totalRevenue, 4, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100));
+                    .multiply(BigDecimal.valueOf(100));
             penaltyPercentage = penaltyRevenue.divide(totalRevenue, 4, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100));
-            damagePercentage = damageCharges.divide(totalRevenue, 4, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100));
+                    .multiply(BigDecimal.valueOf(100));
+            damagePercentage = damageRecovered.divide(totalRevenue, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
         }
-        
+
         return new RevenueBreakdownDto(
-            rentalRevenue,
-            penaltyRevenue,
-            damageCharges,
-            totalRevenue,
-            rentalPercentage,
-            penaltyPercentage,
-            damagePercentage
-        );
+                rentalRevenue,
+                penaltyRevenue,
+                damageRecovered,
+                damageRepairCosts,
+                netDamageImpact,
+                totalRevenue,
+                netRevenue,
+                rentalPercentage,
+                penaltyPercentage,
+                damagePercentage);
     }
 
     private PendingItemDto toPendingItemDto(RentalResponse rental) {
         Long lateHours = calculateLateHours(rental.endDate());
-        
+
         return new PendingItemDto(
-            rental.id(),
-            rental.userSummary() != null ? rental.userSummary().username() : null,
-            rental.userSummary() != null ? rental.userSummary().email() : null,
-            rental.carSummary() != null ? rental.carSummary().id() : null,
-            rental.carSummary() != null ? rental.carSummary().brand() : null,
-            rental.carSummary() != null ? rental.carSummary().model() : null,
-            rental.carSummary() != null ? rental.carSummary().licensePlate() : null,
-            rental.startDate(),
-            rental.endDate(),
-            rental.totalPrice(),
-            rental.status() != null ? rental.status().name() : null,
-            lateHours,
-            rental.createTime()
-        );
+                rental.id(),
+                rental.userSummary() != null ? rental.userSummary().username() : null,
+                rental.userSummary() != null ? rental.userSummary().email() : null,
+                rental.carSummary() != null ? rental.carSummary().id() : null,
+                rental.carSummary() != null ? rental.carSummary().brand() : null,
+                rental.carSummary() != null ? rental.carSummary().model() : null,
+                rental.carSummary() != null ? rental.carSummary().licensePlate() : null,
+                rental.startDate(),
+                rental.endDate(),
+                rental.totalPrice(),
+                rental.status() != null ? rental.status().name() : null,
+                lateHours,
+                rental.createTime());
     }
 
     private Long calculateLateHours(LocalDate endDate) {
@@ -221,8 +229,7 @@ public class DashboardQueryService {
             return null;
         }
         return java.time.temporal.ChronoUnit.HOURS.between(
-            endDate.atStartOfDay(),
-            LocalDateTime.now()
-        );
+                endDate.atStartOfDay(),
+                LocalDateTime.now());
     }
 }

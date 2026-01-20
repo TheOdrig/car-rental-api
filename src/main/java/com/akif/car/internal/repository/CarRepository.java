@@ -21,54 +21,99 @@ import java.util.Optional;
 public interface CarRepository extends JpaRepository<Car, Long> {
 
     Optional<Car> findByLicensePlate(String licensePlate);
+
     Optional<Car> findByVinNumber(String vinNumber);
 
     boolean existsByLicensePlate(String licensePlate);
+
     boolean existsByVinNumber(String vinNumber);
 
     Page<Car> findByCarStatusTypeAndIsDeletedFalse(CarStatusType carStatusType, Pageable pageable);
+
     long countByCarStatusTypeAndIsDeletedFalse(CarStatusType carStatusType);
 
     Page<Car> findByBrandIgnoreCaseAndIsDeletedFalse(String brand, Pageable pageable);
-    Page<Car> findByBrandIgnoreCaseAndModelIgnoreCaseAndIsDeletedFalse(String brand, String model, Pageable pageable);
+
+    Page<Car> findByBrandIgnoreCaseAndModelIgnoreCaseAndIsDeletedFalse(String brand, String model,
+                                                                       Pageable pageable);
 
     Page<Car> findByPriceBetweenAndIsDeletedFalse(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable);
-    Page<Car> findByPriceBetweenAndCurrencyTypeAndIsDeletedFalse(BigDecimal minPrice, BigDecimal maxPrice, CurrencyType currencyType, Pageable pageable);
+
+    Page<Car> findByPriceBetweenAndCurrencyTypeAndIsDeletedFalse(BigDecimal minPrice, BigDecimal maxPrice,
+                                                                 CurrencyType currencyType, Pageable pageable);
 
     Page<Car> findByProductionYearBetweenAndIsDeletedFalse(Integer minYear, Integer maxYear, Pageable pageable);
+
     Page<Car> findByProductionYearGreaterThanEqualAndIsDeletedFalse(Integer yearThreshold, Pageable pageable);
 
-    Page<Car> findByIsFeaturedTrueAndIsDeletedFalse(Pageable pageable);
+    Page<Car> findByIsFeaturedTrueAndCarStatusTypeAndIsDeletedFalse(CarStatusType carStatusType, Pageable pageable);
+
     Page<Car> findByIsTestDriveAvailableTrueAndIsDeletedFalse(Pageable pageable);
 
     @EntityGraph(attributePaths = {})
     Page<Car> findByIsDeletedFalse(Pageable pageable);
+
     long countByIsDeletedFalse();
 
     Optional<Car> findByIdAndIsDeletedFalse(Long id);
 
     Page<Car> findByIsDeletedFalseOrderByViewCountDesc(Pageable pageable);
+
     Page<Car> findByIsDeletedFalseOrderByLikeCountDesc(Pageable pageable);
 
-
-    @Query("SELECT c FROM Car c WHERE " +
-            "(:searchTerm IS NULL OR " +
-            "LOWER(c.licensePlate) LIKE :searchTerm OR " +
-            "LOWER(c.brand) LIKE :searchTerm OR " +
-            "LOWER(c.model) LIKE :searchTerm) AND " +
-            "(:brand IS NULL OR LOWER(c.brand) = :brand) AND " +
-            "(:model IS NULL OR LOWER(c.model) = :model) AND " +
-            "(:transmissionType IS NULL OR LOWER(c.transmissionType) = :transmissionType) AND " +
-            "(:bodyType IS NULL OR LOWER(c.bodyType) = :bodyType) AND " +
-            "(:fuelType IS NULL OR LOWER(c.fuelType) = :fuelType) AND " +
-            "(:minSeats IS NULL OR c.seats >= :minSeats) AND " +
-            "(:minProductionYear IS NULL OR c.productionYear >= :minProductionYear) AND " +
-            "(:maxProductionYear IS NULL OR c.productionYear <= :maxProductionYear) AND " +
-            "(:minPrice IS NULL OR c.price >= :minPrice) AND " +
-            "(:maxPrice IS NULL OR c.price <= :maxPrice) AND " +
-            "(:currencyType IS NULL OR c.currencyType = :currencyType) AND " +
-            "(:carStatusType IS NULL OR c.carStatusType = :carStatusType) AND " +
-            "c.isDeleted = false")
+    @Query(value = "SELECT * FROM gallery.car c WHERE " +
+            "(CAST(:searchTerm AS VARCHAR) IS NULL OR " +
+            "LOWER(c.license_plate) LIKE CAST(:searchTerm AS VARCHAR) OR " +
+            "LOWER(c.brand) LIKE CAST(:searchTerm AS VARCHAR) OR " +
+            "LOWER(c.model) LIKE CAST(:searchTerm AS VARCHAR)) AND " +
+            "(CAST(:brand AS VARCHAR) IS NULL OR LOWER(c.brand) = CAST(:brand AS VARCHAR)) AND " +
+            "(CAST(:model AS VARCHAR) IS NULL OR LOWER(c.model) = CAST(:model AS VARCHAR)) AND " +
+            "(CAST(:transmissionType AS VARCHAR) IS NULL OR LOWER(c.transmission_type) = CAST(:transmissionType AS VARCHAR)) AND "
+            +
+            "(CAST(:bodyType AS VARCHAR) IS NULL OR LOWER(c.body_type) = CAST(:bodyType AS VARCHAR)) AND " +
+            "(CAST(:fuelType AS VARCHAR) IS NULL OR LOWER(c.fuel_type) = CAST(:fuelType AS VARCHAR)) AND " +
+            "(CAST(:minSeats AS INTEGER) IS NULL OR c.seats >= CAST(:minSeats AS INTEGER)) AND " +
+            "(CAST(:minProductionYear AS INTEGER) IS NULL OR c.production_year >= CAST(:minProductionYear AS INTEGER)) AND "
+            +
+            "(CAST(:maxProductionYear AS INTEGER) IS NULL OR c.production_year <= CAST(:maxProductionYear AS INTEGER)) AND "
+            +
+            "(CAST(:minPrice AS DECIMAL) IS NULL OR c.price >= CAST(:minPrice AS DECIMAL)) AND " +
+            "(CAST(:maxPrice AS DECIMAL) IS NULL OR c.price <= CAST(:maxPrice AS DECIMAL)) AND " +
+            "(CAST(:currencyType AS VARCHAR) IS NULL OR c.currency_type = CAST(:currencyType AS VARCHAR)) AND "
+            +
+            "(CAST(:carStatusType AS VARCHAR) IS NULL OR c.car_status_type = CAST(:carStatusType AS VARCHAR)) AND "
+            +
+            "c.is_deleted = false " +
+            "ORDER BY c.create_time DESC", countQuery = "SELECT COUNT(*) FROM gallery.car c WHERE " +
+            "(CAST(:searchTerm AS VARCHAR) IS NULL OR " +
+            "LOWER(c.license_plate) LIKE CAST(:searchTerm AS VARCHAR) OR " +
+            "LOWER(c.brand) LIKE CAST(:searchTerm AS VARCHAR) OR " +
+            "LOWER(c.model) LIKE CAST(:searchTerm AS VARCHAR)) AND " +
+            "(CAST(:brand AS VARCHAR) IS NULL OR LOWER(c.brand) = CAST(:brand AS VARCHAR)) AND "
+            +
+            "(CAST(:model AS VARCHAR) IS NULL OR LOWER(c.model) = CAST(:model AS VARCHAR)) AND "
+            +
+            "(CAST(:transmissionType AS VARCHAR) IS NULL OR LOWER(c.transmission_type) = CAST(:transmissionType AS VARCHAR)) AND "
+            +
+            "(CAST(:bodyType AS VARCHAR) IS NULL OR LOWER(c.body_type) = CAST(:bodyType AS VARCHAR)) AND "
+            +
+            "(CAST(:fuelType AS VARCHAR) IS NULL OR LOWER(c.fuel_type) = CAST(:fuelType AS VARCHAR)) AND "
+            +
+            "(CAST(:minSeats AS INTEGER) IS NULL OR c.seats >= CAST(:minSeats AS INTEGER)) AND "
+            +
+            "(CAST(:minProductionYear AS INTEGER) IS NULL OR c.production_year >= CAST(:minProductionYear AS INTEGER)) AND "
+            +
+            "(CAST(:maxProductionYear AS INTEGER) IS NULL OR c.production_year <= CAST(:maxProductionYear AS INTEGER)) AND "
+            +
+            "(CAST(:minPrice AS DECIMAL) IS NULL OR c.price >= CAST(:minPrice AS DECIMAL)) AND "
+            +
+            "(CAST(:maxPrice AS DECIMAL) IS NULL OR c.price <= CAST(:maxPrice AS DECIMAL)) AND "
+            +
+            "(CAST(:currencyType AS VARCHAR) IS NULL OR c.currency_type = CAST(:currencyType AS VARCHAR)) AND "
+            +
+            "(CAST(:carStatusType AS VARCHAR) IS NULL OR c.car_status_type = CAST(:carStatusType AS VARCHAR)) AND "
+            +
+            "c.is_deleted = false", nativeQuery = true)
     Page<Car> findCarsByCriteria(@Param("searchTerm") String searchTerm,
                                  @Param("brand") String brand,
                                  @Param("model") String model,
@@ -80,8 +125,8 @@ public interface CarRepository extends JpaRepository<Car, Long> {
                                  @Param("maxProductionYear") Integer maxProductionYear,
                                  @Param("minPrice") BigDecimal minPrice,
                                  @Param("maxPrice") BigDecimal maxPrice,
-                                 @Param("currencyType") CurrencyType currencyType,
-                                 @Param("carStatusType") CarStatusType carStatusType,
+                                 @Param("currencyType") String currencyType,
+                                 @Param("carStatusType") String carStatusType,
                                  Pageable pageable);
 
     @Query("SELECT AVG(c.price) FROM Car c WHERE c.isDeleted = false")
@@ -102,15 +147,14 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     @Query("SELECT c.carStatusType, COUNT(c) FROM Car c WHERE c.isDeleted = false GROUP BY c.carStatusType")
     List<Object[]> getCarsCountByStatus();
 
-
     @Query("SELECT c FROM Car c WHERE " +
             "c.isDeleted = false AND " +
             "c.carStatusType NOT IN :blockingStatuses AND " +
-            "(:brand IS NULL OR LOWER(c.brand) = LOWER(:brand)) AND " +
-            "(:model IS NULL OR LOWER(c.model) = LOWER(:model)) AND " +
-            "(:fuelType IS NULL OR LOWER(c.fuelType) = LOWER(:fuelType)) AND " +
-            "(:transmissionType IS NULL OR LOWER(c.transmissionType) = LOWER(:transmissionType)) AND " +
-            "(:bodyType IS NULL OR LOWER(c.bodyType) = LOWER(:bodyType)) AND " +
+            "(COALESCE(:brand, '') = '' OR LOWER(c.brand) = :brand) AND " +
+            "(COALESCE(:model, '') = '' OR LOWER(c.model) = :model) AND " +
+            "(COALESCE(:fuelType, '') = '' OR LOWER(c.fuelType) = :fuelType) AND " +
+            "(COALESCE(:transmissionType, '') = '' OR LOWER(c.transmissionType) = :transmissionType) AND " +
+            "(COALESCE(:bodyType, '') = '' OR LOWER(c.bodyType) = :bodyType) AND " +
             "(:minSeats IS NULL OR c.seats >= :minSeats) AND " +
             "(:minPrice IS NULL OR c.price >= :minPrice) AND " +
             "(:maxPrice IS NULL OR c.price <= :maxPrice) AND " +
@@ -119,7 +163,8 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             "NOT EXISTS (" +
             "   SELECT r FROM Rental r WHERE " +
             "   r.carId = c.id AND " +
-            "   r.status IN (com.akif.rental.domain.enums.RentalStatus.CONFIRMED, com.akif.rental.domain.enums.RentalStatus.IN_USE) AND " +
+            "   r.status IN (com.akif.rental.domain.enums.RentalStatus.CONFIRMED, com.akif.rental.domain.enums.RentalStatus.IN_USE) AND "
+            +
             "   r.isDeleted = false AND " +
             "   r.startDate <= :endDate AND r.endDate >= :startDate" +
             ")")
@@ -143,7 +188,7 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             "c.isDeleted = false AND " +
             "c.id != :excludeCarId AND " +
             "c.carStatusType NOT IN :blockingStatuses AND " +
-            "(LOWER(c.bodyType) = LOWER(:bodyType) OR " +
+            "(LOWER(c.bodyType) = :bodyType OR " +
             "(c.price >= :minPrice AND c.price <= :maxPrice))")
     Page<Car> findSimilarCars(
             @Param("bodyType") String bodyType,
@@ -152,7 +197,6 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             @Param("excludeCarId") Long excludeCarId,
             @Param("blockingStatuses") List<CarStatusType> blockingStatuses,
             Pageable pageable);
-
 
     @Modifying
     @Query("UPDATE Car c SET c.viewCount = c.viewCount + 1, c.updateTime = CURRENT_TIMESTAMP WHERE c.id = :id")

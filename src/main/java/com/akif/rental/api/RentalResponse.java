@@ -19,9 +19,9 @@ public record RentalResponse(
         CarSummaryResponse carSummary,
         UserSummaryResponse userSummary,
 
-        @JsonFormat(pattern = "dd-MM-yyyy") LocalDate startDate,
+        @JsonFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
 
-        @JsonFormat(pattern = "dd-MM-yyyy") LocalDate endDate,
+        @JsonFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
 
         Integer days,
         BigDecimal dailyPrice,

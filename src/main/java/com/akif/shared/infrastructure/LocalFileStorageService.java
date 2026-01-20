@@ -65,7 +65,9 @@ public class LocalFileStorageService implements FileUploadService {
 
     @Override
     public String generateSecureUrl(String filePath, int expirationMinutes) {
-        return "file:///" + Paths.get(filePath).toAbsolutePath().toString().replace("\\", "/");
+        Path path = Paths.get(filePath);
+        String fileName = path.getFileName().toString();
+        return "http://localhost:8082/api/files/damage-photos/" + fileName;
     }
 
     @Override

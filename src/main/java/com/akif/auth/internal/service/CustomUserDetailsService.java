@@ -25,7 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.debug("Loading user by username: {}", username);
-        
+
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> {
                     log.warn("User not found with username: {}", username);
@@ -38,9 +38,11 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                 .collect(Collectors.toSet());
 
+        String password = user.getPassword() != null ? user.getPassword() : "";
+
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
-                .password(user.getPassword())
+                .password(password)
                 .authorities(authorities)
                 .accountExpired(false)
                 .accountLocked(false)

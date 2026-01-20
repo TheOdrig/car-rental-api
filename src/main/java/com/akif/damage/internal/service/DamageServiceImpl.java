@@ -65,4 +65,10 @@ public class DamageServiceImpl implements DamageService {
         log.debug("Calculating damage charges between {} and {}", startDate, endDate);
         return damageReportRepository.sumTotalCustomerLiability(startDate, endDate);
     }
+
+    @Override
+    public BigDecimal sumRepairCosts(LocalDate startDate, LocalDate endDate) {
+        log.debug("Calculating repair costs between {} and {}", startDate, endDate);
+        return damageReportRepository.sumTotalRepairCost(startDate, endDate);
+    }
 }
