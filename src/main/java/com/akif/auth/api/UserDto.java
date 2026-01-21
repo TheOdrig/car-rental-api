@@ -10,9 +10,10 @@ public record UserDto(
         String email,
         String firstName,
         String lastName,
+        String phone,
+        String avatarUrl,
         Set<Role> roles,
-        boolean active
-) {
+        boolean active) {
     public boolean isAdmin() {
         return roles != null && roles.contains(Role.ADMIN);
     }

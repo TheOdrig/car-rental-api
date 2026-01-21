@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS gallery.users (
     first_name VARCHAR(50),
     last_name VARCHAR(50),
     avatar_url VARCHAR(500),
+    phone VARCHAR(20),
     auth_provider VARCHAR(20) DEFAULT 'LOCAL',
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,

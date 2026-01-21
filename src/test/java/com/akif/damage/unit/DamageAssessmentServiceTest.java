@@ -80,9 +80,10 @@ class DamageAssessmentServiceTest {
                 "admin@example.com",
                 "Admin",
                 "User",
+                null,
+                null,
                 Set.of(Role.ADMIN),
-                true
-        );
+                true);
 
         testCar = CarResponse.builder()
                 .id(1L)
@@ -114,8 +115,7 @@ class DamageAssessmentServiceTest {
                 new BigDecimal("500.00"),
                 true,
                 new BigDecimal("100.00"),
-                "Minor scratch requiring paint touch-up"
-        );
+                "Minor scratch requiring paint touch-up");
     }
 
     @Nested
@@ -164,8 +164,7 @@ class DamageAssessmentServiceTest {
                     new BigDecimal("500.00"),
                     false,
                     null,
-                    "No insurance"
-            );
+                    "No insurance");
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(authService.getUserByUsername("admin")).thenReturn(testUser);
@@ -213,8 +212,7 @@ class DamageAssessmentServiceTest {
                     new BigDecimal("5000.00"),
                     true,
                     new BigDecimal("500.00"),
-                    "Major mechanical damage"
-            );
+                    "Major mechanical damage");
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(authService.getUserByUsername("admin")).thenReturn(testUser);
@@ -292,7 +290,8 @@ class DamageAssessmentServiceTest {
         @Test
         @DisplayName("Should return zero for zero repair cost")
         void shouldReturnZeroForZeroRepairCost() {
-            BigDecimal result = damageAssessmentService.calculateCustomerLiability(BigDecimal.ZERO, true, new BigDecimal("100"));
+            BigDecimal result = damageAssessmentService.calculateCustomerLiability(BigDecimal.ZERO, true,
+                    new BigDecimal("100"));
 
             assertThat(result).isEqualTo(BigDecimal.ZERO);
         }
@@ -303,8 +302,7 @@ class DamageAssessmentServiceTest {
             BigDecimal result = damageAssessmentService.calculateCustomerLiability(
                     new BigDecimal("1000"),
                     true,
-                    new BigDecimal("250")
-            );
+                    new BigDecimal("250"));
 
             assertThat(result).isEqualTo(new BigDecimal("250"));
         }
@@ -315,8 +313,7 @@ class DamageAssessmentServiceTest {
             BigDecimal result = damageAssessmentService.calculateCustomerLiability(
                     new BigDecimal("100"),
                     true,
-                    new BigDecimal("250")
-            );
+                    new BigDecimal("250"));
 
             assertThat(result).isEqualTo(new BigDecimal("100"));
         }
@@ -327,8 +324,7 @@ class DamageAssessmentServiceTest {
             BigDecimal result = damageAssessmentService.calculateCustomerLiability(
                     new BigDecimal("1000"),
                     false,
-                    null
-            );
+                    null);
 
             assertThat(result).isEqualTo(new BigDecimal("1000"));
         }

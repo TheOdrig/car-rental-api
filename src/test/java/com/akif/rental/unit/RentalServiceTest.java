@@ -101,6 +101,8 @@ class RentalServiceTest {
                 "test@example.com",
                 "Test",
                 "User",
+                null,
+                null,
                 Set.of(Role.USER),
                 true);
 
@@ -309,7 +311,8 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should throw exception when user tries to cancel other user's rental")
         void shouldThrowExceptionWhenUserTriesToCancelOtherUsersRental() {
-            UserDto otherUser = new UserDto(2L, "otheruser", "other@example.com", "Other", "User", Set.of(Role.USER),
+            UserDto otherUser = new UserDto(2L, "otheruser", "other@example.com", "Other", "User", null, null,
+                    Set.of(Role.USER),
                     true);
 
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
