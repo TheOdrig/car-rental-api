@@ -83,3 +83,29 @@ CREATE TABLE IF NOT EXISTS gallery.password_reset_tokens (
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON gallery.password_reset_tokens(token);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_email ON gallery.password_reset_tokens(email);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expiry ON gallery.password_reset_tokens(expiry_date);
+
+-- -----------------------------------------------------------------------------
+-- Admin Notes Table (for internal admin notes on users)
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS gallery.admin_notes (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    admin_id BIGINT NOT NULL,
+    admin_username VARCHAR(50) NOT NULL,
+    text VARCHAR(1000) NOT NULL,
+    created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    create_time TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
+    version BIGINT DEFAULT 0,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_admin_note_user FOREIGN KEY (user_id) REFERENCES gallery.users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_admin_note_admin FOREIGN KEY (admin_id) REFERENCES gallery.users(id)
+);
+
+-- Indexes for admin notes
+CREATE INDEX IF NOT EXISTS idx_admin_notes_user ON gallery.admin_notes(user_id);
+CREATE INDEX IF NOT EXISTS idx_admin_notes_admin ON gallery.admin_notes(admin_id);
+CREATE INDEX IF NOT EXISTS idx_admin_notes_created ON gallery.admin_notes(created_at);
+
