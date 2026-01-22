@@ -28,8 +28,17 @@ public class FileController {
 
     @GetMapping("/damage-photos/{filename}")
     public ResponseEntity<Resource> getDamagePhoto(@PathVariable String filename) {
+        return getFile("damage-photos", filename);
+    }
+
+    @GetMapping("/avatars/{filename}")
+    public ResponseEntity<Resource> getAvatar(@PathVariable String filename) {
+        return getFile("avatars", filename);
+    }
+
+    private ResponseEntity<Resource> getFile(String directory, String filename) {
         try {
-            Path filePath = Paths.get(baseUploadDir, "damage-photos", filename);
+            Path filePath = Paths.get(baseUploadDir, directory, filename);
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() && resource.isReadable()) {

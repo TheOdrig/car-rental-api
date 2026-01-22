@@ -82,9 +82,10 @@ class DamageDisputeServiceTest {
                 "customer@example.com",
                 "Customer",
                 "User",
+                null,
+                null,
                 Set.of(Role.USER),
-                true
-        );
+                true);
 
         testAdmin = new UserDto(
                 100L,
@@ -92,9 +93,10 @@ class DamageDisputeServiceTest {
                 "admin@example.com",
                 "Admin",
                 "User",
+                null,
+                null,
                 Set.of(Role.ADMIN),
-                true
-        );
+                true);
 
         testRental = new RentalSummaryDto(
                 1L,
@@ -108,8 +110,7 @@ class DamageDisputeServiceTest {
                 LocalDate.now().minusDays(5),
                 LocalDate.now().plusDays(2),
                 true,
-                1
-        );
+                1);
 
         testDamageReport = DamageReport.builder()
                 .id(1L)
@@ -132,14 +133,12 @@ class DamageDisputeServiceTest {
 
         testDisputeRequest = new DamageDisputeRequest(
                 "The damage was pre-existing",
-                "Photos show the damage was there before rental"
-        );
+                "Photos show the damage was there before rental");
 
         testResolutionDto = new DamageDisputeResolutionDto(
                 new BigDecimal("250.00"),
                 new BigDecimal("250.00"),
-                "Partial refund approved - damage was partially pre-existing"
-        );
+                "Partial refund approved - damage was partially pre-existing");
     }
 
     @Nested
@@ -212,8 +211,9 @@ class DamageDisputeServiceTest {
         @Test
         @DisplayName("Should throw exception when user is not the rental owner")
         void shouldThrowExceptionWhenUserIsNotTheRentalOwner() {
-            UserDto differentUser = new UserDto(999L, "other", "other@email.com", "Other", "User", Set.of(Role.USER), true);
-            
+            UserDto differentUser = new UserDto(999L, "other", "other@email.com", "Other", "User", null, null,
+                    Set.of(Role.USER), true);
+
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(authService.getUserByUsername("other")).thenReturn(differentUser);
             when(rentalService.getRentalSummaryById(testDamageReport.getRentalId())).thenReturn(testRental);
@@ -309,8 +309,7 @@ class DamageDisputeServiceTest {
             DamageDisputeResolutionDto noRefundResolution = new DamageDisputeResolutionDto(
                     new BigDecimal("500.00"),
                     new BigDecimal("500.00"),
-                    "Dispute rejected - no refund"
-            );
+                    "Dispute rejected - no refund");
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(authService.getUserByUsername("admin")).thenReturn(testAdmin);

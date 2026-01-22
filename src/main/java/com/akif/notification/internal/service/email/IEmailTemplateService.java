@@ -15,24 +15,24 @@ public interface IEmailTemplateService {
     String renderReturnReminderEmail(ReturnReminderEvent event);
 
     String renderCancellationEmail(RentalCancelledEvent event);
-    
+
     String renderGracePeriodWarningEmail(GracePeriodWarningEvent event);
-    
+
     String renderLateReturnNotificationEmail(LateReturnNotificationEvent event);
-    
+
     String renderSeverelyLateNotificationEmail(SeverelyLateNotificationEvent event);
-    
+
     String renderPenaltySummaryEmail(PenaltySummaryEvent event);
-    
 
     String renderDamageReportedEmail(DamageReportedEvent event);
-    
-    String renderDamageAssessedEmail(DamageAssessedEvent event);
-    
-    String renderDamageChargedEmail(DamageChargedEvent event);
-    
-    String renderDamageDisputedEmail(DamageDisputedEvent event);
-    
-    String renderDamageResolvedEmail(DamageResolvedEvent event);
-}
 
+    String renderDamageAssessedEmail(DamageAssessedEvent event);
+
+    String renderDamageChargedEmail(DamageChargedEvent event);
+
+    String renderDamageDisputedEmail(DamageDisputedEvent event);
+
+    String renderDamageResolvedEmail(DamageResolvedEvent event);
+
+    String renderPasswordResetEmail(String email, String resetLink);
+}

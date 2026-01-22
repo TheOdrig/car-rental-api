@@ -32,11 +32,9 @@ public class JwtTokenProvider {
         String username = authentication.getName();
         Date expiryDate = new Date(System.currentTimeMillis() + accessTokenExpiration);
 
-
         List<String> roles = authentication.getAuthorities().stream()
                 .map(authority -> authority.getAuthority().replace("ROLE_", ""))
                 .toList();
-
 
         return Jwts.builder()
                 .subject(username)
@@ -61,21 +59,24 @@ public class JwtTokenProvider {
     }
 
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parser()
+        Claims claims = getClaimsFromToken(token);
+        return claims.getSubject();
+    }
+
+    public Claims getClaimsFromToken(String token) {
+        return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-
-        return claims.getSubject();
     }
 
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token);
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             log.error("Invalid JWT token: {}", e.getMessage());
@@ -90,7 +91,7 @@ public class JwtTokenProvider {
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-            
+
             return claims.getExpiration().before(new Date());
         } catch (JwtException | IllegalArgumentException e) {
             return true;
@@ -103,7 +104,7 @@ public class JwtTokenProvider {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        
+
         return claims.getExpiration().getTime();
     }
 }

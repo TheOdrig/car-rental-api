@@ -565,7 +565,6 @@ For the module dependency graph showing inter-module relationships, see:
 | Document | Description |
 |----------|-------------|
 | [Developer Guide](DEVELOPER_GUIDE.md) | Module development patterns and best practices |
-| [Migration Guide](MIGRATION.md) | Spring Modulith migration documentation |
 | [API Conventions](../api/API_CONVENTIONS.md) | REST API design standards |
 | [Test Strategy](../testing/TEST_STRATEGY.md) | Testing approach and patterns |
 | [Security Policy](../security/SECURITY_POLICY.md) | Security implementation details |

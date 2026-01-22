@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS gallery.users (
     first_name VARCHAR(50),
     last_name VARCHAR(50),
     avatar_url VARCHAR(500),
+    phone VARCHAR(20),
     auth_provider VARCHAR(20) DEFAULT 'LOCAL',
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
@@ -60,3 +61,20 @@ CREATE INDEX IF NOT EXISTS idx_users_enabled ON gallery.users(enabled);
 CREATE INDEX IF NOT EXISTS idx_linked_accounts_user_id ON gallery.linked_accounts(user_id);
 CREATE INDEX IF NOT EXISTS idx_linked_accounts_provider_email ON gallery.linked_accounts(provider, email);
 CREATE INDEX IF NOT EXISTS idx_linked_accounts_provider_provider_id ON gallery.linked_accounts(provider, provider_id);
+
+-- -----------------------------------------------------------------------------
+-- Password Reset Tokens Table
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS gallery.password_reset_tokens (
+    id BIGSERIAL PRIMARY KEY,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL,
+    expiry_date TIMESTAMP(6) NOT NULL,
+    used BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for password reset tokens
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON gallery.password_reset_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_email ON gallery.password_reset_tokens(email);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expiry ON gallery.password_reset_tokens(expiry_date);

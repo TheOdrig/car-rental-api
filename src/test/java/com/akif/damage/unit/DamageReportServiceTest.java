@@ -101,9 +101,10 @@ class DamageReportServiceTest {
                 "test@example.com",
                 "Test",
                 "User",
+                null,
+                null,
                 Set.of(Role.USER),
-                true
-        );
+                true);
 
         testCar = new CarDto(
                 1L,
@@ -116,8 +117,7 @@ class DamageReportServiceTest {
                 "SEDAN",
                 5,
                 true,
-                false
-        );
+                false);
 
         testRental = new RentalSummaryDto(
                 1L,
@@ -131,8 +131,7 @@ class DamageReportServiceTest {
                 LocalDate.now().minusDays(5),
                 LocalDate.now().plusDays(2),
                 false,
-                0
-        );
+                0);
 
         testDamageReport = DamageReport.builder()
                 .id(1L)
@@ -169,8 +168,7 @@ class DamageReportServiceTest {
                 "Scratch on front bumper",
                 "Front bumper",
                 DamageSeverity.MINOR,
-                DamageCategory.SCRATCH
-        );
+                DamageCategory.SCRATCH);
     }
 
     @Nested
@@ -185,7 +183,8 @@ class DamageReportServiceTest {
             when(carService.getCarDtoById(testCar.id())).thenReturn(testCar);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
             when(damagePhotoRepository.findByDamageReportIdAndIsDeletedFalse(any())).thenReturn(List.of());
-            when(fileUploadService.generateSecureUrl(anyString(), anyInt())).thenReturn("https://example.com/photo.jpg");
+            when(fileUploadService.generateSecureUrl(anyString(), anyInt()))
+                    .thenReturn("https://example.com/photo.jpg");
 
             DamageReportResponse result = damageReportService.createDamageReport(1L, testRequestDto, "testuser");
 
@@ -266,8 +265,7 @@ class DamageReportServiceTest {
                     "Engine damage",
                     "Engine",
                     DamageSeverity.MAJOR,
-                    DamageCategory.MECHANICAL_DAMAGE
-            );
+                    DamageCategory.MECHANICAL_DAMAGE);
 
             DamageReport majorDamageReport = DamageReport.builder()
                     .id(2L)
@@ -327,8 +325,7 @@ class DamageReportServiceTest {
                     "photo",
                     "test-photo.jpg",
                     "image/jpeg",
-                    "test content".getBytes()
-            );
+                    "test content".getBytes());
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(authService.getUserByUsername("testuser")).thenReturn(testUser);
@@ -341,7 +338,8 @@ class DamageReportServiceTest {
             when(fileUploadService.validateFileType(any(), anyList())).thenReturn(true);
             when(fileUploadService.validateFileSize(any(), anyLong())).thenReturn(true);
             when(fileUploadService.uploadFile(any(), anyString())).thenReturn("uploads/damage-photos/uuid.jpg");
-            when(fileUploadService.generateSecureUrl(anyString(), anyInt())).thenReturn("https://example.com/photo.jpg");
+            when(fileUploadService.generateSecureUrl(anyString(), anyInt()))
+                    .thenReturn("https://example.com/photo.jpg");
             when(damagePhotoRepository.save(any(DamagePhoto.class))).thenReturn(testDamagePhoto);
 
             List<DamagePhotoDto> result = damageReportService.uploadDamagePhotos(1L, List.of(mockFile), "testuser");
@@ -361,7 +359,8 @@ class DamageReportServiceTest {
             when(damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(1L)).thenReturn(9);
             when(damageConfig.getMaxPhotosPerReport()).thenReturn(10);
 
-            assertThatThrownBy(() -> damageReportService.uploadDamagePhotos(1L, List.of(mockFile, mockFile), "testuser"))
+            assertThatThrownBy(
+                    () -> damageReportService.uploadDamagePhotos(1L, List.of(mockFile, mockFile), "testuser"))
                     .isInstanceOf(DamageReportException.class)
                     .hasMessageContaining("Maximum");
 
@@ -371,7 +370,8 @@ class DamageReportServiceTest {
         @Test
         @DisplayName("Should throw exception for invalid file type")
         void shouldThrowExceptionForInvalidFileType() {
-            MultipartFile mockFile = new MockMultipartFile("photo", "test.exe", "application/x-msdownload", "test".getBytes());
+            MultipartFile mockFile = new MockMultipartFile("photo", "test.exe", "application/x-msdownload",
+                    "test".getBytes());
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(authService.getUserByUsername("testuser")).thenReturn(testUser);
@@ -388,7 +388,8 @@ class DamageReportServiceTest {
         @Test
         @DisplayName("Should throw exception for oversized file")
         void shouldThrowExceptionForOversizedFile() {
-            MultipartFile mockFile = new MockMultipartFile("photo", "large.jpg", "image/jpeg", new byte[10 * 1024 * 1024]);
+            MultipartFile mockFile = new MockMultipartFile("photo", "large.jpg", "image/jpeg",
+                    new byte[10 * 1024 * 1024]);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(authService.getUserByUsername("testuser")).thenReturn(testUser);
