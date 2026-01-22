@@ -755,4 +755,20 @@ public class RentalServiceImpl implements RentalService {
         log.info("Retrieved {} rentals for user: {}", result.getTotalElements(), userId);
         return result;
     }
+
+    @Override
+    public Page<RentalResponse> getCarRentals(Long carId, RentalStatus status, Pageable pageable) {
+        log.debug("Getting rentals for car: {}, status filter: {}", carId, status);
+
+        Page<Rental> rentals;
+        if (status != null) {
+            rentals = rentalRepository.findByCarIdAndStatusAndIsDeletedFalse(carId, status, pageable);
+        } else {
+            rentals = rentalRepository.findByCarIdAndIsDeletedFalse(carId, pageable);
+        }
+
+        Page<RentalResponse> result = rentals.map(rentalMapper::toDto);
+        log.info("Retrieved {} rentals for car: {}", result.getTotalElements(), carId);
+        return result;
+    }
 }

@@ -53,4 +53,6 @@ public interface RentalService {
     UserRentalStatisticsDto getUserStatistics(Long userId);
 
     Page<RentalResponse> getUserRentals(Long userId, RentalStatus status, Pageable pageable);
+
+    Page<RentalResponse> getCarRentals(Long carId, RentalStatus status, Pageable pageable);
 }

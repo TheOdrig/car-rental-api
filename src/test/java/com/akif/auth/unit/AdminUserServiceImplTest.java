@@ -274,6 +274,7 @@ class AdminUserServiceImplTest {
                 .roles(Set.of(Role.USER))
                 .enabled(true)
                 .isDeleted(false)
+                .isBanned(false)
                 .createTime(LocalDateTime.now().minusDays(180))
                 .updateTime(LocalDateTime.now())
                 .build();
