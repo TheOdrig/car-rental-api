@@ -739,4 +739,20 @@ public class RentalServiceImpl implements RentalService {
                 averageRentalDuration,
                 lateReturns);
     }
+
+    @Override
+    public Page<RentalResponse> getUserRentals(Long userId, RentalStatus status, Pageable pageable) {
+        log.debug("Getting rentals for user: {}, status filter: {}", userId, status);
+
+        Page<Rental> rentals;
+        if (status != null) {
+            rentals = rentalRepository.findByUserIdAndStatusAndIsDeletedFalse(userId, status, pageable);
+        } else {
+            rentals = rentalRepository.findByUserIdAndIsDeletedFalse(userId, pageable);
+        }
+
+        Page<RentalResponse> result = rentals.map(rentalMapper::toDto);
+        log.info("Retrieved {} rentals for user: {}", result.getTotalElements(), userId);
+        return result;
+    }
 }

@@ -229,4 +229,6 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
                         AND r.isDeleted = false
                         """)
         int countLateReturnsByUserId(@Param("userId") Long userId);
+
+        Page<Rental> findByUserIdAndStatusAndIsDeletedFalse(Long userId, RentalStatus status, Pageable pageable);
 }

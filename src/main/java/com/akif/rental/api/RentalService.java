@@ -51,4 +51,6 @@ public interface RentalService {
     BigDecimal getAverageRentalDurationDays(LocalDate startDate, LocalDate endDate);
 
     UserRentalStatisticsDto getUserStatistics(Long userId);
+
+    Page<RentalResponse> getUserRentals(Long userId, RentalStatus status, Pageable pageable);
 }
