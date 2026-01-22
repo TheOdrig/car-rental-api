@@ -7,6 +7,7 @@ import com.akif.auth.domain.PasswordResetToken;
 import com.akif.auth.internal.repository.PasswordResetTokenRepository;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.shared.exception.InvalidTokenException;
+import org.springframework.http.HttpStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,10 +69,11 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         log.info("Password reset attempt with token");
 
         PasswordResetToken resetToken = tokenRepository.findByTokenAndUsedFalse(token)
-                .orElseThrow(() -> new InvalidTokenException("Invalid or expired password reset token"));
+                .orElseThrow(() -> new InvalidTokenException("Invalid or expired password reset token",
+                        HttpStatus.BAD_REQUEST));
 
         if (resetToken.isExpired()) {
-            throw new InvalidTokenException("Password reset token has expired");
+            throw new InvalidTokenException("Password reset token has expired", HttpStatus.BAD_REQUEST);
         }
 
         var user = userRepository.findByEmail(resetToken.getEmail())

@@ -26,11 +26,11 @@ public class TestDataBuilder {
     public static User createTestUser(String username, Role... roles) {
         int uniqueId = counter.incrementAndGet();
         return User.builder()
-                .username(username)
+                .username(username + uniqueId)
                 .email(username + uniqueId + "@test.com")
                 .password(passwordEncoder.encode("password123"))
                 .authProvider(AuthProvider.LOCAL)
-                .roles(roles.length > 0 ? Set.of(roles) : Set.of(Role.USER))
+                .roles(new java.util.HashSet<>(roles.length > 0 ? Set.of(roles) : Set.of(Role.USER)))
                 .enabled(true)
                 .isDeleted(false)
                 .build();

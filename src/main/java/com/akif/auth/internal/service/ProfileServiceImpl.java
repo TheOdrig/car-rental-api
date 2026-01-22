@@ -1,5 +1,6 @@
 package com.akif.auth.internal.service;
 
+import com.akif.auth.api.AvatarStorageService;
 import com.akif.auth.api.ProfileService;
 import com.akif.auth.api.UserDto;
 import com.akif.auth.domain.User;
@@ -19,12 +20,29 @@ public class ProfileServiceImpl implements ProfileService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final AvatarStorageService avatarStorageService;
 
     @Override
     public UserDto getProfile(String username) {
         log.debug("Getting profile for user: {}", username);
         User user = findUserByUsername(username);
-        return userMapper.toDto(user);
+        UserDto dto = userMapper.toDto(user);
+
+        String avatarUrl = null;
+        if (user.getAvatarUrl() != null && !user.getAvatarUrl().isBlank()) {
+            avatarUrl = avatarStorageService.generateAvatarUrl(user.getAvatarUrl(), 60);
+        }
+
+        return new UserDto(
+                dto.id(),
+                dto.username(),
+                dto.email(),
+                dto.firstName(),
+                dto.lastName(),
+                dto.phone(),
+                avatarUrl,
+                dto.roles(),
+                dto.active());
     }
 
     @Override
@@ -46,7 +64,23 @@ public class ProfileServiceImpl implements ProfileService {
         User savedUser = userRepository.save(user);
         log.info("Profile updated successfully for user: {}", username);
 
-        return userMapper.toDto(savedUser);
+        UserDto dto = userMapper.toDto(savedUser);
+
+        String avatarUrl = null;
+        if (savedUser.getAvatarUrl() != null && !savedUser.getAvatarUrl().isBlank()) {
+            avatarUrl = avatarStorageService.generateAvatarUrl(savedUser.getAvatarUrl(), 60);
+        }
+
+        return new UserDto(
+                dto.id(),
+                dto.username(),
+                dto.email(),
+                dto.firstName(),
+                dto.lastName(),
+                dto.phone(),
+                avatarUrl,
+                dto.roles(),
+                dto.active());
     }
 
     @Override

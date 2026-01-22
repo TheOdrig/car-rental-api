@@ -39,10 +39,10 @@ public class LocalFileStorageService implements FileUploadService {
                     ? originalFilename.substring(originalFilename.lastIndexOf("."))
                     : "";
             String fileName = UUID.randomUUID() + extension;
-            
+
             Path filePath = uploadPath.resolve(fileName);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-            
+
             log.debug("File uploaded to local storage: {}", filePath);
             return filePath.toString().replace("\\", "/");
         } catch (IOException e) {
@@ -65,9 +65,15 @@ public class LocalFileStorageService implements FileUploadService {
 
     @Override
     public String generateSecureUrl(String filePath, int expirationMinutes) {
+        if (filePath == null || filePath.isBlank()) {
+            return null;
+        }
+
         Path path = Paths.get(filePath);
         String fileName = path.getFileName().toString();
-        return "http://localhost:8082/api/files/damage-photos/" + fileName;
+        String directory = path.getParent() != null ? path.getParent().getFileName().toString() : "uploads";
+
+        return "http://localhost:8082/api/files/" + directory + "/" + fileName;
     }
 
     @Override

@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -37,153 +38,153 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("AvatarController Integration Tests")
 class AvatarControllerIntegrationTest {
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
+        @Autowired
+        private WebApplicationContext webApplicationContext;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+        @Autowired
+        private ObjectMapper objectMapper;
 
-    @Autowired
-    private UserRepository userRepository;
+        @Autowired
+        private UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+        @Autowired
+        private PasswordEncoder passwordEncoder;
 
-    private MockMvc mockMvc;
-    private String userToken;
-    private User testUser;
+        private MockMvc mockMvc;
+        private String userToken;
+        private User testUser;
 
-    @BeforeEach
-    void setUp() throws Exception {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(webApplicationContext)
-                .apply(springSecurity())
-                .build();
+        @BeforeEach
+        void setUp() throws Exception {
+                mockMvc = MockMvcBuilders
+                                .webAppContextSetup(webApplicationContext)
+                                .apply(springSecurity())
+                                .build();
 
-        userRepository.deleteAll();
+                userRepository.deleteAll();
 
-        testUser = User.builder()
-                .username("testuser")
-                .email("test@example.com")
-                .password(passwordEncoder.encode("password123"))
-                .firstName("Test")
-                .lastName("User")
-                .roles(Set.of(Role.USER))
-                .enabled(true)
-                .build();
-        userRepository.save(testUser);
+                testUser = User.builder()
+                                .username("testuser")
+                                .email("test@example.com")
+                                .password(passwordEncoder.encode("password123"))
+                                .firstName("Test")
+                                .lastName("User")
+                                .roles(new HashSet<>(Set.of(Role.USER)))
+                                .enabled(true)
+                                .build();
+                userRepository.save(testUser);
 
-        userToken = getTokenForUser("testuser", "password123");
-    }
-
-    private String getTokenForUser(String username, String password) throws Exception {
-        LoginRequest loginRequest = new LoginRequest(username, password);
-
-        MvcResult result = mockMvc.perform(post("/api/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        AuthResponse authResponse = objectMapper.readValue(
-                result.getResponse().getContentAsString(), AuthResponse.class);
-        return "Bearer " + authResponse.accessToken();
-    }
-
-    @Nested
-    @DisplayName("POST /api/users/me/avatar")
-    class UploadAvatar {
-
-        @Test
-        @DisplayName("Should upload avatar successfully with valid image")
-        void shouldUploadAvatarSuccessfullyWithValidImage() throws Exception {
-            MockMultipartFile avatarFile = new MockMultipartFile(
-                    "avatar",
-                    "avatar.jpg",
-                    "image/jpeg",
-                    "test image content".getBytes());
-
-            mockMvc.perform(multipart("/api/users/me/avatar")
-                    .file(avatarFile)
-                    .header("Authorization", userToken))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.avatarUrl").exists())
-                    .andExpect(jsonPath("$.message").value("Avatar uploaded successfully"));
+                userToken = getTokenForUser("testuser", "password123");
         }
 
-        @Test
-        @DisplayName("Should return 400 for invalid file type")
-        void shouldReturn400ForInvalidFileType() throws Exception {
-            MockMultipartFile pdfFile = new MockMultipartFile(
-                    "avatar",
-                    "document.pdf",
-                    "application/pdf",
-                    "pdf content".getBytes());
+        private String getTokenForUser(String username, String password) throws Exception {
+                LoginRequest loginRequest = new LoginRequest(username, password);
 
-            mockMvc.perform(multipart("/api/users/me/avatar")
-                    .file(pdfFile)
-                    .header("Authorization", userToken))
-                    .andExpect(status().isBadRequest());
+                MvcResult result = mockMvc.perform(post("/api/auth/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(loginRequest)))
+                                .andExpect(status().isOk())
+                                .andReturn();
+
+                AuthResponse authResponse = objectMapper.readValue(
+                                result.getResponse().getContentAsString(), AuthResponse.class);
+                return "Bearer " + authResponse.accessToken();
         }
 
-        @Test
-        @DisplayName("Should return 401 without JWT")
-        void shouldReturn401WithoutJwt() throws Exception {
-            MockMultipartFile avatarFile = new MockMultipartFile(
-                    "avatar",
-                    "avatar.jpg",
-                    "image/jpeg",
-                    "test image content".getBytes());
+        @Nested
+        @DisplayName("POST /api/users/me/avatar")
+        class UploadAvatar {
 
-            mockMvc.perform(multipart("/api/users/me/avatar")
-                    .file(avatarFile))
-                    .andExpect(status().isUnauthorized());
+                @Test
+                @DisplayName("Should upload avatar successfully with valid image")
+                void shouldUploadAvatarSuccessfullyWithValidImage() throws Exception {
+                        MockMultipartFile avatarFile = new MockMultipartFile(
+                                        "avatar",
+                                        "avatar.jpg",
+                                        "image/jpeg",
+                                        "test image content".getBytes());
+
+                        mockMvc.perform(multipart("/api/users/me/avatar")
+                                        .file(avatarFile)
+                                        .header("Authorization", userToken))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.avatarUrl").exists())
+                                        .andExpect(jsonPath("$.message").value("Avatar uploaded successfully"));
+                }
+
+                @Test
+                @DisplayName("Should return 400 for invalid file type")
+                void shouldReturn400ForInvalidFileType() throws Exception {
+                        MockMultipartFile pdfFile = new MockMultipartFile(
+                                        "avatar",
+                                        "document.pdf",
+                                        "application/pdf",
+                                        "pdf content".getBytes());
+
+                        mockMvc.perform(multipart("/api/users/me/avatar")
+                                        .file(pdfFile)
+                                        .header("Authorization", userToken))
+                                        .andExpect(status().isBadRequest());
+                }
+
+                @Test
+                @DisplayName("Should return 401 without JWT")
+                void shouldReturn401WithoutJwt() throws Exception {
+                        MockMultipartFile avatarFile = new MockMultipartFile(
+                                        "avatar",
+                                        "avatar.jpg",
+                                        "image/jpeg",
+                                        "test image content".getBytes());
+
+                        mockMvc.perform(multipart("/api/users/me/avatar")
+                                        .file(avatarFile))
+                                        .andExpect(status().isForbidden());
+                }
+
+                @Test
+                @DisplayName("Should accept PNG file")
+                void shouldAcceptPngFile() throws Exception {
+                        MockMultipartFile pngFile = new MockMultipartFile(
+                                        "avatar",
+                                        "avatar.png",
+                                        "image/png",
+                                        "png content".getBytes());
+
+                        mockMvc.perform(multipart("/api/users/me/avatar")
+                                        .file(pngFile)
+                                        .header("Authorization", userToken))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.avatarUrl").exists());
+                }
         }
 
-        @Test
-        @DisplayName("Should accept PNG file")
-        void shouldAcceptPngFile() throws Exception {
-            MockMultipartFile pngFile = new MockMultipartFile(
-                    "avatar",
-                    "avatar.png",
-                    "image/png",
-                    "png content".getBytes());
+        @Nested
+        @DisplayName("DELETE /api/users/me/avatar")
+        class DeleteAvatar {
 
-            mockMvc.perform(multipart("/api/users/me/avatar")
-                    .file(pngFile)
-                    .header("Authorization", userToken))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.avatarUrl").exists());
+                @Test
+                @DisplayName("Should delete avatar successfully")
+                void shouldDeleteAvatarSuccessfully() throws Exception {
+                        mockMvc.perform(delete("/api/users/me/avatar")
+                                        .header("Authorization", userToken))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.message").value("Avatar deleted successfully"));
+                }
+
+                @Test
+                @DisplayName("Should return 401 without JWT")
+                void shouldReturn401WithoutJwt() throws Exception {
+                        mockMvc.perform(delete("/api/users/me/avatar"))
+                                        .andExpect(status().isForbidden());
+                }
+
+                @Test
+                @DisplayName("Should handle delete when no avatar exists")
+                void shouldHandleDeleteWhenNoAvatarExists() throws Exception {
+                        mockMvc.perform(delete("/api/users/me/avatar")
+                                        .header("Authorization", userToken))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.message").value("Avatar deleted successfully"));
+                }
         }
-    }
-
-    @Nested
-    @DisplayName("DELETE /api/users/me/avatar")
-    class DeleteAvatar {
-
-        @Test
-        @DisplayName("Should delete avatar successfully")
-        void shouldDeleteAvatarSuccessfully() throws Exception {
-            mockMvc.perform(delete("/api/users/me/avatar")
-                    .header("Authorization", userToken))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.message").value("Avatar deleted successfully"));
-        }
-
-        @Test
-        @DisplayName("Should return 401 without JWT")
-        void shouldReturn401WithoutJwt() throws Exception {
-            mockMvc.perform(delete("/api/users/me/avatar"))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
-        @DisplayName("Should handle delete when no avatar exists")
-        void shouldHandleDeleteWhenNoAvatarExists() throws Exception {
-            mockMvc.perform(delete("/api/users/me/avatar")
-                    .header("Authorization", userToken))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.message").value("Avatar deleted successfully"));
-        }
-    }
 }

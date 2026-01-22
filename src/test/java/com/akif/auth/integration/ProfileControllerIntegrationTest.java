@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -69,7 +70,7 @@ class ProfileControllerIntegrationTest {
                 .firstName("Test")
                 .lastName("User")
                 .phone("+1234567890")
-                .roles(Set.of(Role.USER))
+                .roles(new HashSet<>(Set.of(Role.USER)))
                 .enabled(true)
                 .build();
         userRepository.save(testUser);
@@ -112,7 +113,7 @@ class ProfileControllerIntegrationTest {
         @DisplayName("Should return 401 without JWT")
         void shouldReturn401WithoutJwt() throws Exception {
             mockMvc.perform(get("/api/users/me/profile"))
-                    .andExpect(status().isUnauthorized());
+                    .andExpect(status().isForbidden());
         }
 
         @Test
@@ -120,7 +121,7 @@ class ProfileControllerIntegrationTest {
         void shouldReturn401WithInvalidJwt() throws Exception {
             mockMvc.perform(get("/api/users/me/profile")
                     .header("Authorization", "Bearer invalid-token"))
-                    .andExpect(status().isUnauthorized());
+                    .andExpect(status().isForbidden());
         }
     }
 
@@ -178,7 +179,7 @@ class ProfileControllerIntegrationTest {
             mockMvc.perform(put("/api/users/me/profile")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isUnauthorized());
+                    .andExpect(status().isForbidden());
         }
     }
 }

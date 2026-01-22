@@ -40,8 +40,7 @@ class LocalFileStorageServiceTest {
                     "file",
                     "test-image.jpg",
                     "image/jpeg",
-                    "test image content".getBytes()
-            );
+                    "test image content".getBytes());
 
             String result = fileStorageService.uploadFile(file, "test-directory");
 
@@ -60,8 +59,7 @@ class LocalFileStorageServiceTest {
                     "file",
                     "original-name.png",
                     "image/png",
-                    "test content".getBytes()
-            );
+                    "test content".getBytes());
 
             String result = fileStorageService.uploadFile(file, "damage-photos");
 
@@ -76,8 +74,7 @@ class LocalFileStorageServiceTest {
                     "file",
                     "no-extension",
                     "application/octet-stream",
-                    "test content".getBytes()
-            );
+                    "test content".getBytes());
 
             String result = fileStorageService.uploadFile(file, "test");
 
@@ -93,8 +90,7 @@ class LocalFileStorageServiceTest {
                     "file",
                     "test.jpg",
                     "image/jpeg",
-                    "test".getBytes()
-            );
+                    "test".getBytes());
 
             String result = fileStorageService.uploadFile(file, "new-directory/sub-directory");
 
@@ -118,8 +114,7 @@ class LocalFileStorageServiceTest {
                     "file",
                     "test.jpg",
                     "image/jpeg",
-                    "test".getBytes()
-            );
+                    "test".getBytes());
             List<String> allowedTypes = List.of("image/jpeg", "image/png", "image/gif");
 
             boolean result = fileStorageService.validateFileType(file, allowedTypes);
@@ -134,8 +129,7 @@ class LocalFileStorageServiceTest {
                     "file",
                     "test.exe",
                     "application/x-msdownload",
-                    "test".getBytes()
-            );
+                    "test".getBytes());
             List<String> allowedTypes = List.of("image/jpeg", "image/png");
 
             boolean result = fileStorageService.validateFileType(file, allowedTypes);
@@ -150,8 +144,7 @@ class LocalFileStorageServiceTest {
                     "file",
                     "test.unknown",
                     null,
-                    "test".getBytes()
-            );
+                    "test".getBytes());
             List<String> allowedTypes = List.of("image/jpeg");
 
             boolean result = fileStorageService.validateFileType(file, allowedTypes);
@@ -171,8 +164,7 @@ class LocalFileStorageServiceTest {
                     "file",
                     "test.jpg",
                     "image/jpeg",
-                    new byte[1024]
-            );
+                    new byte[1024]);
 
             boolean result = fileStorageService.validateFileSize(file, 5 * 1024);
 
@@ -186,8 +178,7 @@ class LocalFileStorageServiceTest {
                     "file",
                     "test.jpg",
                     "image/jpeg",
-                    new byte[1024]
-            );
+                    new byte[1024]);
 
             boolean result = fileStorageService.validateFileSize(file, 1024);
 
@@ -201,8 +192,7 @@ class LocalFileStorageServiceTest {
                     "file",
                     "test.jpg",
                     "image/jpeg",
-                    new byte[10 * 1024]
-            );
+                    new byte[10 * 1024]);
 
             boolean result = fileStorageService.validateFileSize(file, 5 * 1024);
 
@@ -222,7 +212,7 @@ class LocalFileStorageServiceTest {
             String result = fileStorageService.generateSecureUrl(filePath, 60);
 
             assertThat(result).isNotNull();
-            assertThat(result).startsWith("file:///");
+            assertThat(result).startsWith("http://localhost:");
             assertThat(result).contains("test-file.jpg");
         }
     }
