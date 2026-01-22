@@ -90,16 +90,66 @@ public class AdminUserServiceImpl implements AdminUserService {
     }
 
     private AccountStatus buildAccountStatus(User user) {
-        String status = user.getEnabled() != null && user.getEnabled() ? "ACTIVE" : "INACTIVE";
-        if (user.getIsDeleted() != null && user.getIsDeleted()) {
+        String status;
+        if (user.getIsBanned() != null && user.getIsBanned()) {
+            status = "BANNED";
+        } else if (user.getIsDeleted() != null && user.getIsDeleted()) {
             status = "DELETED";
+        } else if (user.getEnabled() != null && user.getEnabled()) {
+            status = "ACTIVE";
+        } else {
+            status = "INACTIVE";
         }
 
         return new AccountStatus(
                 status,
-                null,
-                null,
-                null,
+                user.getBannedAt(),
+                user.getBanReason(),
+                user.getBannedBy(),
                 user.getUpdateTime());
+    }
+
+    @Override
+    @Transactional
+    public void banUser(Long userId, String reason, Long adminId) {
+        log.info("Banning user: userId={}, adminId={}", userId, adminId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        if (user.getIsBanned() != null && user.getIsBanned()) {
+            log.warn("User {} is already banned", userId);
+            throw new IllegalStateException("User is already banned");
+        }
+
+        user.setIsBanned(true);
+        user.setBannedAt(LocalDateTime.now());
+        user.setBannedBy(adminId);
+        user.setBanReason(reason);
+        user.setEnabled(false);
+
+        userRepository.save(user);
+        log.info("User {} has been banned by admin {}", userId, adminId);
+    }
+
+    @Override
+    @Transactional
+    public void unbanUser(Long userId, String note, Long adminId) {
+        log.info("Unbanning user: userId={}, adminId={}", userId, adminId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        if (user.getIsBanned() == null || !user.getIsBanned()) {
+            log.warn("User {} is not banned", userId);
+            throw new IllegalStateException("User is not banned");
+        }
+
+        user.setIsBanned(false);
+        user.setUnbannedAt(LocalDateTime.now());
+        user.setEnabled(true);
+
+        userRepository.save(user);
+        log.info("User {} has been unbanned by admin {}", userId, adminId);
     }
 }
