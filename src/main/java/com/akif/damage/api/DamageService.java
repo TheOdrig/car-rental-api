@@ -12,7 +12,6 @@ public interface DamageService {
 
     boolean hasPendingDamageReportsForCar(Long carId);
 
-
     int countPendingAssessments();
 
     int countUnresolvedDisputesOlderThan(int days);
@@ -20,4 +19,6 @@ public interface DamageService {
     BigDecimal sumDamageCharges(LocalDate startDate, LocalDate endDate);
 
     BigDecimal sumRepairCosts(LocalDate startDate, LocalDate endDate);
+
+    UserDamageStatisticsDto getUserDamageStatistics(Long userId);
 }

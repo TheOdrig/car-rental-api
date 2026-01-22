@@ -49,4 +49,6 @@ public interface RentalService {
     BigDecimal sumCollectedPenaltyRevenue(LocalDate startDate, LocalDate endDate);
 
     BigDecimal getAverageRentalDurationDays(LocalDate startDate, LocalDate endDate);
+
+    UserRentalStatisticsDto getUserStatistics(Long userId);
 }
