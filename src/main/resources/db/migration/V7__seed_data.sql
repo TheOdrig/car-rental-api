@@ -1,15 +1,20 @@
 -- =============================================================================
--- V7: Seed Data (Admin User + Cars with Real Images)
+-- V7: Seed Users (Admin + Customers)
+-- =============================================================================
+-- Admin Password: Admin123!
+-- Customer Password (all): password
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
--- Admin User (Password: Admin123!)
+-- Admin User
 -- -----------------------------------------------------------------------------
-INSERT INTO gallery.users (username, email, password, enabled, is_deleted, create_time, update_time, version)
+INSERT INTO gallery.users (username, email, password, first_name, last_name, enabled, is_deleted, create_time, update_time, version)
 VALUES (
     'admin',
     'admin@carrental.com',
     '$2a$10$KP5Ol/J0r51UDFsS7kyy0OrgTG/B1grMmOv3T6ObcdwORqdBLQGP2',
+    'Admin',
+    'User',
     TRUE,
     FALSE,
     NOW(),
@@ -26,352 +31,130 @@ SELECT id, 'USER' FROM gallery.users WHERE username = 'admin'
 ON CONFLICT (user_id, role) DO NOTHING;
 
 -- -----------------------------------------------------------------------------
--- Seed Cars (with final images and USD prices)
+-- Sample Customers (22 active + 3 banned = 25 total)
+-- BCrypt hash for 'password': $2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy
 -- -----------------------------------------------------------------------------
 
--- Economy Class ($35-48/day)
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '34ABC123', 'WVWZZZ1JZXW000001', 'Volkswagen', 'Golf', 2018,
-    35.00, 'USD', 0, 'AVAILABLE',
-    'Gasoline', 'Manual', 'Hatchback', 'White', 85000, 5, 5,
-    TRUE, TRUE, 0, 0,
-    'https://images.unsplash.com/photo-1718629879998-ee8cfc09df39?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1718629879998-ee8cfc09df39?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+-- Active Customers (22 users - spread across different registration dates)
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('ahmet_yilmaz', 'ahmet.yilmaz@gmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Ahmet', 'Yılmaz', '+905551234567', TRUE, FALSE, FALSE, NOW() - INTERVAL '365 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'ahmet_yilmaz' ON CONFLICT (user_id, role) DO NOTHING;
 
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '16RNL005', 'VF1RFB00X5Y000010', 'Renault', 'Clio', 2020,
-    40.00, 'USD', 0, 'AVAILABLE',
-    'Gasoline', 'Automatic', 'Hatchback', 'Orange', 55000, 5, 5,
-    FALSE, TRUE, 72, 15,
-    'https://images.unsplash.com/photo-1594502225401-a9eab8b405dd?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1594502225401-a9eab8b405dd?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('zeynep_kaya', 'zeynep.kaya@gmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Zeynep', 'Kaya', '+905559876543', TRUE, FALSE, FALSE, NOW() - INTERVAL '350 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'zeynep_kaya' ON CONFLICT (user_id, role) DO NOTHING;
 
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '16CTR015', 'VF7SXHMZ6GW000020', 'Citroen', 'C3', 2021,
-    38.00, 'USD', 0, 'AVAILABLE',
-    'Gasoline', 'Manual', 'Hatchback', 'Turquoise', 32000, 5, 5,
-    FALSE, TRUE, 58, 11,
-    'https://images.unsplash.com/photo-1609030429269-ca5b7a409310?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1609030429269-ca5b7a409310?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('mehmet_demir', 'mehmet.demir@gmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Mehmet', 'Demir', '+905321234567', TRUE, FALSE, FALSE, NOW() - INTERVAL '330 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'mehmet_demir' ON CONFLICT (user_id, role) DO NOTHING;
 
--- Compact Class ($40-55/day)
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '16XYZ321', '1HGBH41JXMN109186', 'Honda', 'Civic', 2019,
-    45.00, 'USD', 0, 'AVAILABLE',
-    'Hybrid', 'Automatic', 'Sedan', 'Blue', 62000, 4, 5,
-    TRUE, TRUE, 0, 0,
-    'https://images.unsplash.com/photo-1605515321331-46a63d31758c?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1605515321331-46a63d31758c?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('ayse_ozturk', 'ayse.ozturk@hotmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Ayşe', 'Öztürk', '+905331112233', TRUE, FALSE, FALSE, NOW() - INTERVAL '300 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'ayse_ozturk' ON CONFLICT (user_id, role) DO NOTHING;
 
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '06FRD003', '1FAHP3F2XCL000008', 'Ford', 'Focus', 2019,
-    48.00, 'USD', 0, 'AVAILABLE',
-    'Diesel', 'Manual', 'Hatchback', 'Blue', 78000, 5, 5,
-    FALSE, TRUE, 85, 12,
-    'https://images.unsplash.com/photo-1708849894321-2c9bc515df0e?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1708849894321-2c9bc515df0e?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('can_arslan', 'can.arslan@outlook.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Can', 'Arslan', '+905342223344', TRUE, FALSE, FALSE, NOW() - INTERVAL '280 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'can_arslan' ON CONFLICT (user_id, role) DO NOTHING;
 
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '35FIA004', 'ZFA35600000000009', 'Fiat', 'Egea', 2021,
-    42.00, 'USD', 0, 'RENTED',
-    'Diesel', 'Manual', 'Sedan', 'White', 42000, 4, 5,
-    FALSE, FALSE, 95, 18,
-    'https://www.log.com.tr/wp-content/uploads/2023/01/2025-fiat-egea-tipo-suv-benzeri-bir-formda-olacak-copy-1000x562.jpg',
-    'https://www.log.com.tr/wp-content/uploads/2023/01/2025-fiat-egea-tipo-suv-benzeri-bir-formda-olacak-copy-1000x562.jpg'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('elif_sahin', 'elif.sahin@yahoo.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Elif', 'Şahin', '+905353334455', TRUE, FALSE, FALSE, NOW() - INTERVAL '260 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'elif_sahin' ON CONFLICT (user_id, role) DO NOTHING;
 
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '35MZD008', 'JM1BN1L36E1000013', 'Mazda', '3', 2020,
-    55.00, 'USD', 0, 'AVAILABLE',
-    'Gasoline', 'Automatic', 'Hatchback', 'Red', 52000, 5, 5,
-    FALSE, TRUE, 88, 22,
-    'https://images.unsplash.com/photo-1643142311721-c36cd233fb95?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1643142311721-c36cd233fb95?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('burak_celik', 'burak.celik@gmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Burak', 'Çelik', '+905364445566', TRUE, FALSE, FALSE, NOW() - INTERVAL '240 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'burak_celik' ON CONFLICT (user_id, role) DO NOTHING;
 
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '34PGT009', 'VF3LBHZS6JS000014', 'Peugeot', '308', 2018,
-    40.00, 'USD', 0, 'MAINTENANCE',
-    'Diesel', 'Manual', 'Hatchback', 'Black', 98000, 5, 5,
-    FALSE, FALSE, 45, 8,
-    'https://images.unsplash.com/photo-1757695526350-1a2db6ff8e02?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1757695526350-1a2db6ff8e02?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('selin_yildiz', 'selin.yildiz@gmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Selin', 'Yıldız', '+905375556677', TRUE, FALSE, FALSE, NOW() - INTERVAL '220 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'selin_yildiz' ON CONFLICT (user_id, role) DO NOTHING;
 
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '35SEA013', 'VSSZZZ5FZJR000018', 'Seat', 'Leon', 2019,
-    45.00, 'USD', 0, 'AVAILABLE',
-    'Gasoline', 'Manual', 'Hatchback', 'Yellow', 62000, 5, 5,
-    FALSE, TRUE, 65, 14,
-    'https://cdn3.focus.bg/autodata/i/seat/leon/leon-cupra-ii/large/c34323f28221796d10f7df07e042d14f.jpg',
-    'https://cdn3.focus.bg/autodata/i/seat/leon/leon-cupra-ii/large/c34323f28221796d10f7df07e042d14f.jpg'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('emre_koc', 'emre.koc@hotmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Emre', 'Koç', '+905386667788', TRUE, FALSE, FALSE, NOW() - INTERVAL '200 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'emre_koc' ON CONFLICT (user_id, role) DO NOTHING;
 
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '06OPL014', 'W0L000000Y2000019', 'Opel', 'Astra', 2020,
-    42.00, 'USD', 0, 'AVAILABLE',
-    'Diesel', 'Automatic', 'Hatchback', 'Purple', 48000, 5, 5,
-    FALSE, TRUE, 78, 19,
-    'https://images.unsplash.com/photo-1582639510494-c80b5de9f148?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1582639510494-c80b5de9f148?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('deniz_aksoy', 'deniz.aksoy@outlook.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Deniz', 'Aksoy', '+905397778899', TRUE, FALSE, FALSE, NOW() - INTERVAL '180 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'deniz_aksoy' ON CONFLICT (user_id, role) DO NOTHING;
 
--- Mid-Size Class ($60-75/day)
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '01MNO654', 'JTDKBRFU9H3511234', 'Toyota', 'Corolla', 2021,
-    65.00, 'USD', 0, 'AVAILABLE',
-    'Hybrid', 'Automatic', 'Sedan', 'Red', 28000, 4, 5,
-    TRUE, TRUE, 0, 0,
-    'https://www.thedrive.com/wp-content/uploads/2023/05/02/corollahatch-1-scaled.jpg?w=1200',
-    'https://www.thedrive.com/wp-content/uploads/2023/05/02/corollahatch-1-scaled.jpg?w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('gokhan_erdogan', 'gokhan.erdogan@gmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Gökhan', 'Erdoğan', '+905508889900', TRUE, FALSE, FALSE, NOW() - INTERVAL '160 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'gokhan_erdogan' ON CONFLICT (user_id, role) DO NOTHING;
 
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '16SKD011', 'TMBEG41U0B2000016', 'Skoda', 'Octavia', 2021,
-    60.00, 'USD', 0, 'AVAILABLE',
-    'Diesel', 'Automatic', 'Sedan', 'Brown', 38000, 4, 5,
-    FALSE, TRUE, 98, 28,
-    'https://images.unsplash.com/photo-1673822317394-6fd502a324e6?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1673822317394-6fd502a324e6?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('merve_kilic', 'merve.kilic@yahoo.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Merve', 'Kılıç', '+905519990011', TRUE, FALSE, FALSE, NOW() - INTERVAL '140 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'merve_kilic' ON CONFLICT (user_id, role) DO NOTHING;
 
--- SUV Class ($75-85/day)
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '34HYN006', 'KMHJ3814AKU000011', 'Hyundai', 'Tucson', 2022,
-    85.00, 'USD', 0, 'AVAILABLE',
-    'Diesel', 'Automatic', 'SUV', 'Green', 35000, 5, 5,
-    TRUE, TRUE, 180, 52,
-    'https://images.unsplash.com/photo-1705624843697-4461f9dce482?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1705624843697-4461f9dce482?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('ali_polat', 'ali.polat@gmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Ali', 'Polat', '+905520001122', TRUE, FALSE, FALSE, NOW() - INTERVAL '120 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'ali_polat' ON CONFLICT (user_id, role) DO NOTHING;
 
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '06KIA007', 'KNAPH81ABC5000012', 'Kia', 'Sportage', 2021,
-    80.00, 'USD', 0, 'RESERVED',
-    'Diesel', 'Automatic', 'SUV', 'Gray', 48000, 5, 5,
-    FALSE, FALSE, 125, 38,
-    'https://images.unsplash.com/photo-1688893287585-b1bc00e608fc?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1688893287585-b1bc00e608fc?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('ipek_ozdemir', 'ipek.ozdemir@hotmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'İpek', 'Özdemir', '+905531112233', TRUE, FALSE, FALSE, NOW() - INTERVAL '100 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'ipek_ozdemir' ON CONFLICT (user_id, role) DO NOTHING;
 
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '34NSN012', 'SJNFAAJ11U2000017', 'Nissan', 'Qashqai', 2020,
-    75.00, 'USD', 0, 'RENTED',
-    'Diesel', 'Automatic', 'SUV', 'White', 55000, 5, 5,
-    FALSE, FALSE, 135, 42,
-    'https://images.unsplash.com/photo-1538940714252-fc70779afa46?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1538940714252-fc70779afa46?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('murat_aydin', 'murat.aydin@outlook.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Murat', 'Aydın', '+905542223344', TRUE, FALSE, FALSE, NOW() - INTERVAL '80 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'murat_aydin' ON CONFLICT (user_id, role) DO NOTHING;
 
--- Premium Class ($90-120/day)
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '06DEF456', 'WBA3A51000F000002', 'BMW', '320i', 2020,
-    95.00, 'USD', 0, 'RESERVED',
-    'Diesel', 'Automatic', 'Sedan', 'Black', 45000, 4, 5,
-    TRUE, TRUE, 0, 0,
-    'https://images.unsplash.com/photo-1639056067266-43a821cf0a1f?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1639056067266-43a821cf0a1f?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('ceren_ozer', 'ceren.ozer@gmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Ceren', 'Özer', '+905553334455', TRUE, FALSE, FALSE, NOW() - INTERVAL '60 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'ceren_ozer' ON CONFLICT (user_id, role) DO NOTHING;
 
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '35JKL789', 'WAUZZZ8K9AA000003', 'Audi', 'A4', 2017,
-    90.00, 'USD', 0, 'AVAILABLE',
-    'Diesel', 'Automatic', 'Sedan', 'Gray', 120000, 4, 5,
-    FALSE, FALSE, 0, 0,
-    'https://images.unsplash.com/photo-1710011115921-7e67a8e4b483?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1710011115921-7e67a8e4b483?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('yusuf_karaca', 'yusuf.karaca@gmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Yusuf', 'Karaca', '+905564445566', TRUE, FALSE, FALSE, NOW() - INTERVAL '40 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'yusuf_karaca' ON CONFLICT (user_id, role) DO NOTHING;
 
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '34MRC001', 'WDD2050421A000006', 'Mercedes', 'C200', 2022,
-    120.00, 'USD', 0, 'AVAILABLE',
-    'Gasoline', 'Automatic', 'Sedan', 'Silver', 25000, 4, 5,
-    TRUE, TRUE, 150, 45,
-    'https://www.sixt.com.tr/storage/cache/a4831ea1285880c2536797abe33a35a517ddeacf.webp',
-    'https://www.sixt.com.tr/storage/cache/a4831ea1285880c2536797abe33a35a517ddeacf.webp'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('esra_dogan', 'esra.dogan@hotmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Esra', 'Doğan', '+905575556677', TRUE, FALSE, FALSE, NOW() - INTERVAL '20 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'esra_dogan' ON CONFLICT (user_id, role) DO NOTHING;
 
--- Premium SUV Class ($145/day)
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '06VLV010', 'YV1DZ8256C2000015', 'Volvo', 'XC60', 2022,
-    145.00, 'USD', 0, 'AVAILABLE',
-    'Hybrid', 'Automatic', 'SUV', 'Navy', 28000, 5, 5,
-    TRUE, TRUE, 210, 65,
-    'https://images.unsplash.com/photo-1629897046038-371765238f26?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1629897046038-371765238f26?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('serkan_yilmaz', 'serkan.yilmaz@yahoo.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Serkan', 'Yılmaz', '+905586667788', TRUE, FALSE, FALSE, NOW() - INTERVAL '10 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'serkan_yilmaz' ON CONFLICT (user_id, role) DO NOTHING;
 
--- Electric Class ($180/day)
-INSERT INTO gallery.car (
-    create_time, update_time, is_deleted, version,
-    license_plate, vin_number, brand, model, production_year,
-    price, currency_type, damage_price, car_status_type,
-    fuel_type, transmission_type, body_type, color, kilometer, doors, seats,
-    is_featured, is_test_drive_available, view_count, like_count,
-    image_url, thumbnail_url
-) VALUES (
-    NOW(), NOW(), FALSE, 0,
-    '34TSL002', '5YJ3E1EA5KF000007', 'Tesla', 'Model 3', 2023,
-    180.00, 'USD', 0, 'AVAILABLE',
-    'Electric', 'Automatic', 'Sedan', 'White', 12000, 4, 5,
-    TRUE, TRUE, 320, 89,
-    'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('pinar_sen', 'pinar.sen@gmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Pınar', 'Şen', '+905597778899', TRUE, FALSE, FALSE, NOW() - INTERVAL '5 days', NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'pinar_sen' ON CONFLICT (user_id, role) DO NOTHING;
+
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, create_time, update_time, version)
+VALUES ('okan_tekin', 'okan.tekin@outlook.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Okan', 'Tekin', NULL, TRUE, FALSE, FALSE, NOW(), NOW(), 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'okan_tekin' ON CONFLICT (user_id, role) DO NOTHING;
+
+-- -----------------------------------------------------------------------------
+-- Banned Customers (3 users)
+-- -----------------------------------------------------------------------------
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, banned_at, ban_reason, create_time, update_time, version)
+VALUES ('hasan_korkmaz', 'hasan.korkmaz@gmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Hasan', 'Korkmaz', '+905608889900', TRUE, FALSE, TRUE, NOW() - INTERVAL '30 days', 'Repeated late returns and vehicle damage', NOW() - INTERVAL '200 days', NOW() - INTERVAL '30 days', 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'hasan_korkmaz' ON CONFLICT (user_id, role) DO NOTHING;
+
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, banned_at, ban_reason, create_time, update_time, version)
+VALUES ('fatma_aslan', 'fatma.aslan@hotmail.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Fatma', 'Aslan', '+905619990011', TRUE, FALSE, TRUE, NOW() - INTERVAL '15 days', 'Payment fraud detected', NOW() - INTERVAL '150 days', NOW() - INTERVAL '15 days', 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'fatma_aslan' ON CONFLICT (user_id, role) DO NOTHING;
+
+INSERT INTO gallery.users (username, email, password, first_name, last_name, phone, enabled, is_deleted, is_banned, banned_at, ban_reason, create_time, update_time, version)
+VALUES ('kerem_tas', 'kerem.tas@yahoo.com', '$2a$10$AQ/N5rC6y2xDgV2LXCf43OHLtH3Ygimn9cc9OI255u9JgSmzYTSzy', 'Kerem', 'Taş', '+905620001122', TRUE, FALSE, TRUE, NOW() - INTERVAL '7 days', 'Terms of service violation', NOW() - INTERVAL '100 days', NOW() - INTERVAL '7 days', 0)
+ON CONFLICT (username) DO NOTHING;
+INSERT INTO gallery.user_roles (user_id, role) SELECT id, 'USER' FROM gallery.users WHERE username = 'kerem_tas' ON CONFLICT (user_id, role) DO NOTHING;

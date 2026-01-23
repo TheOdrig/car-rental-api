@@ -5,6 +5,7 @@ import com.akif.auth.api.AdminUserDetailResponse;
 import com.akif.auth.api.AdminUserDetailResponse.AccountStatus;
 import com.akif.auth.api.AdminUserDetailResponse.UserStatistics;
 import com.akif.auth.api.AdminUserDetailResponse.VerificationInfo;
+import com.akif.auth.api.AdminUserListItem;
 import com.akif.auth.api.AdminUserService;
 import com.akif.auth.domain.AdminNote;
 import com.akif.auth.domain.User;
@@ -17,6 +18,10 @@ import com.akif.rental.api.RentalService;
 import com.akif.rental.api.UserRentalStatisticsDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +42,50 @@ public class AdminUserServiceImpl implements AdminUserService {
     private final DamageService damageService;
 
     @Override
+    public Page<AdminUserListItem> getAllUsers(String role, String status, String search, Pageable pageable) {
+        log.debug("Fetching users list: role={}, status={}, search={}", role, status, search);
+
+        Pageable unsortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.unsorted());
+
+        Page<User> users = userRepository.findAllForAdmin(
+                role != null && !role.isEmpty() ? role : null,
+                status,
+                search != null && !search.isEmpty() ? search.toLowerCase() : null,
+                unsortedPageable);
+
+        return users.map(this::mapToListItem);
+    }
+
+    private AdminUserListItem mapToListItem(User user) {
+        String userStatus = getUserStatus(user);
+
+        return new AdminUserListItem(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getRoles(),
+                userStatus,
+                user.getAvatarUrl(),
+                user.getEnabled() != null && user.getEnabled(),
+                user.getCreateTime(),
+                user.getUpdateTime());
+    }
+
+    private String getUserStatus(User user) {
+        if (user.getIsBanned() != null && user.getIsBanned()) {
+            return "BANNED";
+        } else if (!user.getEnabled()) {
+            return "PENDING";
+        } else {
+            return "ACTIVE";
+        }
+    }
+
+    @Override
     public AdminUserDetailResponse getUserDetailForAdmin(Long userId) {
         log.debug("Fetching user detail for admin: userId={}", userId);
 
@@ -46,6 +95,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         VerificationInfo verification = buildVerificationInfo(user);
         UserStatistics statistics = calculateUserStatistics(userId, user);
         AccountStatus accountStatus = buildAccountStatus(user);
+        List<AdminNoteDto> notes = getAdminNotes(userId);
 
         return new AdminUserDetailResponse(
                 user.getId(),
@@ -59,7 +109,8 @@ public class AdminUserServiceImpl implements AdminUserService {
                 null,
                 verification,
                 statistics,
-                accountStatus);
+                accountStatus,
+                notes);
     }
 
     private VerificationInfo buildVerificationInfo(User user) {
@@ -202,5 +253,16 @@ public class AdminUserServiceImpl implements AdminUserService {
                 note.getAdminUsername(),
                 note.getText(),
                 note.getCreatedAt());
+    }
+
+    @Override
+    public com.akif.auth.api.UserStatsResponse getStats() {
+        log.debug("Fetching user statistics");
+
+        long totalUsers = userRepository.countByIsDeletedFalse();
+        long activeUsers = userRepository.countByIsDeletedFalseAndEnabledTrueAndIsBannedFalse();
+        long bannedUsers = userRepository.countByIsDeletedFalseAndIsBannedTrue();
+
+        return new com.akif.auth.api.UserStatsResponse(totalUsers, activeUsers, bannedUsers);
     }
 }
