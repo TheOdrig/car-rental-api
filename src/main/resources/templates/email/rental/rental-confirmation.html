@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
     <meta name="supported-color-schemes" content="light dark">
-    <title>Damage Report Received - CarRental</title>
+    <title>Rental Confirmation - CarRental</title>
     <style>
         body {
             margin: 0;
@@ -62,7 +62,7 @@
 
                     <tr>
                         <td style="padding: 0;">
-                            <div th:replace="~{email/shared/header :: header('Damage Reported')}"></div>
+                            <div th:replace="~{email/shared/header :: header('Booking Confirmed')}"></div>
                         </td>
                     </tr>
 
@@ -70,8 +70,9 @@
                         <td align="center" style="padding: 40px 30px 20px 30px;">
                             <svg width="64" height="64" viewBox="0 0 64 64" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="32" cy="32" r="30" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
-                                <path d="M32 20V34M32 42V44" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" />
+                                <circle cx="32" cy="32" r="30" fill="#d1fae5" stroke="#10b981" stroke-width="2" />
+                                <path d="M20 32L28 40L44 24" stroke="#10b981" stroke-width="3" stroke-linecap="round"
+                                    stroke-linejoin="round" />
                             </svg>
                         </td>
                     </tr>
@@ -80,11 +81,10 @@
                         <td class="email-body"
                             style="padding: 0 40px 40px 40px; color: #111827; font-size: 16px; line-height: 1.6;">
 
-                            <p style="margin: 0 0 20px 0; font-size: 16px;">Dear Customer,</p>
+                            <p style="margin: 0 0 20px 0; font-size: 16px;">Great news!</p>
 
                             <p style="margin: 0 0 24px 0; font-size: 16px;">
-                                We have received a damage report for your rental. Our team will assess the damage and
-                                notify you of the outcome.
+                                Your rental has been confirmed. Here are your booking details:
                             </p>
 
                             <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 24px 0;"
@@ -105,55 +105,61 @@
                                         <td align="right"
                                             style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
                                             class="text-value">
-                                            <span th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
+                                            <span th:text="${carBrand} + ' ' + ${carModel}">Toyota Camry</span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                            License Plate:</td>
+                                            Pickup:</td>
                                         <td align="right"
                                             style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
                                             class="text-value">
-                                            <span th:text="${carLicensePlate}">34ABC123</span>
+                                            <span th:text="${pickupDate}">January 25, 2026</span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                            Report Date:</td>
+                                            Return:</td>
                                         <td align="right"
                                             style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
                                             class="text-value">
-                                            <span th:text="${reportDate}">January 24, 2026 at 14:30</span>
+                                            <span th:text="${returnDate}">January 30, 2026</span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                            Severity:</td>
+                                            Location:</td>
                                         <td align="right"
                                             style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
                                             class="text-value">
-                                            <span th:text="${severity}">MODERATE</span>
+                                            <span th:text="${pickupLocation}">Airport Terminal</span>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                            Description:</td>
-                                        <td align="right"
-                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
-                                            class="text-value">
-                                            <span th:text="${description}">Scratch on driver side door</span>
+                                        <td colspan="2" style="padding: 16px 0 8px 0; border-top: 1px solid #e5e7eb;">
+                                            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                                                width="100%">
+                                                <tr>
+                                                    <td style="font-size: 16px; font-weight: 700; color: #111827;"
+                                                        class="text-value">
+                                                        Total:</td>
+                                                    <td align="right"
+                                                        style="font-size: 18px; font-weight: 700; color: #4356d9;">
+                                                        <span th:text="${currency} + ' ' + ${totalPrice}">$250.00</span>
+                                                    </td>
+                                                </tr>
+                                            </table>
                                         </td>
                                     </tr>
                                 </table>
                             </div>
 
                             <div
-                                th:replace="~{email/shared/info-box :: infoBox('What happens next? Our team will inspect the damage and assess repair costs. You will receive an assessment notification within 24-48 hours.')}">
+                                th:replace="~{email/shared/info-box :: infoBox('Please bring a valid driver\'s license and credit card at pickup. Arrive 15 minutes early to complete the paperwork.')}">
                             </div>
 
-                            <p style="margin: 24px 0 0 0; font-size: 14px; color: #111827;" class="text-value">
-                                If you believe this report was made in error, please contact our support team
-                                immediately.
+                            <p style="margin: 24px 0 0 0; font-size: 14px; color: #6b7280;" class="text-muted">
+                                We'll send you a reminder 24 hours before your pickup time.
                             </p>
 
                         </td>

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
     <meta name="supported-color-schemes" content="light dark">
-    <title>Damage Report Received - CarRental</title>
+    <title>Cancellation Confirmation - CarRental</title>
     <style>
         body {
             margin: 0;
@@ -62,7 +62,7 @@
 
                     <tr>
                         <td style="padding: 0;">
-                            <div th:replace="~{email/shared/header :: header('Damage Reported')}"></div>
+                            <div th:replace="~{email/shared/header :: header('Booking Cancelled')}"></div>
                         </td>
                     </tr>
 
@@ -70,8 +70,9 @@
                         <td align="center" style="padding: 40px 30px 20px 30px;">
                             <svg width="64" height="64" viewBox="0 0 64 64" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="32" cy="32" r="30" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
-                                <path d="M32 20V34M32 42V44" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" />
+                                <circle cx="32" cy="32" r="30" fill="#fee2e2" stroke="#ef4444" stroke-width="2" />
+                                <path d="M24 24L40 40M24 40L40 24" stroke="#ef4444" stroke-width="3"
+                                    stroke-linecap="round" />
                             </svg>
                         </td>
                     </tr>
@@ -80,11 +81,10 @@
                         <td class="email-body"
                             style="padding: 0 40px 40px 40px; color: #111827; font-size: 16px; line-height: 1.6;">
 
-                            <p style="margin: 0 0 20px 0; font-size: 16px;">Dear Customer,</p>
+                            <p style="margin: 0 0 20px 0; font-size: 16px;">Hello,</p>
 
                             <p style="margin: 0 0 24px 0; font-size: 16px;">
-                                We have received a damage report for your rental. Our team will assess the damage and
-                                notify you of the outcome.
+                                Your rental booking has been successfully cancelled. Here are the details:
                             </p>
 
                             <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 24px 0;"
@@ -101,59 +101,48 @@
                                     </tr>
                                     <tr>
                                         <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                            Vehicle:</td>
+                                            Cancelled On:</td>
                                         <td align="right"
                                             style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
                                             class="text-value">
-                                            <span th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
+                                            <span th:text="${cancellationDate}">January 24, 2026 at 14:30</span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                            License Plate:</td>
+                                            Reason:</td>
                                         <td align="right"
                                             style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
                                             class="text-value">
-                                            <span th:text="${carLicensePlate}">34ABC123</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                            Report Date:</td>
-                                        <td align="right"
-                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
-                                            class="text-value">
-                                            <span th:text="${reportDate}">January 24, 2026 at 14:30</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                            Severity:</td>
-                                        <td align="right"
-                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
-                                            class="text-value">
-                                            <span th:text="${severity}">MODERATE</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                            Description:</td>
-                                        <td align="right"
-                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
-                                            class="text-value">
-                                            <span th:text="${description}">Scratch on driver side door</span>
+                                            <span th:text="${cancellationReason}">Customer request</span>
                                         </td>
                                     </tr>
                                 </table>
                             </div>
 
-                            <div
-                                th:replace="~{email/shared/info-box :: infoBox('What happens next? Our team will inspect the damage and assess repair costs. You will receive an assessment notification within 24-48 hours.')}">
+                            <div th:if="${refundProcessed}">
+                                <p style="margin: 24px 0 16px 0; font-size: 16px; font-weight: 600; color: #111827;"
+                                    class="text-value">
+                                    Refund Information:
+                                </p>
+
+                                <div
+                                    style="background-color: #d1fae5; border-left: 4px solid #10b981; border-radius: 4px; padding: 20px; margin: 0 0 24px 0;">
+                                    <p style="margin: 0; font-size: 14px; color: #065f46;">
+                                        <strong>Refund Amount:</strong>
+                                        <span th:text="${refundAmount}">$200.00</span><br>
+                                        <strong>Transaction ID:</strong>
+                                        <span th:text="${refundTransactionId}">TXN-123456</span>
+                                    </p>
+                                </div>
+
+                                <div
+                                    th:replace="~{email/shared/info-box :: infoBox('Your refund will be processed within ' + ${refundTimeline} + '. It may take additional time to appear in your account depending on your bank.')}">
+                                </div>
                             </div>
 
                             <p style="margin: 24px 0 0 0; font-size: 14px; color: #111827;" class="text-value">
-                                If you believe this report was made in error, please contact our support team
-                                immediately.
+                                We hope to serve you again in the future!
                             </p>
 
                         </td>

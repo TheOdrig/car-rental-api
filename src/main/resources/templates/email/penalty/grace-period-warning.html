@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <title>Grace Period Warning - CarRental</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .email-container {
+                background-color: #1f2937 !important;
+            }
+
+            .email-body {
+                background-color: #111827 !important;
+                color: #f3f4f6 !important;
+            }
+
+            .detail-box {
+                background-color: #1f2937 !important;
+                border-color: #374151 !important;
+            }
+
+            .text-label {
+                color: #d1d5db !important;
+            }
+
+            .text-value {
+                color: #f9fafb !important;
+            }
+
+            .text-muted {
+                color: #9ca3af !important;
+            }
+        }
+    </style>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #f4f4f5;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+        style="background-color: #f4f4f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                    style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);"
+                    class="email-container">
+
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/header :: header('Grace Period Warning')}"></div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 40px 30px 20px 30px;">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="32" cy="32" r="30" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
+                                <path d="M32 20V34M32 42V44" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" />
+                            </svg>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="email-body"
+                            style="padding: 0 40px 40px 40px; color: #111827; font-size: 16px; line-height: 1.6;">
+
+                            <p style="margin: 0 0 20px 0; font-size: 16px;">Urgent Notice</p>
+
+                            <p style="margin: 0 0 24px 0; font-size: 16px;">
+                                Your rental return deadline has passed. You are currently in the grace period.
+                            </p>
+
+                            <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px; padding: 20px; margin: 24px 0;"
+                                class="detail-box">
+                                <p style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #92400e;"
+                                    class="text-value">
+                                    <span th:text="${carBrand} + ' ' + ${carModel}">Toyota Camry</span>
+                                </p>
+                                <p style="margin: 0 0 8px 0; font-size: 14px; color: #92400e;" class="text-label">
+                                    License Plate: <span th:text="${licensePlate}"
+                                        style="font-weight: 600; color: #92400e;" class="text-value">34ABC123</span>
+                                </p>
+                                <p style="margin: 0; font-size: 14px; color: #92400e;" class="text-label">
+                                    Rental ID: <span th:text="${rentalId}" style="font-weight: 600; color: #92400e;"
+                                        class="text-value">12345</span>
+                                </p>
+                            </div>
+
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                                style="margin: 0 0 24px 0;">
+                                <tr>
+                                    <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                        Scheduled Return:</td>
+                                    <td align="right"
+                                        style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                        class="text-value">
+                                        <span th:text="${scheduledReturnTime}">Jan 30, 2026 10:00 AM</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                        Grace
+                                        Period Remaining:
+                                    </td>
+                                    <td align="right"
+                                        style="padding: 8px 0; font-size: 16px; font-weight: 700; color: #f59e0b;">
+                                        <span th:text="${remainingGraceMinutes}">45</span> minutes
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div
+                                th:replace="~{email/shared/warning-box :: warningBox('Please return the vehicle immediately to avoid late fees. After the grace period, you will be charged for additional rental time.')}">
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/footer :: footer}"></div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

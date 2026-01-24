@@ -132,6 +132,14 @@ public class EmailEventListener {
 
     @Async("emailTaskExecutor")
     @EventListener
+    public void handleDamageChargeFailed(DamageChargeFailedEvent event) {
+        log.debug("Received DamageChargeFailedEvent. DamageId: {}, Reason: {}",
+                event.getDamageReportId(), event.getFailureReason());
+        emailNotificationService.sendDamageChargeFailedNotification(event);
+    }
+
+    @Async("emailTaskExecutor")
+    @EventListener
     public void handlePasswordResetRequested(PasswordResetRequestedEvent event) {
         log.debug("Received PasswordResetRequestedEvent. Email: {}", event.email());
         emailNotificationService.sendPasswordResetEmail(event.email(), event.resetLink());

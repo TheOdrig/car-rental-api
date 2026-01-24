@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
     <meta name="supported-color-schemes" content="light dark">
-    <title>Damage Report Received - CarRental</title>
+    <title>Payment Receipt - CarRental</title>
     <style>
         body {
             margin: 0;
@@ -31,7 +31,7 @@
                 color: #f3f4f6 !important;
             }
 
-            .detail-box {
+            .receipt-box {
                 background-color: #1f2937 !important;
                 border-color: #374151 !important;
             }
@@ -62,7 +62,7 @@
 
                     <tr>
                         <td style="padding: 0;">
-                            <div th:replace="~{email/shared/header :: header('Damage Reported')}"></div>
+                            <div th:replace="~{email/shared/header :: header('Payment Receipt')}"></div>
                         </td>
                     </tr>
 
@@ -70,8 +70,11 @@
                         <td align="center" style="padding: 40px 30px 20px 30px;">
                             <svg width="64" height="64" viewBox="0 0 64 64" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="32" cy="32" r="30" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
-                                <path d="M32 20V34M32 42V44" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" />
+                                <circle cx="32" cy="32" r="30" fill="#d1fae5" stroke="#10b981" stroke-width="2" />
+                                <rect x="20" y="24" width="24" height="16" rx="2" stroke="#10b981" stroke-width="2"
+                                    fill="none" />
+                                <path d="M20 30H44" stroke="#10b981" stroke-width="2" />
+                                <circle cx="38" cy="36" r="2" fill="#10b981" />
                             </svg>
                         </td>
                     </tr>
@@ -80,16 +83,39 @@
                         <td class="email-body"
                             style="padding: 0 40px 40px 40px; color: #111827; font-size: 16px; line-height: 1.6;">
 
-                            <p style="margin: 0 0 20px 0; font-size: 16px;">Dear Customer,</p>
+                            <p style="margin: 0 0 20px 0; font-size: 16px;">Thank you for your payment!</p>
 
                             <p style="margin: 0 0 24px 0; font-size: 16px;">
-                                We have received a damage report for your rental. Our team will assess the damage and
-                                notify you of the outcome.
+                                Your payment has been successfully processed. Here are your receipt details:
                             </p>
 
-                            <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 24px 0;"
-                                class="detail-box">
+                            <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin: 24px 0;"
+                                class="receipt-box">
+                                <p style="margin: 0 0 16px 0; font-size: 18px; font-weight: 700; color: #111827; text-align: center;"
+                                    class="text-value">
+                                    Payment Receipt
+                                </p>
+
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Payment ID:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="${paymentId}">PAY-123456</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Transaction ID:
+                                        </td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="${transactionId}">TXN-789012</span>
+                                        </td>
+                                    </tr>
                                     <tr>
                                         <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
                                             Rental ID:</td>
@@ -101,59 +127,39 @@
                                     </tr>
                                     <tr>
                                         <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                            Vehicle:</td>
+                                            Payment Date:</td>
                                         <td align="right"
                                             style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
                                             class="text-value">
-                                            <span th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
+                                            <span th:text="${paymentDate}">January 24, 2026 at 14:30</span>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                            License Plate:</td>
-                                        <td align="right"
-                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
-                                            class="text-value">
-                                            <span th:text="${carLicensePlate}">34ABC123</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                            Report Date:</td>
-                                        <td align="right"
-                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
-                                            class="text-value">
-                                            <span th:text="${reportDate}">January 24, 2026 at 14:30</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                            Severity:</td>
-                                        <td align="right"
-                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
-                                            class="text-value">
-                                            <span th:text="${severity}">MODERATE</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                            Description:</td>
-                                        <td align="right"
-                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
-                                            class="text-value">
-                                            <span th:text="${description}">Scratch on driver side door</span>
+                                        <td colspan="2" style="padding: 16px 0 8px 0; border-top: 2px solid #e5e7eb;"
+                                            class="receipt-box">
+                                            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                                                width="100%">
+                                                <tr>
+                                                    <td style="font-size: 16px; font-weight: 700; color: #111827;"
+                                                        class="text-value">
+                                                        Amount Paid:</td>
+                                                    <td align="right"
+                                                        style="font-size: 20px; font-weight: 700; color: #10b981;">
+                                                        <span th:text="${currency} + ' ' + ${amount}">$250.00</span>
+                                                    </td>
+                                                </tr>
+                                            </table>
                                         </td>
                                     </tr>
                                 </table>
                             </div>
 
                             <div
-                                th:replace="~{email/shared/info-box :: infoBox('What happens next? Our team will inspect the damage and assess repair costs. You will receive an assessment notification within 24-48 hours.')}">
+                                th:replace="~{email/shared/info-box :: infoBox('This receipt is for your records. You can view and download it anytime from your account dashboard.')}">
                             </div>
 
                             <p style="margin: 24px 0 0 0; font-size: 14px; color: #111827;" class="text-value">
-                                If you believe this report was made in error, please contact our support team
-                                immediately.
+                                If you have questions about this payment, please contact our support team.
                             </p>
 
                         </td>
