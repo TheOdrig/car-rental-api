@@ -242,6 +242,19 @@ damage.photo.max-size-mb=10
 ```
 
 ---
+ 
+## File Storage (Cloudflare R2)
+
+The API uses Cloudflare R2 (S3-compatible) for avatar and car image storage. It falls back to local storage (`uploads/` directory) if R2 is not configured.
+
+```bash
+R2_ENDPOINT=https://<your-id>.r2.cloudflarestorage.com
+R2_BUCKET_NAME=car-rental-assets
+R2_ACCESS_KEY_ID=your-access-key
+R2_SECRET_ACCESS_KEY=your-secret-access-key
+```
+
+---
 
 ## Cache Configuration
 

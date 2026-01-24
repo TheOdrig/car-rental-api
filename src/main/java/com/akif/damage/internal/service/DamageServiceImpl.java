@@ -2,6 +2,7 @@ package com.akif.damage.internal.service;
 
 import com.akif.damage.api.DamageService;
 import com.akif.damage.api.DamageReportDto;
+import com.akif.damage.api.UserDamageStatisticsDto;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.mapper.DamageMapper;
 import com.akif.damage.internal.repository.DamageReportRepository;
@@ -28,26 +29,25 @@ public class DamageServiceImpl implements DamageService {
     @Override
     public List<DamageReportDto> getDamageReportsByRentalId(Long rentalId) {
         log.debug("Getting damage reports for rental: {}", rentalId);
-        
+
         List<DamageReport> damageReports = damageReportRepository.findByRentalIdAndIsDeletedFalse(rentalId);
-        
+
         return damageMapper.toPublicDtoList(damageReports);
     }
 
     @Override
     public boolean hasPendingDamageReports(Long rentalId) {
         log.debug("Checking pending damage reports for rental: {}", rentalId);
-        
+
         return damageReportRepository.existsPendingByRentalId(rentalId);
     }
 
     @Override
     public boolean hasPendingDamageReportsForCar(Long carId) {
         log.debug("Checking pending damage reports for car: {}", carId);
-        
+
         return damageReportRepository.existsPendingByCarId(carId);
     }
-
 
     @Override
     public int countPendingAssessments() {
@@ -70,5 +70,22 @@ public class DamageServiceImpl implements DamageService {
     public BigDecimal sumRepairCosts(LocalDate startDate, LocalDate endDate) {
         log.debug("Calculating repair costs between {} and {}", startDate, endDate);
         return damageReportRepository.sumTotalRepairCost(startDate, endDate);
+    }
+
+    @Override
+    public UserDamageStatisticsDto getUserDamageStatistics(Long userId) {
+        log.debug("Calculating damage statistics for user: {}", userId);
+
+        int totalDamageReports = damageReportRepository.countByCustomerUserIdAndIsDeletedFalse(userId);
+
+        BigDecimal totalDamageCost = damageReportRepository.sumCustomerLiabilityByCustomerUserId(userId);
+        if (totalDamageCost == null) {
+            totalDamageCost = BigDecimal.ZERO;
+        }
+
+        log.info("User {} damage statistics: totalReports={}, totalCost={}",
+                userId, totalDamageReports, totalDamageCost);
+
+        return new UserDamageStatisticsDto(totalDamageReports, totalDamageCost);
     }
 }

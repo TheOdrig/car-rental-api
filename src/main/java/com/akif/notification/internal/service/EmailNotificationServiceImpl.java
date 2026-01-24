@@ -482,10 +482,43 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
                 event.getDamageReportId(), e.getMessage());
     }
 
+    @Override
+    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    public void sendDamageChargeFailedNotification(DamageChargeFailedEvent event) {
+        String customerEmail = event.getCustomerEmail();
+        Long damageId = event.getDamageReportId();
+        Long rentalId = event.getRentalId();
+
+        log.info("Queuing damage charge failed email. DamageId: {}, Recipient: {}", damageId, customerEmail);
+
+        String body = templateService.renderDamageChargeFailedEmail(event);
+        EmailMessage message = new EmailMessage(
+                customerEmail,
+                "🚨 Payment Failed - Damage Charge - Rental #" + rentalId,
+                body,
+                EmailType.DAMAGE_CHARGE_FAILED,
+                rentalId);
+
+        try {
+            emailSender.send(message);
+            log.info("Damage charge failed email sent successfully. DamageId: {}, To: {}", damageId, customerEmail);
+        } catch (EmailSendException e) {
+            log.warn("Email send attempt failed. DamageId: {}, Error: {}", damageId, e.getMessage());
+            throw e;
+        }
+    }
+
     @SuppressWarnings("unused")
     @Recover
     public void recoverFromDamageResolvedFailure(EmailSendException e, DamageResolvedEvent event) {
         log.error("Damage resolved email failed after all retries. DamageId: {}, Error: {}",
+                event.getDamageReportId(), e.getMessage());
+    }
+
+    @SuppressWarnings("unused")
+    @Recover
+    public void recoverFromDamageChargeFailedFailure(EmailSendException e, DamageChargeFailedEvent event) {
+        log.error("Damage charge failed email failed after all retries. DamageId: {}, Error: {}",
                 event.getDamageReportId(), e.getMessage());
     }
 

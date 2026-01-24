@@ -37,7 +37,7 @@ public class EmailTemplateService implements IEmailTemplateService {
         context.setVariable("currency", event.getCurrency().name());
         context.setVariable("pickupLocation", event.getPickupLocation());
 
-        return templateEngine.process("email/rental-confirmation", context);
+        return templateEngine.process("email/rental/rental-confirmation", context);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class EmailTemplateService implements IEmailTemplateService {
         context.setVariable("currency", event.getCurrency().name());
         context.setVariable("paymentDate", event.getPaymentDate().format(DATE_TIME_FORMATTER));
 
-        return templateEngine.process("email/payment-receipt", context);
+        return templateEngine.process("email/payment/payment-receipt", context);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class EmailTemplateService implements IEmailTemplateService {
         context.setVariable("carModel", event.getCarModel());
         context.setVariable("timeWindow", "9:00 AM - 6:00 PM");
 
-        return templateEngine.process("email/pickup-reminder", context);
+        return templateEngine.process("email/rental/pickup-reminder", context);
     }
 
     @Override
@@ -80,7 +80,7 @@ public class EmailTemplateService implements IEmailTemplateService {
         context.setVariable("returnLocation", event.getReturnLocation());
         context.setVariable("dailyPenaltyRate", event.getDailyPenaltyRate());
 
-        return templateEngine.process("email/return-reminder", context);
+        return templateEngine.process("email/rental/return-reminder", context);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class EmailTemplateService implements IEmailTemplateService {
         context.setVariable("refundTransactionId", event.getRefundTransactionId());
         context.setVariable("refundTimeline", "3-5 business days");
 
-        return templateEngine.process("email/cancellation-confirmation", context);
+        return templateEngine.process("email/rental/cancellation-confirmation", context);
     }
 
     @Override
@@ -111,7 +111,7 @@ public class EmailTemplateService implements IEmailTemplateService {
         context.setVariable("scheduledReturnTime", event.getScheduledReturnTime());
         context.setVariable("remainingGraceMinutes", event.getRemainingGraceMinutes());
 
-        return templateEngine.process("email/grace-period-warning", context);
+        return templateEngine.process("email/penalty/grace-period-warning", context);
     }
 
     @Override
@@ -128,7 +128,7 @@ public class EmailTemplateService implements IEmailTemplateService {
         context.setVariable("currentPenaltyAmount", event.getCurrentPenaltyAmount());
         context.setVariable("currency", event.getCurrency().name());
 
-        return templateEngine.process("email/late-return-notification", context);
+        return templateEngine.process("email/penalty/late-return-notification", context);
     }
 
     @Override
@@ -147,7 +147,7 @@ public class EmailTemplateService implements IEmailTemplateService {
         context.setVariable("currency", event.getCurrency().name());
         context.setVariable("escalationWarning", event.getEscalationWarning());
 
-        return templateEngine.process("email/severely-late-notification", context);
+        return templateEngine.process("email/penalty/severely-late-notification", context);
     }
 
     @Override
@@ -168,7 +168,7 @@ public class EmailTemplateService implements IEmailTemplateService {
         context.setVariable("penaltyBreakdown", event.getPenaltyBreakdown());
         context.setVariable("cappedAtMax", event.isCappedAtMax());
 
-        return templateEngine.process("email/penalty-summary", context);
+        return templateEngine.process("email/penalty/penalty-summary", context);
     }
 
     @Override
@@ -244,6 +244,20 @@ public class EmailTemplateService implements IEmailTemplateService {
     }
 
     @Override
+    public String renderDamageChargeFailedEmail(DamageChargeFailedEvent event) {
+        log.debug("Rendering damage charge failed email for damage ID: {}", event.getDamageReportId());
+
+        Context context = new Context();
+        context.setVariable("rentalId", event.getRentalId());
+        context.setVariable("amount", event.getAmount());
+        context.setVariable("currency", "TRY");
+        context.setVariable("failureReason", event.getFailureReason());
+        context.setVariable("failedAt", event.getFailedAt().format(DATE_TIME_FORMATTER));
+
+        return templateEngine.process("email/damage/damage-charge-failed", context);
+    }
+
+    @Override
     public String renderPasswordResetEmail(String email, String resetLink) {
         log.debug("Rendering password reset email for: {}", email);
 
@@ -252,6 +266,7 @@ public class EmailTemplateService implements IEmailTemplateService {
         context.setVariable("resetLink", resetLink);
         context.setVariable("expirationHours", 1);
 
-        return templateEngine.process("email/password-reset", context);
+        return templateEngine.process("email/auth/password-reset", context);
     }
 }
+

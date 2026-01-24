@@ -1,65 +1,174 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Damage Report Received</title>
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <title>Damage Report Received - CarRental</title>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #ff9800; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
-        .content { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 5px 5px; }
-        .detail-row { margin: 10px 0; padding: 10px; background-color: white; border-left: 3px solid #ff9800; }
-        .label { font-weight: bold; color: #555; }
-        .value { color: #333; }
-        .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #777; text-align: center; }
-        .warning { background-color: #fff3e0; padding: 15px; border-radius: 5px; margin-top: 15px; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .email-container {
+                background-color: #1f2937 !important;
+            }
+
+            .email-body {
+                background-color: #111827 !important;
+                color: #f3f4f6 !important;
+            }
+
+            .detail-box {
+                background-color: #1f2937 !important;
+                border-color: #374151 !important;
+            }
+
+            .text-label {
+                color: #d1d5db !important;
+            }
+
+            .text-value {
+                color: #f9fafb !important;
+            }
+
+            .text-muted {
+                color: #9ca3af !important;
+            }
+        }
     </style>
 </head>
-<body>
-    <div class="header">
-        <h1>⚠️ Damage Report Received</h1>
-    </div>
-    <div class="content">
-        <p>Dear Customer,</p>
-        <p>We have received a damage report for your rental. Our team will assess the damage and notify you of the outcome.</p>
-        
-        <div class="detail-row">
-            <span class="label">Rental ID:</span>
-            <span class="value" th:text="${rentalId}">12345</span>
-        </div>
-        
-        <div class="detail-row">
-            <span class="label">Vehicle:</span>
-            <span class="value" th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
-        </div>
-        
-        <div class="detail-row">
-            <span class="label">License Plate:</span>
-            <span class="value" th:text="${licensePlate}">34ABC123</span>
-        </div>
-        
-        <div class="detail-row">
-            <span class="label">Report Date:</span>
-            <span class="value" th:text="${reportDate}">15 Jan 2024</span>
-        </div>
-        
-        <div class="detail-row">
-            <span class="label">Description:</span>
-            <span class="value" th:text="${description}">Scratch on driver side door</span>
-        </div>
-        
-        <div class="warning">
-            <p><strong>What happens next?</strong></p>
-            <ul>
-                <li>Our team will inspect the damage and assess repair costs</li>
-                <li>You will receive an assessment notification within 24-48 hours</li>
-                <li>If charges apply, you can dispute them within 7 days</li>
-            </ul>
-        </div>
-    </div>
-    <div class="footer">
-        <p>If you believe this report was made in error, please contact our support team immediately.</p>
-        <p>Thank you for your understanding.</p>
-    </div>
+
+<body style="margin: 0; padding: 0; background-color: #f4f4f5;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+        style="background-color: #f4f4f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                    style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);"
+                    class="email-container">
+
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/header :: header('Damage Reported')}"></div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 40px 30px 20px 30px;">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="32" cy="32" r="30" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
+                                <path d="M32 20V34M32 42V44" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" />
+                            </svg>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="email-body"
+                            style="padding: 0 40px 40px 40px; color: #111827; font-size: 16px; line-height: 1.6;">
+
+                            <p style="margin: 0 0 20px 0; font-size: 16px;">Dear Customer,</p>
+
+                            <p style="margin: 0 0 24px 0; font-size: 16px;">
+                                We have received a damage report for your rental. Our team will assess the damage and
+                                notify you of the outcome.
+                            </p>
+
+                            <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 24px 0;"
+                                class="detail-box">
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Rental ID:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="${rentalId}">12345</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Vehicle:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            License Plate:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="${carLicensePlate}">34ABC123</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Report Date:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="${reportDate}">January 24, 2026 at 14:30</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Severity:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="${severity}">MODERATE</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Description:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="${description}">Scratch on driver side door</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div
+                                th:replace="~{email/shared/info-box :: infoBox('What happens next? Our team will inspect the damage and assess repair costs. You will receive an assessment notification within 24-48 hours.')}">
+                            </div>
+
+                            <p style="margin: 24px 0 0 0; font-size: 14px; color: #111827;" class="text-value">
+                                If you believe this report was made in error, please contact our support team
+                                immediately.
+                            </p>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/footer :: footer}"></div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
+
 </html>

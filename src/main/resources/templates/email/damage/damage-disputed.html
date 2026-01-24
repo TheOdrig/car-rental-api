@@ -1,116 +1,146 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dispute Received</title>
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <title>Damage Assessment Disputed - CarRental</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        .header {
-            background-color: #9C27B0;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 5px 5px 0 0;
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
         }
 
-        .content {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 0 0 5px 5px;
-        }
+        @media (prefers-color-scheme: dark) {
+            .email-container {
+                background-color: #1f2937 !important;
+            }
 
-        .detail-row {
-            margin: 10px 0;
-            padding: 10px;
-            background-color: white;
-            border-left: 3px solid #9C27B0;
-        }
+            .email-body {
+                background-color: #111827 !important;
+                color: #f3f4f6 !important;
+            }
 
-        .label {
-            font-weight: bold;
-            color: #555;
-        }
+            .detail-box {
+                background-color: #1f2937 !important;
+                border-color: #374151 !important;
+            }
 
-        .value {
-            color: #333;
-        }
+            .text-label {
+                color: #d1d5db !important;
+            }
 
-        .footer {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            font-size: 12px;
-            color: #777;
-            text-align: center;
-        }
+            .text-value {
+                color: #f9fafb !important;
+            }
 
-        .info-box {
-            background-color: #f3e5f5;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 15px;
+            .text-muted {
+                color: #9ca3af !important;
+            }
         }
     </style>
 </head>
 
-<body>
-    <div class="header">
-        <h1>📝 Dispute Received</h1>
-    </div>
-    <div class="content">
-        <p>Dear Customer,</p>
-        <p>We have received your dispute regarding the damage assessment. Our team will review your case and respond
-            within 3-5 business days.</p>
+<body style="margin: 0; padding: 0; background-color: #f4f4f5;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+        style="background-color: #f4f4f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                    style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);"
+                    class="email-container">
 
-        <div class="detail-row">
-            <span class="label">Rental ID:</span>
-            <span class="value" th:text="${rentalId}">12345</span>
-        </div>
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/header :: header('Damage Assessment Disputed')}"></div>
+                        </td>
+                    </tr>
 
-        <div class="detail-row">
-            <span class="label">Vehicle:</span>
-            <span class="value" th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
-        </div>
+                    <tr>
+                        <td align="center" style="padding: 40px 30px 20px 30px;">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="32" cy="32" r="30" fill="#eff6ff" stroke="#3b82f6" stroke-width="2" />
+                                <path d="M32 20V34M32 42V44" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" />
+                            </svg>
+                        </td>
+                    </tr>
 
-        <div class="detail-row">
-            <span class="label">Original Charge:</span>
-            <span class="value" th:text="|${originalCharge} ${currency}|">250.00 TRY</span>
-        </div>
+                    <tr>
+                        <td class="email-body"
+                            style="padding: 0 40px 40px 40px; color: #111827; font-size: 16px; line-height: 1.6;">
 
-        <div class="detail-row">
-            <span class="label">Dispute Reason:</span>
-            <span class="value" th:text="${disputeReason}">Damage was pre-existing</span>
-        </div>
+                            <p style="margin: 0 0 20px 0; font-size: 16px;">Hello,</p>
 
-        <div class="detail-row">
-            <span class="label">Dispute Date:</span>
-            <span class="value" th:text="${disputeDate}">15 Jan 2024</span>
-        </div>
+                            <p style="margin: 0 0 24px 0; font-size: 16px;">
+                                We have received your dispute regarding the damage assessment for rental
+                                <strong th:text="${rentalId}">12345</strong>.
+                            </p>
 
-        <div class="info-box">
-            <p><strong>What happens next?</strong></p>
-            <ul>
-                <li>Your dispute is being reviewed by our damage assessment team</li>
-                <li>We may contact you for additional information</li>
-                <li>You will receive the resolution via email</li>
-            </ul>
-        </div>
-    </div>
-    <div class="footer">
-        <p>Thank you for bringing this to our attention.</p>
-        <p>We appreciate your patience during the review process.</p>
-    </div>
+                            <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 24px 0;"
+                                class="detail-box">
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Dispute Reason:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="${disputeReason}">Incorrect assessment</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Dispute Date:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="${disputeDate}">January 24, 2026 at 14:30</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Status:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #3b82f6;"
+                                            class="text-value">
+                                            Under Review
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div
+                                th:replace="~{email/shared/info-box :: infoBox('Our team will review your dispute and any supporting evidence provided. You will receive an update within 3-5 business days.')}">
+                            </div>
+
+                            <p style="margin: 24px 0 0 0; font-size: 14px; color: #111827;" class="text-value">
+                                Thank you for your patience.
+                            </p>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/footer :: footer}"></div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 
 </html>

@@ -122,6 +122,10 @@ Authentication and authorization related errors.
 | `invalid_state` | 400 Bad Request | Invalid state parameter (possible CSRF attack) | Restart OAuth flow from beginning |
 | `account_already_linked` | 409 Conflict | Social account is already linked to another user | Use different social account or unlink first |
 | `social_login_required` | 401 Unauthorized | Account requires social login (no password set) | Use the original OAuth2 provider to login |
+| `USER_PROFILE_ERROR` | 400 Bad Request | Error updating user profile | Check profile data and try again |
+| `AVATAR_UPLOAD_FAILED` | 400 Bad Request | Failed to upload/process avatar image | Check file format and size |
+| `AVATAR_NOT_FOUND` | 404 Not Found | Avatar image not found in storage | Upload a new avatar |
+| `PASSWORD_MISMATCH` | 400 Bad Request | Current password does not match | Verify your current password |
 
 **Note:** OAuth2 errors use lowercase `snake_case` codes as per OAuth2 specification.
 

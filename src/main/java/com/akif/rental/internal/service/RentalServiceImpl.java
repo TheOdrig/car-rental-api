@@ -31,6 +31,7 @@ import com.akif.rental.internal.service.penalty.PenaltyPaymentService;
 import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.payment.api.PaymentService;
 import com.akif.rental.api.RentalService;
+import com.akif.rental.api.UserRentalStatisticsDto;
 import com.akif.payment.api.PaymentResult;
 import com.akif.car.internal.service.pricing.DynamicPricingService;
 import com.akif.car.internal.dto.pricing.PriceModifier;
@@ -703,5 +704,71 @@ public class RentalServiceImpl implements RentalService {
         Double avgDays = rentalRepository.averageRentalDurationDays(startDate, endDate);
         return BigDecimal.valueOf(avgDays != null ? avgDays : 0.0)
                 .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    @Override
+    public UserRentalStatisticsDto getUserStatistics(Long userId) {
+        log.debug("Calculating rental statistics for user: {}", userId);
+
+        int totalRentals = rentalRepository.countByUserIdAndIsDeletedFalse(userId);
+        int completedRentals = rentalRepository.countByUserIdAndStatusAndIsDeletedFalse(userId, RentalStatus.RETURNED);
+        int cancelledRentals = rentalRepository.countByUserIdAndStatusAndIsDeletedFalse(userId, RentalStatus.CANCELLED);
+        int activeRentals = rentalRepository.countByUserIdAndStatusAndIsDeletedFalse(userId, RentalStatus.IN_USE);
+
+        BigDecimal totalSpent = rentalRepository.sumTotalPriceByUserIdAndStatusReturned(userId);
+        if (totalSpent == null) {
+            totalSpent = BigDecimal.ZERO;
+        }
+
+        Double avgDuration = rentalRepository.averageRentalDurationByUserId(userId);
+        double averageRentalDuration = avgDuration != null ? avgDuration : 0.0;
+
+        int lateReturns = rentalRepository.countLateReturnsByUserId(userId);
+
+        log.info(
+                "User {} statistics: total={}, completed={}, cancelled={}, active={}, spent={}, avgDuration={}, lateReturns={}",
+                userId, totalRentals, completedRentals, cancelledRentals, activeRentals, totalSpent,
+                averageRentalDuration, lateReturns);
+
+        return new UserRentalStatisticsDto(
+                totalRentals,
+                completedRentals,
+                cancelledRentals,
+                activeRentals,
+                totalSpent,
+                averageRentalDuration,
+                lateReturns);
+    }
+
+    @Override
+    public Page<RentalResponse> getUserRentals(Long userId, RentalStatus status, Pageable pageable) {
+        log.debug("Getting rentals for user: {}, status filter: {}", userId, status);
+
+        Page<Rental> rentals;
+        if (status != null) {
+            rentals = rentalRepository.findByUserIdAndStatusAndIsDeletedFalse(userId, status, pageable);
+        } else {
+            rentals = rentalRepository.findByUserIdAndIsDeletedFalse(userId, pageable);
+        }
+
+        Page<RentalResponse> result = rentals.map(rentalMapper::toDto);
+        log.info("Retrieved {} rentals for user: {}", result.getTotalElements(), userId);
+        return result;
+    }
+
+    @Override
+    public Page<RentalResponse> getCarRentals(Long carId, RentalStatus status, Pageable pageable) {
+        log.debug("Getting rentals for car: {}, status filter: {}", carId, status);
+
+        Page<Rental> rentals;
+        if (status != null) {
+            rentals = rentalRepository.findByCarIdAndStatusAndIsDeletedFalse(carId, status, pageable);
+        } else {
+            rentals = rentalRepository.findByCarIdAndIsDeletedFalse(carId, pageable);
+        }
+
+        Page<RentalResponse> result = rentals.map(rentalMapper::toDto);
+        log.info("Retrieved {} rentals for car: {}", result.getTotalElements(), carId);
+        return result;
     }
 }

@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -25,12 +27,19 @@ public class TestDataBuilder {
 
     public static User createTestUser(String username, Role... roles) {
         int uniqueId = counter.incrementAndGet();
+        Set<Role> roleSet = new HashSet<>();
+        if (roles.length > 0) {
+            roleSet.addAll(List.of(roles));
+        } else {
+            roleSet.add(Role.USER);
+        }
+
         return User.builder()
                 .username(username + uniqueId)
                 .email(username + uniqueId + "@test.com")
                 .password(passwordEncoder.encode("password123"))
                 .authProvider(AuthProvider.LOCAL)
-                .roles(new java.util.HashSet<>(roles.length > 0 ? Set.of(roles) : Set.of(Role.USER)))
+                .roles(roleSet)
                 .enabled(true)
                 .isDeleted(false)
                 .build();

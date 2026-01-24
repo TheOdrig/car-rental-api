@@ -1,135 +1,157 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dispute Resolved</title>
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <title>Damage Assessment Resolved - CarRental</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        .header {
-            background-color: #4CAF50;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 5px 5px 0 0;
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
         }
 
-        .content {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 0 0 5px 5px;
-        }
+        @media (prefers-color-scheme: dark) {
+            .email-container {
+                background-color: #1f2937 !important;
+            }
 
-        .detail-row {
-            margin: 10px 0;
-            padding: 10px;
-            background-color: white;
-            border-left: 3px solid #4CAF50;
-        }
+            .email-body {
+                background-color: #111827 !important;
+                color: #f3f4f6 !important;
+            }
 
-        .label {
-            font-weight: bold;
-            color: #555;
-        }
+            .detail-box {
+                background-color: #1f2937 !important;
+                border-color: #374151 !important;
+            }
 
-        .value {
-            color: #333;
-        }
+            .text-label {
+                color: #d1d5db !important;
+            }
 
-        .amount {
-            font-size: 18px;
-            font-weight: bold;
-        }
+            .text-value {
+                color: #f9fafb !important;
+            }
 
-        .refund {
-            color: #4CAF50;
-        }
-
-        .charge {
-            color: #f44336;
-        }
-
-        .footer {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            font-size: 12px;
-            color: #777;
-            text-align: center;
-        }
-
-        .resolution-box {
-            background-color: #e8f5e9;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 15px;
-            border-left: 4px solid #4CAF50;
+            .text-muted {
+                color: #9ca3af !important;
+            }
         }
     </style>
 </head>
 
-<body>
-    <div class="header">
-        <h1>✅ Dispute Resolved</h1>
-    </div>
-    <div class="content">
-        <p>Dear Customer,</p>
-        <p>Your dispute has been reviewed and resolved. Please see the outcome below:</p>
+<body style="margin: 0; padding: 0; background-color: #f4f4f5;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+        style="background-color: #f4f4f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                    style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);"
+                    class="email-container">
 
-        <div class="detail-row">
-            <span class="label">Rental ID:</span>
-            <span class="value" th:text="${rentalId}">12345</span>
-        </div>
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/header :: header('Dispute Resolved')}"></div>
+                        </td>
+                    </tr>
 
-        <div class="detail-row">
-            <span class="label">Vehicle:</span>
-            <span class="value" th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
-        </div>
+                    <tr>
+                        <td align="center" style="padding: 40px 30px 20px 30px;">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="32" cy="32" r="30" fill="#d1fae5" stroke="#10b981" stroke-width="2" />
+                                <path d="M22 32L28 38L42 24" stroke="#10b981" stroke-width="3" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </td>
+                    </tr>
 
-        <div class="detail-row">
-            <span class="label">Original Charge:</span>
-            <span class="value" th:text="|${originalCharge} ${currency}|">250.00 TRY</span>
-        </div>
+                    <tr>
+                        <td class="email-body"
+                            style="padding: 0 40px 40px 40px; color: #111827; font-size: 16px; line-height: 1.6;">
 
-        <div class="detail-row">
-            <span class="label">Adjusted Charge:</span>
-            <span class="amount charge" th:text="|${adjustedCharge} ${currency}|">100.00 TRY</span>
-        </div>
+                            <p style="margin: 0 0 20px 0; font-size: 16px;">Hello,</p>
 
-        <div th:if="${refundAmount != null and refundAmount > 0}" class="detail-row">
-            <span class="label">Refund Amount:</span>
-            <span class="amount refund" th:text="|${refundAmount} ${currency}|">150.00 TRY</span>
-        </div>
+                            <p style="margin: 0 0 24px 0; font-size: 16px;">
+                                Your dispute regarding the damage assessment for rental
+                                <strong th:text="${rentalId}">12345</strong> has been resolved.
+                            </p>
 
-        <div class="detail-row">
-            <span class="label">Resolution Notes:</span>
-            <span class="value" th:text="${resolutionNotes}">After review, damage was partially pre-existing</span>
-        </div>
+                            <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 24px 0;"
+                                class="detail-box">
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Adjusted Liability:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="|${adjustedCharge} ${currency}|">150.00 TRY</span>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${refundAmount > 0}">
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Refund Amount:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #10b981;"
+                                            class="text-value">
+                                            <span th:text="|${refundAmount} ${currency}|">100.00 TRY</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Resolution Notes:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="${resolutionNotes}">Assessment adjusted based on
+                                                evidence</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Resolved At:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="${resolvedAt}">January 24, 2026 at 14:30</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
 
-        <div class="resolution-box">
-            <p th:if="${refundAmount != null and refundAmount > 0}">
-                ✓ A refund of <strong th:text="|${refundAmount} ${currency}|">150.00 TRY</strong> has been initiated to
-                your original payment method.
-            </p>
-            <p th:if="${refundAmount == null or refundAmount == 0}">
-                ✓ After careful review, the original charge has been maintained.
-            </p>
-        </div>
-    </div>
-    <div class="footer">
-        <p>Refunds typically appear within 5-10 business days.</p>
-        <p>Thank you for your patience during the review process.</p>
-    </div>
+                            <div
+                                th:replace="~{email/shared/info-box :: infoBox('Please check your account for full details of the resolution and any adjustments to charges.')}">
+                            </div>
+
+                            <p style="margin: 24px 0 0 0; font-size: 14px; color: #111827;" class="text-value">
+                                Thank you for your cooperation.
+                            </p>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/footer :: footer}"></div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 
 </html>

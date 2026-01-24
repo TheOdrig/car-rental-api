@@ -146,6 +146,19 @@ public class CustomUserDetailsServiceTest {
             assertThat(userDetails.getAuthorities()).hasSize(1);
             assertThat(userDetails.getAuthorities().iterator().next().getAuthority()).isEqualTo("ROLE_ADMIN");
         }
+
+        @Test
+        @DisplayName("Should load user by email successfully")
+        void shouldLoadUserByEmailSuccessfully() {
+            when(userRepository.findByUsername("test@example.com")).thenReturn(Optional.empty());
+            when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+
+            UserDetails userDetails = userDetailsService.loadUserByUsername("test@example.com");
+
+            assertThat(userDetails).isNotNull();
+            assertThat(userDetails.getUsername()).isEqualTo("testuser");
+            assertThat(userDetails.isEnabled()).isTrue();
+        }
     }
 
     @Nested
@@ -159,7 +172,7 @@ public class CustomUserDetailsServiceTest {
 
             assertThatThrownBy(() -> userDetailsService.loadUserByUsername("nonexistent"))
                     .isInstanceOf(UsernameNotFoundException.class)
-                    .hasMessage("User not found with username: nonexistent");
+                    .hasMessage("User not found with username or email: nonexistent");
         }
 
         @Test
@@ -169,7 +182,7 @@ public class CustomUserDetailsServiceTest {
 
             assertThatThrownBy(() -> userDetailsService.loadUserByUsername(null))
                     .isInstanceOf(UsernameNotFoundException.class)
-                    .hasMessage("User not found with username: null");
+                    .hasMessage("User not found with username or email: null");
         }
 
         @Test
@@ -179,7 +192,7 @@ public class CustomUserDetailsServiceTest {
 
             assertThatThrownBy(() -> userDetailsService.loadUserByUsername(""))
                     .isInstanceOf(UsernameNotFoundException.class)
-                    .hasMessage("User not found with username: ");
+                    .hasMessage("User not found with username or email: ");
         }
     }
 

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <title>Return Reminder - CarRental</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .email-container {
+                background-color: #1f2937 !important;
+            }
+
+            .email-body {
+                background-color: #111827 !important;
+                color: #f3f4f6 !important;
+            }
+
+            .detail-box {
+                background-color: #1f2937 !important;
+                border-color: #374151 !important;
+            }
+
+            .text-label {
+                color: #d1d5db !important;
+            }
+
+            .text-value {
+                color: #f9fafb !important;
+            }
+
+            .text-muted {
+                color: #9ca3af !important;
+            }
+        }
+    </style>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #f4f4f5;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+        style="background-color: #f4f4f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                    style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);"
+                    class="email-container">
+
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/header :: header('Return Reminder')}"></div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 40px 30px 20px 30px;">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="32" cy="32" r="30" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
+                                <path d="M24 28L32 20L40 28M32 22V38" stroke="#f59e0b" stroke-width="3"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M20 42H44" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" />
+                            </svg>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="email-body"
+                            style="padding: 0 40px 40px 40px; color: #111827; font-size: 16px; line-height: 1.6;">
+
+                            <p style="margin: 0 0 20px 0; font-size: 16px;">Hi there!</p>
+
+                            <p style="margin: 0 0 24px 0; font-size: 16px;">
+                                Your rental period is coming to an end. Please return your vehicle by
+                                <strong style="color: #f59e0b;" th:text="${returnDate}">tomorrow</strong>.
+                            </p>
+
+                            <div style="background-color: #f9fafb; border-left: 4px solid #f59e0b; border-radius: 4px; padding: 20px; margin: 24px 0;"
+                                class="detail-box">
+                                <p style="margin: 0 0 4px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                    Rental ID: <span th:text="${rentalId}" style="font-weight: 600; color: #111827;"
+                                        class="text-value">12345</span>
+                                </p>
+                            </div>
+
+                            <p style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #111827;"
+                                class="text-value">
+                                Return Details:
+                            </p>
+
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                                style="margin: 0 0 24px 0;">
+                                <tr>
+                                    <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                        Location:</td>
+                                    <td style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                        class="text-value">
+                                        <span th:text="${returnLocation}">Airport Terminal</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                        Return Date:</td>
+                                    <td style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                        class="text-value">
+                                        <span th:text="${returnDate}">January 30, 2026</span>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div
+                                th:replace="~{email/shared/warning-box :: warningBox('Late returns incur a penalty of $' + ${dailyPenaltyRate} + ' per day. Please return on time to avoid charges.')}">
+                            </div>
+
+                            <div
+                                th:replace="~{email/shared/info-box :: infoBox('Ensure the vehicle is clean and refueled to avoid additional fees.')}">
+                            </div>
+
+                            <p style="margin: 24px 0 0 0; font-size: 14px; color: #111827;" class="text-value">
+                                Thank you for choosing CarRental!
+                            </p>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/footer :: footer}"></div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>
