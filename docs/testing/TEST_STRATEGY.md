@@ -1,3 +1,4 @@
+
 # Test Strategy
 
 ## Table of Contents
@@ -36,7 +37,7 @@ To ensure project sustainability, the following minimum coverage targets are est
 | Scope | Target | Description |
 | :--- | :--- | :--- |
 | **Overall Instruction** | **80%** | Minimum overall target for the entire project. |
-| **Critical Paths** | **95%** | Key business flows in Rental, Payment, and Auth modules. |
+| **Critical Paths** | **95%** | Key business flows in Rental, Payment, Auth, Damage, and Currency modules. |
 | **Branch Coverage** | **80%** | Coverage ratio for logical branches (if/else). |
 | **New Code** | **80%** | Mandatory minimum for any newly added code. |
 
@@ -104,7 +105,7 @@ Consistent naming ensures readability and maintainability across the test codeba
 | :--- | :--- | :--- |
 | Unit Test | `{ClassName}Test` | `RentalServiceTest` |
 | Integration Test | `{ClassName}IntegrationTest` | `RentalControllerIntegrationTest` |
-| E2E Test | `{Feature}E2ETest` | `RentalLifecycleE2ETest` |
+| E2E Test | `{Feature}E2ETest` | `RentalLifecycleE2ETest`, `DamageManagementE2ETest` |
 | Authorization Test | `{ClassName}AuthorizationTest` | `CarControllerAuthorizationTest` |
 
 ### Test Method Naming
@@ -129,16 +130,16 @@ The following table shows the current test coverage status measured by JaCoCo:
 ### Overall Project Metrics
 | Metric | Current | Target | Gap | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **Instruction Coverage** | 74.68% | 80% | -5.32% | ❌ |
-| **Branch Coverage** | 55.17% | 80% | -24.83% | 🚨 |
-| **Line Coverage** | 75.45% | 80% | -4.55% | ❌ |
-| **Method Coverage** | 78.74% | 85% | -6.26% | ⚠️ |
-| **Missed Classes** | 20 | 0 | +20 | ❌ |
-| **Covered Classes** | 248 | — | — | — |
+| **Instruction Coverage** | 72.00% | 80% | -8.00% | ❌ |
+| **Branch Coverage** | 53.00% | 80% | -27.00% | 🚨 |
+| **Line Coverage** | 73.18% | 80% | -6.82% | ❌ |
+| **Method Coverage**| 77.39% | 85% | -7.61% | ⚠️ |
+| **Missed Classes** | 26 | 0 | +26 | ❌ |
+| **Covered Classes** | 264 | — | — | — |
 
 ### Critical Findings
-1. **Branch Coverage is the #1 priority.** At 55.17%, nearly half of all logical branches are untested.
-2. **20 classes have zero coverage.** These need immediate attention or removal if unused.
+1. **Branch Coverage is the #1 priority.** At 53.00%, nearly half of all logical branches are untested.
+2. **26 classes have zero coverage.** These need immediate attention or removal if unused.
 3. **Critical modules (rental, payment, auth)** require focused testing to reach the 95% critical path target.
 
 ### Priority Actions

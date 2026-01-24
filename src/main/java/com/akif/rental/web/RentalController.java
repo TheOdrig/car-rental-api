@@ -40,6 +40,7 @@ public class RentalController {
         private final CurrencyConversionService currencyConversionService;
 
         @PostMapping("/request")
+        @PreAuthorize("hasRole('USER')")
         @Operation(summary = "Request a rental", description = "Create a new rental request")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "201", description = "Rental request created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RentalResponse.class))),
@@ -151,6 +152,7 @@ public class RentalController {
         }
 
         @GetMapping("/me")
+        @PreAuthorize("hasRole('USER')")
         @Operation(summary = "Get my rentals", description = "Get current user's rental list with optional currency conversion")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Rentals retrieved successfully", content = @Content(mediaType = "application/json")),

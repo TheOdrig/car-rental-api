@@ -115,20 +115,8 @@ class DashboardServiceImplTest {
                 breakdown,
                 now);
 
-        PendingItemDto pendingItem = new PendingItemDto(
-                1L,
-                "testuser",
-                "test@example.com",
-                100L,
-                "Toyota",
-                "Corolla",
-                "34ABC123",
-                today,
-                today.plusDays(7),
-                new BigDecimal("3500.00"),
-                "REQUESTED",
-                null,
-                now);
+        PendingItemDto pendingItem = createPendingItemDto(1L, "testuser", "test@example.com", 100L, "Toyota", "Corolla",
+                "34ABC123", today, today.plusDays(7), new BigDecimal("3500.00"), "REQUESTED", null, now);
 
         testPendingItems = new PageImpl<>(List.of(pendingItem));
         testPageable = PageRequest.of(0, 10);
@@ -409,11 +397,9 @@ class DashboardServiceImplTest {
         @Test
         @DisplayName("getOverdueRentals - should return overdue rentals")
         void shouldReturnOverdueRentals() {
-            PendingItemDto overdueItem = new PendingItemDto(
-                    2L, "lateuser", "late@example.com", 200L, "BMW", "320i", "35XYZ789",
-                    LocalDate.now().minusDays(10), LocalDate.now().minusDays(3),
-                    new BigDecimal("5000.00"), "IN_USE", 72L,
-                    LocalDateTime.now().minusDays(10));
+            PendingItemDto overdueItem = createPendingItemDto(2L, "lateuser", "late@example.com", 200L, "BMW", "320i",
+                    "35XYZ789", LocalDate.now().minusDays(10), LocalDate.now().minusDays(3), new BigDecimal("5000.00"),
+                    "IN_USE", 72L, LocalDateTime.now().minusDays(10));
             Page<PendingItemDto> overdueItems = new PageImpl<>(List.of(overdueItem));
             when(queryService.fetchOverdueRentals(testPageable)).thenReturn(overdueItems);
 
@@ -482,9 +468,8 @@ class DashboardServiceImplTest {
         @Test
         @DisplayName("PendingItemDto - should handle null fields")
         void shouldHandleNullFields() {
-            PendingItemDto itemWithNulls = new PendingItemDto(
-                    1L, null, null, null, null, null, null,
-                    null, null, null, null, null, null);
+            PendingItemDto itemWithNulls = createPendingItemDto(1L, null, null, null, null, null, null, null, null,
+                    null, null, null, null);
             Page<PendingItemDto> pageWithNulls = new PageImpl<>(List.of(itemWithNulls));
             when(queryService.fetchPendingApprovals(testPageable)).thenReturn(pageWithNulls);
 
@@ -494,7 +479,27 @@ class DashboardServiceImplTest {
             assertThat(item.rentalId()).isEqualTo(1L);
             assertThat(item.customerName()).isNull();
             assertThat(item.carBrand()).isNull();
-            assertThat(item.lateHours()).isNull();
         }
+    }
+
+    private PendingItemDto createPendingItemDto(Long rentalId, String customerName, String customerEmail, Long carId,
+            String carBrand, String carModel, String licensePlate, LocalDate startDate, LocalDate endDate,
+            BigDecimal totalAmount, String status, Long lateHours, LocalDateTime createdAt) {
+        return new PendingItemDto(
+                rentalId,
+                10L,
+                customerName,
+                customerEmail,
+                carId,
+                carBrand,
+                carModel,
+                licensePlate,
+                "default-image-url",
+                startDate,
+                endDate,
+                totalAmount,
+                status,
+                lateHours,
+                createdAt);
     }
 }

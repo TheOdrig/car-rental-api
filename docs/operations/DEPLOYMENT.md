@@ -330,17 +330,22 @@ STRIPE_API_KEY=sk_test_...
 
 Migrations are located in `src/main/resources/db/migration/` and run automatically on startup.
 
-**Current Migrations (V1-V7):**
+**Current Migrations (V1-V12):**
 
 | Version | Description |
 |---------|-------------|
-| V1 | Schema, car table with all indexes |
+| V1 | Schema setup and Car table definition |
 | V2 | Users table with OAuth2 support (linked_accounts) |
 | V3 | Rentals table with all tracking fields (reminders, late returns, damage) |
 | V4 | Payments table with Stripe integration (webhook_events) |
 | V5 | Damage reports, photos, and penalty waivers |
 | V6 | Dashboard alerts table |
-| V7 | Seed data (admin user + 20 cars with USD prices and real images) |
+| V7 | Seed Data: Users (Admin + 25 sample customers) |
+| V8 | Seed Data: Cars (18 vehicles across Economy, Compact, SUV, Premium classes) |
+| V9 | Seed Data: Rentals (Historical and active rentals) |
+| V10 | Seed Data: Payments (Transactions for rentals) |
+| V11 | Seed Data: Damages (Reports and assessments) |
+| V12 | Seed Data: Admin Data (Dashboard alerts, notes) |
 
 ### Migration Commands
 

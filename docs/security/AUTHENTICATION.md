@@ -337,6 +337,9 @@ Existing users can link social accounts to their profile.
 | `/api/rentals/*/cancel` | POST | Cancel own rental |
 | `/api/pricing/calculate` | POST | Calculate pricing |
 | `/api/oauth2/link/**` | POST | Link social account |
+| `/api/users/me/profile` | GET/PUT | Manage user profile |
+| `/api/users/me/avatar` | POST/DELETE | Manage profile picture |
+| `/api/users/me/password` | POST | Change password |
 
 ### 4.3 @PreAuthorize Usage
 
@@ -364,7 +367,7 @@ public ResponseEntity<RentalResponse> confirmRental(@PathVariable Long id) {
 
 These endpoints do not require authentication:
 
-- `/api/auth/**` - Login, register, refresh
+- `/api/auth/**` - Login, register, refresh, forgot/reset password
 - `/api/oauth2/authorize/**`, `/api/oauth2/callback/**` - Social login
 - `/api/cars` (GET) - Car listing and search
 - `/api/pricing/preview`, `/api/pricing/strategies` - Pricing info

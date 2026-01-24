@@ -136,6 +136,7 @@ Templates use the following CSS strategy for dark mode:
 2. Helper classes:
    - `.text-label`: Used for labels (muted in dark mode).
    - `.text-value`: Used for dynamic data (bright in dark mode).
+   - `.text-muted`: Used for secondary text/footers (dimmed in dark mode).
    - `.detail-box`: Contextual backgrounds that switch between light gray and deep navy.
 
 ## 🛠️ Developer Tips

@@ -4,6 +4,7 @@ import com.akif.auth.api.AdminUserDetailResponse;
 import com.akif.auth.api.AdminUserDetailResponse.UserStatistics;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.exception.UserNotFoundException;
+import com.akif.auth.internal.repository.AdminNoteRepository;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.auth.internal.service.AdminUserServiceImpl;
 import com.akif.damage.api.DamageService;
@@ -22,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
@@ -42,6 +44,9 @@ class AdminUserServiceImplTest {
     @Mock
     private DamageService damageService;
 
+    @Mock
+    private AdminNoteRepository adminNoteRepository;
+
     @InjectMocks
     private AdminUserServiceImpl adminUserService;
 
@@ -54,6 +59,9 @@ class AdminUserServiceImplTest {
         testUser = createTestUser();
         testRentalStats = createRentalStatistics();
         testDamageStats = createDamageStatistics();
+
+        lenient().when(adminNoteRepository.findByUserIdAndIsDeletedFalseOrderByCreatedAtDesc(anyLong()))
+                .thenReturn(Collections.emptyList());
     }
 
     @Nested
@@ -77,7 +85,7 @@ class AdminUserServiceImplTest {
             assertThat(result.phone()).isEqualTo("+1234567890");
             assertThat(result.roles()).containsExactly(Role.USER);
 
-            verify(userRepository).findById(1L);
+            verify(userRepository, times(2)).findById(1L);
             verify(rentalService).getUserStatistics(1L);
             verify(damageService).getUserDamageStatistics(1L);
         }
