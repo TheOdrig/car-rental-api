@@ -29,69 +29,71 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/health", "/actuator/health").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/oauth2/authorize/**").permitAll()
-                .requestMatchers("/api/oauth2/callback/**").permitAll()
-                .requestMatchers("/api/oauth2/link/**").authenticated()
-                .requestMatchers("/api/webhooks/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/health", "/actuator/health").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/oauth2/authorize/**").permitAll()
+                        .requestMatchers("/api/oauth2/callback/**").permitAll()
+                        .requestMatchers("/api/oauth2/link/**").authenticated()
+                        .requestMatchers("/api/files/**").permitAll()
+                        .requestMatchers("/api/webhooks/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                .requestMatchers(HttpMethod.POST, "/api/rentals/request").hasRole("USER")
-                .requestMatchers(HttpMethod.POST, "/api/rentals/*/confirm").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/rentals/*/pickup").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/rentals/*/return").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/rentals/*/cancel").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/rentals/me").hasRole("USER")
-                .requestMatchers(HttpMethod.GET, "/api/rentals/admin").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/rentals/*").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/rentals/request").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/api/rentals/*/confirm").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/rentals/*/pickup").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/rentals/*/return").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/rentals/*/cancel").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/rentals/me").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/rentals/admin").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/rentals/*").authenticated()
 
-                .requestMatchers("/api/cars/business/**").hasRole("ADMIN")
+                        .requestMatchers("/api/cars/business/**").hasRole("ADMIN")
 
-                .requestMatchers(HttpMethod.GET, "/api/cars").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/cars/{id:\\d+}").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/cars/search/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/cars/statistics/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/cars/{id:\\d+}/availability/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/cars/availability/search").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/cars/{id:\\d+}/similar").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/cars/active").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/cars/featured").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/cars/filter-options").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/cars/search").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cars").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cars/{id:\\d+}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cars/search/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cars/statistics/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cars/{id:\\d+}/availability/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/cars/availability/search").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cars/{id:\\d+}/similar").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cars/active").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cars/featured").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cars/filter-options").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cars/search").permitAll()
 
-                .requestMatchers(HttpMethod.POST, "/api/cars").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/cars/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PATCH, "/api/cars/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/cars/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/cars").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/cars/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/cars/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/cars/**").hasRole("ADMIN")
 
-                .requestMatchers(HttpMethod.GET, "/api/exchange-rates/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/exchange-rates/convert").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/exchange-rates/refresh").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/exchange-rates/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/exchange-rates/convert").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/exchange-rates/refresh").hasRole("ADMIN")
 
-                .requestMatchers(HttpMethod.GET, "/api/pricing/preview").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/pricing/strategies").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/pricing/calculate").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/pricing/preview").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/pricing/strategies").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/pricing/calculate").authenticated()
 
-                .requestMatchers("/api/admin/late-returns/**").hasRole("ADMIN")
-                .requestMatchers("/api/admin/rentals/*/penalty/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/late-returns/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/rentals/*/penalty/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/quick-actions/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/dashboard/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/alerts/**").hasRole("ADMIN")
 
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(correlationIdFilter, SecurityContextHolderFilter.class)
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        
+                        .anyRequest().authenticated())
+                .addFilterBefore(correlationIdFilter, SecurityContextHolderFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
-    
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

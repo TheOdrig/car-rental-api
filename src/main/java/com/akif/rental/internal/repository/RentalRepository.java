@@ -18,186 +18,219 @@ import java.util.Optional;
 @Repository
 public interface RentalRepository extends JpaRepository<Rental, Long> {
 
-    Page<Rental> findByUserIdAndIsDeletedFalse(Long userId, Pageable pageable);
+        Page<Rental> findByUserIdAndIsDeletedFalse(Long userId, Pageable pageable);
 
-    Page<Rental> findByCarIdAndIsDeletedFalse(Long carId, Pageable pageable);
+        Page<Rental> findByCarIdAndIsDeletedFalse(Long carId, Pageable pageable);
 
-    Page<Rental> findByStatusAndIsDeletedFalse(RentalStatus status, Pageable pageable);
+        Page<Rental> findByStatusAndIsDeletedFalse(RentalStatus status, Pageable pageable);
 
-    Optional<Rental> findByIdAndIsDeletedFalse(Long id);
+        Optional<Rental> findByIdAndIsDeletedFalse(Long id);
 
-    Page<Rental> findByIsDeletedFalse(Pageable pageable);
+        Page<Rental> findByIsDeletedFalse(Pageable pageable);
 
-    @Query("SELECT COUNT(r) FROM Rental r " +
-            "WHERE r.carId = :carId " +
-            "AND r.status IN (com.akif.rental.domain.enums.RentalStatus.CONFIRMED, com.akif.rental.domain.enums.RentalStatus.IN_USE) " +
-            "AND r.isDeleted = false " +
-            "AND ((r.startDate <= :endDate AND r.endDate >= :startDate))")
-    long countOverlappingRentals(@Param("carId") Long carId,
-                                 @Param("startDate") LocalDate startDate,
-                                 @Param("endDate") LocalDate endDate);
+        @Query("SELECT COUNT(r) FROM Rental r " +
+                        "WHERE r.carId = :carId " +
+                        "AND r.status IN (com.akif.rental.domain.enums.RentalStatus.CONFIRMED, com.akif.rental.domain.enums.RentalStatus.IN_USE) "
+                        +
+                        "AND r.isDeleted = false " +
+                        "AND ((r.startDate <= :endDate AND r.endDate >= :startDate))")
+        long countOverlappingRentals(@Param("carId") Long carId,
+                        @Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT r FROM Rental r " +
-            "WHERE r.startDate = :tomorrow " +
-            "AND r.status = :status " +
-            "AND r.pickupReminderSent = false " +
-            "AND r.isDeleted = false")
-    Page<Rental> findRentalsForPickupReminder(@Param("tomorrow") LocalDate tomorrow,
-                                               @Param("status") RentalStatus status,
-                                               Pageable pageable);
+        @Query("SELECT r FROM Rental r " +
+                        "WHERE r.startDate = :tomorrow " +
+                        "AND r.status = :status " +
+                        "AND r.pickupReminderSent = false " +
+                        "AND r.isDeleted = false")
+        Page<Rental> findRentalsForPickupReminder(@Param("tomorrow") LocalDate tomorrow,
+                        @Param("status") RentalStatus status,
+                        Pageable pageable);
 
-    @Query("SELECT r FROM Rental r " +
-            "WHERE r.endDate = :today " +
-            "AND r.status = :status " +
-            "AND r.returnReminderSent = false " +
-            "AND r.isDeleted = false")
-    Page<Rental> findRentalsForReturnReminder(@Param("today") LocalDate today,
-                                               @Param("status") RentalStatus status,
-                                               Pageable pageable);
+        @Query("SELECT r FROM Rental r " +
+                        "WHERE r.endDate = :today " +
+                        "AND r.status = :status " +
+                        "AND r.returnReminderSent = false " +
+                        "AND r.isDeleted = false")
+        Page<Rental> findRentalsForReturnReminder(@Param("today") LocalDate today,
+                        @Param("status") RentalStatus status,
+                        Pageable pageable);
 
-    @Query("SELECT r FROM Rental r WHERE " +
-            "r.carId = :carId AND " +
-            "r.startDate <= :endDate AND " +
-            "r.endDate >= :startDate AND " +
-            "r.status IN :statuses AND " +
-            "r.isDeleted = false")
-    List<Rental> findOverlappingRentalsForCar(
-            @Param("carId") Long carId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
-            @Param("statuses") List<RentalStatus> statuses);
+        @Query("SELECT r FROM Rental r WHERE " +
+                        "r.carId = :carId AND " +
+                        "r.startDate <= :endDate AND " +
+                        "r.endDate >= :startDate AND " +
+                        "r.status IN :statuses AND " +
+                        "r.isDeleted = false")
+        List<Rental> findOverlappingRentalsForCar(
+                        @Param("carId") Long carId,
+                        @Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate,
+                        @Param("statuses") List<RentalStatus> statuses);
 
-    @Query("SELECT r FROM Rental r " +
-            "WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE " +
-            "AND r.endDate < :currentDate " +
-            "AND r.isDeleted = false")
-    Page<Rental> findOverdueRentals(@Param("currentDate") LocalDate currentDate,
-                                     Pageable pageable);
+        @Query("SELECT r FROM Rental r " +
+                        "WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE " +
+                        "AND r.endDate < :currentDate " +
+                        "AND r.isDeleted = false")
+        Page<Rental> findOverdueRentals(@Param("currentDate") LocalDate currentDate,
+                        Pageable pageable);
 
-    @Query("SELECT r FROM Rental r " +
-            "WHERE r.lateReturnStatus IN (:statuses) " +
-            "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
-            "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
-            "AND r.isDeleted = false")
-    Page<Rental> findLateReturns(@Param("statuses") List<LateReturnStatus> statuses,
-                                  @Param("startDate") LocalDate startDate,
-                                  @Param("endDate") LocalDate endDate,
-                                  Pageable pageable);
+        @Query("SELECT r FROM Rental r " +
+                        "WHERE r.lateReturnStatus IN (:statuses) " +
+                        "AND (CAST(:startDate AS java.time.LocalDate) IS NULL OR r.endDate >= :startDate) " +
+                        "AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR r.endDate <= :endDate) " +
+                        "AND r.isDeleted = false")
+        Page<Rental> findLateReturns(@Param("statuses") List<LateReturnStatus> statuses,
+                        @Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate,
+                        Pageable pageable);
 
-    @Query("SELECT COUNT(r) FROM Rental r " +
-            "WHERE r.lateReturnStatus IN (:statuses) " +
-            "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
-            "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
-            "AND r.isDeleted = false")
-    long countLateReturns(@Param("statuses") List<LateReturnStatus> statuses,
-                          @Param("startDate") LocalDate startDate,
-                          @Param("endDate") LocalDate endDate);
+        @Query("SELECT COUNT(r) FROM Rental r " +
+                        "WHERE r.lateReturnStatus IN (:statuses) " +
+                        "AND (CAST(:startDate AS java.time.LocalDate) IS NULL OR r.endDate >= :startDate) " +
+                        "AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR r.endDate <= :endDate) " +
+                        "AND r.isDeleted = false")
+        long countLateReturns(@Param("statuses") List<LateReturnStatus> statuses,
+                        @Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT COUNT(r) FROM Rental r " +
-            "WHERE r.lateReturnStatus = com.akif.rental.domain.enums.LateReturnStatus.SEVERELY_LATE " +
-            "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
-            "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
-            "AND r.isDeleted = false")
-    long countSeverelyLateReturns(@Param("startDate") LocalDate startDate,
-                                   @Param("endDate") LocalDate endDate);
+        @Query("SELECT COUNT(r) FROM Rental r " +
+                        "WHERE r.lateReturnStatus = com.akif.rental.domain.enums.LateReturnStatus.SEVERELY_LATE " +
+                        "AND (CAST(:startDate AS java.time.LocalDate) IS NULL OR r.endDate >= :startDate) " +
+                        "AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR r.endDate <= :endDate) " +
+                        "AND r.isDeleted = false")
+        long countSeverelyLateReturns(@Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT COALESCE(SUM(r.penaltyAmount), 0) FROM Rental r " +
-            "WHERE r.lateReturnStatus IN (:statuses) " +
-            "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
-            "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
-            "AND r.isDeleted = false")
-    BigDecimal sumTotalPenaltyAmount(@Param("statuses") List<LateReturnStatus> statuses,
-                                     @Param("startDate") LocalDate startDate,
-                                     @Param("endDate") LocalDate endDate);
+        @Query("SELECT COALESCE(SUM(r.penaltyAmount), 0) FROM Rental r " +
+                        "WHERE r.lateReturnStatus IN (:statuses) " +
+                        "AND (CAST(:startDate AS java.time.LocalDate) IS NULL OR r.endDate >= :startDate) " +
+                        "AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR r.endDate <= :endDate) " +
+                        "AND r.isDeleted = false")
+        BigDecimal sumTotalPenaltyAmount(@Param("statuses") List<LateReturnStatus> statuses,
+                        @Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT COALESCE(SUM(r.penaltyAmount), 0) FROM Rental r " +
-            "WHERE r.lateReturnStatus IN (:statuses) " +
-            "AND r.penaltyPaid = true " +
-            "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
-            "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
-            "AND r.isDeleted = false")
-    BigDecimal sumCollectedPenaltyAmount(@Param("statuses") List<LateReturnStatus> statuses,
-                                         @Param("startDate") LocalDate startDate,
-                                         @Param("endDate") LocalDate endDate);
+        @Query("SELECT COALESCE(SUM(r.penaltyAmount), 0) FROM Rental r " +
+                        "WHERE r.lateReturnStatus IN (:statuses) " +
+                        "AND r.penaltyPaid = true " +
+                        "AND (CAST(:startDate AS java.time.LocalDate) IS NULL OR r.endDate >= :startDate) " +
+                        "AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR r.endDate <= :endDate) " +
+                        "AND r.isDeleted = false")
+        BigDecimal sumCollectedPenaltyAmount(@Param("statuses") List<LateReturnStatus> statuses,
+                        @Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT COALESCE(AVG(r.lateHours), 0.0) FROM Rental r " +
-            "WHERE r.lateReturnStatus IN (:statuses) " +
-            "AND (:startDate IS NULL OR r.endDate >= :startDate) " +
-            "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
-            "AND r.lateHours IS NOT NULL " +
-            "AND r.isDeleted = false")
-    Double averageLateHours(@Param("statuses") List<LateReturnStatus> statuses,
-                            @Param("startDate") LocalDate startDate,
-                            @Param("endDate") LocalDate endDate);
+        @Query("SELECT COALESCE(AVG(r.lateHours), 0.0) FROM Rental r " +
+                        "WHERE r.lateReturnStatus IN (:statuses) " +
+                        "AND (CAST(:startDate AS java.time.LocalDate) IS NULL OR r.endDate >= :startDate) " +
+                        "AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR r.endDate <= :endDate) " +
+                        "AND r.lateHours IS NOT NULL " +
+                        "AND r.isDeleted = false")
+        Double averageLateHours(@Param("statuses") List<LateReturnStatus> statuses,
+                        @Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT COUNT(r) FROM Rental r " +
-            "WHERE (:startDate IS NULL OR r.endDate >= :startDate) " +
-            "AND (:endDate IS NULL OR r.endDate <= :endDate) " +
-            "AND r.status = com.akif.rental.domain.enums.RentalStatus.RETURNED " +
-            "AND r.isDeleted = false")
-    long countTotalReturns(@Param("startDate") LocalDate startDate,
-                           @Param("endDate") LocalDate endDate);
+        @Query("SELECT COUNT(r) FROM Rental r " +
+                        "WHERE (CAST(:startDate AS java.time.LocalDate) IS NULL OR r.endDate >= :startDate) " +
+                        "AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR r.endDate <= :endDate) " +
+                        "AND r.status = com.akif.rental.domain.enums.RentalStatus.RETURNED " +
+                        "AND r.isDeleted = false")
+        long countTotalReturns(@Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate);
 
+        int countByStatusAndIsDeletedFalse(RentalStatus status);
 
-    int countByStatusAndIsDeletedFalse(RentalStatus status);
+        @Query("""
+                        SELECT COUNT(r) FROM Rental r
+                        WHERE r.status = com.akif.rental.domain.enums.RentalStatus.CONFIRMED
+                        AND r.startDate = :today
+                        AND r.isDeleted = false
+                        """)
+        int countTodaysPickups(@Param("today") LocalDate today);
 
-    @Query("""
-            SELECT COUNT(r) FROM Rental r 
-            WHERE r.status = com.akif.rental.domain.enums.RentalStatus.CONFIRMED 
-            AND r.startDate = :today 
-            AND r.isDeleted = false
-            """)
-    int countTodaysPickups(@Param("today") LocalDate today);
+        @Query("""
+                        SELECT COUNT(r) FROM Rental r
+                        WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE
+                        AND r.endDate = :today
+                        AND r.isDeleted = false
+                        """)
+        int countTodaysReturns(@Param("today") LocalDate today);
 
-    @Query("""
-            SELECT COUNT(r) FROM Rental r 
-            WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE 
-            AND r.endDate = :today 
-            AND r.isDeleted = false
-            """)
-    int countTodaysReturns(@Param("today") LocalDate today);
+        @Query("""
+                        SELECT COUNT(r) FROM Rental r
+                        WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE
+                        AND r.endDate < :today
+                        AND r.isDeleted = false
+                        """)
+        int countOverdueRentals(@Param("today") LocalDate today);
 
-    @Query("""
-            SELECT COUNT(r) FROM Rental r 
-            WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE 
-            AND r.endDate < :today 
-            AND r.isDeleted = false
-            """)
-    int countOverdueRentals(@Param("today") LocalDate today);
+        @Query("""
+                        SELECT r FROM Rental r
+                        WHERE r.status = com.akif.rental.domain.enums.RentalStatus.REQUESTED
+                        AND r.isDeleted = false
+                        ORDER BY r.createTime ASC
+                        """)
+        Page<Rental> findPendingApprovals(Pageable pageable);
 
-    @Query("""
-            SELECT r FROM Rental r 
-            WHERE r.status = com.akif.rental.domain.enums.RentalStatus.REQUESTED 
-            AND r.isDeleted = false 
-            ORDER BY r.createTime ASC
-            """)
-    Page<Rental> findPendingApprovals(Pageable pageable);
+        @Query("""
+                        SELECT r FROM Rental r
+                        WHERE r.status = com.akif.rental.domain.enums.RentalStatus.CONFIRMED
+                        AND r.startDate = :today
+                        AND r.isDeleted = false
+                        ORDER BY r.startDate ASC
+                        """)
+        Page<Rental> findTodaysPickups(@Param("today") LocalDate today, Pageable pageable);
 
-    @Query("""
-            SELECT r FROM Rental r 
-            WHERE r.status = com.akif.rental.domain.enums.RentalStatus.CONFIRMED 
-            AND r.startDate = :today 
-            AND r.isDeleted = false 
-            ORDER BY r.startDate ASC
-            """)
-    Page<Rental> findTodaysPickups(@Param("today") LocalDate today, Pageable pageable);
+        @Query("""
+                        SELECT r FROM Rental r
+                        WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE
+                        AND r.endDate = :today
+                        AND r.isDeleted = false
+                        ORDER BY r.endDate ASC
+                        """)
+        Page<Rental> findTodaysReturns(@Param("today") LocalDate today, Pageable pageable);
 
-    @Query("""
-            SELECT r FROM Rental r 
-            WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE 
-            AND r.endDate = :today 
-            AND r.isDeleted = false 
-            ORDER BY r.endDate ASC
-            """)
-    Page<Rental> findTodaysReturns(@Param("today") LocalDate today, Pageable pageable);
+        @Query("""
+                        SELECT COALESCE(AVG(r.days), 0.0) FROM Rental r
+                        WHERE r.status = com.akif.rental.domain.enums.RentalStatus.RETURNED
+                        AND (CAST(:startDate AS java.time.LocalDate) IS NULL OR r.endDate >= :startDate)
+                        AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR r.endDate <= :endDate)
+                        AND r.isDeleted = false
+                        """)
+        Double averageRentalDurationDays(@Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate);
 
-    @Query("""
-            SELECT COALESCE(AVG(r.days), 0.0) FROM Rental r 
-            WHERE r.status = com.akif.rental.domain.enums.RentalStatus.RETURNED 
-            AND (:startDate IS NULL OR r.endDate >= :startDate) 
-            AND (:endDate IS NULL OR r.endDate <= :endDate) 
-            AND r.isDeleted = false
-            """)
-    Double averageRentalDurationDays(@Param("startDate") LocalDate startDate,
-                                     @Param("endDate") LocalDate endDate);
+        int countByUserIdAndIsDeletedFalse(Long userId);
+
+        int countByUserIdAndStatusAndIsDeletedFalse(Long userId, RentalStatus status);
+
+        @Query("""
+                        SELECT COALESCE(SUM(r.totalPrice), 0) FROM Rental r
+                        WHERE r.userId = :userId
+                        AND r.status = com.akif.rental.domain.enums.RentalStatus.RETURNED
+                        AND r.isDeleted = false
+                        """)
+        BigDecimal sumTotalPriceByUserIdAndStatusReturned(@Param("userId") Long userId);
+
+        @Query("""
+                        SELECT COALESCE(AVG(r.days), 0.0) FROM Rental r
+                        WHERE r.userId = :userId
+                        AND r.status = com.akif.rental.domain.enums.RentalStatus.RETURNED
+                        AND r.isDeleted = false
+                        """)
+        Double averageRentalDurationByUserId(@Param("userId") Long userId);
+
+        @Query("""
+                        SELECT COUNT(r) FROM Rental r
+                        WHERE r.userId = :userId
+                        AND r.status = com.akif.rental.domain.enums.RentalStatus.RETURNED
+                        AND r.lateReturnStatus IN (com.akif.rental.domain.enums.LateReturnStatus.LATE, com.akif.rental.domain.enums.LateReturnStatus.SEVERELY_LATE)
+                        AND r.isDeleted = false
+                        """)
+        int countLateReturnsByUserId(@Param("userId") Long userId);
+
+        Page<Rental> findByUserIdAndStatusAndIsDeletedFalse(Long userId, RentalStatus status, Pageable pageable);
+
+        Page<Rental> findByCarIdAndStatusAndIsDeletedFalse(Long carId, RentalStatus status, Pageable pageable);
 }

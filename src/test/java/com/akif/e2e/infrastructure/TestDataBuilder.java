@@ -15,22 +15,31 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestDataBuilder {
-    
+
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private static final AtomicInteger counter = new AtomicInteger(0);
 
     public static User createTestUser(String username, Role... roles) {
         int uniqueId = counter.incrementAndGet();
+        Set<Role> roleSet = new HashSet<>();
+        if (roles.length > 0) {
+            roleSet.addAll(List.of(roles));
+        } else {
+            roleSet.add(Role.USER);
+        }
+
         return User.builder()
-                .username(username)
+                .username(username + uniqueId)
                 .email(username + uniqueId + "@test.com")
                 .password(passwordEncoder.encode("password123"))
                 .authProvider(AuthProvider.LOCAL)
-                .roles(roles.length > 0 ? Set.of(roles) : Set.of(Role.USER))
+                .roles(roleSet)
                 .enabled(true)
                 .isDeleted(false)
                 .build();
@@ -76,8 +85,7 @@ public class TestDataBuilder {
         int uniqueId = counter.incrementAndGet();
         return createAvailableCar(
                 TestFixtures.TEST_LICENSE_PLATE_PREFIX + uniqueId,
-                TestFixtures.BASE_PRICE
-        );
+                TestFixtures.BASE_PRICE);
     }
 
     public static RentalRequest createRentalRequest(Long carId, LocalDate startDate, LocalDate endDate) {
@@ -100,15 +108,11 @@ public class TestDataBuilder {
         counter.set(0);
     }
 
-    /**
-     * Creates a Rental entity with denormalized car and user fields.
-     * Use this instead of .car(car).user(user) builder pattern.
-     */
     public static Rental createRental(Car car, User user, LocalDate startDate, LocalDate endDate, RentalStatus status) {
         int days = (int) ChronoUnit.DAYS.between(startDate, endDate);
         BigDecimal dailyPrice = car.getPrice();
         BigDecimal totalPrice = dailyPrice.multiply(BigDecimal.valueOf(days));
-        
+
         return Rental.builder()
                 .carId(car.getId())
                 .carBrand(car.getBrand())
@@ -140,26 +144,19 @@ public class TestDataBuilder {
         return createRental(car, user, LocalDate.now().minusDays(3), LocalDate.now().plusDays(2), RentalStatus.IN_USE);
     }
 
-    /**
-     * Creates a minimal RentalResponse for mocking purposes.
-     */
     public static com.akif.rental.api.RentalResponse createRentalResponse(Long id, RentalStatus status) {
         return new com.akif.rental.api.RentalResponse(
                 id, null, null, null, null, null, null, null, null, status,
-                null, null, null, null, null, null, null, null, null, null, null, null
-        );
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
-    /**
-     * Creates a RentalResponse with basic pricing info for mocking purposes.
-     */
-    public static com.akif.rental.api.RentalResponse createRentalResponse(Long id, RentalStatus status, 
+    public static com.akif.rental.api.RentalResponse createRentalResponse(Long id, RentalStatus status,
             java.math.BigDecimal totalPrice, CurrencyType currency) {
         return new com.akif.rental.api.RentalResponse(
                 id, null, null, null, null, null, null, totalPrice, currency, status,
-                null, null, null, null, null, null, null, null, null, null, null, null
-        );
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
-    
-    private TestDataBuilder() {}
+
+    private TestDataBuilder() {
+    }
 }

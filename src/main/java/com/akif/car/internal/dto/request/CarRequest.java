@@ -117,12 +117,12 @@ public class CarRequest {
     private String notes;
 
     @Size(max = 500, message = "Image URL cannot exceed 500 characters")
-    @Pattern(regexp = "^(https?://)?([\\da-z.-]+)\\.([a-z.]{2,6})([/\\w .-]*)*/?$",
+    @Pattern(regexp = "^(https?://).+$",
             message = "Image URL format is invalid")
     private String imageUrl;
 
     @Size(max = 500, message = "Thumbnail URL cannot exceed 500 characters")
-    @Pattern(regexp = "^(https?://)?([\\da-z.-]+)\\.([a-z.]{2,6})([/\\w .-]*)*/?$",
+    @Pattern(regexp = "^(https?://).+$",
             message = "Thumbnail URL format is invalid")
     private String thumbnailUrl;
 

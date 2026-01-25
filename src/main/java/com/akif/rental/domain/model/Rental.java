@@ -13,28 +13,26 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "rentals",
-        indexes = {
-                @Index(name = "idx_rentals_car", columnList = "car_id"),
-                @Index(name = "idx_rentals_user", columnList = "user_id"),
-                @Index(name = "idx_rentals_status", columnList = "status"),
-                @Index(name = "idx_rentals_dates", columnList = "start_date, end_date"),
-                @Index(name = "idx_rentals_car_license_plate", columnList = "car_license_plate"),
-                @Index(name = "idx_rentals_user_email", columnList = "user_email")
-        })
+@Table(name = "rentals", indexes = {
+        @Index(name = "idx_rentals_car", columnList = "car_id"),
+        @Index(name = "idx_rentals_user", columnList = "user_id"),
+        @Index(name = "idx_rentals_status", columnList = "status"),
+        @Index(name = "idx_rentals_dates", columnList = "start_date, end_date"),
+        @Index(name = "idx_rentals_car_license_plate", columnList = "car_license_plate"),
+        @Index(name = "idx_rentals_user_email", columnList = "user_email")
+})
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
 public class Rental extends BaseEntity {
-    
+
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(name = "car_id", nullable = false)
     private Long carId;
-
 
     @Column(name = "car_brand", length = 50, nullable = false)
     private String carBrand;
@@ -45,6 +43,8 @@ public class Rental extends BaseEntity {
     @Column(name = "car_license_plate", length = 11, nullable = false)
     private String carLicensePlate;
 
+    @Column(name = "car_thumbnail_url", length = 500)
+    private String carThumbnailUrl;
 
     @Column(name = "user_email", length = 255, nullable = false)
     private String userEmail;
@@ -81,6 +81,12 @@ public class Rental extends BaseEntity {
 
     @Column(name = "return_notes", columnDefinition = "TEXT")
     private String returnNotes;
+
+    @Column(name = "approval_notes", columnDefinition = "TEXT")
+    private String approvalNotes;
+
+    @Column(name = "cancellation_reason", columnDefinition = "TEXT")
+    private String cancellationReason;
 
     @Column(name = "pickup_reminder_sent")
     @Builder.Default

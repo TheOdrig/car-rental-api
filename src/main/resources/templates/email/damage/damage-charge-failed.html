@@ -1,117 +1,146 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Failed</title>
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <title>Damage Charge Failed - CarRental</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        .header {
-            background-color: #f44336;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 5px 5px 0 0;
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
         }
 
-        .content {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 0 0 5px 5px;
-        }
+        @media (prefers-color-scheme: dark) {
+            .email-container {
+                background-color: #1f2937 !important;
+            }
 
-        .detail-row {
-            margin: 10px 0;
-            padding: 10px;
-            background-color: white;
-            border-left: 3px solid #f44336;
-        }
+            .email-body {
+                background-color: #111827 !important;
+                color: #f3f4f6 !important;
+            }
 
-        .label {
-            font-weight: bold;
-            color: #555;
-        }
+            .detail-box {
+                background-color: #1f2937 !important;
+                border-color: #374151 !important;
+            }
 
-        .value {
-            color: #333;
-        }
+            .text-label {
+                color: #d1d5db !important;
+            }
 
-        .amount {
-            font-size: 24px;
-            font-weight: bold;
-            color: #f44336;
-        }
+            .text-value {
+                color: #f9fafb !important;
+            }
 
-        .footer {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            font-size: 12px;
-            color: #777;
-            text-align: center;
-        }
-
-        .warning-box {
-            background-color: #ffebee;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 15px;
-            border-left: 4px solid #f44336;
+            .text-muted {
+                color: #9ca3af !important;
+            }
         }
     </style>
 </head>
 
-<body>
-    <div class="header">
-        <h1>❌ Payment Failed</h1>
-    </div>
-    <div class="content">
-        <p>Dear Customer,</p>
-        <p>We were unable to process the damage charge. Please update your payment information and try again.</p>
+<body style="margin: 0; padding: 0; background-color: #f4f4f5;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+        style="background-color: #f4f4f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                    style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);"
+                    class="email-container">
 
-        <div class="detail-row">
-            <span class="label">Rental ID:</span>
-            <span class="value" th:text="${rentalId}">12345</span>
-        </div>
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/header :: header('Payment Failed')}"></div>
+                        </td>
+                    </tr>
 
-        <div class="detail-row">
-            <span class="label">Vehicle:</span>
-            <span class="value" th:text="|${carBrand} ${carModel}|">Toyota Camry</span>
-        </div>
+                    <tr>
+                        <td align="center" style="padding: 40px 30px 20px 30px;">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="32" cy="32" r="30" fill="#fee2e2" stroke="#ef4444" stroke-width="2" />
+                                <path d="M24 24L40 40M24 40L40 24" stroke="#ef4444" stroke-width="3"
+                                    stroke-linecap="round" />
+                            </svg>
+                        </td>
+                    </tr>
 
-        <div class="detail-row">
-            <span class="label">Amount Due:</span>
-            <span class="amount" th:text="|${amountDue} ${currency}|">250.00 TRY</span>
-        </div>
+                    <tr>
+                        <td class="email-body"
+                            style="padding: 0 40px 40px 40px; color: #111827; font-size: 16px; line-height: 1.6;">
 
-        <div class="detail-row">
-            <span class="label">Failure Reason:</span>
-            <span class="value" th:text="${failureReason}">Insufficient funds</span>
-        </div>
+                            <p style="margin: 0 0 20px 0; font-size: 16px;">Action Required</p>
 
-        <div class="warning-box">
-            <p><strong>⚠️ Action Required</strong></p>
-            <ul>
-                <li>Please update your payment method</li>
-                <li>Payment will be re-attempted in 24 hours</li>
-                <li>Contact support if you need assistance</li>
-            </ul>
-        </div>
-    </div>
-    <div class="footer">
-        <p>Failure to resolve this may result in additional penalties.</p>
-        <p>Please contact our support team if you have questions.</p>
-    </div>
+                            <p style="margin: 0 0 24px 0; font-size: 16px;">
+                                We were unable to process the payment for the damage assessment on your rental.
+                            </p>
+
+                            <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 24px 0;"
+                                class="detail-box">
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Rental ID:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="${rentalId}">12345</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Amount Due:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #ef4444;"
+                                            class="text-value">
+                                            <span th:text="${amount}">250.00 TRY</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                            Reason:</td>
+                                        <td align="right"
+                                            style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                            class="text-value">
+                                            <span th:text="${failureReason}">Insufficient funds</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div
+                                th:replace="~{email/shared/warning-box :: warningBox('Please update your payment method in your account settings immediately to avoid late payment fees and legal escalation.')}">
+                            </div>
+
+                            <p style="margin: 24px 0 0 0; font-size: 14px; color: #111827;" class="text-value">
+                                Please contact our support team if you have any questions.
+                            </p>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/footer :: footer}"></div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 
 </html>

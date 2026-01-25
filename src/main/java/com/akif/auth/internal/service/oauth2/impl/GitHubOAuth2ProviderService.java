@@ -93,6 +93,16 @@ public class GitHubOAuth2ProviderService implements OAuth2ProviderService {
                 name = (String) userAttributes.get("login");
             }
 
+            String firstName = null;
+            String lastName = null;
+            if (name != null && !name.isBlank()) {
+                String[] nameParts = name.trim().split("\\s+", 2);
+                firstName = nameParts[0];
+                if (nameParts.length > 1) {
+                    lastName = nameParts[1];
+                }
+            }
+
             if (email == null || email.isBlank()) {
                 email = fetchPrimaryEmail(accessToken, config);
             }
@@ -103,7 +113,7 @@ public class GitHubOAuth2ProviderService implements OAuth2ProviderService {
             }
 
             log.debug("Successfully retrieved user info from GitHub for email: {}", email);
-            return new OAuth2UserInfo(providerId, email, name, avatarUrl, PROVIDER_NAME);
+            return new OAuth2UserInfo(providerId, email, name, firstName, lastName, avatarUrl, PROVIDER_NAME);
         } catch (OAuth2ProviderException e) {
             throw e;
         } catch (RestClientException e) {
@@ -111,7 +121,6 @@ public class GitHubOAuth2ProviderService implements OAuth2ProviderService {
             throw OAuth2ProviderException.providerUnavailable(PROVIDER_NAME);
         }
     }
-
 
     @SuppressWarnings("unchecked")
     private String fetchPrimaryEmail(String accessToken, OAuth2Properties.ProviderConfig config) {

@@ -62,7 +62,6 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
                 .collect(Collectors.toMap(OAuth2ProviderService::getProviderName, Function.identity()));
     }
 
-
     @Override
     public String getAuthorizationUrl(String provider) {
         OAuth2Provider oAuth2Provider = OAuth2Provider.fromString(provider);
@@ -98,7 +97,6 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
         return service;
     }
 
-
     @Override
     @Transactional
     public AuthResponse processOAuth2Callback(String provider, String code, String state) {
@@ -121,8 +119,8 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                 .toList();
 
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(user.getUsername(), null, authorities);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user.getUsername(),
+                null, authorities);
 
         String accessToken = jwtTokenProvider.generateAccessToken(authentication, user.getId());
         String refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
@@ -138,7 +136,6 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
                 .username(user.getUsername())
                 .build();
     }
-
 
     private User findOrCreateUser(OAuth2UserInfo userInfo) {
         OAuth2Provider oAuth2Provider = OAuth2Provider.fromString(userInfo.provider());
@@ -198,6 +195,8 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
         User newUser = User.builder()
                 .username(username)
                 .email(userInfo.email())
+                .firstName(userInfo.firstName())
+                .lastName(userInfo.lastName())
                 .password(null)
                 .avatarUrl(userInfo.avatarUrl())
                 .authProvider(authProvider)
@@ -247,7 +246,6 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
 
         return username;
     }
-
 
     @Override
     @Transactional
@@ -305,7 +303,6 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
                 "Social account linked successfully",
                 provider,
                 email,
-                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-        );
+                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
     }
 }

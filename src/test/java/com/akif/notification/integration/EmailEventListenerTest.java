@@ -42,18 +42,18 @@ class EmailEventListenerTest {
         @BeforeEach
         void setUp() {
             event = new RentalConfirmedEvent(
-                this,
-                1L,
-                "customer@example.com",
-                LocalDateTime.now(),
-                "Toyota",
-                "Corolla",
-                LocalDate.of(2025, 12, 10),
-                LocalDate.of(2025, 12, 15),
-                new BigDecimal("2500.00"),
-                CurrencyType.TRY,
-                "Istanbul Airport"
-            );
+                    this,
+                    1L,
+                    "customer@example.com",
+                    LocalDateTime.now(),
+                    "Toyota",
+                    "Corolla",
+                    LocalDate.of(2025, 12, 10),
+                    LocalDate.of(2025, 12, 15),
+                    new BigDecimal("2500.00"),
+                    CurrencyType.TRY,
+                    "Istanbul Airport",
+                    null);
         }
 
         @Test
@@ -74,15 +74,14 @@ class EmailEventListenerTest {
         @BeforeEach
         void setUp() {
             event = new PaymentCapturedEvent(
-                this,
-                100L,
-                1L,
-                "customer@example.com",
-                new BigDecimal("2500.00"),
-                CurrencyType.TRY,
-                "TXN-123456",
-                LocalDateTime.of(2025, 12, 5, 14, 30)
-            );
+                    this,
+                    100L,
+                    1L,
+                    "customer@example.com",
+                    new BigDecimal("2500.00"),
+                    CurrencyType.TRY,
+                    "TXN-123456",
+                    LocalDateTime.of(2025, 12, 5, 14, 30));
         }
 
         @Test
@@ -103,15 +102,14 @@ class EmailEventListenerTest {
         @BeforeEach
         void setUp() {
             event = new PickupReminderEvent(
-                this,
-                1L,
-                "customer@example.com",
-                LocalDateTime.now(),
-                LocalDate.of(2025, 12, 10),
-                "Istanbul Airport",
-                "Toyota",
-                "Corolla"
-            );
+                    this,
+                    1L,
+                    "customer@example.com",
+                    LocalDateTime.now(),
+                    LocalDate.of(2025, 12, 10),
+                    "Istanbul Airport",
+                    "Toyota",
+                    "Corolla");
         }
 
         @Test
@@ -132,14 +130,13 @@ class EmailEventListenerTest {
         @BeforeEach
         void setUp() {
             event = new ReturnReminderEvent(
-                this,
-                1L,
-                "customer@example.com",
-                LocalDateTime.now(),
-                LocalDate.of(2025, 12, 15),
-                "Istanbul Airport",
-                new BigDecimal("100.00")
-            );
+                    this,
+                    1L,
+                    "customer@example.com",
+                    LocalDateTime.now(),
+                    LocalDate.of(2025, 12, 15),
+                    "Istanbul Airport",
+                    new BigDecimal("100.00"));
         }
 
         @Test
@@ -159,16 +156,15 @@ class EmailEventListenerTest {
         @BeforeEach
         void setUp() {
             event = new RentalCancelledEvent(
-                this,
-                1L,
-                "customer@example.com",
-                LocalDateTime.now(),
-                LocalDateTime.of(2025, 12, 5, 10, 0),
-                "Customer request",
-                true,
-                new BigDecimal("2500.00"),
-                "REFUND-123456"
-            );
+                    this,
+                    1L,
+                    "customer@example.com",
+                    LocalDateTime.now(),
+                    LocalDateTime.of(2025, 12, 5, 10, 0),
+                    "Customer request",
+                    true,
+                    new BigDecimal("2500.00"),
+                    "REFUND-123456");
         }
 
         @Test
@@ -189,29 +185,28 @@ class EmailEventListenerTest {
         @DisplayName("Should handle multiple events independently")
         void shouldHandleMultipleEventsIndependently() {
             RentalConfirmedEvent confirmedEvent = new RentalConfirmedEvent(
-                this,
-                1L,
-                "customer@example.com",
-                LocalDateTime.now(),
-                "Toyota",
-                "Corolla",
-                LocalDate.of(2025, 12, 10),
-                LocalDate.of(2025, 12, 15),
-                new BigDecimal("2500.00"),
-                CurrencyType.TRY,
-                "Istanbul Airport"
-            );
+                    this,
+                    1L,
+                    "customer@example.com",
+                    LocalDateTime.now(),
+                    "Toyota",
+                    "Corolla",
+                    LocalDate.of(2025, 12, 10),
+                    LocalDate.of(2025, 12, 15),
+                    new BigDecimal("2500.00"),
+                    CurrencyType.TRY,
+                    "Istanbul Airport",
+                    null);
 
             PaymentCapturedEvent paymentEvent = new PaymentCapturedEvent(
-                this,
-                100L,
-                1L,
-                "customer@example.com",
-                new BigDecimal("2500.00"),
-                CurrencyType.TRY,
-                "TXN-123456",
-                LocalDateTime.of(2025, 12, 5, 14, 30)
-            );
+                    this,
+                    100L,
+                    1L,
+                    "customer@example.com",
+                    new BigDecimal("2500.00"),
+                    CurrencyType.TRY,
+                    "TXN-123456",
+                    LocalDateTime.of(2025, 12, 5, 14, 30));
 
             emailEventListener.handleRentalConfirmed(confirmedEvent);
             emailEventListener.handlePaymentCaptured(paymentEvent);

@@ -60,14 +60,13 @@ class EmailEventListenerIntegrationTest {
                     LocalDate.now().plusDays(5),
                     new BigDecimal("2000.00"),
                     CurrencyType.TRY,
-                    "Istanbul Airport"
-            );
+                    "Istanbul Airport",
+                    null);
 
             eventPublisher.publishEvent(event);
 
             await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-                ArgumentCaptor<EmailMessage> captor =
-                    ArgumentCaptor.forClass(EmailMessage.class);
+                ArgumentCaptor<EmailMessage> captor = ArgumentCaptor.forClass(EmailMessage.class);
                 verify(emailSender, times(1)).send(captor.capture());
 
                 EmailMessage sentEmail = captor.getValue();
@@ -99,20 +98,18 @@ class EmailEventListenerIntegrationTest {
                     new BigDecimal("2000.00"),
                     CurrencyType.TRY,
                     "txn_123456",
-                    LocalDateTime.now()
-            );
+                    LocalDateTime.now());
 
             eventPublisher.publishEvent(event);
 
             await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-                ArgumentCaptor<EmailMessage> captor =
-                    ArgumentCaptor.forClass(EmailMessage.class);
+                ArgumentCaptor<EmailMessage> captor = ArgumentCaptor.forClass(EmailMessage.class);
                 verify(emailSender, atLeastOnce()).send(captor.capture());
 
                 EmailMessage sentEmail = captor.getAllValues().stream()
-                    .filter(email -> email.type() == EmailType.PAYMENT_RECEIPT)
-                    .findFirst()
-                    .orElseThrow();
+                        .filter(email -> email.type() == EmailType.PAYMENT_RECEIPT)
+                        .findFirst()
+                        .orElseThrow();
 
                 assertThat(sentEmail.to()).isEqualTo("customer@example.com");
                 assertThat(sentEmail.subject()).contains("Payment Receipt");
@@ -139,20 +136,18 @@ class EmailEventListenerIntegrationTest {
                     LocalDate.now().plusDays(1),
                     "Istanbul Airport",
                     "Toyota",
-                    "Corolla"
-            );
+                    "Corolla");
 
             eventPublisher.publishEvent(event);
 
             await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-                ArgumentCaptor<EmailMessage> captor =
-                    ArgumentCaptor.forClass(EmailMessage.class);
+                ArgumentCaptor<EmailMessage> captor = ArgumentCaptor.forClass(EmailMessage.class);
                 verify(emailSender, atLeastOnce()).send(captor.capture());
 
                 EmailMessage sentEmail = captor.getAllValues().stream()
-                    .filter(email -> email.type() == EmailType.PICKUP_REMINDER)
-                    .findFirst()
-                    .orElseThrow();
+                        .filter(email -> email.type() == EmailType.PICKUP_REMINDER)
+                        .findFirst()
+                        .orElseThrow();
 
                 assertThat(sentEmail.to()).isEqualTo("customer@example.com");
                 assertThat(sentEmail.subject()).contains("Pickup Reminder");
@@ -179,20 +174,18 @@ class EmailEventListenerIntegrationTest {
                     LocalDateTime.now(),
                     LocalDate.now(),
                     "Istanbul Airport",
-                    new BigDecimal("500.00")
-            );
+                    new BigDecimal("500.00"));
 
             eventPublisher.publishEvent(event);
 
             await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-                ArgumentCaptor<EmailMessage> captor =
-                    ArgumentCaptor.forClass(EmailMessage.class);
+                ArgumentCaptor<EmailMessage> captor = ArgumentCaptor.forClass(EmailMessage.class);
                 verify(emailSender, atLeastOnce()).send(captor.capture());
 
                 EmailMessage sentEmail = captor.getAllValues().stream()
-                    .filter(email -> email.type() == EmailType.RETURN_REMINDER)
-                    .findFirst()
-                    .orElseThrow();
+                        .filter(email -> email.type() == EmailType.RETURN_REMINDER)
+                        .findFirst()
+                        .orElseThrow();
 
                 assertThat(sentEmail.to()).isEqualTo("customer@example.com");
                 assertThat(sentEmail.subject()).contains("Return Reminder");
@@ -220,20 +213,18 @@ class EmailEventListenerIntegrationTest {
                     "Customer request",
                     true,
                     new BigDecimal("2000.00"),
-                    "refund_123456"
-            );
+                    "refund_123456");
 
             eventPublisher.publishEvent(event);
 
             await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-                ArgumentCaptor<EmailMessage> captor =
-                    ArgumentCaptor.forClass(EmailMessage.class);
+                ArgumentCaptor<EmailMessage> captor = ArgumentCaptor.forClass(EmailMessage.class);
                 verify(emailSender, atLeastOnce()).send(captor.capture());
 
                 EmailMessage sentEmail = captor.getAllValues().stream()
-                    .filter(email -> email.type() == EmailType.CANCELLATION_CONFIRMATION)
-                    .findFirst()
-                    .orElseThrow();
+                        .filter(email -> email.type() == EmailType.CANCELLATION_CONFIRMATION)
+                        .findFirst()
+                        .orElseThrow();
 
                 assertThat(sentEmail.to()).isEqualTo("customer@example.com");
                 assertThat(sentEmail.subject()).contains("Cancellation Confirmation");
@@ -256,21 +247,19 @@ class EmailEventListenerIntegrationTest {
                     "Customer request",
                     false,
                     null,
-                    null
-            );
+                    null);
 
             eventPublisher.publishEvent(event);
 
             await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-                ArgumentCaptor<EmailMessage> captor =
-                    ArgumentCaptor.forClass(EmailMessage.class);
+                ArgumentCaptor<EmailMessage> captor = ArgumentCaptor.forClass(EmailMessage.class);
                 verify(emailSender, atLeastOnce()).send(captor.capture());
 
                 EmailMessage sentEmail = captor.getAllValues().stream()
-                    .filter(email -> email.type() == EmailType.CANCELLATION_CONFIRMATION)
-                    .filter(email -> email.referenceId().equals(2L))
-                    .findFirst()
-                    .orElseThrow();
+                        .filter(email -> email.type() == EmailType.CANCELLATION_CONFIRMATION)
+                        .filter(email -> email.referenceId().equals(2L))
+                        .findFirst()
+                        .orElseThrow();
 
                 assertThat(sentEmail.to()).isEqualTo("customer@example.com");
                 assertThat(sentEmail.subject()).contains("Cancellation Confirmation");

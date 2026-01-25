@@ -84,6 +84,8 @@ public class GoogleOAuth2ProviderService implements OAuth2ProviderService {
             String providerId = (String) userAttributes.get("sub");
             String email = (String) userAttributes.get("email");
             String name = (String) userAttributes.get("name");
+            String firstName = (String) userAttributes.get("given_name");
+            String lastName = (String) userAttributes.get("family_name");
             String avatarUrl = (String) userAttributes.get("picture");
 
             if (email == null || email.isBlank()) {
@@ -92,7 +94,7 @@ public class GoogleOAuth2ProviderService implements OAuth2ProviderService {
             }
 
             log.debug("Successfully retrieved user info from Google for email: {}", email);
-            return new OAuth2UserInfo(providerId, email, name, avatarUrl, PROVIDER_NAME);
+            return new OAuth2UserInfo(providerId, email, name, firstName, lastName, avatarUrl, PROVIDER_NAME);
         } catch (RestClientException e) {
             log.error("Failed to fetch user info from Google: {}", e.getMessage());
             throw OAuth2ProviderException.providerUnavailable(PROVIDER_NAME);

@@ -10,6 +10,6 @@ public record LoginRequest(
     String username,
 
     @NotBlank(message = "Password cannot be blank")
-    @Size(min = 6, message = "Password must be at least 6 characters")
+    @Size(min = 8, message = "Password must be at least 6 characters")
     String password
 ) {}

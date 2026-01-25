@@ -44,7 +44,6 @@ public class CarServiceImpl implements CarService {
     private final CarRepository carRepository;
     private final CarMapper carMapper;
 
-
     @Override
     @Cacheable(value = "cars", key = "'dto:' + #id")
     public CarDto getCarDtoById(Long id) {
@@ -57,7 +56,6 @@ public class CarServiceImpl implements CarService {
         log.debug("Successfully retrieved CarDto for id: {}", id);
         return result;
     }
-
 
     @Override
     @Cacheable(value = "cars", key = "#id")
@@ -88,10 +86,10 @@ public class CarServiceImpl implements CarService {
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "cars", allEntries = true),
-        @CacheEvict(value = "car-status-counts", allEntries = true),
-        @CacheEvict(value = "car-statistics", allEntries = true),
-        @CacheEvict(value = "car-brand-counts", allEntries = true)
+            @CacheEvict(value = "cars", allEntries = true),
+            @CacheEvict(value = "car-status-counts", allEntries = true),
+            @CacheEvict(value = "car-statistics", allEntries = true),
+            @CacheEvict(value = "car-brand-counts", allEntries = true)
     })
     public CarResponse createCar(CarRequest carRequest) {
         log.debug("Creating new car with license plate: {}", carRequest.getLicensePlate());
@@ -116,10 +114,10 @@ public class CarServiceImpl implements CarService {
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "cars", key = "#id"),
-        @CacheEvict(value = "cars", key = "'dto:' + #id"),
-        @CacheEvict(value = "car-status-counts", allEntries = true),
-        @CacheEvict(value = "car-statistics", allEntries = true)
+            @CacheEvict(value = "cars", allEntries = true),
+            @CacheEvict(value = "car-status-counts", allEntries = true),
+            @CacheEvict(value = "car-statistics", allEntries = true),
+            @CacheEvict(value = "fleetStatus", allEntries = true)
     })
     public CarResponse updateCar(Long id, CarRequest carRequest) {
         log.debug("Updating car with id: {}", id);
@@ -132,7 +130,7 @@ public class CarServiceImpl implements CarService {
         if (!existingCar.getLicensePlate().equals(carRequest.getLicensePlate())) {
             checkLicensePlateUniqueness(carRequest.getLicensePlate());
         }
-        
+
         if (!Objects.equals(existingCar.getVinNumber(), carRequest.getVinNumber())) {
             checkVinNumberUniqueness(carRequest.getVinNumber());
         }
@@ -150,10 +148,10 @@ public class CarServiceImpl implements CarService {
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "cars", allEntries = true),
-        @CacheEvict(value = "car-status-counts", allEntries = true),
-        @CacheEvict(value = "car-statistics", allEntries = true),
-        @CacheEvict(value = "car-brand-counts", allEntries = true)
+            @CacheEvict(value = "cars", allEntries = true),
+            @CacheEvict(value = "car-status-counts", allEntries = true),
+            @CacheEvict(value = "car-statistics", allEntries = true),
+            @CacheEvict(value = "car-brand-counts", allEntries = true)
     })
     public void deleteCar(Long id) {
         log.debug("Hard deleting car with id: {}", id);
@@ -168,9 +166,9 @@ public class CarServiceImpl implements CarService {
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "cars", allEntries = true),
-        @CacheEvict(value = "car-status-counts", allEntries = true),
-        @CacheEvict(value = "car-statistics", allEntries = true)
+            @CacheEvict(value = "cars", allEntries = true),
+            @CacheEvict(value = "car-status-counts", allEntries = true),
+            @CacheEvict(value = "car-statistics", allEntries = true)
     })
     public void softDeleteCar(Long id) {
         log.debug("Soft deleting car with id: {}", id);
@@ -187,9 +185,9 @@ public class CarServiceImpl implements CarService {
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "cars", allEntries = true),
-        @CacheEvict(value = "car-status-counts", allEntries = true),
-        @CacheEvict(value = "car-statistics", allEntries = true)
+            @CacheEvict(value = "cars", allEntries = true),
+            @CacheEvict(value = "car-status-counts", allEntries = true),
+            @CacheEvict(value = "car-statistics", allEntries = true)
     })
     public CarResponse restoreCar(Long id) {
         log.debug("Restoring car with id: {}", id);
@@ -211,15 +209,22 @@ public class CarServiceImpl implements CarService {
     public CarListResponse searchCars(CarSearchRequest searchRequest) {
         log.debug("Searching cars with criteria: {}", searchRequest);
 
-        Pageable pageable = buildPageable(searchRequest);
+        // For native query, don't add Sort to Pageable - sorting is handled in SQL
+        Pageable pageable = PageRequest.of(searchRequest.getPage(), searchRequest.getSize());
 
-        String searchTerm = searchRequest.getSearchTerm() != null ?
-                "%" + searchRequest.getSearchTerm().trim().toLowerCase() + "%" : null;
+        String searchTerm = searchRequest.getSearchTerm() != null
+                ? "%" + searchRequest.getSearchTerm().trim().toLowerCase() + "%"
+                : null;
         String brand = searchRequest.getBrand() != null ? searchRequest.getBrand().trim().toLowerCase() : null;
         String model = searchRequest.getModel() != null ? searchRequest.getModel().trim().toLowerCase() : null;
-        String transmissionType = searchRequest.getTransmissionType() != null ? searchRequest.getTransmissionType().trim().toLowerCase() : null;
+        String transmissionType = searchRequest.getTransmissionType() != null
+                ? searchRequest.getTransmissionType().trim().toLowerCase()
+                : null;
         String bodyType = searchRequest.getBodyType() != null ? searchRequest.getBodyType().trim().toLowerCase() : null;
         String fuelType = searchRequest.getFuelType() != null ? searchRequest.getFuelType().trim().toLowerCase() : null;
+        String currencyType = searchRequest.getCurrencyType() != null ? searchRequest.getCurrencyType().name() : null;
+        String carStatusType = searchRequest.getCarStatusType() != null ? searchRequest.getCarStatusType().name()
+                : null;
 
         Page<Car> cars = carRepository.findCarsByCriteria(
                 searchTerm,
@@ -233,10 +238,9 @@ public class CarServiceImpl implements CarService {
                 searchRequest.getMaxProductionYear(),
                 searchRequest.getMinPrice(),
                 searchRequest.getMaxPrice(),
-                searchRequest.getCurrencyType(),
-                searchRequest.getCarStatusType(),
-                pageable
-        );
+                currencyType,
+                carStatusType,
+                pageable);
 
         List<CarResponse> carDtos = cars.getContent().stream()
                 .map(carMapper::toDto)
@@ -252,8 +256,7 @@ public class CarServiceImpl implements CarService {
                 cars.isLast(),
                 cars.hasNext(),
                 cars.hasPrevious(),
-                cars.getNumberOfElements()
-        );
+                cars.getNumberOfElements());
 
         logSearchSuccess(result);
         return result;
@@ -309,7 +312,8 @@ public class CarServiceImpl implements CarService {
         Page<Car> cars = carRepository.findByPriceBetweenAndIsDeletedFalse(minPrice, maxPrice, pageable);
         Page<CarResponse> result = cars.map(carMapper::toDto);
 
-        log.info("Successfully retrieved {} cars in price range: {} - {}", result.getTotalElements(), minPrice, maxPrice);
+        log.info("Successfully retrieved {} cars in price range: {} - {}", result.getTotalElements(), minPrice,
+                maxPrice);
         return result;
     }
 
@@ -319,7 +323,8 @@ public class CarServiceImpl implements CarService {
         log.debug("Getting new cars");
 
         LocalDate oneYearAgo = LocalDate.now().minusYears(1);
-        Page<Car> cars = carRepository.findByProductionYearGreaterThanEqualAndIsDeletedFalse(oneYearAgo.getYear(), pageable);
+        Page<Car> cars = carRepository.findByProductionYearGreaterThanEqualAndIsDeletedFalse(oneYearAgo.getYear(),
+                pageable);
         Page<CarResponse> result = cars.map(carMapper::toDto);
 
         logPagedRetrievalSuccess("new cars", result);
@@ -331,7 +336,8 @@ public class CarServiceImpl implements CarService {
     public Page<CarResponse> getFeaturedCars(Pageable pageable) {
         log.debug("Getting featured cars");
 
-        Page<Car> cars = carRepository.findByIsFeaturedTrueAndIsDeletedFalse(pageable);
+        Page<Car> cars = carRepository.findByIsFeaturedTrueAndCarStatusTypeAndIsDeletedFalse(
+                CarStatusType.AVAILABLE, pageable);
         Page<CarResponse> result = cars.map(carMapper::toDto);
 
         logPagedRetrievalSuccess("featured cars", result);
@@ -370,9 +376,9 @@ public class CarServiceImpl implements CarService {
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "cars", allEntries = true),
-        @CacheEvict(value = "car-status-counts", allEntries = true),
-        @CacheEvict(value = "car-statistics", allEntries = true)
+            @CacheEvict(value = "cars", allEntries = true),
+            @CacheEvict(value = "car-status-counts", allEntries = true),
+            @CacheEvict(value = "car-statistics", allEntries = true)
     })
     public CarResponse sellCar(Long id) {
         log.debug("Selling car with id: {}", id);
@@ -398,9 +404,9 @@ public class CarServiceImpl implements CarService {
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "cars", allEntries = true),
-        @CacheEvict(value = "car-status-counts", allEntries = true),
-        @CacheEvict(value = "car-statistics", allEntries = true)
+            @CacheEvict(value = "cars", allEntries = true),
+            @CacheEvict(value = "car-status-counts", allEntries = true),
+            @CacheEvict(value = "car-statistics", allEntries = true)
     })
     public CarResponse reserveCar(Long id) {
         log.debug("Reserving car with id: {}", id);
@@ -426,9 +432,9 @@ public class CarServiceImpl implements CarService {
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "cars", allEntries = true),
-        @CacheEvict(value = "car-status-counts", allEntries = true),
-        @CacheEvict(value = "car-statistics", allEntries = true)
+            @CacheEvict(value = "cars", allEntries = true),
+            @CacheEvict(value = "car-status-counts", allEntries = true),
+            @CacheEvict(value = "car-statistics", allEntries = true)
     })
     public CarResponse cancelReservation(Long id) {
         log.debug("Cancelling reservation for car with id: {}", id);
@@ -438,7 +444,8 @@ public class CarServiceImpl implements CarService {
 
         if (car.getCarStatusType() != CarStatusType.RESERVED) {
             log.warn("Car {} is not reserved, current status: {}", car.getId(), car.getCarStatusType());
-            throw new InvalidStatusTransitionException("Car is not reserved, current status: " + car.getCarStatusType());
+            throw new InvalidStatusTransitionException(
+                    "Car is not reserved, current status: " + car.getCarStatusType());
         }
 
         car.markAsAvailable();
@@ -447,16 +454,17 @@ public class CarServiceImpl implements CarService {
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
 
-        log.info("Successfully cancelled reservation for car: ID={}, License Plate={}", result.getId(), result.getLicensePlate());
+        log.info("Successfully cancelled reservation for car: ID={}, License Plate={}", result.getId(),
+                result.getLicensePlate());
         return result;
     }
 
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "cars", allEntries = true),
-        @CacheEvict(value = "car-status-counts", allEntries = true),
-        @CacheEvict(value = "car-statistics", allEntries = true)
+            @CacheEvict(value = "cars", allEntries = true),
+            @CacheEvict(value = "car-status-counts", allEntries = true),
+            @CacheEvict(value = "car-statistics", allEntries = true)
     })
     public CarResponse releaseCar(Long id) {
         log.debug("Releasing car after rental ends, id: {}", id);
@@ -466,7 +474,8 @@ public class CarServiceImpl implements CarService {
 
         if (car.getCarStatusType() != CarStatusType.RESERVED) {
             log.warn("Car {} is not reserved, current status: {}", car.getId(), car.getCarStatusType());
-            throw new InvalidStatusTransitionException("Car is not in RESERVED status, current status: " + car.getCarStatusType());
+            throw new InvalidStatusTransitionException(
+                    "Car is not in RESERVED status, current status: " + car.getCarStatusType());
         }
 
         car.markAsAvailable();
@@ -475,16 +484,17 @@ public class CarServiceImpl implements CarService {
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
 
-        log.info("Successfully released car after rental: ID={}, License Plate={}", result.getId(), result.getLicensePlate());
+        log.info("Successfully released car after rental: ID={}, License Plate={}", result.getId(),
+                result.getLicensePlate());
         return result;
     }
 
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "cars", allEntries = true),
-        @CacheEvict(value = "car-status-counts", allEntries = true),
-        @CacheEvict(value = "car-statistics", allEntries = true)
+            @CacheEvict(value = "cars", allEntries = true),
+            @CacheEvict(value = "car-status-counts", allEntries = true),
+            @CacheEvict(value = "car-statistics", allEntries = true)
     })
     public CarResponse markAsMaintenance(Long id) {
         log.debug("Marking car as maintenance with id: {}", id);
@@ -497,16 +507,17 @@ public class CarServiceImpl implements CarService {
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
 
-        log.info("Successfully marked car as maintenance: ID={}, License Plate={}", result.getId(), result.getLicensePlate());
+        log.info("Successfully marked car as maintenance: ID={}, License Plate={}", result.getId(),
+                result.getLicensePlate());
         return result;
     }
 
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "cars", allEntries = true),
-        @CacheEvict(value = "car-status-counts", allEntries = true),
-        @CacheEvict(value = "car-statistics", allEntries = true)
+            @CacheEvict(value = "cars", allEntries = true),
+            @CacheEvict(value = "car-status-counts", allEntries = true),
+            @CacheEvict(value = "car-statistics", allEntries = true)
     })
     public CarResponse markAsAvailable(Long id) {
         log.debug("Marking car as available with id: {}", id);
@@ -519,16 +530,18 @@ public class CarServiceImpl implements CarService {
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
 
-        log.info("Successfully marked car as available: ID={}, License Plate={}", result.getId(), result.getLicensePlate());
+        log.info("Successfully marked car as available: ID={}, License Plate={}", result.getId(),
+                result.getLicensePlate());
         return result;
     }
 
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "cars", allEntries = true),
-        @CacheEvict(value = "car-status-counts", allEntries = true),
-        @CacheEvict(value = "car-statistics", allEntries = true)
+            @CacheEvict(value = "cars", allEntries = true),
+            @CacheEvict(value = "car-status-counts", allEntries = true),
+            @CacheEvict(value = "car-statistics", allEntries = true),
+            @CacheEvict(value = "fleetStatus", allEntries = true)
     })
     public CarResponse updateCarStatus(Long id, CarStatusUpdateRequest statusUpdateRequest) {
         log.debug("Updating car status for id: {} to {}", id, statusUpdateRequest.carStatusType());
@@ -780,15 +793,17 @@ public class CarServiceImpl implements CarService {
         log.debug("Searching cars - term: {}, brand: {}, model: {}, price: {}-{}, status: {}",
                 searchTerm, brand, model, minPrice, maxPrice, status);
 
+        String statusStr = status != null ? status.name() : null;
+        // For native query, create Pageable without Sort - sorting is handled in SQL
+        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         Page<Car> cars = carRepository.findCarsByCriteria(
-                searchTerm, brand, model, null, null, null, null, null, null, minPrice, maxPrice, null, status, pageable
-        );
+                searchTerm, brand, model, null, null, null, null, null, null, minPrice, maxPrice, null, statusStr,
+                unsortedPageable);
         Page<CarResponse> result = cars.map(carMapper::toDto);
 
         log.info("Found {} cars matching search criteria", result.getTotalElements());
         return result;
     }
-
 
     @Override
     public int countByStatus(CarStatusType status) {
@@ -799,7 +814,6 @@ public class CarServiceImpl implements CarService {
     public int countTotalActiveCars() {
         return (int) carRepository.countByIsDeletedFalse();
     }
-
 
     private void logCarRetrievalSuccess(CarResponse result) {
         log.info("Successfully retrieved car (ID: {}, Plate: {})",
@@ -816,7 +830,6 @@ public class CarServiceImpl implements CarService {
                 result.getId(), result.getLicensePlate());
     }
 
-
     private void logPagedRetrievalSuccess(String entityType, Page<?> result) {
         log.info("Successfully retrieved {} {}. Page {}/{}",
                 result.getNumberOfElements(), entityType,
@@ -827,8 +840,6 @@ public class CarServiceImpl implements CarService {
         log.info("Successfully found {} cars matching search criteria. Page {}/{}",
                 result.numberOfElements(), result.currentPage() + 1, result.totalPages());
     }
-
-
 
     private void validateCarId(Long id) {
         if (id == null || id <= 0) {
@@ -878,19 +889,27 @@ public class CarServiceImpl implements CarService {
     private void validateStatusTransition(CarStatusType currentStatus, CarStatusType newStatus) {
 
         Map<CarStatusType, Set<CarStatusType>> validTransitions = Map.of(
-                CarStatusType.AVAILABLE, Set.of(CarStatusType.RESERVED, CarStatusType.MAINTENANCE, CarStatusType.DAMAGED, CarStatusType.INSPECTION, CarStatusType.SOLD),
-                CarStatusType.RESERVED, Set.of(CarStatusType.AVAILABLE, CarStatusType.SOLD),
-                CarStatusType.MAINTENANCE, Set.of(CarStatusType.AVAILABLE, CarStatusType.DAMAGED),
-                CarStatusType.DAMAGED, Set.of(CarStatusType.AVAILABLE, CarStatusType.MAINTENANCE),
-                CarStatusType.INSPECTION, Set.of(CarStatusType.AVAILABLE, CarStatusType.MAINTENANCE),
-                CarStatusType.SOLD, Set.of()
-        );
+                CarStatusType.AVAILABLE,
+                Set.of(CarStatusType.RESERVED, CarStatusType.RENTED, CarStatusType.MAINTENANCE,
+                        CarStatusType.DAMAGED, CarStatusType.INSPECTION, CarStatusType.SOLD),
+                CarStatusType.RESERVED,
+                Set.of(CarStatusType.AVAILABLE, CarStatusType.RENTED, CarStatusType.MAINTENANCE,
+                        CarStatusType.DAMAGED, CarStatusType.SOLD),
+                CarStatusType.RENTED,
+                Set.of(CarStatusType.AVAILABLE, CarStatusType.MAINTENANCE, CarStatusType.DAMAGED,
+                        CarStatusType.INSPECTION),
+                CarStatusType.MAINTENANCE,
+                Set.of(CarStatusType.AVAILABLE, CarStatusType.DAMAGED, CarStatusType.INSPECTION),
+                CarStatusType.DAMAGED,
+                Set.of(CarStatusType.AVAILABLE, CarStatusType.MAINTENANCE, CarStatusType.INSPECTION),
+                CarStatusType.INSPECTION,
+                Set.of(CarStatusType.AVAILABLE, CarStatusType.MAINTENANCE, CarStatusType.DAMAGED),
+                CarStatusType.SOLD, Set.of());
 
         Set<CarStatusType> allowedTransitions = validTransitions.get(currentStatus);
         if (allowedTransitions == null || !allowedTransitions.contains(newStatus)) {
             throw new InvalidStatusTransitionException(
-                    String.format("Invalid status transition from %s to %s", currentStatus, newStatus)
-            );
+                    String.format("Invalid status transition from %s to %s", currentStatus, newStatus));
         }
     }
 
@@ -913,20 +932,20 @@ public class CarServiceImpl implements CarService {
     @Cacheable(value = "filter-options", key = "'all'")
     public FilterOptionsResponse getFilterOptions() {
         log.debug("Fetching filter options from database");
-        
+
         FilterOptionsResponse response = new FilterOptionsResponse(
                 carRepository.findDistinctBrands(),
                 carRepository.findDistinctTransmissionTypes(),
                 carRepository.findDistinctFuelTypes(),
-                carRepository.findDistinctBodyTypes()
-        );
-        
-        log.info("Successfully retrieved filter options: {} brands, {} transmission types, {} fuel types, {} body types",
+                carRepository.findDistinctBodyTypes());
+
+        log.info(
+                "Successfully retrieved filter options: {} brands, {} transmission types, {} fuel types, {} body types",
                 response.brands().size(),
                 response.transmissionTypes().size(),
                 response.fuelTypes().size(),
                 response.bodyTypes().size());
-        
+
         return response;
     }
 }

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <title>Severely Late Notification - CarRental</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .email-container {
+                background-color: #1f2937 !important;
+            }
+
+            .email-body {
+                background-color: #111827 !important;
+                color: #f3f4f6 !important;
+            }
+
+            .penalty-box {
+                background-color: #7f1d1d !important;
+            }
+
+            .detail-box {
+                background-color: #1f2937 !important;
+                border-color: #374151 !important;
+            }
+
+            .text-label {
+                color: #d1d5db !important;
+            }
+
+            .text-value {
+                color: #f9fafb !important;
+            }
+
+            .text-muted {
+                color: #9ca3af !important;
+            }
+        }
+    </style>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #f4f4f5;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+        style="background-color: #f4f4f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                    style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);"
+                    class="email-container">
+
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/header :: header('Severely Late - Legal Action')}"></div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 40px 30px 20px 30px;">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="32" cy="32" r="30" fill="#7f1d1d" />
+                                <path d="M32 16V30M32 38V40" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+                                <path d="M20 20L44 44M20 44L44 20" stroke="#fca5a5" stroke-width="2"
+                                    stroke-linecap="round" />
+                            </svg>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="email-body"
+                            style="padding: 0 40px 40px 40px; color: #111827; font-size: 16px; line-height: 1.6;">
+
+                            <p style="margin: 0 0 20px 0; font-size: 18px; font-weight: 700; color: #991b1b;"
+                                class="text-value">
+                                URGENT: Vehicle Severely Overdue
+                            </p>
+
+                            <p style="margin: 0 0 24px 0; font-size: 16px;">
+                                Your rental vehicle is now <strong th:text="${lateDays}">3</strong> days overdue. This
+                                is a final notice before legal action is initiated.
+                            </p>
+
+                            <div style="background-color: #fee2e2; border: 2px solid #ef4444; border-radius: 4px; padding: 20px; margin: 24px 0;"
+                                class="detail-box">
+                                <p style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #991b1b;"
+                                    class="text-value">
+                                    <span th:text="${carBrand} + ' ' + ${carModel}">Toyota Camry</span>
+                                </p>
+                                <p style="margin: 0 0 8px 0; font-size: 14px; color: #991b1b;" class="text-label">
+                                    License Plate: <span th:text="${licensePlate}"
+                                        style="font-weight: 600; color: #991b1b;" class="text-value">34ABC123</span>
+                                </p>
+                                <p style="margin: 0; font-size: 14px; color: #991b1b;" class="text-label">
+                                    Rental ID: <span th:text="${rentalId}" style="font-weight: 600; color: #991b1b;"
+                                        class="text-value">12345</span>
+                                </p>
+                            </div>
+
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                                style="margin: 0 0 24px 0;">
+                                <tr>
+                                    <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
+                                        Scheduled Return:</td>
+                                    <td align="right"
+                                        style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
+                                        class="text-value">
+                                        <span th:text="${scheduledReturnTime}">Jan 30, 2026</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">Days
+                                        Late:</td>
+                                    <td align="right"
+                                        style="padding: 8px 0; font-size: 16px; font-weight: 700; color: #ef4444;">
+                                        <span th:text="${lateDays}">3</span> days (<span
+                                            th:text="${lateHours}">72</span> hours)
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div style="background-color: #991b1b; border-radius: 8px; padding: 20px; margin: 24px 0;"
+                                class="penalty-box">
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td style="font-size: 14px; color: #fecaca;">Total Accumulated Penalty:</td>
+                                        <td align="right" style="font-size: 24px; font-weight: 700; color: #ffffff;">
+                                            <span th:text="${currency} + ' ' + ${currentPenaltyAmount}">$360.00</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div
+                                style="background-color: #7f1d1d; border-radius: 4px; padding: 20px; margin: 24px 0; color: #ffffff;">
+                                <p style="margin: 0 0 12px 0; font-size: 16px; font-weight: 700;">
+                                    ⚠️ Legal Escalation Warning
+                                </p>
+                                <p style="margin: 0; font-size: 14px; line-height: 1.6;" th:text="${escalationWarning}">
+                                    Failure to return this vehicle within 24 hours may result in the vehicle being
+                                    reported as stolen to local authorities. Legal action will be initiated.
+                                </p>
+                            </div>
+
+                            <div
+                                th:replace="~{email/shared/warning-box :: warningBox('Contact us IMMEDIATELY at +1 (555) 123-4567 or return the vehicle to avoid legal consequences.')}">
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/footer :: footer}"></div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

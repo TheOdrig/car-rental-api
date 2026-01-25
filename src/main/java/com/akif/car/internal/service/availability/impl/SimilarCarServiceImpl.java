@@ -7,8 +7,6 @@ import com.akif.car.domain.Car;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.car.internal.service.availability.CarAvailabilityService;
 import com.akif.car.internal.service.availability.SimilarCarService;
-import com.akif.car.internal.service.pricing.DynamicPricingService;
-import com.akif.car.internal.dto.pricing.PricingResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,11 +29,10 @@ public class SimilarCarServiceImpl implements SimilarCarService {
 
     private final CarRepository carRepository;
     private final CarAvailabilityService carAvailabilityService;
-    private final DynamicPricingService dynamicPricingService;
 
     @Override
     public List<SimilarCarDto> findSimilarAvailableCars(Long carId, LocalDate startDate, LocalDate endDate, int limit) {
-        log.debug("Finding similar available cars for car: {} from {} to {}, limit: {}", 
+        log.debug("Finding similar available cars for car: {} from {} to {}, limit: {}",
                 carId, startDate, endDate, limit);
 
         Car referenceCar = carRepository.findByIdAndIsDeletedFalse(carId)
@@ -45,20 +42,19 @@ public class SimilarCarServiceImpl implements SimilarCarService {
         BigDecimal minPrice = referencePrice.multiply(BigDecimal.valueOf(0.8));
         BigDecimal maxPrice = referencePrice.multiply(BigDecimal.valueOf(1.2));
 
-        log.debug("Reference car: {} {}, price: {}, range: {} - {}", 
+        log.debug("Reference car: {} {}, price: {}, range: {} - {}",
                 referenceCar.getBrand(), referenceCar.getModel(), referencePrice, minPrice, maxPrice);
 
         List<CarStatusType> blockingStatuses = Arrays.asList(CarStatusType.getUnavailableStatuses());
         Pageable pageable = PageRequest.of(0, limit * 3);
-        
+
         Page<Car> similarCarsPage = carRepository.findSimilarCars(
                 referenceCar.getBodyType(),
                 minPrice,
                 maxPrice,
                 carId,
                 blockingStatuses,
-                pageable
-        );
+                pageable);
 
         List<SimilarCarDto> similarCars = new ArrayList<>();
 
@@ -76,31 +72,31 @@ public class SimilarCarServiceImpl implements SimilarCarService {
             int similarityScore = 0;
             List<String> similarityReasons = new ArrayList<>();
 
-            if (referenceCar.getBodyType() != null && 
-                referenceCar.getBodyType().equalsIgnoreCase(car.getBodyType())) {
+            if (referenceCar.getBodyType() != null &&
+                    referenceCar.getBodyType().equalsIgnoreCase(car.getBodyType())) {
                 similarityScore += 50;
                 similarityReasons.add("Same body type");
             }
 
-            if (referenceCar.getBrand() != null && 
-                referenceCar.getBrand().equalsIgnoreCase(car.getBrand())) {
+            if (referenceCar.getBrand() != null &&
+                    referenceCar.getBrand().equalsIgnoreCase(car.getBrand())) {
                 similarityScore += 30;
                 similarityReasons.add("Same brand");
             }
 
-            if (car.getPrice() != null && 
-                car.getPrice().compareTo(minPrice) >= 0 && 
-                car.getPrice().compareTo(maxPrice) <= 0) {
+            if (car.getPrice() != null &&
+                    car.getPrice().compareTo(minPrice) >= 0 &&
+                    car.getPrice().compareTo(maxPrice) <= 0) {
                 similarityScore += 20;
                 similarityReasons.add("Similar price");
             }
 
-            PricingResult pricingResult = dynamicPricingService.calculatePrice(
-                    car.getId(),
-                    startDate,
-                    endDate,
-                    LocalDate.now()
-            );
+            long rentalDays = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate);
+            if (rentalDays < 1)
+                rentalDays = 1;
+
+            BigDecimal baseDailyPrice = car.getPrice();
+            BigDecimal baseTotalPrice = baseDailyPrice.multiply(BigDecimal.valueOf(rentalDays));
 
             SimilarCarDto similarCarDto = new SimilarCarDto(
                     car.getId(),
@@ -108,13 +104,12 @@ public class SimilarCarServiceImpl implements SimilarCarService {
                     car.getModel(),
                     car.getProductionYear(),
                     car.getBodyType(),
-                    pricingResult.effectiveDailyPrice(),
-                    pricingResult.finalPrice(),
+                    baseDailyPrice,
+                    baseTotalPrice,
                     car.getCurrencyType(),
                     car.getImageUrl(),
                     similarityReasons,
-                    similarityScore
-            );
+                    similarityScore);
 
             similarCars.add(similarCarDto);
         }
