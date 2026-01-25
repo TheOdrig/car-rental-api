@@ -1,10 +1,7 @@
 package com.akif.auth.web;
 
-import com.akif.auth.api.AdminUserService;
-import com.akif.auth.api.AdminUserDetailResponse;
-import com.akif.auth.api.AdminUserListItem;
-import com.akif.auth.api.AuthService;
-import com.akif.auth.api.UserDto;
+import com.akif.auth.api.*;
+import com.akif.auth.internal.dto.AddNoteRequest;
 import com.akif.auth.internal.dto.BanUserRequest;
 import com.akif.auth.internal.dto.UnbanUserRequest;
 import com.akif.rental.api.RentalResponse;
@@ -34,6 +31,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
@@ -53,12 +53,12 @@ public class AdminUserController {
             @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required"),
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
-    public ResponseEntity<com.akif.auth.api.UserStatsResponse> getStats(
+    public ResponseEntity<UserStatsResponse> getStats(
             @AuthenticationPrincipal UserDetails adminUser) {
 
         log.info("GET /api/admin/users/stats - Admin: {}", adminUser.getUsername());
 
-        com.akif.auth.api.UserStatsResponse stats = adminUserService.getStats();
+        UserStatsResponse stats = adminUserService.getStats();
 
         return ResponseEntity.ok(stats);
     }
@@ -137,7 +137,7 @@ public class AdminUserController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<Void> banUser(
+    public ResponseEntity<Map<String, String>> banUser(
             @Parameter(description = "User ID", required = true) @PathVariable Long id,
             @Valid @RequestBody BanUserRequest request,
             @AuthenticationPrincipal UserDetails adminUser) {
@@ -147,7 +147,7 @@ public class AdminUserController {
         UserDto admin = authService.getUserByUsername(adminUser.getUsername());
         adminUserService.banUser(id, request.reason(), admin.id());
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Map.of("message", "User banned successfully"));
     }
 
     @PostMapping("/{id}/unban")
@@ -159,7 +159,7 @@ public class AdminUserController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<Void> unbanUser(
+    public ResponseEntity<Map<String, String>> unbanUser(
             @Parameter(description = "User ID", required = true) @PathVariable Long id,
             @Valid @RequestBody(required = false) UnbanUserRequest request,
             @AuthenticationPrincipal UserDetails adminUser) {
@@ -170,7 +170,7 @@ public class AdminUserController {
         String note = request != null ? request.note() : null;
         adminUserService.unbanUser(id, note, admin.id());
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Map.of("message", "User unbanned successfully"));
     }
 
     @PostMapping("/{id}/notes")
@@ -182,15 +182,15 @@ public class AdminUserController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<com.akif.auth.api.AdminNoteDto> addNote(
+    public ResponseEntity<AdminNoteDto> addNote(
             @Parameter(description = "User ID", required = true) @PathVariable Long id,
-            @Valid @RequestBody com.akif.auth.internal.dto.AddNoteRequest request,
+            @Valid @RequestBody AddNoteRequest request,
             @AuthenticationPrincipal UserDetails adminUser) {
 
         log.info("POST /api/admin/users/{}/notes - Admin: {}", id, adminUser.getUsername());
 
         UserDto admin = authService.getUserByUsername(adminUser.getUsername());
-        com.akif.auth.api.AdminNoteDto note = adminUserService.addAdminNote(id, request.text(), admin.id(),
+        AdminNoteDto note = adminUserService.addAdminNote(id, request.text(), admin.id(),
                 admin.username());
 
         return ResponseEntity.status(201).body(note);
@@ -204,13 +204,13 @@ public class AdminUserController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<java.util.List<com.akif.auth.api.AdminNoteDto>> getNotes(
+    public ResponseEntity<List<AdminNoteDto>> getNotes(
             @Parameter(description = "User ID", required = true) @PathVariable Long id,
             @AuthenticationPrincipal UserDetails adminUser) {
 
         log.info("GET /api/admin/users/{}/notes - Admin: {}", id, adminUser.getUsername());
 
-        java.util.List<com.akif.auth.api.AdminNoteDto> notes = adminUserService.getAdminNotes(id);
+        List<AdminNoteDto> notes = adminUserService.getAdminNotes(id);
 
         return ResponseEntity.ok(notes);
     }
