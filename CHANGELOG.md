@@ -8,11 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Documentation improvements (CONTRIBUTING.md, CHANGELOG.md)
 
 ### Changed
 
 ### Fixed
+
+## [2.1.0] - 2026-01-25
+
+### Added
+- **User Account Settings**: Profile management, avatar upload (R2), password change/reset
+- **Admin Detail Pages**: Customer and vehicle detail pages with statistics
+- **Ban/Unban System**: User ban workflow with reason tracking and audit fields
+- **Admin Notes**: Internal communication system for customer management
+- **User Statistics**: Rental/damage aggregation (totalRentals, completedRentals, lateReturns, totalSpent)
+- **Avatar Storage**: R2 integration with presigned URLs (JPEG/PNG/GIF/WebP, max 5MB)
+- **Password Reset**: Token-based flow with 1-hour validity and email notification
+
+### Technical
+- New endpoints (profile, avatar, password, admin detail)
+- Database migration V2 (phone field, password_reset_tokens table)
+- Email template for password reset (Thymeleaf)
 
 ## [2.0.0] - 2025-12-14
 
@@ -63,6 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/TheOdrig/car-rental-api/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/TheOdrig/car-rental-api/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/TheOdrig/car-rental-api/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/TheOdrig/car-rental-api/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/TheOdrig/car-rental-api/releases/tag/v1.0.0
