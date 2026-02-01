@@ -163,12 +163,12 @@ public class DashboardQueryService {
     }
 
     private RevenueBreakdownDto calculateRevenueBreakdown() {
-        LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
-        LocalDateTime endOfMonth = LocalDateTime.now();
-        LocalDate startDate = LocalDate.now().withDayOfMonth(1);
         LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusMonths(12);
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
 
-        BigDecimal rentalRevenue = paymentService.sumCapturedPaymentsBetween(startOfMonth, endOfMonth);
+        BigDecimal rentalRevenue = paymentService.sumCapturedPaymentsBetween(startDateTime, endDateTime);
         BigDecimal penaltyRevenue = rentalService.sumCollectedPenaltyRevenue(startDate, endDate);
         BigDecimal damageRecovered = damageService.sumDamageCharges(startDate, endDate);
         BigDecimal damageRepairCosts = damageService.sumRepairCosts(startDate, endDate);
