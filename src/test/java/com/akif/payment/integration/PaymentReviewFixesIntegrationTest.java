@@ -383,6 +383,55 @@ class PaymentReviewFixesIntegrationTest {
     }
 
     @Test
+    @DisplayName("a payment closed by a rental cancellation is not restarted by a payment-intent call that raced it")
+    void cancelledRentalPaymentIsNotRestarted() {
+        Rental rental = rental(LocalDate.now().plusDays(2), LocalDate.now().plusDays(5), RentalStatus.CONFIRMED);
+        Payment payment = rentalPayment(rental, PaymentStatus.PENDING);
+        PaymentIntentResult first = paymentService.createOrGetIntentForRental(rental.getId());
+        doAnswer(invocation -> {
+            assertThat(paymentService.cancelPayment(payment.getId()).success()).isTrue();
+            return new GatewayIntent(first.paymentIntentId(), null, GatewayIntentStatus.CANCELED,
+                    null, "cus_race", 100L, "try");
+        }).when(paymentGateway).retrieveIntent(first.paymentIntentId());
+
+        assertThatThrownBy(() -> paymentService.createOrGetIntentForRental(rental.getId()))
+                .isInstanceOf(com.akif.payment.api.InvalidPaymentStateException.class)
+                .hasMessageContaining("closed");
+
+        Payment reloaded = paymentRepository.findById(payment.getId()).orElseThrow();
+        assertThat(reloaded.getStatus()).isEqualTo(PaymentStatus.CANCELLED);
+        assertThat(reloaded.isClosed()).isTrue();
+        verify(paymentGateway, times(1)).createIntent(any(IntentCommand.class), anyString());
+    }
+
+    @Test
+    @DisplayName("a closed payment cannot be started even when its status is CANCELLED")
+    void closedPaymentIsNotPayable() {
+        Rental rental = rental(LocalDate.now().plusDays(2), LocalDate.now().plusDays(5), RentalStatus.CONFIRMED);
+        Payment payment = rentalPayment(rental, PaymentStatus.PENDING);
+        assertThat(paymentService.cancelPayment(payment.getId()).success()).isTrue();
+
+        assertThatThrownBy(() -> paymentService.createOrGetIntentForRental(rental.getId()))
+                .isInstanceOf(com.akif.payment.api.InvalidPaymentStateException.class);
+        verify(paymentGateway, never()).createIntent(any(IntentCommand.class), anyString());
+    }
+
+    @Test
+    @DisplayName("a payment cancelled remotely, not by its rental, can still be restarted")
+    void remotelyCancelledPaymentStaysRestartable() {
+        Rental rental = rental(LocalDate.now().plusDays(2), LocalDate.now().plusDays(5), RentalStatus.CONFIRMED);
+        Payment payment = rentalPayment(rental, PaymentStatus.PENDING);
+        PaymentIntentResult first = paymentService.createOrGetIntentForRental(rental.getId());
+        paymentGateway.cancel(first.paymentIntentId(), "remote-cancel");
+        jdbcTemplate.update("UPDATE car_rental.payments SET status = 'CANCELLED' WHERE id = ?", payment.getId());
+
+        PaymentIntentResult restarted = paymentService.createOrGetIntentForRental(rental.getId());
+
+        assertThat(restarted.paymentIntentId()).isNotEqualTo(first.paymentIntentId());
+        assertThat(paymentRepository.findById(payment.getId()).orElseThrow().isClosed()).isFalse();
+    }
+
+    @Test
     @DisplayName("a failed refund keeps its key for the retry and is recorded once it succeeds")
     void failedRefundThenRetry() {
         Rental rental = capturedRental();

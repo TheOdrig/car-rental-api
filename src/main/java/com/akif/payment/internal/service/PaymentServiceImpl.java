@@ -180,9 +180,8 @@ class PaymentServiceImpl implements PaymentService {
     private PaymentIntentResult createOrGetIntent(Long paymentId) {
         for (int round = 0; round < MAX_INTENT_ROUNDS; round++) {
             PaymentSnapshot snapshot = transactionTemplate.execute(status -> PaymentSnapshot.of(requirePayment(paymentId)));
-            if (!PAYABLE.contains(snapshot.status())) {
-                throw new InvalidPaymentStateException(
-                        "Payment cannot be started in status: " + snapshot.status().name());
+            if (snapshot.closed() || !PAYABLE.contains(snapshot.status())) {
+                throw notPayable(snapshot.status(), snapshot.closed());
             }
 
             int attempt = snapshot.attempt();
@@ -194,6 +193,9 @@ class PaymentServiceImpl implements PaymentService {
                 if (intent.status() == GatewayIntentStatus.CANCELED) {
                     Integer restarted = transactionTemplate.execute(status -> {
                         Payment payment = requirePaymentForUpdate(paymentId);
+                        if (payment.isClosed()) {
+                            throw notPayable(payment.getStatus(), true);
+                        }
                         if (!Objects.equals(payment.getStripePaymentIntentId(), snapshot.intentId())) {
                             return null;
                         }
@@ -211,18 +213,27 @@ class PaymentServiceImpl implements PaymentService {
 
             GatewayIntent resolved = intent;
             String key = keys.forIntent(snapshot.rentalId(), paymentId, attempt);
-            IntentStep step = transactionTemplate.execute(status -> {
-                Payment payment = requirePaymentForUpdate(paymentId);
-                String stored = payment.getStripePaymentIntentId();
-                if (stored != null && !stored.equals(resolved.id())) {
-                    return IntentStep.other(stored);
-                }
-                if (stored == null) {
-                    payment.attachIntent(resolved.id(), key);
-                }
-                stateService.applyIntent(payment, resolved);
-                return IntentStep.attached(toIntentResult(payment, resolved));
-            });
+            IntentStep step;
+            try {
+                step = transactionTemplate.execute(status -> {
+                    Payment payment = requirePaymentForUpdate(paymentId);
+                    if (payment.isClosed()) {
+                        throw notPayable(payment.getStatus(), true);
+                    }
+                    String stored = payment.getStripePaymentIntentId();
+                    if (stored != null && !stored.equals(resolved.id())) {
+                        return IntentStep.other(stored);
+                    }
+                    if (stored == null) {
+                        payment.attachIntent(resolved.id(), key);
+                    }
+                    stateService.applyIntent(payment, resolved);
+                    return IntentStep.attached(toIntentResult(payment, resolved));
+                });
+            } catch (InvalidPaymentStateException closed) {
+                cancelOrphan(resolved.id());
+                throw closed;
+            }
             if (step.result() != null) {
                 return step.result();
             }
@@ -245,6 +256,12 @@ class PaymentServiceImpl implements PaymentService {
             }
         }
         throw new InvalidPaymentStateException("Payment intent is being replaced, retry shortly");
+    }
+
+    private static InvalidPaymentStateException notPayable(PaymentStatus status, boolean closed) {
+        return new InvalidPaymentStateException(closed
+                ? "Payment is closed because its rental was cancelled"
+                : "Payment cannot be started in status: " + status.name());
     }
 
     private void cancelOrphan(String intentId) {
@@ -321,6 +338,8 @@ class PaymentServiceImpl implements PaymentService {
         Payment payment = requirePaymentForUpdate(paymentId);
 
         if (payment.getStatus() == PaymentStatus.CANCELLED) {
+            payment.close();
+            paymentRepository.save(payment);
             return PaymentResult.success(payment.getTransactionId(), "Payment already cancelled");
         }
         if (payment.getStatus() != PaymentStatus.PENDING
@@ -339,6 +358,8 @@ class PaymentServiceImpl implements PaymentService {
             }
         }
         stateService.applyCancellation(payment);
+        payment.close();
+        paymentRepository.save(payment);
         return PaymentResult.success(payment.getTransactionId(), "Payment cancelled");
     }
 
@@ -669,7 +690,8 @@ class PaymentServiceImpl implements PaymentService {
             PaymentStatus status,
             String intentId,
             String customerId,
-            int attempt) {
+            int attempt,
+            boolean closed) {
 
         static PaymentSnapshot of(Payment payment) {
             return new PaymentSnapshot(
@@ -681,7 +703,8 @@ class PaymentServiceImpl implements PaymentService {
                     payment.getStatus(),
                     payment.getStripePaymentIntentId(),
                     payment.getStripeCustomerId(),
-                    payment.getIntentAttempt());
+                    payment.getIntentAttempt(),
+                    payment.isClosed());
         }
     }
 

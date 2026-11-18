@@ -82,6 +82,10 @@ public class Payment extends BaseEntity {
     @Builder.Default
     private int intentAttempt = 1;
 
+    @Column(name = "closed", nullable = false)
+    @Builder.Default
+    private boolean closed = false;
+
     @Column(name = "refund_count", nullable = false)
     @Builder.Default
     private int refundCount = 0;
@@ -161,6 +165,10 @@ public class Payment extends BaseEntity {
             return true;
         }
         return false;
+    }
+
+    public void close() {
+        this.closed = true;
     }
 
     public boolean fail(String reason) {
