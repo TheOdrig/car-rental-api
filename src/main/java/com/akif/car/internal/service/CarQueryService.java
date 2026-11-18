@@ -6,6 +6,7 @@ import com.akif.car.api.CarStatusType;
 import com.akif.car.domain.Car;
 import com.akif.car.internal.dto.request.CarSearchRequest;
 import com.akif.shared.web.PageResponse;
+import com.akif.car.internal.exception.CarValidationException;
 import com.akif.car.internal.mapper.CarMapper;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.shared.config.CacheConfig;
@@ -40,20 +41,20 @@ public class CarQueryService {
     @Cacheable(value = CacheConfig.CARS_CACHE, key = "'dto:' + #id")
     public CarDto getCarDtoById(Long id) {
         log.debug("Getting minimal CarDto for cross-module usage, id: {}", id);
-        CarDto result = carMapper.toCarDto(carLookup.requireById(id));
+        CarDto result = carMapper.toCarDto(carLookup.requireAnyById(id));
         log.debug("Successfully retrieved CarDto for id: {}", id);
         return result;
     }
 
     public CarResponse getCarForBooking(Long id) {
         log.debug("Reading car {} for booking straight from the database", id);
-        return carMapper.toDto(carLookup.requireById(id));
+        return carMapper.toDto(carLookup.requireActiveById(id));
     }
 
     @Cacheable(value = CacheConfig.CARS_CACHE, key = "#id")
     public CarResponse getCarById(Long id) {
         log.debug("Getting car by id: {}", id);
-        CarResponse result = carMapper.toDto(carLookup.requireById(id));
+        CarResponse result = carMapper.toDto(carLookup.requireActiveById(id));
         logCarRetrievalSuccess(result);
         return result;
     }
@@ -61,7 +62,7 @@ public class CarQueryService {
     @Cacheable(value = CacheConfig.CARS_CACHE, key = "'licensePlate:' + #licensePlate")
     public CarResponse getCarByLicensePlate(String licensePlate) {
         log.debug("Getting car by license plate: {}", licensePlate);
-        CarResponse result = carMapper.toDto(carLookup.requireByLicensePlate(licensePlate));
+        CarResponse result = carMapper.toDto(carLookup.requireActiveByLicensePlate(licensePlate));
         logCarRetrievalSuccess(result);
         return result;
     }
@@ -76,15 +77,19 @@ public class CarQueryService {
             "createTime", "create_time",
             "rating", "rating");
 
+    private static Sort defaultSearchSort() {
+        return Sort.by(new Sort.Order(Sort.Direction.DESC, "create_time").nullsLast(),
+                new Sort.Order(Sort.Direction.DESC, "id"));
+    }
+
     private static Sort searchSort(CarSearchRequest request) {
         String requested = request.getSortBy();
         if (requested == null) {
-            return Sort.by(new Sort.Order(Sort.Direction.DESC, "create_time").nullsLast(),
-                    new Sort.Order(Sort.Direction.DESC, "id"));
+            return defaultSearchSort();
         }
         String column = SEARCH_SORT_COLUMNS.get(requested);
         if (column == null) {
-            throw new IllegalArgumentException("Invalid sort field: " + requested);
+            throw new CarValidationException("Invalid sort field: " + requested);
         }
         Sort.Direction direction = "desc".equalsIgnoreCase(request.getSortDirection())
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
@@ -103,11 +108,9 @@ public class CarQueryService {
         int pageSize = searchRequest.getSize() != null ? searchRequest.getSize() : 20;
         Pageable pageable = PageRequest.of(pageNumber, pageSize, searchSort(searchRequest));
 
-        String searchTerm = searchRequest.getSearchTerm() != null
-                ? "%" + searchRequest.getSearchTerm().trim().toLowerCase() + "%"
-                : null;
-        String brand = lowerCaseOrNull(searchRequest.getBrand());
-        String model = lowerCaseOrNull(searchRequest.getModel());
+        String searchTerm = containsPattern(searchRequest.getSearchTerm());
+        String brand = exactPattern(searchRequest.getBrand());
+        String model = exactPattern(searchRequest.getModel());
         String transmissionType = lowerCaseOrNull(searchRequest.getTransmissionType());
         String bodyType = lowerCaseOrNull(searchRequest.getBodyType());
         String fuelType = lowerCaseOrNull(searchRequest.getFuelType());
@@ -147,7 +150,7 @@ public class CarQueryService {
     @Cacheable(value = CacheConfig.CARS_CACHE, key = "'all:' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort")
     public Page<CarResponse> getAllCars(Pageable pageable) {
         log.debug("Getting all cars with pageable: {}", pageable);
-        Page<CarResponse> result = carRepository.findAll(pageable).map(carMapper::toDto);
+        Page<CarResponse> result = carRepository.findByIsDeletedFalse(pageable).map(carMapper::toDto);
         logPagedRetrievalSuccess("cars", result);
         return result;
     }
@@ -155,7 +158,7 @@ public class CarQueryService {
     @Cacheable(value = CacheConfig.CARS_CACHE, key = "'status:' + #status + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<CarResponse> getCarsByStatus(String status, Pageable pageable) {
         log.debug("Getting cars by status: {}", status);
-        CarStatusType statusType = CarStatusType.fromString(status);
+        CarStatusType statusType = parseStatus(status);
         Page<CarResponse> result = carRepository.findByCarStatusTypeAndIsDeletedFalse(statusType, pageable)
                 .map(carMapper::toDto);
         logPagedRetrievalSuccess("cars", result);
@@ -212,19 +215,20 @@ public class CarQueryService {
         return carRepository.existsByLicensePlate(licensePlate);
     }
 
-    @Cacheable(value = CacheConfig.CARS_CACHE, key = "'search:' + #searchTerm + ':' + #brand + ':' + #model + ':' + #pageable.pageNumber")
+    @Cacheable(value = CacheConfig.CARS_CACHE,
+            key = "T(java.util.Arrays).asList('criteria', #searchTerm, #brand, #model, #minPrice, #maxPrice, #status, #page, #size)")
     public Page<CarResponse> searchCarsByCriteria(String searchTerm, String brand, String model,
                                                   BigDecimal minPrice, BigDecimal maxPrice,
-                                                  CarStatusType status, Pageable pageable) {
+                                                  CarStatusType status, int page, int size) {
         log.debug("Searching cars - term: {}, brand: {}, model: {}, price: {}-{}, status: {}",
                 searchTerm, brand, model, minPrice, maxPrice, status);
 
-        String statusStr = status != null ? status.name() : null;
-        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        Pageable pageable = PageRequest.of(page, size, defaultSearchSort());
         Page<CarResponse> result = carRepository.findCarsByCriteria(
-                searchTerm, brand, model, null, null, null, null, null, null, null, null, null, null, null, null,
-                minPrice, maxPrice, null, statusStr,
-                unsortedPageable).map(carMapper::toDto);
+                containsPattern(searchTerm), containsPattern(brand), containsPattern(model),
+                null, null, null, null, null, null, null, null, null, null, null, null,
+                minPrice, maxPrice, null, status != null ? status.name() : null,
+                pageable).map(carMapper::toDto);
 
         log.info("Found {} cars matching search criteria", result.getTotalElements());
         return result;
@@ -246,8 +250,30 @@ public class CarQueryService {
         return statuses;
     }
 
-    private String lowerCaseOrNull(String value) {
+    private static String lowerCaseOrNull(String value) {
         return value != null ? value.trim().toLowerCase() : null;
+    }
+
+    private static String escapeLike(String value) {
+        return value.replace("!", "!!").replace("%", "!%").replace("_", "!_");
+    }
+
+    private static String exactPattern(String value) {
+        String normalized = lowerCaseOrNull(value);
+        return normalized == null || normalized.isEmpty() ? null : escapeLike(normalized);
+    }
+
+    private static String containsPattern(String value) {
+        String normalized = lowerCaseOrNull(value);
+        return normalized == null || normalized.isEmpty() ? null : "%" + escapeLike(normalized) + "%";
+    }
+
+    private static CarStatusType parseStatus(String status) {
+        try {
+            return CarStatusType.fromString(status);
+        } catch (IllegalArgumentException e) {
+            throw new CarValidationException(e.getMessage());
+        }
     }
 
     private void logCarRetrievalSuccess(CarResponse result) {

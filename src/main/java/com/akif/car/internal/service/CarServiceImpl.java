@@ -136,8 +136,8 @@ public class CarServiceImpl implements CarService {
     @Override
     public Page<CarResponse> searchCarsByCriteria(String searchTerm, String brand, String model,
                                                   BigDecimal minPrice, BigDecimal maxPrice,
-                                                  CarStatusType status, Pageable pageable) {
-        return queryService.searchCarsByCriteria(searchTerm, brand, model, minPrice, maxPrice, status, pageable);
+                                                  CarStatusType status, int page, int size) {
+        return queryService.searchCarsByCriteria(searchTerm, brand, model, minPrice, maxPrice, status, page, size);
     }
 
     @Override

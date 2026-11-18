@@ -59,7 +59,7 @@ public class CarCommandService {
         carLookup.validateId(id);
         validateCarRequest(carRequest);
 
-        Car existingCar = carLookup.requireById(id);
+        Car existingCar = carLookup.requireActiveById(id);
 
         if (!existingCar.getLicensePlate().equals(carRequest.getLicensePlate())) {
             checkLicensePlateUniqueness(carRequest.getLicensePlate());
@@ -81,7 +81,7 @@ public class CarCommandService {
     @EvictCarCaches
     public void deleteCar(Long id) {
         log.debug("Hard deleting car with id: {}", id);
-        Car car = carLookup.requireById(id);
+        Car car = carLookup.requireAnyById(id);
         carRepository.delete(car);
         log.info("Successfully deleted car: ID={}", id);
     }
@@ -89,7 +89,7 @@ public class CarCommandService {
     @EvictCarCaches
     public void softDeleteCar(Long id) {
         log.debug("Soft deleting car with id: {}", id);
-        Car car = carLookup.requireById(id);
+        Car car = carLookup.requireActiveById(id);
         car.softDelete();
         car.setUpdateTime(LocalDateTime.now(clock));
         carRepository.save(car);
@@ -99,7 +99,7 @@ public class CarCommandService {
     @EvictCarCaches
     public CarResponse restoreCar(Long id) {
         log.debug("Restoring car with id: {}", id);
-        Car car = carLookup.requireById(id);
+        Car car = carLookup.requireAnyById(id);
         car.restore();
         car.setUpdateTime(LocalDateTime.now(clock));
 
@@ -113,7 +113,7 @@ public class CarCommandService {
     public CarResponse updateCarPrice(Long id, CarPriceUpdateRequest priceUpdateRequest) {
         log.debug("Updating car price for id: {}", id);
 
-        Car car = carLookup.requireById(id);
+        Car car = carLookup.requireActiveById(id);
         BigDecimal oldPrice = car.getPrice();
         car.setPrice(priceUpdateRequest.price());
         car.setCurrencyType(priceUpdateRequest.currencyType());
@@ -171,7 +171,7 @@ public class CarCommandService {
 
     private void validateCarRequest(CarRequest carRequest) {
         if (carRequest == null) {
-            throw new IllegalArgumentException("Car request cannot be null");
+            throw new CarValidationException("Car request cannot be null");
         }
 
         List<String> errors = validateCarData(carRequest);

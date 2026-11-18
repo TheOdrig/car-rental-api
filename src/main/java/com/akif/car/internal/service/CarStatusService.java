@@ -51,7 +51,7 @@ public class CarStatusService {
     public CarResponse reserveCar(Long id) {
         log.debug("Reserving car with id: {}", id);
 
-        Car car = carLookup.requireById(id);
+        Car car = carLookup.requireActiveById(id);
 
         if (!car.canBeReserved()) {
             log.warn("Car {} cannot be reserved, current status: {}", car.getId(), car.getCarStatusType());
@@ -69,7 +69,7 @@ public class CarStatusService {
     public CarResponse cancelReservation(Long id) {
         log.debug("Cancelling reservation for car with id: {}", id);
 
-        Car car = carLookup.requireById(id);
+        Car car = carLookup.requireActiveById(id);
 
         if (car.getCarStatusType() != CarStatusType.RESERVED) {
             log.warn("Car {} is not reserved, current status: {}", car.getId(), car.getCarStatusType());
@@ -89,7 +89,7 @@ public class CarStatusService {
     public CarResponse releaseCar(Long id) {
         log.debug("Releasing car after rental ends, id: {}", id);
 
-        Car car = carLookup.requireById(id);
+        Car car = carLookup.requireActiveById(id);
 
         if (car.getCarStatusType() != CarStatusType.RESERVED) {
             log.warn("Car {} is not reserved, current status: {}", car.getId(), car.getCarStatusType());
@@ -109,7 +109,7 @@ public class CarStatusService {
     public CarResponse markAsMaintenance(Long id) {
         log.debug("Marking car as maintenance with id: {}", id);
 
-        Car car = carLookup.requireById(id);
+        Car car = carLookup.requireActiveById(id);
         car.markAsMaintenance();
         CarResponse result = saveAndMap(car);
 
@@ -122,7 +122,7 @@ public class CarStatusService {
     public CarResponse markAsAvailable(Long id) {
         log.debug("Marking car as available with id: {}", id);
 
-        Car car = carLookup.requireById(id);
+        Car car = carLookup.requireActiveById(id);
         car.markAsAvailable();
         CarResponse result = saveAndMap(car);
 
@@ -135,7 +135,7 @@ public class CarStatusService {
     public CarResponse updateCarStatus(Long id, CarStatusUpdateRequest statusUpdateRequest) {
         log.debug("Updating car status for id: {} to {}", id, statusUpdateRequest.carStatusType());
 
-        Car car = carLookup.requireById(id);
+        Car car = carLookup.requireActiveById(id);
         CarStatusType oldStatus = car.getCarStatusType();
         CarStatusType newStatus = statusUpdateRequest.carStatusType();
 
@@ -150,7 +150,7 @@ public class CarStatusService {
 
     @Transactional(readOnly = true)
     public boolean canCarBeReserved(Long id) {
-        return carLookup.requireById(id).canBeReserved();
+        return carLookup.requireActiveById(id).canBeReserved();
     }
 
     private CarResponse saveAndMap(Car car) {

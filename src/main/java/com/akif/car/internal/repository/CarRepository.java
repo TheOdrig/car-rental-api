@@ -21,6 +21,8 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     Optional<Car> findByLicensePlate(String licensePlate);
 
+    Optional<Car> findByLicensePlateAndIsDeletedFalse(String licensePlate);
+
     Optional<Car> findByVinNumber(String vinNumber);
 
     boolean existsByLicensePlate(String licensePlate);
@@ -55,71 +57,33 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     Optional<Car> findByIdAndIsDeletedFalse(Long id);
 
-    @Query(value = "SELECT * FROM car_rental.car c WHERE " +
-            "(CAST(:searchTerm AS VARCHAR) IS NULL OR " +
-            "LOWER(c.license_plate) LIKE CAST(:searchTerm AS VARCHAR) OR " +
-            "LOWER(c.brand) LIKE CAST(:searchTerm AS VARCHAR) OR " +
-            "LOWER(c.model) LIKE CAST(:searchTerm AS VARCHAR)) AND " +
-            "(CAST(:brand AS VARCHAR) IS NULL OR LOWER(c.brand) = CAST(:brand AS VARCHAR)) AND " +
-            "(CAST(:model AS VARCHAR) IS NULL OR LOWER(c.model) = CAST(:model AS VARCHAR)) AND " +
-            "(CAST(:transmissionType AS VARCHAR) IS NULL OR LOWER(c.transmission_type) = CAST(:transmissionType AS VARCHAR)) AND "
-            +
-            "(CAST(:bodyType AS VARCHAR) IS NULL OR LOWER(c.body_type) = CAST(:bodyType AS VARCHAR)) AND " +
-            "(CAST(:fuelType AS VARCHAR) IS NULL OR LOWER(c.fuel_type) = CAST(:fuelType AS VARCHAR)) AND " +
-            "(CAST(:minSeats AS INTEGER) IS NULL OR c.seats >= CAST(:minSeats AS INTEGER)) AND " +
-            "(CAST(:maxSeats AS INTEGER) IS NULL OR c.seats <= CAST(:maxSeats AS INTEGER)) AND " +
-            "(CAST(:minDoors AS INTEGER) IS NULL OR c.doors >= CAST(:minDoors AS INTEGER)) AND " +
-            "(CAST(:maxKilometer AS BIGINT) IS NULL OR c.kilometer <= CAST(:maxKilometer AS BIGINT)) AND " +
-            "(CAST(:minRating AS DECIMAL) IS NULL OR c.rating >= CAST(:minRating AS DECIMAL)) AND " +
-            "(CAST(:engineType AS VARCHAR) IS NULL OR LOWER(c.engine_type) = CAST(:engineType AS VARCHAR)) AND " +
-            "(CAST(:color AS VARCHAR) IS NULL OR LOWER(c.color) = CAST(:color AS VARCHAR)) AND "
-            +
-            "(CAST(:minProductionYear AS INTEGER) IS NULL OR c.production_year >= CAST(:minProductionYear AS INTEGER)) AND "
-            +
-            "(CAST(:maxProductionYear AS INTEGER) IS NULL OR c.production_year <= CAST(:maxProductionYear AS INTEGER)) AND "
-            +
-            "(CAST(:minPrice AS DECIMAL) IS NULL OR c.price >= CAST(:minPrice AS DECIMAL)) AND " +
-            "(CAST(:maxPrice AS DECIMAL) IS NULL OR c.price <= CAST(:maxPrice AS DECIMAL)) AND " +
-            "(CAST(:currencyType AS VARCHAR) IS NULL OR c.currency_type = CAST(:currencyType AS VARCHAR)) AND "
-            +
-            "(CAST(:carStatusType AS VARCHAR) IS NULL OR c.car_status_type = CAST(:carStatusType AS VARCHAR)) AND "
-            +
-            "c.is_deleted = false", countQuery = "SELECT COUNT(*) FROM car_rental.car c WHERE " +
-            "(CAST(:searchTerm AS VARCHAR) IS NULL OR " +
-            "LOWER(c.license_plate) LIKE CAST(:searchTerm AS VARCHAR) OR " +
-            "LOWER(c.brand) LIKE CAST(:searchTerm AS VARCHAR) OR " +
-            "LOWER(c.model) LIKE CAST(:searchTerm AS VARCHAR)) AND " +
-            "(CAST(:brand AS VARCHAR) IS NULL OR LOWER(c.brand) = CAST(:brand AS VARCHAR)) AND "
-            +
-            "(CAST(:model AS VARCHAR) IS NULL OR LOWER(c.model) = CAST(:model AS VARCHAR)) AND "
-            +
-            "(CAST(:transmissionType AS VARCHAR) IS NULL OR LOWER(c.transmission_type) = CAST(:transmissionType AS VARCHAR)) AND "
-            +
-            "(CAST(:bodyType AS VARCHAR) IS NULL OR LOWER(c.body_type) = CAST(:bodyType AS VARCHAR)) AND "
-            +
-            "(CAST(:fuelType AS VARCHAR) IS NULL OR LOWER(c.fuel_type) = CAST(:fuelType AS VARCHAR)) AND "
-            +
-            "(CAST(:minSeats AS INTEGER) IS NULL OR c.seats >= CAST(:minSeats AS INTEGER)) AND " +
-            "(CAST(:maxSeats AS INTEGER) IS NULL OR c.seats <= CAST(:maxSeats AS INTEGER)) AND " +
-            "(CAST(:minDoors AS INTEGER) IS NULL OR c.doors >= CAST(:minDoors AS INTEGER)) AND " +
-            "(CAST(:maxKilometer AS BIGINT) IS NULL OR c.kilometer <= CAST(:maxKilometer AS BIGINT)) AND " +
-            "(CAST(:minRating AS DECIMAL) IS NULL OR c.rating >= CAST(:minRating AS DECIMAL)) AND " +
-            "(CAST(:engineType AS VARCHAR) IS NULL OR LOWER(c.engine_type) = CAST(:engineType AS VARCHAR)) AND " +
-            "(CAST(:color AS VARCHAR) IS NULL OR LOWER(c.color) = CAST(:color AS VARCHAR)) AND "
-            +
-            "(CAST(:minProductionYear AS INTEGER) IS NULL OR c.production_year >= CAST(:minProductionYear AS INTEGER)) AND "
-            +
-            "(CAST(:maxProductionYear AS INTEGER) IS NULL OR c.production_year <= CAST(:maxProductionYear AS INTEGER)) AND "
-            +
-            "(CAST(:minPrice AS DECIMAL) IS NULL OR c.price >= CAST(:minPrice AS DECIMAL)) AND "
-            +
-            "(CAST(:maxPrice AS DECIMAL) IS NULL OR c.price <= CAST(:maxPrice AS DECIMAL)) AND "
-            +
-            "(CAST(:currencyType AS VARCHAR) IS NULL OR c.currency_type = CAST(:currencyType AS VARCHAR)) AND "
-            +
-            "(CAST(:carStatusType AS VARCHAR) IS NULL OR c.car_status_type = CAST(:carStatusType AS VARCHAR)) AND "
-            +
-            "c.is_deleted = false", nativeQuery = true)
+    String CRITERIA_FILTER = "(CAST(:searchTerm AS VARCHAR) IS NULL OR "
+            + "LOWER(c.license_plate) LIKE CAST(:searchTerm AS VARCHAR) ESCAPE '!' OR "
+            + "LOWER(c.brand) LIKE CAST(:searchTerm AS VARCHAR) ESCAPE '!' OR "
+            + "LOWER(c.model) LIKE CAST(:searchTerm AS VARCHAR) ESCAPE '!') AND "
+            + "(CAST(:brand AS VARCHAR) IS NULL OR LOWER(c.brand) LIKE CAST(:brand AS VARCHAR) ESCAPE '!') AND "
+            + "(CAST(:model AS VARCHAR) IS NULL OR LOWER(c.model) LIKE CAST(:model AS VARCHAR) ESCAPE '!') AND "
+            + "(CAST(:transmissionType AS VARCHAR) IS NULL OR LOWER(c.transmission_type) = CAST(:transmissionType AS VARCHAR)) AND "
+            + "(CAST(:bodyType AS VARCHAR) IS NULL OR LOWER(c.body_type) = CAST(:bodyType AS VARCHAR)) AND "
+            + "(CAST(:fuelType AS VARCHAR) IS NULL OR LOWER(c.fuel_type) = CAST(:fuelType AS VARCHAR)) AND "
+            + "(CAST(:minSeats AS INTEGER) IS NULL OR c.seats >= CAST(:minSeats AS INTEGER)) AND "
+            + "(CAST(:maxSeats AS INTEGER) IS NULL OR c.seats <= CAST(:maxSeats AS INTEGER)) AND "
+            + "(CAST(:minDoors AS INTEGER) IS NULL OR c.doors >= CAST(:minDoors AS INTEGER)) AND "
+            + "(CAST(:maxKilometer AS BIGINT) IS NULL OR c.kilometer <= CAST(:maxKilometer AS BIGINT)) AND "
+            + "(CAST(:minRating AS DECIMAL) IS NULL OR c.rating >= CAST(:minRating AS DECIMAL)) AND "
+            + "(CAST(:engineType AS VARCHAR) IS NULL OR LOWER(c.engine_type) = CAST(:engineType AS VARCHAR)) AND "
+            + "(CAST(:color AS VARCHAR) IS NULL OR LOWER(c.color) = CAST(:color AS VARCHAR)) AND "
+            + "(CAST(:minProductionYear AS INTEGER) IS NULL OR c.production_year >= CAST(:minProductionYear AS INTEGER)) AND "
+            + "(CAST(:maxProductionYear AS INTEGER) IS NULL OR c.production_year <= CAST(:maxProductionYear AS INTEGER)) AND "
+            + "(CAST(:minPrice AS DECIMAL) IS NULL OR c.price >= CAST(:minPrice AS DECIMAL)) AND "
+            + "(CAST(:maxPrice AS DECIMAL) IS NULL OR c.price <= CAST(:maxPrice AS DECIMAL)) AND "
+            + "(CAST(:currencyType AS VARCHAR) IS NULL OR c.currency_type = CAST(:currencyType AS VARCHAR)) AND "
+            + "(CAST(:carStatusType AS VARCHAR) IS NULL OR c.car_status_type = CAST(:carStatusType AS VARCHAR)) AND "
+            + "c.is_deleted = false";
+
+    @Query(value = "SELECT * FROM {h-schema}car c WHERE " + CRITERIA_FILTER,
+            countQuery = "SELECT COUNT(*) FROM {h-schema}car c WHERE " + CRITERIA_FILTER,
+            nativeQuery = true)
     Page<Car> findCarsByCriteria(@Param("searchTerm") String searchTerm,
                                  @Param("brand") String brand,
                                  @Param("model") String model,

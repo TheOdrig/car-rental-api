@@ -197,7 +197,7 @@ class CarServiceImplTest {
         @DisplayName("Should find car by ID when car exists")
         void shouldFindCarByIdWhenCarExists() {
 
-            when(carRepository.findById(1L)).thenReturn(Optional.of(testCar1));
+            when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar1));
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
 
             CarResponse result = carService.getCarById(1L);
@@ -206,7 +206,7 @@ class CarServiceImplTest {
             assertThat(result.getId()).isEqualTo(1L);
             assertThat(result.getLicensePlate()).isEqualTo("34ABC123");
 
-            verify(carRepository).findById(1L);
+            verify(carRepository).findByIdAndIsDeletedFalse(1L);
             verify(carMapper).toDto(testCar1);
         }
 
@@ -214,13 +214,13 @@ class CarServiceImplTest {
         @DisplayName("Should throw exception when car ID does not exist")
         void shouldThrowExceptionWhenCarIdDoesNotExist() {
 
-            when(carRepository.findById(999L)).thenReturn(Optional.empty());
+            when(carRepository.findByIdAndIsDeletedFalse(999L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> carService.getCarById(999L))
                     .isInstanceOf(CarNotFoundException.class)
                     .hasMessageContaining("Car not found with id: 999");
 
-            verify(carRepository).findById(999L);
+            verify(carRepository).findByIdAndIsDeletedFalse(999L);
             verify(carMapper, never()).toDto(any());
         }
 
@@ -228,7 +228,7 @@ class CarServiceImplTest {
         @DisplayName("Should find car by license plate when car exists")
         void shouldFindCarByLicensePlateWhenCarExists() {
 
-            when(carRepository.findByLicensePlate("34ABC123")).thenReturn(Optional.of(testCar1));
+            when(carRepository.findByLicensePlateAndIsDeletedFalse("34ABC123")).thenReturn(Optional.of(testCar1));
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
 
             CarResponse result = carService.getCarByLicensePlate("34ABC123");
@@ -237,20 +237,20 @@ class CarServiceImplTest {
             assertThat(result.getId()).isEqualTo(1L);
             assertThat(result.getLicensePlate()).isEqualTo("34ABC123");
 
-            verify(carRepository).findByLicensePlate("34ABC123");
+            verify(carRepository).findByLicensePlateAndIsDeletedFalse("34ABC123");
             verify(carMapper).toDto(testCar1);
         }
 
         @Test
         @DisplayName("Should throw exception when car license plate does not exist")
         void shouldThrowExceptionWhenCarLicensePlateDoesNotExist() {
-            when(carRepository.findByLicensePlate("NONEXISTENT")).thenReturn(Optional.empty());
+            when(carRepository.findByLicensePlateAndIsDeletedFalse("NONEXISTENT")).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> carService.getCarByLicensePlate("NONEXISTENT"))
                     .isInstanceOf(CarNotFoundException.class)
                     .hasMessageContaining("Car not found with license plate: NONEXISTENT");
 
-            verify(carRepository).findByLicensePlate("NONEXISTENT");
+            verify(carRepository).findByLicensePlateAndIsDeletedFalse("NONEXISTENT");
             verify(carMapper, never()).toDto(any());
         }
     }
@@ -263,7 +263,7 @@ class CarServiceImplTest {
         @DisplayName("Should update car successfully when car exists")
         void shouldUpdateCarSuccessfullyWhenCarExists() {
 
-            when(carRepository.findById(1L)).thenReturn(Optional.of(testCar1));
+            when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar1));
             when(carRepository.existsByLicensePlate(testCarRequest.getLicensePlate())).thenReturn(false);
             when(carRepository.existsByVinNumber(testCarRequest.getVinNumber())).thenReturn(false);
             when(carRepository.save(testCar1)).thenReturn(testCar1);
@@ -274,7 +274,7 @@ class CarServiceImplTest {
             assertThat(result).isNotNull();
             assertThat(result.getId()).isEqualTo(1L);
 
-            verify(carRepository).findById(1L);
+            verify(carRepository).findByIdAndIsDeletedFalse(1L);
             verify(carRepository).existsByLicensePlate(testCarRequest.getLicensePlate());
             verify(carRepository).existsByVinNumber(testCarRequest.getVinNumber());
             verify(carMapper).updateEntity(testCarRequest, testCar1);
@@ -286,13 +286,13 @@ class CarServiceImplTest {
         @DisplayName("Should throw exception when updating non-existent car")
         void shouldThrowExceptionWhenUpdatingNonExistentCar() {
 
-            when(carRepository.findById(999L)).thenReturn(Optional.empty());
+            when(carRepository.findByIdAndIsDeletedFalse(999L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> carService.updateCar(999L, testCarRequest))
                     .isInstanceOf(CarNotFoundException.class)
                     .hasMessageContaining("Car not found with id: 999");
 
-            verify(carRepository).findById(999L);
+            verify(carRepository).findByIdAndIsDeletedFalse(999L);
             verify(carRepository, never()).existsByLicensePlate(any());
             verify(carMapper, never()).updateEntity(any(), any());
             verify(carRepository, never()).save(any());
@@ -340,7 +340,7 @@ class CarServiceImplTest {
 
             Pageable pageable = PageRequest.of(0, 10);
             Page<Car> carPage = new PageImpl<>(List.of(testCar1, testCar2));
-            when(carRepository.findAll(pageable)).thenReturn(carPage);
+            when(carRepository.findByIsDeletedFalse(pageable)).thenReturn(carPage);
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
             when(carMapper.toDto(testCar2)).thenReturn(testCarResponse);
 
@@ -350,7 +350,7 @@ class CarServiceImplTest {
             assertThat(result.getContent()).hasSize(2);
             assertThat(result.getTotalElements()).isEqualTo(2);
 
-            verify(carRepository).findAll(pageable);
+            verify(carRepository).findByIsDeletedFalse(pageable);
             verify(carMapper, times(2)).toDto(any(Car.class));
         }
 
@@ -388,7 +388,7 @@ class CarServiceImplTest {
                     "Workshop booking confirmed"
             );
 
-            when(carRepository.findById(1L)).thenReturn(Optional.of(testCar1));
+            when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar1));
             when(carRepository.save(testCar1)).thenReturn(testCar1);
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
 
@@ -397,7 +397,7 @@ class CarServiceImplTest {
             assertThat(result).isNotNull();
             assertThat(testCar1.getCarStatusType()).isEqualTo(CarStatusType.MAINTENANCE);
 
-            verify(carRepository).findById(1L);
+            verify(carRepository).findByIdAndIsDeletedFalse(1L);
             verify(carRepository).save(testCar1);
             verify(carMapper).toDto(testCar1);
         }

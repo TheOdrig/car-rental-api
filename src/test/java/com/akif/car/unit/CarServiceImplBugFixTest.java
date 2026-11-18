@@ -120,7 +120,7 @@ class CarServiceImplBugFixTest {
                     .carStatusType(CarStatusType.AVAILABLE)
                     .build();
 
-            when(carRepository.findById(1L)).thenReturn(Optional.of(carWithNullVin));
+            when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(carWithNullVin));
             when(carRepository.existsByVinNumber("NEWVIN123")).thenReturn(false);
             when(carRepository.save(any(Car.class))).thenReturn(carWithNullVin);
             when(carMapper.toDto(any(Car.class))).thenReturn(testCarResponse);
@@ -145,7 +145,7 @@ class CarServiceImplBugFixTest {
                     .carStatusType(CarStatusType.AVAILABLE)
                     .build();
 
-            when(carRepository.findById(1L)).thenReturn(Optional.of(testCar));
+            when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
             when(carRepository.existsByVinNumber(null)).thenReturn(false);
             when(carRepository.save(any(Car.class))).thenReturn(testCar);
             when(carMapper.toDto(any(Car.class))).thenReturn(testCarResponse);
@@ -180,7 +180,7 @@ class CarServiceImplBugFixTest {
                     .carStatusType(CarStatusType.AVAILABLE)
                     .build();
 
-            when(carRepository.findById(1L)).thenReturn(Optional.of(carWithNullVin));
+            when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(carWithNullVin));
             when(carRepository.save(any(Car.class))).thenReturn(carWithNullVin);
             when(carMapper.toDto(any(Car.class))).thenReturn(testCarResponse);
 

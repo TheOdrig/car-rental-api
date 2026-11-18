@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.akif.shared.web.PageResponse;
@@ -96,8 +98,9 @@ public class CarSearchController {
             @Parameter(description = "Minimum price") @RequestParam(required = false) BigDecimal minPrice,
             @Parameter(description = "Maximum price") @RequestParam(required = false) BigDecimal maxPrice,
             @Parameter(description = "Status") @RequestParam(required = false) CarStatusType status,
-            @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
-        Page<CarResponse> cars = carService.searchCarsByCriteria(searchTerm, brand, model, minPrice, maxPrice, status, pageable);
+            @Parameter(description = "Page number, zero based") @RequestParam(defaultValue = "0") @Min(0) int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+        Page<CarResponse> cars = carService.searchCarsByCriteria(searchTerm, brand, model, minPrice, maxPrice, status, page, size);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 

@@ -121,6 +121,61 @@ class CarSearchControllerIntegrationTest {
                 .param("page", "0")
                 .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray());
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].licensePlate").value("34ABC123"));
+    }
+
+    @Test
+    @DisplayName("Criteria search matches brand and model partially and case-insensitively")
+    void criteriaSearchIsPartialAndCaseInsensitive() throws Exception {
+        mockMvc.perform(get("/api/v1/cars/search/criteria").param("brand", "toYO"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].brand").value("Toyota"));
+
+        mockMvc.perform(get("/api/v1/cars/search/criteria").param("model", "IVI"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].model").value("Civic"));
+
+        mockMvc.perform(get("/api/v1/cars/search/criteria").param("searchTerm", "corOL"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].licensePlate").value("34ABC123"));
+    }
+
+    @Test
+    @DisplayName("Criteria search treats LIKE wildcards in the input literally")
+    void criteriaSearchEscapesWildcards() throws Exception {
+        mockMvc.perform(get("/api/v1/cars/search/criteria").param("brand", "%"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(0));
+    }
+
+    @Test
+    @DisplayName("Criteria search keeps results of different criteria apart in the cache")
+    void criteriaSearchCacheKeyCoversEveryCriterion() throws Exception {
+        mockMvc.perform(get("/api/v1/cars/search/criteria").param("brand", "Toyota").param("minPrice", "100000"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1));
+        mockMvc.perform(get("/api/v1/cars/search/criteria").param("brand", "Toyota").param("minPrice", "300000"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(0));
+
+        mockMvc.perform(get("/api/v1/cars/search/criteria").param("size", "1").param("page", "0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.totalElements").value(3));
+        mockMvc.perform(get("/api/v1/cars/search/criteria").param("size", "2").param("page", "0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(2));
+    }
+
+    @Test
+    @DisplayName("An unknown status answers 400 with a ProblemDetail")
+    void unknownStatusIsAClientError() throws Exception {
+        mockMvc.perform(get("/api/v1/cars/search/status/foo"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("CAR_VALIDATION_FAILED"));
     }
 }
