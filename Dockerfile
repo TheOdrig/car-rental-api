@@ -1,18 +1,28 @@
-FROM maven:3.9-eclipse-temurin-17 AS build
-WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN mvn clean package -DskipTests
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /workspace
 
-FROM eclipse-temurin:17-jre-alpine
+COPY .mvn .mvn
+COPY mvnw pom.xml ./
+RUN chmod +x mvnw && ./mvnw -B -q dependency:go-offline
+
+COPY src src
+RUN ./mvnw -B -DskipTests package
+
+FROM eclipse-temurin:21-jre-alpine AS layers
+WORKDIR /layers
+COPY --from=build /workspace/target/*.jar application.jar
+RUN java -Djarmode=tools -jar application.jar extract --layers --destination extracted
+
+FROM eclipse-temurin:21-jre-alpine AS runtime
 WORKDIR /app
-COPY --from=build /app/target/car-rental-api-0.0.1-SNAPSHOT.jar app.jar
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0"
+
+RUN addgroup -S spring && adduser -S -G spring spring
+COPY --from=layers /layers/extracted/dependencies/ ./
+COPY --from=layers /layers/extracted/spring-boot-loader/ ./
+COPY --from=layers /layers/extracted/snapshot-dependencies/ ./
+COPY --from=layers /layers/extracted/application/ ./
+
+USER spring
 EXPOSE 8082
-
-# JVM options configurable via environment variable
-# Default: container-aware with 75% RAM usage
-# Override: docker run -e JAVA_OPTS="-Xmx1g -Xms512m" ...
-ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
-
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
-
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar application.jar"]
