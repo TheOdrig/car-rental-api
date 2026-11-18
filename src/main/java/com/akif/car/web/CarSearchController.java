@@ -1,7 +1,6 @@
 package com.akif.car.web;
 
 import com.akif.car.api.CarResponse;
-import com.akif.car.internal.dto.request.CarSearchRequest;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.api.CarService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,7 +10,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.akif.shared.web.PageResponse;
@@ -32,20 +30,6 @@ import java.math.BigDecimal;
 public class CarSearchController {
 
     private final CarService carService;
-
-    @PostMapping
-    @Operation(summary = "Search cars", description = "Search cars with various criteria")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Search completed successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid search criteria")
-    })
-    public ResponseEntity<PageResponse<CarResponse>> searchCars(
-            @Parameter(description = "Search criteria", required = true) @Valid @RequestBody CarSearchRequest searchRequest) {
-        log.debug("POST /api/v1/cars/search - Searching cars with criteria: {}", searchRequest);
-        PageResponse<CarResponse> result = carService.searchCars(searchRequest);
-        log.info("Search completed: found {} cars", result.totalElements());
-        return ResponseEntity.ok(result);
-    }
 
     @GetMapping(value = "/status/{status}")
     @Operation(summary = "Get cars by status", description = "Retrieve cars by their status")

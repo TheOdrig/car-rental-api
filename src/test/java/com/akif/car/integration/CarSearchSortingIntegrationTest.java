@@ -18,8 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,7 +28,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -165,16 +162,4 @@ class CarSearchSortingIntegrationTest {
                 .andExpect(jsonPath("$.currentPage").doesNotExist());
     }
 
-    @Test
-    @WithMockUser
-    @DisplayName("POST returns the shared PageResponse shape and honours sorting")
-    void postReturnsPageResponse() throws Exception {
-        mockMvc.perform(post("/api/v1/cars/search")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"sortBy\":\"price\",\"sortDirection\":\"desc\",\"size\":2}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].licensePlate").value("34DDD444"))
-                .andExpect(jsonPath("$.totalElements").value(5))
-                .andExpect(jsonPath("$.cars").doesNotExist());
-    }
 }
