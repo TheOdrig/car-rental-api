@@ -2,6 +2,7 @@ package com.akif.notification.internal.config;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,11 +18,16 @@ import java.util.concurrent.Executor;
 @EnableAsync
 @EnableRetry
 @ConfigurationProperties(prefix = "email.async")
-public class AsyncConfig {
+public class AsyncConfig implements AsyncConfigurer {
 
     private int corePoolSize = 2;
     private int maxPoolSize = 10;
     private int queueCapacity = 100;
+
+    @Override
+    public Executor getAsyncExecutor() {
+        return emailTaskExecutor();
+    }
 
     @Bean("emailTaskExecutor")
     public Executor emailTaskExecutor() {
@@ -29,7 +35,7 @@ public class AsyncConfig {
         executor.setCorePoolSize(corePoolSize);
         executor.setMaxPoolSize(maxPoolSize);
         executor.setQueueCapacity(queueCapacity);
-        executor.setThreadNamePrefix("email-");
+        executor.setThreadNamePrefix("event-");
         executor.initialize();
         return executor;
     }

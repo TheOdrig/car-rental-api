@@ -7,7 +7,7 @@ import com.akif.rental.api.RentalConfirmedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
-import org.springframework.context.event.EventListener;
+import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,7 +22,7 @@ public class DashboardEventListener {
 
     private final CacheManager cacheManager;
 
-    @EventListener
+    @ApplicationModuleListener
     public void handleRentalConfirmed(RentalConfirmedEvent event) {
         log.debug("Received RentalConfirmedEvent for rental: {}. Evicting dailySummary and fleetStatus caches.",
                 event.rentalId());
@@ -30,7 +30,7 @@ public class DashboardEventListener {
         evictCache(FLEET_STATUS_CACHE);
     }
 
-    @EventListener
+    @ApplicationModuleListener
     public void handleRentalCancelled(RentalCancelledEvent event) {
         log.debug("Received RentalCancelledEvent for rental: {}. Evicting dailySummary, fleetStatus, and monthlyMetrics caches.",
                 event.rentalId());
@@ -39,7 +39,7 @@ public class DashboardEventListener {
         evictCache(MONTHLY_METRICS_CACHE);
     }
 
-    @EventListener
+    @ApplicationModuleListener
     public void handlePaymentCaptured(PaymentCapturedEvent event) {
         log.debug("Received PaymentCapturedEvent for payment: {}, rental: {}. Evicting revenueAnalytics and monthlyMetrics caches.",
                 event.paymentId(), event.rentalId());
@@ -47,7 +47,7 @@ public class DashboardEventListener {
         evictCache(MONTHLY_METRICS_CACHE);
     }
 
-    @EventListener
+    @ApplicationModuleListener
     public void handleDamageReported(DamageReportedEvent event) {
         log.debug("Received DamageReportedEvent for damage: {}, rental: {}. Evicting dailySummary cache.",
                 event.damageReportId(), event.rentalId());

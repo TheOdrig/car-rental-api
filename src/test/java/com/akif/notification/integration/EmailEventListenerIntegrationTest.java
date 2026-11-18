@@ -45,6 +45,13 @@ class EmailEventListenerIntegrationTest {
     @MockitoSpyBean
     private IEmailSender emailSender;
 
+    @Autowired
+    private org.springframework.transaction.support.TransactionTemplate transactionTemplate;
+
+    private void publishInTransaction(Object event) {
+        transactionTemplate.executeWithoutResult(status -> eventPublisher.publishEvent(event));
+    }
+
     @Nested
     @DisplayName("RentalConfirmedEvent Tests")
     class RentalConfirmedEventTests {
@@ -65,7 +72,7 @@ class EmailEventListenerIntegrationTest {
                     "Istanbul Airport",
                     null);
 
-            eventPublisher.publishEvent(event);
+            publishInTransaction(event);
 
             await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
                 ArgumentCaptor<EmailMessage> captor = ArgumentCaptor.forClass(EmailMessage.class);
@@ -101,7 +108,7 @@ class EmailEventListenerIntegrationTest {
                     "txn_123456",
                     LocalDateTime.now());
 
-            eventPublisher.publishEvent(event);
+            publishInTransaction(event);
 
             await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
                 ArgumentCaptor<EmailMessage> captor = ArgumentCaptor.forClass(EmailMessage.class);
@@ -138,7 +145,7 @@ class EmailEventListenerIntegrationTest {
                     "Toyota",
                     "Corolla");
 
-            eventPublisher.publishEvent(event);
+            publishInTransaction(event);
 
             await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
                 ArgumentCaptor<EmailMessage> captor = ArgumentCaptor.forClass(EmailMessage.class);
@@ -175,7 +182,7 @@ class EmailEventListenerIntegrationTest {
                     "Istanbul Airport",
                     new BigDecimal("500.00"));
 
-            eventPublisher.publishEvent(event);
+            publishInTransaction(event);
 
             await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
                 ArgumentCaptor<EmailMessage> captor = ArgumentCaptor.forClass(EmailMessage.class);
@@ -213,7 +220,7 @@ class EmailEventListenerIntegrationTest {
                     new BigDecimal("2000.00"),
                     "refund_123456");
 
-            eventPublisher.publishEvent(event);
+            publishInTransaction(event);
 
             await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
                 ArgumentCaptor<EmailMessage> captor = ArgumentCaptor.forClass(EmailMessage.class);
@@ -246,7 +253,7 @@ class EmailEventListenerIntegrationTest {
                     null,
                     null);
 
-            eventPublisher.publishEvent(event);
+            publishInTransaction(event);
 
             await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
                 ArgumentCaptor<EmailMessage> captor = ArgumentCaptor.forClass(EmailMessage.class);
