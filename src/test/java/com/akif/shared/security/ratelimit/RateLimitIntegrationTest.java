@@ -15,6 +15,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import java.net.URI;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -82,6 +84,35 @@ class RateLimitIntegrationTest {
                 .andReturn();
 
         assertRateLimited(limited);
+    }
+
+    @Test
+    @DisplayName("percent-encoded and trailing-slash paths share the login bucket")
+    void encodedLoginPathsAreLimited() throws Exception {
+        String body = "{\"username\":\"nobody\",\"password\":\"wrong-password\"}";
+        String[] variants = {"/api/auth/l%6Fgin", "/api/auth/%6Cogin", "/api/auth/log%69n"};
+        for (String variant : variants) {
+            mockMvc.perform(post(URI.create(variant)).contentType(MediaType.APPLICATION_JSON).content(body))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        assertRateLimited(mockMvc.perform(json("/api/auth/login", body)).andReturn());
+        assertRateLimited(mockMvc.perform(post(URI.create("/api/auth/l%6Fgin"))
+                .contentType(MediaType.APPLICATION_JSON).content(body)).andReturn());
+        assertRateLimited(mockMvc.perform(json("/api/auth/login/", body)).andReturn());
+    }
+
+    @Test
+    @DisplayName("an encoded refresh path is limited")
+    void encodedRefreshPathIsLimited() throws Exception {
+        String body = "{\"refreshToken\":\"unknown\"}";
+        for (int i = 0; i < 2; i++) {
+            mockMvc.perform(post(URI.create("/api/auth/refre%73h")).contentType(MediaType.APPLICATION_JSON)
+                    .content(body)).andExpect(status().isUnauthorized());
+        }
+
+        assertRateLimited(mockMvc.perform(post(URI.create("/api/auth/refre%73h"))
+                .contentType(MediaType.APPLICATION_JSON).content(body)).andReturn());
     }
 
     @Test

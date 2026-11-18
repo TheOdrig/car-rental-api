@@ -44,7 +44,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             return;
         }
 
-        Optional<RateLimitCategory> category = classifier.classify(request.getMethod(), request.getRequestURI());
+        Optional<RateLimitCategory> category = classifier.classify(request);
         if (category.isEmpty()) {
             filterChain.doFilter(request, response);
             return;

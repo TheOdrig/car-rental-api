@@ -1,35 +1,44 @@
 package com.akif.shared.security.ratelimit;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
 public class RateLimitEndpointClassifier {
 
-    private static final String OAUTH2_CALLBACK_PREFIX = "/api/oauth2/callback/";
+    private final Map<RequestMatcher, RateLimitCategory> rules = new LinkedHashMap<>();
 
-    public Optional<RateLimitCategory> classify(String method, String path) {
-        if (method == null || path == null) {
-            return Optional.empty();
+    public RateLimitEndpointClassifier() {
+        PathPatternRequestMatcher.Builder matchers = PathPatternRequestMatcher.withDefaults();
+        add(matchers, HttpMethod.POST, "/api/auth/login", RateLimitCategory.LOGIN);
+        add(matchers, HttpMethod.POST, "/api/auth/register", RateLimitCategory.REGISTER);
+        add(matchers, HttpMethod.POST, "/api/auth/refresh", RateLimitCategory.REFRESH);
+        add(matchers, HttpMethod.POST, "/api/auth/forgot-password", RateLimitCategory.PASSWORD_RESET);
+        add(matchers, HttpMethod.POST, "/api/auth/reset-password", RateLimitCategory.PASSWORD_RESET);
+        add(matchers, HttpMethod.GET, "/api/oauth2/callback/**", RateLimitCategory.OAUTH2_CALLBACK);
+    }
+
+    private void add(PathPatternRequestMatcher.Builder matchers, HttpMethod method, String pattern,
+                     RateLimitCategory category) {
+        rules.put(matchers.matcher(method, pattern), category);
+        if (!pattern.endsWith("/**")) {
+            rules.put(matchers.matcher(method, pattern + "/"), category);
         }
-        String normalized = path.length() > 1 && path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+    }
 
-        if ("POST".equalsIgnoreCase(method)) {
-            return switch (normalized) {
-                case "/api/auth/login" -> Optional.of(RateLimitCategory.LOGIN);
-                case "/api/auth/register" -> Optional.of(RateLimitCategory.REGISTER);
-                case "/api/auth/refresh" -> Optional.of(RateLimitCategory.REFRESH);
-                case "/api/auth/forgot-password", "/api/auth/reset-password" ->
-                        Optional.of(RateLimitCategory.PASSWORD_RESET);
-                default -> Optional.empty();
-            };
+    public Optional<RateLimitCategory> classify(HttpServletRequest request) {
+        for (Map.Entry<RequestMatcher, RateLimitCategory> rule : rules.entrySet()) {
+            if (rule.getKey().matches(request)) {
+                return Optional.of(rule.getValue());
+            }
         }
-
-        if ("GET".equalsIgnoreCase(method) && normalized.startsWith(OAUTH2_CALLBACK_PREFIX)) {
-            return Optional.of(RateLimitCategory.OAUTH2_CALLBACK);
-        }
-
         return Optional.empty();
     }
 }
