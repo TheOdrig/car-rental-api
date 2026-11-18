@@ -67,6 +67,13 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             "(CAST(:bodyType AS VARCHAR) IS NULL OR LOWER(c.body_type) = CAST(:bodyType AS VARCHAR)) AND " +
             "(CAST(:fuelType AS VARCHAR) IS NULL OR LOWER(c.fuel_type) = CAST(:fuelType AS VARCHAR)) AND " +
             "(CAST(:minSeats AS INTEGER) IS NULL OR c.seats >= CAST(:minSeats AS INTEGER)) AND " +
+            "(CAST(:maxSeats AS INTEGER) IS NULL OR c.seats <= CAST(:maxSeats AS INTEGER)) AND " +
+            "(CAST(:minDoors AS INTEGER) IS NULL OR c.doors >= CAST(:minDoors AS INTEGER)) AND " +
+            "(CAST(:maxKilometer AS BIGINT) IS NULL OR c.kilometer <= CAST(:maxKilometer AS BIGINT)) AND " +
+            "(CAST(:minRating AS DECIMAL) IS NULL OR c.rating >= CAST(:minRating AS DECIMAL)) AND " +
+            "(CAST(:engineType AS VARCHAR) IS NULL OR LOWER(c.engine_type) = CAST(:engineType AS VARCHAR)) AND " +
+            "(CAST(:color AS VARCHAR) IS NULL OR LOWER(c.color) = CAST(:color AS VARCHAR)) AND "
+            +
             "(CAST(:minProductionYear AS INTEGER) IS NULL OR c.production_year >= CAST(:minProductionYear AS INTEGER)) AND "
             +
             "(CAST(:maxProductionYear AS INTEGER) IS NULL OR c.production_year <= CAST(:maxProductionYear AS INTEGER)) AND "
@@ -92,7 +99,13 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             +
             "(CAST(:fuelType AS VARCHAR) IS NULL OR LOWER(c.fuel_type) = CAST(:fuelType AS VARCHAR)) AND "
             +
-            "(CAST(:minSeats AS INTEGER) IS NULL OR c.seats >= CAST(:minSeats AS INTEGER)) AND "
+            "(CAST(:minSeats AS INTEGER) IS NULL OR c.seats >= CAST(:minSeats AS INTEGER)) AND " +
+            "(CAST(:maxSeats AS INTEGER) IS NULL OR c.seats <= CAST(:maxSeats AS INTEGER)) AND " +
+            "(CAST(:minDoors AS INTEGER) IS NULL OR c.doors >= CAST(:minDoors AS INTEGER)) AND " +
+            "(CAST(:maxKilometer AS BIGINT) IS NULL OR c.kilometer <= CAST(:maxKilometer AS BIGINT)) AND " +
+            "(CAST(:minRating AS DECIMAL) IS NULL OR c.rating >= CAST(:minRating AS DECIMAL)) AND " +
+            "(CAST(:engineType AS VARCHAR) IS NULL OR LOWER(c.engine_type) = CAST(:engineType AS VARCHAR)) AND " +
+            "(CAST(:color AS VARCHAR) IS NULL OR LOWER(c.color) = CAST(:color AS VARCHAR)) AND "
             +
             "(CAST(:minProductionYear AS INTEGER) IS NULL OR c.production_year >= CAST(:minProductionYear AS INTEGER)) AND "
             +
@@ -114,6 +127,12 @@ public interface CarRepository extends JpaRepository<Car, Long> {
                                  @Param("bodyType") String bodyType,
                                  @Param("fuelType") String fuelType,
                                  @Param("minSeats") Integer minSeats,
+                                 @Param("maxSeats") Integer maxSeats,
+                                 @Param("minDoors") Integer minDoors,
+                                 @Param("maxKilometer") Long maxKilometer,
+                                 @Param("minRating") BigDecimal minRating,
+                                 @Param("engineType") String engineType,
+                                 @Param("color") String color,
                                  @Param("minProductionYear") Integer minProductionYear,
                                  @Param("maxProductionYear") Integer maxProductionYear,
                                  @Param("minPrice") BigDecimal minPrice,

@@ -123,6 +123,12 @@ public class CarQueryService {
                 bodyType,
                 fuelType,
                 searchRequest.getMinSeats(),
+                searchRequest.getMaxSeats(),
+                searchRequest.getMinDoors(),
+                searchRequest.getMaxKilometer(),
+                searchRequest.getMinRating(),
+                lowerCaseOrNull(searchRequest.getEngineType()),
+                lowerCaseOrNull(searchRequest.getColor()),
                 searchRequest.getMinProductionYear(),
                 searchRequest.getMaxProductionYear(),
                 searchRequest.getMinPrice(),
@@ -216,7 +222,8 @@ public class CarQueryService {
         String statusStr = status != null ? status.name() : null;
         Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         Page<CarResponse> result = carRepository.findCarsByCriteria(
-                searchTerm, brand, model, null, null, null, null, null, null, minPrice, maxPrice, null, statusStr,
+                searchTerm, brand, model, null, null, null, null, null, null, null, null, null, null, null, null,
+                minPrice, maxPrice, null, statusStr,
                 unsortedPageable).map(carMapper::toDto);
 
         log.info("Found {} cars matching search criteria", result.getTotalElements());

@@ -55,17 +55,11 @@ public class CarSearchRequest {
     @Size(max = 30, message = "Color filter cannot exceed 30 characters")
     private String color;
 
-    @Min(value = 0, message = "Minimum kilometer cannot be negative")
-    private Long minKilometer;
-
     @Max(value = 999999, message = "Maximum kilometer cannot exceed 999,999 km")
     private Long maxKilometer;
 
     @Min(value = 2, message = "Minimum doors must be at least 2")
     private Integer minDoors;
-
-    @Max(value = 6, message = "Maximum doors cannot exceed 6")
-    private Integer maxDoors;
 
     @Min(value = 1, message = "Minimum seats must be at least 1")
     private Integer minSeats;
@@ -75,14 +69,6 @@ public class CarSearchRequest {
 
     @DecimalMin(value = "1.0", message = "Minimum rating must be at least 1.0")
     private BigDecimal minRating;
-
-    @DecimalMax(value = "5.0", message = "Maximum rating cannot exceed 5.0")
-    private BigDecimal maxRating;
-
-    private Boolean isNew;
-    private Boolean hasDamage;
-    private Boolean needsService;
-    private Boolean hasExpiredDocuments;
 
     @Pattern(regexp = "^(id|licensePlate|brand|model|productionYear|price|createTime|rating)$",
             message = "Invalid sort field")
