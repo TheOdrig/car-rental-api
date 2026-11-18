@@ -109,6 +109,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/dashboard/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/alerts/**").hasRole("ADMIN")
 
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated())
                 .exceptionHandling(handling -> handling
                         .authenticationEntryPoint(authenticationEntryPoint)

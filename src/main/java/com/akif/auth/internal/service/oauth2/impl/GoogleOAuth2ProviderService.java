@@ -93,6 +93,11 @@ public class GoogleOAuth2ProviderService implements OAuth2ProviderService {
                 throw OAuth2ProviderException.emailRequired(PROVIDER_NAME);
             }
 
+            if (!Boolean.TRUE.equals(userAttributes.get("email_verified"))) {
+                log.warn("Google returned an unverified email; refusing to use it for account lookup");
+                throw OAuth2ProviderException.emailRequired(PROVIDER_NAME);
+            }
+
             log.debug("Successfully retrieved user info from Google for email: {}", email);
             return new OAuth2UserInfo(providerId, email, name, firstName, lastName, avatarUrl, PROVIDER_NAME);
         } catch (RestClientException e) {

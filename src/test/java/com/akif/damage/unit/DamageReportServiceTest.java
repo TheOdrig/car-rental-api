@@ -462,16 +462,44 @@ class DamageReportServiceTest {
     class GetPhotoUrlOperations {
 
         @Test
-        @DisplayName("Should get photo URL successfully")
-        void shouldGetPhotoUrlSuccessfully() {
+        @DisplayName("Should return the URL to the customer who owns the damage report")
+        void shouldGetPhotoUrlForOwner() {
             when(damagePhotoRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamagePhoto));
+            when(authService.getUserByUsername("testuser")).thenReturn(testUser);
             when(damageConfig.getPhotoUrlExpirationMinutes()).thenReturn(60);
             when(fileUploadService.generateSecureUrl(anyString(), eq(60))).thenReturn("https://secure.url/photo.jpg");
 
-            String result = damageReportService.getPhotoUrl(1L);
+            String result = damageReportService.getPhotoUrl(1L, "testuser");
 
             assertThat(result).isEqualTo("https://secure.url/photo.jpg");
             verify(fileUploadService).generateSecureUrl(testDamagePhoto.getFilePath(), 60);
+        }
+
+        @Test
+        @DisplayName("Should return the URL to an admin")
+        void shouldGetPhotoUrlForAdmin() {
+            UserDto admin = new UserDto(9L, "admin", "admin@example.com", "Ad", "Min", null, null,
+                    Set.of(Role.ADMIN), true);
+            when(damagePhotoRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamagePhoto));
+            when(authService.getUserByUsername("admin")).thenReturn(admin);
+            when(damageConfig.getPhotoUrlExpirationMinutes()).thenReturn(60);
+            when(fileUploadService.generateSecureUrl(anyString(), eq(60))).thenReturn("https://secure.url/photo.jpg");
+
+            assertThat(damageReportService.getPhotoUrl(1L, "admin")).isEqualTo("https://secure.url/photo.jpg");
+        }
+
+        @Test
+        @DisplayName("Should refuse a customer who does not own the damage report")
+        void shouldRefuseOtherCustomer() {
+            UserDto stranger = new UserDto(7L, "stranger", "stranger@example.com", "Some", "One", null, null,
+                    Set.of(Role.USER), true);
+            when(damagePhotoRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamagePhoto));
+            when(authService.getUserByUsername("stranger")).thenReturn(stranger);
+
+            assertThatThrownBy(() -> damageReportService.getPhotoUrl(1L, "stranger"))
+                    .isInstanceOf(org.springframework.security.access.AccessDeniedException.class);
+
+            verify(fileUploadService, never()).generateSecureUrl(anyString(), anyInt());
         }
 
         @Test
@@ -479,7 +507,7 @@ class DamageReportServiceTest {
         void shouldThrowExceptionWhenPhotoNotFoundForUrl() {
             when(damagePhotoRepository.findByIdAndIsDeletedFalse(999L)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> damageReportService.getPhotoUrl(999L))
+            assertThatThrownBy(() -> damageReportService.getPhotoUrl(999L, "testuser"))
                     .isInstanceOf(DamageReportException.class);
         }
     }

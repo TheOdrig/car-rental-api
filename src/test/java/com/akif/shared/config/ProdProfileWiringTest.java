@@ -68,6 +68,14 @@ class ProdProfileWiringTest {
     }
 
     @Test
+    @DisplayName("does not expose the API documentation")
+    void doesNotExposeApiDocs() {
+        assertThat(context.getEnvironment().getProperty("springdoc.api-docs.enabled")).isEqualTo("false");
+        assertThat(context.getEnvironment().getProperty("springdoc.swagger-ui.enabled")).isEqualTo("false");
+        assertThat(context.getBeanNamesForType(org.springdoc.webmvc.api.OpenApiWebMvcResource.class)).isEmpty();
+    }
+
+    @Test
     @DisplayName("validates the production configuration at startup")
     void validatesConfigurationAtStartup() {
         assertThat(context.getBeansOfType(ProdConfigurationValidator.class)).hasSize(1);

@@ -6,6 +6,7 @@ import com.akif.auth.domain.User;
 import com.akif.auth.internal.dto.ForgotPasswordRequest;
 import com.akif.auth.internal.dto.ResetPasswordRequest;
 import com.akif.auth.internal.repository.PasswordResetTokenRepository;
+import com.akif.auth.internal.service.TokenHashing;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.shared.enums.Role;
 import tools.jackson.databind.ObjectMapper;
@@ -158,7 +159,7 @@ class ForgotPasswordIntegrationTest {
                 void shouldResetPasswordWithValidToken() throws Exception {
                         String tokenValue = UUID.randomUUID().toString();
                         PasswordResetToken token = PasswordResetToken.builder()
-                                        .token(tokenValue)
+                                        .token(TokenHashing.sha256Hex(tokenValue))
                                         .email("test@example.com")
                                         .expiryDate(LocalDateTime.now().plusHours(1))
                                         .used(false)
@@ -185,7 +186,7 @@ class ForgotPasswordIntegrationTest {
                 void shouldReturn400ForExpiredToken() throws Exception {
                         String tokenValue = UUID.randomUUID().toString();
                         PasswordResetToken token = PasswordResetToken.builder()
-                                        .token(tokenValue)
+                                        .token(TokenHashing.sha256Hex(tokenValue))
                                         .email("test@example.com")
                                         .expiryDate(LocalDateTime.now().minusHours(1))
                                         .used(false)
@@ -217,7 +218,7 @@ class ForgotPasswordIntegrationTest {
                 void shouldReturn400ForAlreadyUsedToken() throws Exception {
                         String tokenValue = UUID.randomUUID().toString();
                         PasswordResetToken token = PasswordResetToken.builder()
-                                        .token(tokenValue)
+                                        .token(TokenHashing.sha256Hex(tokenValue))
                                         .email("test@example.com")
                                         .expiryDate(LocalDateTime.now().plusHours(1))
                                         .used(true)
@@ -238,7 +239,7 @@ class ForgotPasswordIntegrationTest {
                 void shouldReturn400ForShortPassword() throws Exception {
                         String tokenValue = UUID.randomUUID().toString();
                         PasswordResetToken token = PasswordResetToken.builder()
-                                        .token(tokenValue)
+                                        .token(TokenHashing.sha256Hex(tokenValue))
                                         .email("test@example.com")
                                         .expiryDate(LocalDateTime.now().plusHours(1))
                                         .used(false)

@@ -53,7 +53,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
         String token = UUID.randomUUID().toString();
         PasswordResetToken resetToken = PasswordResetToken.builder()
-                .token(token)
+                .token(TokenHashing.sha256Hex(token))
                 .email(email)
                 .expiryDate(LocalDateTime.now(clock).plusHours(TOKEN_EXPIRY_HOURS))
                 .used(false)
@@ -73,7 +73,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     public void resetPassword(String token, String newPassword) {
         log.info("Password reset attempt with token");
 
-        PasswordResetToken resetToken = tokenRepository.findByTokenAndUsedFalse(token)
+        PasswordResetToken resetToken = tokenRepository.findByTokenAndUsedFalse(TokenHashing.sha256Hex(token))
                 .orElseThrow(() -> new InvalidTokenException("Invalid or expired password reset token",
                         HttpStatus.BAD_REQUEST));
 
@@ -96,7 +96,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     @Override
     public boolean validateToken(String token) {
-        return tokenRepository.findByTokenAndUsedFalse(token)
+        return tokenRepository.findByTokenAndUsedFalse(TokenHashing.sha256Hex(token))
                 .map(t -> t.isValidAt(LocalDateTime.now(clock)))
                 .orElse(false);
     }

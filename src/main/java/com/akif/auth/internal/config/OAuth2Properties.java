@@ -32,7 +32,7 @@ public class OAuth2Properties {
     @Getter
     @Setter
     public static class StateConfig {
-        private String secret = "defaultSecretForDev";
+        private String secret;
         private int expirationMinutes = 10;
     }
 }

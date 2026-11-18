@@ -17,6 +17,6 @@ public interface DamageReportService {
 
     void deleteDamagePhoto(Long damageId, Long photoId);
 
-    String getPhotoUrl(Long photoId);
+    String getPhotoUrl(Long photoId, String username);
 }
 

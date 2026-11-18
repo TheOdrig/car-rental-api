@@ -117,6 +117,15 @@ class BearerAuthenticationIntegrationTest {
     }
 
     @Test
+    @DisplayName("every admin path requires the ADMIN role even without a controller rule")
+    void adminPathsRequireAdminRole() throws Exception {
+        String userToken = tokenService.generateAccessToken(principal("ROLE_USER"), user.getId());
+
+        mockMvc.perform(get("/api/admin/not-mapped-anywhere").header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     @DisplayName("a missing token yields a uniform 401 body")
     void missingTokenYields401() throws Exception {
         mockMvc.perform(get("/api/users/me/profile"))

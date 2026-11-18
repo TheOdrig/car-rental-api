@@ -9,6 +9,7 @@ import com.akif.auth.internal.service.PasswordResetServiceImpl;
 import com.akif.auth.domain.User;
 import com.akif.shared.exception.InvalidTokenException;
 import com.akif.auth.internal.service.RefreshTokenService;
+import com.akif.auth.internal.service.TokenHashing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -116,6 +117,25 @@ class PasswordResetServiceImplTest {
         }
 
         @Test
+        @DisplayName("Should store only a hash of the emailed token")
+        void shouldStoreOnlyHashOfEmailedToken() {
+            when(userRepository.existsByEmail("test@example.com")).thenReturn(true);
+            when(tokenRepository.save(any(PasswordResetToken.class))).thenAnswer(i -> i.getArgument(0));
+            ArgumentCaptor<PasswordResetToken> stored = ArgumentCaptor.forClass(PasswordResetToken.class);
+
+            passwordResetService.requestPasswordReset("test@example.com");
+
+            verify(tokenRepository).save(stored.capture());
+            verify(eventPublisher).publishEvent(eventCaptor.capture());
+            String emailedToken = eventCaptor.getValue().resetLink().substring(
+                    eventCaptor.getValue().resetLink().indexOf("token=") + "token=".length());
+            assertThat(stored.getValue().getToken())
+                    .isNotEqualTo(emailedToken)
+                    .isEqualTo(TokenHashing.sha256Hex(emailedToken))
+                    .hasSize(64);
+        }
+
+        @Test
         @DisplayName("Should not create token when email does not exist")
         void shouldNotCreateTokenWhenEmailDoesNotExist() {
             when(userRepository.existsByEmail("nonexistent@example.com")).thenReturn(false);
@@ -134,7 +154,7 @@ class PasswordResetServiceImplTest {
         @Test
         @DisplayName("Should reset password successfully with valid token")
         void shouldResetPasswordSuccessfullyWithValidToken() {
-            when(tokenRepository.findByTokenAndUsedFalse("valid-token-123")).thenReturn(Optional.of(validToken));
+            when(tokenRepository.findByTokenAndUsedFalse(TokenHashing.sha256Hex("valid-token-123"))).thenReturn(Optional.of(validToken));
             when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
             when(passwordService.hashPassword("newPassword123")).thenReturn("$2a$10$newEncoded");
 
@@ -147,7 +167,7 @@ class PasswordResetServiceImplTest {
         @Test
         @DisplayName("Should throw exception when token not found")
         void shouldThrowExceptionWhenTokenNotFound() {
-            when(tokenRepository.findByTokenAndUsedFalse("invalid-token")).thenReturn(Optional.empty());
+            when(tokenRepository.findByTokenAndUsedFalse(TokenHashing.sha256Hex("invalid-token"))).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> passwordResetService.resetPassword("invalid-token", "newPassword"))
                     .isInstanceOf(InvalidTokenException.class)
@@ -157,7 +177,7 @@ class PasswordResetServiceImplTest {
         @Test
         @DisplayName("Should throw exception when token is expired")
         void shouldThrowExceptionWhenTokenIsExpired() {
-            when(tokenRepository.findByTokenAndUsedFalse("expired-token-123")).thenReturn(Optional.of(expiredToken));
+            when(tokenRepository.findByTokenAndUsedFalse(TokenHashing.sha256Hex("expired-token-123"))).thenReturn(Optional.of(expiredToken));
 
             assertThatThrownBy(() -> passwordResetService.resetPassword("expired-token-123", "newPassword"))
                     .isInstanceOf(InvalidTokenException.class)
@@ -172,7 +192,7 @@ class PasswordResetServiceImplTest {
         @Test
         @DisplayName("Should return true for valid token")
         void shouldReturnTrueForValidToken() {
-            when(tokenRepository.findByTokenAndUsedFalse("valid-token-123")).thenReturn(Optional.of(validToken));
+            when(tokenRepository.findByTokenAndUsedFalse(TokenHashing.sha256Hex("valid-token-123"))).thenReturn(Optional.of(validToken));
 
             boolean result = passwordResetService.validateToken("valid-token-123");
 
@@ -182,7 +202,7 @@ class PasswordResetServiceImplTest {
         @Test
         @DisplayName("Should return false for non-existent token")
         void shouldReturnFalseForNonExistentToken() {
-            when(tokenRepository.findByTokenAndUsedFalse("invalid-token")).thenReturn(Optional.empty());
+            when(tokenRepository.findByTokenAndUsedFalse(TokenHashing.sha256Hex("invalid-token"))).thenReturn(Optional.empty());
 
             boolean result = passwordResetService.validateToken("invalid-token");
 
@@ -192,7 +212,7 @@ class PasswordResetServiceImplTest {
         @Test
         @DisplayName("Should return false for expired token")
         void shouldReturnFalseForExpiredToken() {
-            when(tokenRepository.findByTokenAndUsedFalse("expired-token-123")).thenReturn(Optional.of(expiredToken));
+            when(tokenRepository.findByTokenAndUsedFalse(TokenHashing.sha256Hex("expired-token-123"))).thenReturn(Optional.of(expiredToken));
 
             boolean result = passwordResetService.validateToken("expired-token-123");
 

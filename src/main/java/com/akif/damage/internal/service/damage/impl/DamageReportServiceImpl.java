@@ -26,6 +26,7 @@ import com.akif.rental.api.RentalSummaryDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -180,9 +181,15 @@ public class DamageReportServiceImpl implements DamageReportService {
     }
 
     @Override
-    public String getPhotoUrl(Long photoId) {
+    public String getPhotoUrl(Long photoId, String username) {
         DamagePhoto photo = damagePhotoRepository.findByIdAndIsDeletedFalse(photoId)
                 .orElseThrow(() -> DamageReportException.photoNotFound(photoId));
+
+        UserDto requester = authService.getUserByUsername(username);
+        if (!requester.isAdmin() && !requester.id().equals(photo.getDamageReport().getCustomerUserId())) {
+            log.warn("User {} requested a damage photo of another customer (photoId={})", requester.id(), photoId);
+            throw new AccessDeniedException("You can only view photos of your own damage reports");
+        }
 
         return fileUploadService.generateSecureUrl(
                 photo.getFilePath(),

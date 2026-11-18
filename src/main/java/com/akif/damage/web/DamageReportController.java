@@ -113,14 +113,16 @@ public class DamageReportController {
     @Operation(summary = "Get photo URL", description = "Get secure URL for a damage photo")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "URL generated"),
+            @ApiResponse(responseCode = "403", description = "Photo belongs to another customer"),
             @ApiResponse(responseCode = "404", description = "Photo not found")
     })
     public ResponseEntity<String> getPhotoUrl(
             @Parameter(description = "Photo ID", required = true)
-            @PathVariable Long photoId) {
+            @PathVariable Long photoId,
+            Authentication authentication) {
 
         log.debug("GET /api/damages/photos/{}/url", photoId);
-        String url = damageReportService.getPhotoUrl(photoId);
+        String url = damageReportService.getPhotoUrl(photoId, authentication.getName());
         return ResponseEntity.ok(url);
     }
 }
