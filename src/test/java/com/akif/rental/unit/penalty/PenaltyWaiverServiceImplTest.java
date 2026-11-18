@@ -114,7 +114,7 @@ class PenaltyWaiverServiceImplTest {
         @Test
         @DisplayName("Should waive full penalty successfully")
         void shouldWaiveFullPenaltySuccessfully() {
-            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(penaltyWaiverRepository.save(any(PenaltyWaiver.class))).thenReturn(testWaiver);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
 
@@ -138,7 +138,7 @@ class PenaltyWaiverServiceImplTest {
                     .adminId(100L)
                     .build();
 
-            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(penaltyWaiverRepository.save(any(PenaltyWaiver.class))).thenReturn(fullWaiver);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
 
@@ -151,7 +151,7 @@ class PenaltyWaiverServiceImplTest {
         @DisplayName("Should throw exception when rental has no penalty for full waiver")
         void shouldThrowExceptionWhenRentalHasNoPenaltyForFullWaiver() {
             ReflectionTestUtils.setField(testRental, "penaltyAmount", BigDecimal.ZERO);
-            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
 
             assertThatThrownBy(() -> service.waiveFullPenalty(1L, "Reason", 100L))
                     .isInstanceOf(PenaltyWaiverException.class)
@@ -167,7 +167,7 @@ class PenaltyWaiverServiceImplTest {
         @DisplayName("Should calculate remaining penalty correctly for partial waiver")
         void shouldCalculateRemainingPenaltyCorrectlyForPartialWaiver() {
             BigDecimal waiverAmount = new BigDecimal("50.00");
-            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(penaltyWaiverRepository.save(any(PenaltyWaiver.class))).thenReturn(testWaiver);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
 
@@ -181,7 +181,7 @@ class PenaltyWaiverServiceImplTest {
         @DisplayName("Should waive 75% of penalty correctly")
         void shouldWaive75PercentOfPenaltyCorrectly() {
             BigDecimal waiverAmount = new BigDecimal("150.00");
-            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(penaltyWaiverRepository.save(any(PenaltyWaiver.class))).thenReturn(testWaiver);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
 
@@ -195,7 +195,7 @@ class PenaltyWaiverServiceImplTest {
         @DisplayName("Should throw exception when waiver amount exceeds penalty")
         void shouldThrowExceptionWhenWaiverAmountExceedsPenalty() {
             BigDecimal excessiveWaiver = new BigDecimal("300.00");
-            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
 
             assertThatThrownBy(() -> service.waivePenalty(1L, excessiveWaiver, "Reason", 100L))
                     .isInstanceOf(PenaltyWaiverException.class)
@@ -211,7 +211,7 @@ class PenaltyWaiverServiceImplTest {
         @DisplayName("Should initiate refund when penalty is already paid")
         void shouldInitiateRefundWhenPenaltyIsAlreadyPaid() {
             ReflectionTestUtils.setField(testRental, "penaltyPaid", true);
-            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(penaltyWaiverRepository.save(any(PenaltyWaiver.class))).thenReturn(testWaiver);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(paymentService.getPenaltyPaymentByRentalId(1L)).thenReturn(Optional.of(testPaymentDto));

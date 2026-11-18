@@ -41,7 +41,7 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
 
         validateWaiverRequest(rentalId, waiverAmount, reason, adminId);
 
-        Rental rental = rentalRepository.findByIdAndIsDeletedFalse(rentalId)
+        Rental rental = rentalRepository.findByIdForUpdate(rentalId)
                 .orElseThrow(() -> new RentalNotFoundException("Rental not found with id: " + rentalId));
 
         if (rental.getPenaltyAmount() == null || rental.getPenaltyAmount().compareTo(BigDecimal.ZERO) <= 0) {
@@ -89,7 +89,7 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
     public PenaltyWaiver waiveFullPenalty(Long rentalId, String reason, Long adminId) {
         log.debug("Waiving full penalty for rental: {}", rentalId);
 
-        Rental rental = rentalRepository.findByIdAndIsDeletedFalse(rentalId)
+        Rental rental = rentalRepository.findByIdForUpdate(rentalId)
                 .orElseThrow(() -> new RentalNotFoundException("Rental not found with id: " + rentalId));
 
         if (rental.getPenaltyAmount() == null || rental.getPenaltyAmount().compareTo(BigDecimal.ZERO) <= 0) {

@@ -343,6 +343,46 @@ class PaymentReviewFixesIntegrationTest {
     }
 
     @Test
+    @DisplayName("concurrent refunds of one payment are serialised so the ledger, the payment and the gateway agree")
+    void concurrentRefundsStayConsistent() throws Exception {
+        Rental rental = capturedRental();
+        Payment payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rental.getId(), PaymentKind.RENTAL)
+                .orElseThrow();
+        String intentId = payment.getStripePaymentIntentId();
+        CountDownLatch bothPlanned = new CountDownLatch(2);
+        doAnswer(invocation -> {
+            bothPlanned.countDown();
+            bothPlanned.await(1500, java.util.concurrent.TimeUnit.MILLISECONDS);
+            return invocation.callRealMethod();
+        }).when(paymentGateway).refundedMinor(anyString());
+
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        try {
+            Future<PaymentResult> first = pool.submit(
+                    () -> paymentService.refundPayment(payment.getId(), new BigDecimal("100.00"), "waiver-1:refund"));
+            Future<PaymentResult> second = pool.submit(
+                    () -> paymentService.refundPayment(payment.getId(), new BigDecimal("100.00"), "waiver-2:refund"));
+
+            assertThat(first.get(30, java.util.concurrent.TimeUnit.SECONDS).success()).isTrue();
+            assertThat(second.get(30, java.util.concurrent.TimeUnit.SECONDS).success()).isTrue();
+        } finally {
+            pool.shutdownNow();
+        }
+
+        BigDecimal ledger = jdbcTemplate.queryForObject(
+                "SELECT COALESCE(SUM(amount), 0) FROM car_rental.payment_refunds WHERE status = 'SUCCEEDED'",
+                BigDecimal.class);
+        Integer ledgerRowsWithoutGatewayRefund = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM car_rental.payment_refunds WHERE status = 'SUCCEEDED' AND stripe_refund_id IS NULL",
+                Integer.class);
+        Payment reloaded = paymentRepository.findById(payment.getId()).orElseThrow();
+        assertThat(ledger).isEqualByComparingTo("200.00");
+        assertThat(ledgerRowsWithoutGatewayRefund).isZero();
+        assertThat(reloaded.refundedTotal()).isEqualByComparingTo("200.00");
+        assertThat(paymentGateway.refundedMinor(intentId)).isEqualTo(20000L);
+    }
+
+    @Test
     @DisplayName("a failed refund keeps its key for the retry and is recorded once it succeeds")
     void failedRefundThenRetry() {
         Rental rental = capturedRental();

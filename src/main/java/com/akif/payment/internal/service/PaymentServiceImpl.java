@@ -466,89 +466,86 @@ class PaymentServiceImpl implements PaymentService {
 
     private PaymentResult refundInternal(java.util.function.Supplier<Optional<Payment>> locator,
                                          BigDecimal refundAmount, String operationKey) {
-        RefundPlan plan = isolated().execute(status -> {
+        return isolated().execute(status -> {
             Optional<Payment> located = locator.get();
             if (located.isEmpty()) {
-                return RefundPlan.done(PaymentResult.failure("No payment found for transaction"));
+                return PaymentResult.failure("No payment found for transaction");
             }
             Payment payment = located.get();
             Optional<PaymentRefund> already = refundRepository.findByPaymentIdAndOperationKeyAndStatus(
                     payment.getId(), operationKey, RefundStatus.SUCCEEDED);
             if (already.isPresent()) {
                 String refundId = already.get().getStripeRefundId();
-                return RefundPlan.done(PaymentResult.success(
-                        refundId != null ? refundId : payment.getTransactionId(), "Refund already processed"));
+                return PaymentResult.success(
+                        refundId != null ? refundId : payment.getTransactionId(), "Refund already processed");
             }
             if (!payment.canRefund()) {
-                return RefundPlan.done(PaymentResult.failure(
-                        "Payment cannot be refunded, current status: " + payment.getStatus()));
+                return PaymentResult.failure("Payment cannot be refunded, current status: " + payment.getStatus());
             }
             if (payment.getStripePaymentIntentId() == null) {
-                return RefundPlan.done(PaymentResult.failure("Payment has no gateway reference"));
+                return PaymentResult.failure("Payment has no gateway reference");
             }
             if (refundAmount == null || refundAmount.signum() <= 0) {
-                return RefundPlan.done(PaymentResult.failure("Refund amount must be positive"));
+                return PaymentResult.failure("Refund amount must be positive");
             }
             BigDecimal others = refundRepository.sumSucceededExcludingOperation(payment.getId(), operationKey);
-            BigDecimal target = others.add(refundAmount);
-            if (target.compareTo(payment.getAmount()) > 0) {
-                return RefundPlan.done(PaymentResult.failure("Refund amount exceeds the refundable balance"));
+            BigDecimal targetTotal = others.add(refundAmount);
+            if (targetTotal.compareTo(payment.getAmount()) > 0) {
+                return PaymentResult.failure("Refund amount exceeds the refundable balance");
             }
             long failed = refundRepository.countByPaymentIdAndOperationKeyAndStatus(
                     payment.getId(), operationKey, RefundStatus.FAILED);
-            return new RefundPlan(null, payment.getId(), payment.getStripePaymentIntentId(), payment.getCurrency(),
-                    target, refundAmount, keys.forRefundOperation(operationKey, (int) failed), operationKey);
-        });
-        if (plan.finished() != null) {
-            return plan.finished();
-        }
+            String intentId = payment.getStripePaymentIntentId();
+            CurrencyType currency = payment.getCurrency();
+            String key = keys.forRefundOperation(operationKey, (int) failed);
 
-        long alreadyRefundedMinor;
-        try {
-            alreadyRefundedMinor = paymentGateway.refundedMinor(plan.intentId());
-        } catch (RuntimeException e) {
-            log.warn("Could not read the refunded amount from the gateway: payment={}, reason={}",
-                    plan.paymentId(), e.getMessage());
-            return PaymentResult.failure("Could not verify the refunded amount with the gateway");
-        }
-        long missingMinor = StripeAmounts.toMinorUnits(plan.targetTotal(), plan.currency()) - alreadyRefundedMinor;
-
-        String refundId = null;
-        if (missingMinor > 0) {
-            BigDecimal toRefund = StripeAmounts.fromMinorUnits(missingMinor, plan.currency());
-            PaymentResult result = paymentGateway.refund(plan.intentId(), toRefund, plan.currency(), plan.key());
-            if (!result.success()) {
-                log.warn("Refund failed: payment={}, reason={}", plan.paymentId(), result.message());
-                return result;
+            long alreadyRefundedMinor;
+            try {
+                alreadyRefundedMinor = paymentGateway.refundedMinor(intentId);
+            } catch (RuntimeException e) {
+                log.warn("Could not read the refunded amount from the gateway: payment={}, reason={}",
+                        payment.getId(), e.getMessage());
+                return PaymentResult.failure("Could not verify the refunded amount with the gateway");
             }
-            refundId = result.transactionId();
-        }
+            long missingMinor = StripeAmounts.toMinorUnits(targetTotal, currency) - alreadyRefundedMinor;
 
-        String recordedRefundId = refundId;
-        return isolated().execute(status -> {
-            Payment payment = requirePaymentForUpdate(plan.paymentId());
-            boolean duplicate = recordedRefundId != null
-                    && refundRepository.findByStripeRefundId(recordedRefundId).isPresent();
+            String refundId = null;
+            if (missingMinor > 0) {
+                BigDecimal toRefund = StripeAmounts.fromMinorUnits(missingMinor, currency);
+                PaymentResult result;
+                try {
+                    result = paymentGateway.refund(intentId, toRefund, currency, key);
+                } catch (RuntimeException e) {
+                    log.warn("Refund request failed: payment={}, reason={}", payment.getId(), e.getMessage());
+                    return PaymentResult.failure("Refund request failed");
+                }
+                if (!result.success()) {
+                    log.warn("Refund failed: payment={}, reason={}", payment.getId(), result.message());
+                    return result;
+                }
+                refundId = result.transactionId();
+            }
+
+            boolean duplicate = refundId != null && refundRepository.findByStripeRefundId(refundId).isPresent();
             if (!duplicate) {
                 try {
                     refundRepository.saveAndFlush(PaymentRefund.builder()
                             .paymentId(payment.getId())
-                            .operationKey(plan.operationKey())
-                            .stripeRefundId(recordedRefundId)
-                            .amount(plan.operationAmount())
+                            .operationKey(operationKey)
+                            .stripeRefundId(refundId)
+                            .amount(refundAmount)
                             .status(RefundStatus.SUCCEEDED)
                             .isDeleted(false)
                             .build());
                 } catch (DataIntegrityViolationException e) {
-                    log.info("Refund already recorded: payment={}, operation={}", payment.getId(), plan.operationKey());
+                    log.info("Refund already recorded: payment={}, operation={}", payment.getId(), operationKey);
                 }
             }
-            payment.applyRefundTotal(plan.targetTotal());
+            payment.applyRefundTotal(targetTotal);
             paymentRepository.save(payment);
-            log.info("Refunded payment: ID={}, operation={}, amount={}",
-                    payment.getId(), plan.operationKey(), plan.operationAmount());
+            log.info("Refunded payment: ID={}, operation={}, amount={}", payment.getId(), operationKey, refundAmount);
             return PaymentResult.success(
-                    recordedRefundId != null ? recordedRefundId : payment.getTransactionId(), "Refund processed");
+                    refundId != null ? refundId : payment.getTransactionId(), "Refund processed");
         });
     }
 
@@ -562,21 +559,6 @@ class PaymentServiceImpl implements PaymentService {
 
         static ChargePlan done(PaymentResult result) {
             return new ChargePlan(result, null, null, null, null, null);
-        }
-    }
-
-    private record RefundPlan(
-            PaymentResult finished,
-            Long paymentId,
-            String intentId,
-            CurrencyType currency,
-            BigDecimal targetTotal,
-            BigDecimal operationAmount,
-            String key,
-            String operationKey) {
-
-        static RefundPlan done(PaymentResult result) {
-            return new RefundPlan(result, null, null, null, null, null, null, null);
         }
     }
 
