@@ -26,5 +26,8 @@ COPY --from=layers /layers/extracted/snapshot-dependencies/ ./
 COPY --from=layers /layers/extracted/application/ ./
 
 USER spring
-EXPOSE 8082
+EXPOSE 8082 8081
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=5 \
+  CMD wget -q -O /dev/null "http://127.0.0.1:${MANAGEMENT_PORT:-8081}/actuator/health/readiness" || exit 1
 ENTRYPOINT ["sh", "-c", "exec java -Duser.timezone=UTC $JAVA_OPTS -jar application.jar"]
