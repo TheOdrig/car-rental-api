@@ -4,9 +4,9 @@ import java.time.Clock;
 
 import com.akif.currency.api.ConversionResult;
 import com.akif.currency.api.ExchangeRate;
-import com.akif.currency.internal.dto.exchangeRate.ExchangeRateResponse;
+import com.akif.currency.internal.dto.exchangerate.ExchangeRateResponse;
 import com.akif.currency.api.ExchangeRatesResponse;
-import com.akif.currency.internal.service.exchangeRate.ExchangeRateCacheService;
+import com.akif.currency.internal.service.exchangerate.ExchangeRateCacheService;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.currency.api.RateSource;
 import com.akif.currency.api.CurrencyConversionService;

@@ -1,6 +1,6 @@
 package com.akif.notification.unit;
 
-import com.akif.notification.internal.service.email.impl.EmailTemplateService;
+import com.akif.notification.internal.service.email.impl.EmailTemplateServiceImpl;
 import com.akif.rental.api.PaymentRetryRequestedEvent;
 import com.akif.shared.enums.CurrencyType;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ class PaymentRetryEmailLinkTest {
         resolver.setCharacterEncoding("UTF-8");
         SpringTemplateEngine engine = new SpringTemplateEngine();
         engine.setTemplateResolver(resolver);
-        EmailTemplateService service = new EmailTemplateService(engine);
+        EmailTemplateServiceImpl service = new EmailTemplateServiceImpl(engine);
         ReflectionTestUtils.setField(service, "baseUrl", "https://rent.example.com");
 
         String html = service.renderPaymentRetryEmail(new PaymentRetryRequestedEvent(

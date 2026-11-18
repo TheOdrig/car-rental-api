@@ -2,7 +2,7 @@ package com.akif.notification.internal.service.email.impl;
 
 import com.akif.notification.internal.dto.EmailMessage;
 import com.akif.notification.internal.exception.EmailSendException;
-import com.akif.notification.internal.service.email.IEmailSender;
+import com.akif.notification.internal.service.email.EmailSender;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Profile({"dev", "test"})
 @Slf4j
-public class MockEmailSender implements IEmailSender {
+public class MockEmailSender implements EmailSender {
 
     @Override
     public void send(EmailMessage message) throws EmailSendException {

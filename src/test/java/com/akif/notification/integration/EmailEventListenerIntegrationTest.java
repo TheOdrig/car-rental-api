@@ -3,7 +3,7 @@ package com.akif.notification.integration;
 import com.akif.CarRentalApplication;
 import com.akif.notification.domain.EmailType;
 import com.akif.notification.internal.dto.EmailMessage;
-import com.akif.notification.internal.service.email.IEmailSender;
+import com.akif.notification.internal.service.email.EmailSender;
 import com.akif.payment.api.PaymentCapturedEvent;
 import com.akif.rental.api.PickupReminderEvent;
 import com.akif.rental.api.RentalCancelledEvent;
@@ -43,7 +43,7 @@ class EmailEventListenerIntegrationTest {
     private ApplicationEventPublisher eventPublisher;
 
     @MockitoSpyBean
-    private IEmailSender emailSender;
+    private EmailSender emailSender;
 
     @Autowired
     private org.springframework.transaction.support.TransactionTemplate transactionTemplate;

@@ -4,8 +4,8 @@ import com.akif.notification.domain.EmailType;
 import com.akif.notification.internal.dto.EmailMessage;
 import com.akif.notification.internal.exception.EmailSendException;
 import com.akif.notification.internal.service.EmailNotificationServiceImpl;
-import com.akif.notification.internal.service.email.IEmailSender;
-import com.akif.notification.internal.service.email.IEmailTemplateService;
+import com.akif.notification.internal.service.email.EmailSender;
+import com.akif.notification.internal.service.email.EmailTemplateService;
 import com.akif.payment.api.PaymentCapturedEvent;
 import com.akif.rental.api.PickupReminderEvent;
 import com.akif.rental.api.RentalCancelledEvent;
@@ -37,10 +37,10 @@ import static org.mockito.Mockito.*;
 class EmailNotificationServiceTest {
 
     @Mock
-    private IEmailTemplateService templateService;
+    private EmailTemplateService templateService;
 
     @Mock
-    private IEmailSender emailSender;
+    private EmailSender emailSender;
 
     @Spy
     private Clock clock = Clock.systemDefaultZone();

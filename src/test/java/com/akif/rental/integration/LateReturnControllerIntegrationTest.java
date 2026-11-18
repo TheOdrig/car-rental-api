@@ -6,7 +6,7 @@ import com.akif.auth.internal.repository.UserRepository;
 import com.akif.car.domain.Car;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.internal.repository.CarRepository;
-import com.akif.notification.internal.service.email.IEmailSender;
+import com.akif.notification.internal.service.email.EmailSender;
 import com.akif.rental.domain.enums.LateReturnStatus;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
@@ -57,7 +57,7 @@ class LateReturnControllerIntegrationTest {
     private UserRepository userRepository;
 
     @MockitoBean
-    private IEmailSender emailSender;
+    private EmailSender emailSender;
 
     @MockitoBean
     private LateReturnScheduler lateReturnScheduler;

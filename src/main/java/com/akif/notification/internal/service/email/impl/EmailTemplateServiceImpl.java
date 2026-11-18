@@ -1,7 +1,7 @@
 package com.akif.notification.internal.service.email.impl;
 
 import com.akif.damage.api.*;
-import com.akif.notification.internal.service.email.IEmailTemplateService;
+import com.akif.notification.internal.service.email.EmailTemplateService;
 import com.akif.payment.api.PaymentCapturedEvent;
 import com.akif.rental.api.*;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class EmailTemplateService implements IEmailTemplateService {
+public class EmailTemplateServiceImpl implements EmailTemplateService {
 
     private final SpringTemplateEngine templateEngine;
 

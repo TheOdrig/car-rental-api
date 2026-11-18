@@ -3,7 +3,7 @@ package com.akif.notification.internal.service.email.impl;
 import com.akif.notification.internal.config.EmailProperties;
 import com.akif.notification.internal.dto.EmailMessage;
 import com.akif.notification.internal.exception.EmailSendException;
-import com.akif.notification.internal.service.email.IEmailSender;
+import com.akif.notification.internal.service.email.EmailSender;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Profile("prod")
 @RequiredArgsConstructor
 @Slf4j
-public class SendGridEmailSender implements IEmailSender {
+public class SendGridEmailSender implements EmailSender {
 
     private final JavaMailSender mailSender;
     private final EmailProperties emailProperties;

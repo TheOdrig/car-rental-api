@@ -5,7 +5,7 @@ import com.akif.notification.EmailNotificationService;
 import com.akif.notification.domain.EmailType;
 import com.akif.notification.internal.dto.EmailMessage;
 import com.akif.notification.internal.exception.EmailSendException;
-import com.akif.notification.internal.service.email.IEmailSender;
+import com.akif.notification.internal.service.email.EmailSender;
 import com.akif.testsupport.TestcontainersConfiguration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ class EmailRetryResilienceIntegrationTest {
     private EmailNotificationService emailNotificationService;
 
     @MockitoBean
-    private IEmailSender emailSender;
+    private EmailSender emailSender;
 
     private EmailSendException smtpFailure() {
         return new EmailSendException("user@example.com", EmailType.PASSWORD_RESET, "451", "temporary failure");

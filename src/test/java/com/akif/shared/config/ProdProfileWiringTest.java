@@ -1,7 +1,7 @@
 package com.akif.shared.config;
 
 import com.akif.CarRentalApplication;
-import com.akif.notification.internal.service.email.IEmailSender;
+import com.akif.notification.internal.service.email.EmailSender;
 import com.akif.notification.internal.service.email.impl.MockEmailSender;
 import com.akif.notification.internal.service.email.impl.SendGridEmailSender;
 import com.akif.payment.internal.service.gateway.PaymentGateway;
@@ -59,7 +59,7 @@ class ProdProfileWiringTest {
     @DisplayName("resolves the real payment, email and file storage implementations")
     void resolvesRealImplementations() {
         assertThat(context.getBean(PaymentGateway.class)).isInstanceOf(StripePaymentGateway.class);
-        assertThat(context.getBean(IEmailSender.class)).isInstanceOf(SendGridEmailSender.class);
+        assertThat(context.getBean(EmailSender.class)).isInstanceOf(SendGridEmailSender.class);
         assertThat(context.getBean(FileUploadService.class)).isInstanceOf(R2FileStorageService.class);
     }
 

@@ -1,6 +1,6 @@
 package com.akif.notification.unit;
 
-import com.akif.notification.internal.service.email.impl.EmailTemplateService;
+import com.akif.notification.internal.service.email.impl.EmailTemplateServiceImpl;
 import com.akif.payment.api.PaymentCapturedEvent;
 import com.akif.rental.api.PickupReminderEvent;
 import com.akif.rental.api.RentalCancelledEvent;
@@ -29,14 +29,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("EmailTemplateService Tests")
+@DisplayName("EmailTemplateServiceImpl Tests")
 class EmailTemplateServiceTest {
 
     @Mock
     private SpringTemplateEngine templateEngine;
 
     @InjectMocks
-    private EmailTemplateService emailTemplateService;
+    private EmailTemplateServiceImpl emailTemplateService;
 
     @Nested
     @DisplayName("Rental Confirmation Email")

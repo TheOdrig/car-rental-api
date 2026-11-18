@@ -1,4 +1,4 @@
-package com.akif.currency.internal.dto.exchangeRate;
+package com.akif.currency.internal.dto.exchangerate;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

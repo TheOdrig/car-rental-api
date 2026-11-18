@@ -6,8 +6,8 @@ import com.akif.damage.api.*;
 import com.akif.notification.internal.exception.EmailSendException;
 import com.akif.notification.EmailNotificationService;
 import com.akif.notification.internal.dto.EmailMessage;
-import com.akif.notification.internal.service.email.IEmailSender;
-import com.akif.notification.internal.service.email.IEmailTemplateService;
+import com.akif.notification.internal.service.email.EmailSender;
+import com.akif.notification.internal.service.email.EmailTemplateService;
 import com.akif.payment.api.PaymentCapturedEvent;
 import com.akif.rental.api.*;
 import com.akif.notification.domain.EmailType;
@@ -25,8 +25,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
     private final Clock clock;
 
-    private final IEmailTemplateService templateService;
-    private final IEmailSender emailSender;
+    private final EmailTemplateService templateService;
+    private final EmailSender emailSender;
 
     @Override
     @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)

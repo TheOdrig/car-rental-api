@@ -6,7 +6,7 @@ import com.akif.auth.internal.repository.UserRepository;
 import com.akif.car.domain.Car;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.currency.internal.exception.ExchangeRateApiException;
-import com.akif.currency.internal.service.exchangeRate.ExchangeRateClient;
+import com.akif.currency.internal.service.exchangerate.ExchangeRateClient;
 import com.akif.e2e.infrastructure.E2ETestBase;
 import com.akif.e2e.infrastructure.TestDataBuilder;
 import com.akif.rental.api.RentalResponse;

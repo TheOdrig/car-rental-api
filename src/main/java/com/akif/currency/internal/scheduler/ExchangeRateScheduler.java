@@ -1,4 +1,4 @@
-package com.akif.rental.internal.scheduler;
+package com.akif.currency.internal.scheduler;
 
 import com.akif.currency.api.CurrencyConversionService;
 import lombok.RequiredArgsConstructor;

@@ -4,7 +4,7 @@ import com.akif.damage.api.*;
 import com.akif.payment.api.PaymentCapturedEvent;
 import com.akif.rental.api.*;
 
-public interface IEmailTemplateService {
+public interface EmailTemplateService {
 
     String renderConfirmationEmail(RentalConfirmedEvent event);
 

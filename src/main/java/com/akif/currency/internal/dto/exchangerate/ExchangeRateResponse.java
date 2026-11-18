@@ -1,4 +1,4 @@
-package com.akif.currency.internal.dto.exchangeRate;
+package com.akif.currency.internal.dto.exchangerate;
 
 import com.akif.shared.enums.CurrencyType;
 import com.akif.currency.api.RateSource;
