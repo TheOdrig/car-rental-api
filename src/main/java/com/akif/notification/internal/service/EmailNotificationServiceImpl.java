@@ -13,9 +13,7 @@ import com.akif.rental.api.*;
 import com.akif.notification.domain.EmailType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
+import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -31,7 +29,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     private final IEmailSender emailSender;
 
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendRentalConfirmation(RentalConfirmedEvent event) {
         log.info("Queuing rental confirmation email. RentalId: {}, Recipient: {}",
                 event.rentalId(), event.customerEmail());
@@ -56,7 +54,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     }
 
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendPaymentReceipt(PaymentCapturedEvent event) {
         log.info("Queuing payment receipt email. PaymentId: {}, RentalId: {}, Recipient: {}",
                 event.paymentId(), event.rentalId(), event.customerEmail());
@@ -81,7 +79,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     }
 
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendPickupReminder(PickupReminderEvent event) {
         log.info("Queuing pickup reminder email. RentalId: {}, Recipient: {}",
                 event.rentalId(), event.customerEmail());
@@ -106,7 +104,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     }
 
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendReturnReminder(ReturnReminderEvent event) {
         log.info("Queuing return reminder email. RentalId: {}, Recipient: {}",
                 event.rentalId(), event.customerEmail());
@@ -131,7 +129,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     }
 
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendCancellationConfirmation(RentalCancelledEvent event) {
         log.info("Queuing cancellation confirmation email. RentalId: {}, Recipient: {}",
                 event.rentalId(), event.customerEmail());
@@ -155,49 +153,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         }
     }
 
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromRentalConfirmationFailure(EmailSendException e, RentalConfirmedEvent event) {
-        log.error(
-                "Rental confirmation email failed after all retries. RentalId: {}, Recipient: {}, Error: {}, SMTP Code: {}",
-                event.rentalId(), event.customerEmail(), e.getMessage(), e.getSmtpErrorCode());
-    }
-
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromPaymentReceiptFailure(EmailSendException e, PaymentCapturedEvent event) {
-        log.error(
-                "Payment receipt email failed after all retries. PaymentId: {}, RentalId: {}, Recipient: {}, Error: {}, SMTP Code: {}",
-                event.paymentId(), event.rentalId(), event.customerEmail(), e.getMessage(),
-                e.getSmtpErrorCode());
-    }
-
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromPickupReminderFailure(EmailSendException e, PickupReminderEvent event) {
-        log.error(
-                "Pickup reminder email failed after all retries. RentalId: {}, Recipient: {}, Error: {}, SMTP Code: {}",
-                event.rentalId(), event.customerEmail(), e.getMessage(), e.getSmtpErrorCode());
-    }
-
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromReturnReminderFailure(EmailSendException e, ReturnReminderEvent event) {
-        log.error(
-                "Return reminder email failed after all retries. RentalId: {}, Recipient: {}, Error: {}, SMTP Code: {}",
-                event.rentalId(), event.customerEmail(), e.getMessage(), e.getSmtpErrorCode());
-    }
-
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromCancellationFailure(EmailSendException e, RentalCancelledEvent event) {
-        log.error(
-                "Cancellation confirmation email failed after all retries. RentalId: {}, Recipient: {}, Error: {}, SMTP Code: {}",
-                event.rentalId(), event.customerEmail(), e.getMessage(), e.getSmtpErrorCode());
-    }
-
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendGracePeriodWarning(GracePeriodWarningEvent event) {
         log.info("Queuing grace period warning email. RentalId: {}, Recipient: {}",
                 event.rentalId(), event.customerEmail());
@@ -222,7 +179,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     }
 
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendLateReturnNotification(LateReturnNotificationEvent event) {
         log.info("Queuing late return notification email. RentalId: {}, Recipient: {}",
                 event.rentalId(), event.customerEmail());
@@ -247,7 +204,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     }
 
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendSeverelyLateNotification(SeverelyLateNotificationEvent event) {
         log.info("Queuing severely late notification email. RentalId: {}, Recipient: {}",
                 event.rentalId(), event.customerEmail());
@@ -272,7 +229,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     }
 
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendPenaltySummary(PenaltySummaryEvent event) {
         log.info("Queuing penalty summary email. RentalId: {}, Recipient: {}",
                 event.rentalId(), event.customerEmail());
@@ -296,40 +253,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         }
     }
 
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromGracePeriodWarningFailure(EmailSendException e, GracePeriodWarningEvent event) {
-        log.error(
-                "Grace period warning email failed after all retries. RentalId: {}, Recipient: {}, Error: {}, SMTP Code: {}",
-                event.rentalId(), event.customerEmail(), e.getMessage(), e.getSmtpErrorCode());
-    }
-
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromLateReturnNotificationFailure(EmailSendException e, LateReturnNotificationEvent event) {
-        log.error(
-                "Late return notification email failed after all retries. RentalId: {}, Recipient: {}, Error: {}, SMTP Code: {}",
-                event.rentalId(), event.customerEmail(), e.getMessage(), e.getSmtpErrorCode());
-    }
-
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromSeverelyLateNotificationFailure(EmailSendException e, SeverelyLateNotificationEvent event) {
-        log.error(
-                "Severely late notification email failed after all retries. RentalId: {}, Recipient: {}, Error: {}, SMTP Code: {}",
-                event.rentalId(), event.customerEmail(), e.getMessage(), e.getSmtpErrorCode());
-    }
-
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromPenaltySummaryFailure(EmailSendException e, PenaltySummaryEvent event) {
-        log.error(
-                "Penalty summary email failed after all retries. RentalId: {}, Recipient: {}, Error: {}, SMTP Code: {}",
-                event.rentalId(), event.customerEmail(), e.getMessage(), e.getSmtpErrorCode());
-    }
-
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendDamageReportedNotification(DamageReportedEvent event) {
         String customerEmail = event.customerEmail();
         Long damageId = event.damageReportId();
@@ -355,7 +280,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     }
 
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendDamageAssessedNotification(DamageAssessedEvent event) {
         String customerEmail = event.customerEmail();
         Long damageId = event.damageReportId();
@@ -381,7 +306,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     }
 
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendDamageChargedNotification(DamageChargedEvent event) {
         String customerEmail = event.customerEmail();
         Long damageId = event.damageReportId();
@@ -407,7 +332,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     }
 
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendDamageDisputedNotification(DamageDisputedEvent event) {
         String customerEmail = event.customerEmail();
         Long damageId = event.damageReportId();
@@ -433,7 +358,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     }
 
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendDamageResolvedNotification(DamageResolvedEvent event) {
         String customerEmail = event.customerEmail();
         Long damageId = event.damageReportId();
@@ -458,36 +383,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         }
     }
 
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromDamageReportedFailure(EmailSendException e, DamageReportedEvent event) {
-        log.error("Damage reported email failed after all retries. DamageId: {}, Error: {}",
-                event.damageReportId(), e.getMessage());
-    }
-
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromDamageAssessedFailure(EmailSendException e, DamageAssessedEvent event) {
-        log.error("Damage assessed email failed after all retries. DamageId: {}, Error: {}",
-                event.damageReportId(), e.getMessage());
-    }
-
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromDamageChargedFailure(EmailSendException e, DamageChargedEvent event) {
-        log.error("Damage charged email failed after all retries. DamageId: {}, Error: {}",
-                event.damageReportId(), e.getMessage());
-    }
-
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromDamageDisputedFailure(EmailSendException e, DamageDisputedEvent event) {
-        log.error("Damage disputed email failed after all retries. DamageId: {}, Error: {}",
-                event.damageReportId(), e.getMessage());
-    }
-
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendDamageChargeFailedNotification(DamageChargeFailedEvent event) {
         String customerEmail = event.customerEmail();
         Long damageId = event.damageReportId();
@@ -512,22 +409,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         }
     }
 
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromDamageResolvedFailure(EmailSendException e, DamageResolvedEvent event) {
-        log.error("Damage resolved email failed after all retries. DamageId: {}, Error: {}",
-                event.damageReportId(), e.getMessage());
-    }
-
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromDamageChargeFailedFailure(EmailSendException e, DamageChargeFailedEvent event) {
-        log.error("Damage charge failed email failed after all retries. DamageId: {}, Error: {}",
-                event.damageReportId(), e.getMessage());
-    }
-
     @Override
-    @Retryable(retryFor = EmailSendException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendPasswordResetEmail(String email, String resetLink) {
         log.info("Queuing password reset email. Recipient: {}", email);
 
@@ -548,10 +431,4 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         }
     }
 
-    @SuppressWarnings("unused")
-    @Recover
-    public void recoverFromPasswordResetFailure(EmailSendException e, String email, String resetLink) {
-        log.error("Password reset email failed after all retries. Email: {}, Error: {}",
-                email, e.getMessage());
-    }
 }
