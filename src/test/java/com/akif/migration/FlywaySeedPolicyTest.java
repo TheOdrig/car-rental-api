@@ -15,8 +15,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,6 +49,33 @@ class FlywaySeedPolicyTest {
                     StandardCharsets.UTF_8);
             assertThat(sql).doesNotContain("focus.bg").doesNotContain("http://");
         }
+    }
+
+    @Test
+    @DisplayName("seed data uses only reserved example domains and fictitious phone numbers")
+    void seedContainsNoRealLookingContactData() throws IOException {
+        Pattern email = Pattern.compile("[A-Za-z0-9._+-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})");
+        Pattern phone = Pattern.compile("'(\\+\\d{7,15})'");
+        List<String> reserved = List.of("example.com", "example.org", "example.net");
+        List<String> offenders = new ArrayList<>();
+        for (String name : List.of("R__seed_01_users.sql", "R__seed_02_cars.sql", "R__seed_03_rentals.sql",
+                "R__seed_04_payments.sql", "R__seed_05_damages.sql", "R__seed_06_admin_data.sql")) {
+            String sql = new String(new ClassPathResource("db/seed/" + name).getInputStream().readAllBytes(),
+                    StandardCharsets.UTF_8);
+            Matcher emails = email.matcher(sql);
+            while (emails.find()) {
+                if (!reserved.contains(emails.group(1).toLowerCase())) {
+                    offenders.add(name + ": " + emails.group());
+                }
+            }
+            Matcher phones = phone.matcher(sql);
+            while (phones.find()) {
+                if (!phones.group(1).startsWith("+1555010")) {
+                    offenders.add(name + ": " + phones.group(1));
+                }
+            }
+        }
+        assertThat(offenders).as("seed contact data must be fictitious").isEmpty();
     }
 
     @Test
