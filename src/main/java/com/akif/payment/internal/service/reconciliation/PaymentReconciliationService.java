@@ -9,6 +9,7 @@ import com.akif.payment.domain.enums.DiscrepancyType;
 import com.akif.payment.internal.exception.ReconciliationException;
 import com.akif.payment.domain.Payment;
 import com.akif.payment.internal.repository.PaymentRepository;
+import com.akif.payment.internal.service.gateway.StripeAmounts;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import com.stripe.param.ChargeListParams;
@@ -23,6 +24,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @Service
@@ -114,13 +116,7 @@ public class PaymentReconciliationService {
             Iterable<Charge> charges = Charge.list(params, stripeConfig.requestOptions().build()).autoPagingIterable();
             
             for (Charge charge : charges) {
-                stripePayments.add(new StripePayment(
-                    charge.getId(),
-                    charge.getPaymentIntent(),
-                    BigDecimal.valueOf(charge.getAmount()).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP),
-                    charge.getCurrency().toUpperCase(),
-                    charge.getStatus()
-                ));
+                stripePayments.add(toStripePayment(charge));
             }
             
             log.debug("Fetched {} payments from Stripe for date: {}", stripePayments.size(), date);
@@ -131,6 +127,17 @@ public class PaymentReconciliationService {
                     date, e.getCode(), e.getMessage(), LocalDateTime.now(clock));
             throw new ReconciliationException(date, "Failed to fetch Stripe payments", e);
         }
+    }
+
+    public StripePayment toStripePayment(Charge charge) {
+        String currency = charge.getCurrency().toUpperCase(Locale.ROOT);
+        return new StripePayment(
+            charge.getId(),
+            charge.getPaymentIntent(),
+            StripeAmounts.fromMinorUnits(charge.getAmount(), currency),
+            currency,
+            charge.getStatus()
+        );
     }
 
     public List<Discrepancy> comparePayments(List<Payment> dbPayments, List<StripePayment> stripePayments) {

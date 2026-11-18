@@ -36,6 +36,51 @@ class PaymentReconciliationServiceTest {
     private PaymentReconciliationService reconciliationService;
 
     @Nested
+    @DisplayName("Stripe amount conversion tests")
+    class StripeAmountConversionTests {
+
+        private com.stripe.model.Charge charge(long amount, String currency) {
+            com.stripe.model.Charge charge = new com.stripe.model.Charge();
+            charge.setId("ch_1");
+            charge.setPaymentIntent("pi_1");
+            charge.setAmount(amount);
+            charge.setCurrency(currency);
+            charge.setStatus("succeeded");
+            return charge;
+        }
+
+        @Test
+        @DisplayName("Should keep zero-decimal JPY amounts as they are")
+        void shouldNotDivideJpyAmounts() {
+            StripePayment payment = reconciliationService.toStripePayment(charge(15000L, "jpy"));
+
+            assertThat(payment.amount()).isEqualByComparingTo("15000");
+            assertThat(payment.currency()).isEqualTo("JPY");
+        }
+
+        @Test
+        @DisplayName("Should divide two-decimal amounts by 100")
+        void shouldDivideTwoDecimalAmounts() {
+            StripePayment payment = reconciliationService.toStripePayment(charge(1050L, "usd"));
+
+            assertThat(payment.amount()).isEqualByComparingTo("10.50");
+            assertThat(payment.currency()).isEqualTo("USD");
+        }
+
+        @Test
+        @DisplayName("Should not report a mismatch for a JPY payment that matches Stripe")
+        void shouldNotReportJpyMismatch() {
+            Payment dbPayment = createPayment(1L, "pi_1", new BigDecimal("15000"), PaymentStatus.CAPTURED);
+            StripePayment stripePayment = reconciliationService.toStripePayment(charge(15000L, "jpy"));
+
+            List<Discrepancy> discrepancies = reconciliationService.comparePayments(
+                    List.of(dbPayment), List.of(stripePayment));
+
+            assertThat(discrepancies).noneMatch(d -> d.type() == DiscrepancyType.AMOUNT_MISMATCH);
+        }
+    }
+
+    @Nested
     @DisplayName("Discrepancy Detection Tests")
     class DiscrepancyDetectionTests {
 

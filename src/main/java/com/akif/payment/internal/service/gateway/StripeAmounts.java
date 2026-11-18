@@ -4,6 +4,8 @@ import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Currency;
+import java.util.Locale;
 
 public final class StripeAmounts {
 
@@ -28,6 +30,16 @@ public final class StripeAmounts {
 
     public static BigDecimal fromMinorUnits(long minor, CurrencyType currency) {
         int places = currency.getDecimalPlaces();
+        return BigDecimal.valueOf(minor, places);
+    }
+
+    public static BigDecimal fromMinorUnits(long minor, String currencyCode) {
+        int places;
+        try {
+            places = Math.max(0, Currency.getInstance(currencyCode.toUpperCase(Locale.ROOT)).getDefaultFractionDigits());
+        } catch (IllegalArgumentException e) {
+            places = 2;
+        }
         return BigDecimal.valueOf(minor, places);
     }
 
