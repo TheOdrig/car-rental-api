@@ -14,7 +14,6 @@ import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.api.CreatePaymentRequest;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.internal.exception.InvalidRentalStateException;
-import com.akif.rental.internal.exception.RentalDateOverlapException;
 import com.akif.rental.internal.exception.RentalNotFoundException;
 import com.akif.rental.internal.exception.RentalValidationException;
 import com.akif.rental.internal.dto.penalty.PenaltyResult;
@@ -42,6 +41,7 @@ import com.akif.shared.enums.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -49,6 +49,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -63,6 +64,7 @@ public class RentalServiceImpl implements RentalService {
     private final Clock clock;
 
     private static final String STUB_PAYMENT_METHOD = "STUB_GATEWAY";
+    private static final String EXCLUSION_VIOLATION = "23P01";
 
     private final RentalRepository rentalRepository;
 
@@ -125,7 +127,7 @@ public class RentalServiceImpl implements RentalService {
                 .status(RentalStatus.REQUESTED)
                 .build();
 
-        Rental savedRental = rentalRepository.save(rental);
+        Rental savedRental = saveBooking(rental);
         RentalResponse result = rentalMapper.toDto(savedRental);
 
         result = new RentalResponse(
@@ -175,8 +177,32 @@ public class RentalServiceImpl implements RentalService {
     private void checkDateOverlap(Long carId, LocalDate startDate, LocalDate endDate) {
         long overlappingCount = rentalRepository.countOverlappingRentals(carId, startDate, endDate);
         if (overlappingCount > 0) {
-            throw new RentalDateOverlapException(carId, startDate, endDate);
+            throw CarNotAvailableException.bookedForDates(carId, startDate, endDate);
         }
+    }
+
+    private Rental saveBooking(Rental rental) {
+        try {
+            return rentalRepository.saveAndFlush(rental);
+        } catch (DataIntegrityViolationException e) {
+            if (isExclusionViolation(e)) {
+                throw CarNotAvailableException.bookedForDates(
+                        rental.getCarId(), rental.getStartDate(), rental.getEndDate());
+            }
+            throw e;
+        }
+    }
+
+    private static boolean isExclusionViolation(Throwable error) {
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            if (cause instanceof SQLException sqlException && EXCLUSION_VIOLATION.equals(sqlException.getSQLState())) {
+                return true;
+            }
+            if (cause.getCause() == cause) {
+                break;
+            }
+        }
+        return false;
     }
 
     private int calculateDays(LocalDate startDate, LocalDate endDate) {
@@ -195,8 +221,6 @@ public class RentalServiceImpl implements RentalService {
                     rental.getStatus().name(),
                     RentalStatus.REQUESTED.name());
         }
-
-        checkDateOverlap(rental.getCarId(), rental.getStartDate(), rental.getEndDate());
 
         PaymentResult authResult = paymentService.authorize(
                 rental.getTotalPrice(),
@@ -224,8 +248,6 @@ public class RentalServiceImpl implements RentalService {
                 null);
 
         rental.confirm(notes);
-
-        carService.reserveCar(rental.getCarId());
 
         Rental updatedRental = rentalRepository.save(rental);
         RentalResponse result = rentalMapper.toDto(updatedRental);
@@ -328,8 +350,6 @@ public class RentalServiceImpl implements RentalService {
 
         rental.markReturned(actualReturnTime, returnNotes);
 
-        carService.releaseCar(rental.getCarId());
-
         Rental updatedRental = rentalRepository.save(rental);
         RentalResponse result = rentalMapper.toDto(updatedRental);
 
@@ -365,11 +385,6 @@ public class RentalServiceImpl implements RentalService {
         }
 
         rental.cancel(reason);
-
-        CarResponse car = carService.getCarById(rental.getCarId());
-        if (car.getCarStatusType() == CarStatusType.RESERVED) {
-            carService.releaseCar(rental.getCarId());
-        }
 
         Rental updatedRental = rentalRepository.save(rental);
         RentalResponse result = rentalMapper.toDto(updatedRental);
@@ -502,7 +517,7 @@ public class RentalServiceImpl implements RentalService {
     }
 
     private CarResponse findCarById(Long id) {
-        return carService.getCarById(id);
+        return carService.getCarForBooking(id);
     }
 
     private UserDto findUserByUsername(String username) {

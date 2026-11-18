@@ -128,7 +128,7 @@ class LateReturnControllerIntegrationTest {
                 .carModel(testCar.getModel())
                 .carLicensePlate(testCar.getLicensePlate())
                 .startDate(LocalDate.now().minusDays(10))
-                .endDate(LocalDate.now().minusDays(5))
+                .endDate(LocalDate.now().minusDays(6))
                 .days(5)
                 .currency(CurrencyType.TRY)
                 .dailyPrice(new BigDecimal("1000"))

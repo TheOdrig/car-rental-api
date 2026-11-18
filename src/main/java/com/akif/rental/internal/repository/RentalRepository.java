@@ -30,7 +30,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
         @Query("SELECT COUNT(r) FROM Rental r " +
                         "WHERE r.carId = :carId " +
-                        "AND r.status IN (com.akif.rental.api.RentalStatus.CONFIRMED, com.akif.rental.api.RentalStatus.IN_USE) "
+                        "AND r.status IN (com.akif.rental.api.RentalStatus.REQUESTED, com.akif.rental.api.RentalStatus.CONFIRMED, com.akif.rental.api.RentalStatus.IN_USE) "
                         +
                         "AND r.isDeleted = false " +
                         "AND ((r.startDate <= :endDate AND r.endDate >= :startDate))")

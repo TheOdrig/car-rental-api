@@ -19,6 +19,8 @@ public interface CarService {
 
     CarResponse getCarById(Long id);
 
+    CarResponse getCarForBooking(Long id);
+
     CarResponse getCarByLicensePlate(String licensePlate);
 
     CarResponse createCar(CarRequest carRequest);

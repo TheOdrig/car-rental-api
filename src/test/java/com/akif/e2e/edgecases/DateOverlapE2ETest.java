@@ -72,7 +72,7 @@ class DateOverlapE2ETest extends E2ETestBase {
                             .header("Authorization", "Bearer " + userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(overlappingRentalRequest)))
-                    .andExpect(status().isBadRequest())
+                    .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.errorCode").value("CAR_NOT_AVAILABLE"));
         }
     }
@@ -124,12 +124,12 @@ class DateOverlapE2ETest extends E2ETestBase {
     }
 
     @Nested
-    @DisplayName("Multiple REQUESTED Confirmation Tests")
-    class MultipleRequestedConfirmationTests {
+    @DisplayName("Pending Request Holds The Dates Tests")
+    class PendingRequestHoldsDatesTests {
 
         @Test
-        @DisplayName("Should verify that multiple REQUESTED rentals can exist for same dates")
-        void shouldAllowMultipleRequestedRentals_forSameDates() throws Exception {
+        @DisplayName("Should reject a second request for the same dates while the first is still REQUESTED")
+        void shouldRejectSecondRequest_whileFirstIsPending() throws Exception {
             User testUser1 = TestDataBuilder.createTestUser("user1");
             testUser1 = userRepository.save(testUser1);
             String userToken1 = generateUserToken(testUser1);
@@ -148,32 +148,21 @@ class DateOverlapE2ETest extends E2ETestBase {
             LocalDate startDate = LocalDate.now().plusDays(10);
             LocalDate endDate = LocalDate.now().plusDays(15);
 
-            RentalRequest firstRentalRequest = TestDataBuilder.createRentalRequest(
+            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(
                     testCar.getId(), startDate, endDate);
-            Long firstRentalId = createAndGetRentalId(firstRentalRequest, userToken1);
-
-            RentalRequest secondRentalRequest = TestDataBuilder.createRentalRequest(
-                    testCar.getId(), startDate, endDate);
+            Long firstRentalId = createAndGetRentalId(rentalRequest, userToken1);
 
             mockMvc.perform(post("/api/rentals/request")
                             .header("Authorization", "Bearer " + userToken2)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(secondRentalRequest)))
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.id").exists())
-                    .andExpect(jsonPath("$.status").value("Requested"));
-            
-            Long secondRentalId = createAndGetRentalId(secondRentalRequest, userToken2);
+                            .content(objectMapper.writeValueAsString(rentalRequest)))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.errorCode").value("CAR_NOT_AVAILABLE"));
 
             mockMvc.perform(post("/api/rentals/{id}/confirm", firstRentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("Confirmed"));
-
-            mockMvc.perform(post("/api/rentals/{id}/confirm", secondRentalId)
-                            .header("Authorization", "Bearer " + adminToken))
-                    .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.errorCode").value("RENTAL_DATE_OVERLAP"));
         }
     }
 }

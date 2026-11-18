@@ -43,6 +43,11 @@ public class CarQueryService {
         return result;
     }
 
+    public CarResponse getCarForBooking(Long id) {
+        log.debug("Reading car {} for booking straight from the database", id);
+        return carMapper.toDto(carLookup.requireById(id));
+    }
+
     @Cacheable(value = CacheConfig.CARS_CACHE, key = "#id")
     public CarResponse getCarById(Long id) {
         log.debug("Getting car by id: {}", id);

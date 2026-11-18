@@ -252,19 +252,34 @@ class ReminderSchedulerIntegrationTest {
         }
     }
 
+    private int carSequence = 0;
+
+    private Car newCar() {
+        return carRepository.save(Car.builder()
+                .licensePlate("34R" + (++carSequence))
+                .brand("Toyota")
+                .model("Corolla")
+                .productionYear(2020)
+                .price(new BigDecimal("500.00"))
+                .currencyType(CurrencyType.TRY)
+                .carStatusType(CarStatusType.AVAILABLE)
+                .build());
+    }
+
     private Rental createRental(LocalDate startDate, LocalDate endDate, RentalStatus status) {
         int days = (int) (endDate.toEpochDay() - startDate.toEpochDay());
-        BigDecimal dailyPrice = testCar.getPrice();
+        Car rentedCar = newCar();
+        BigDecimal dailyPrice = rentedCar.getPrice();
         BigDecimal totalPrice = dailyPrice.multiply(new BigDecimal(days));
 
         return Rental.builder()
                 .userId(testUser.getId())
                 .userEmail(testUser.getEmail())
                 .userFullName(testUser.getUsername())
-                .carId(testCar.getId())
-                .carBrand(testCar.getBrand())
-                .carModel(testCar.getModel())
-                .carLicensePlate(testCar.getLicensePlate())
+                .carId(rentedCar.getId())
+                .carBrand(rentedCar.getBrand())
+                .carModel(rentedCar.getModel())
+                .carLicensePlate(rentedCar.getLicensePlate())
                 .startDate(startDate)
                 .endDate(endDate)
                 .days(days)

@@ -111,16 +111,20 @@ class DashboardE2ETest extends E2ETestBase {
         }
 
         private Rental createRentalDirectly(RentalStatus status, LocalDate startDate, LocalDate endDate) {
+                return createRentalDirectly(testCar, status, startDate, endDate);
+        }
+
+        private Rental createRentalDirectly(Car car, RentalStatus status, LocalDate startDate, LocalDate endDate) {
                 int days = (int) (endDate.toEpochDay() - startDate.toEpochDay());
-                BigDecimal dailyPrice = testCar.getPrice();
+                BigDecimal dailyPrice = car.getPrice();
                 BigDecimal totalPrice = dailyPrice.multiply(BigDecimal.valueOf(days));
 
                 Rental rental = Rental.builder()
                                 .userId(testUser.getId())
-                                .carId(testCar.getId())
-                                .carBrand(testCar.getBrand())
-                                .carModel(testCar.getModel())
-                                .carLicensePlate(testCar.getLicensePlate())
+                                .carId(car.getId())
+                                .carBrand(car.getBrand())
+                                .carModel(car.getModel())
+                                .carLicensePlate(car.getLicensePlate())
                                 .userEmail(testUser.getEmail())
                                 .userFullName(testUser.getUsername())
                                 .startDate(startDate)
@@ -255,8 +259,8 @@ class DashboardE2ETest extends E2ETestBase {
                 void shouldReturnCorrectCountsAfterCreatingRentalsWithDifferentStatuses() throws Exception {
                         createRentalDirectly(RentalStatus.REQUESTED, LocalDate.now().plusDays(1),
                                         LocalDate.now().plusDays(5));
-                        createRentalDirectly(RentalStatus.REQUESTED, LocalDate.now().plusDays(2),
-                                        LocalDate.now().plusDays(6));
+                        createRentalDirectly(RentalStatus.REQUESTED, LocalDate.now().plusDays(6),
+                                        LocalDate.now().plusDays(9));
 
                         Car car2 = carRepository.save(TestDataBuilder.createAvailableCar());
                         Rental confirmedRental = Rental.builder()
@@ -505,9 +509,11 @@ class DashboardE2ETest extends E2ETestBase {
                                         .productionYear(2022)
                                         .price(new BigDecimal("600.00"))
                                         .currencyType(CurrencyType.TRY)
-                                        .carStatusType(CarStatusType.RENTED)
+                                        .carStatusType(CarStatusType.AVAILABLE)
                                         .build();
-                        carRepository.save(rentedCar);
+                        rentedCar = carRepository.save(rentedCar);
+                        createRentalDirectly(rentedCar, RentalStatus.IN_USE, LocalDate.now().minusDays(2),
+                                        LocalDate.now().plusDays(2));
 
                         Car maintenanceCar = Car.builder()
                                         .licensePlate("34MNT01")

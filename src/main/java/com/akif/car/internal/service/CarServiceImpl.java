@@ -39,6 +39,11 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
+    public CarResponse getCarForBooking(Long id) {
+        return queryService.getCarForBooking(id);
+    }
+
+    @Override
     public CarResponse getCarByLicensePlate(String licensePlate) {
         return queryService.getCarByLicensePlate(licensePlate);
     }

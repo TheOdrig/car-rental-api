@@ -253,7 +253,7 @@ class PaymentGatewayE2ETest extends E2ETestBase {
                             .header("Authorization", "Bearer " + userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(rentalRequest)))
-                    .andExpect(status().isCreated());
+                    .andExpect(status().isConflict());
 
             paymentRepository.findByRentalIdAndIsDeletedFalse(rentalId).ifPresent(payment -> assertThat(payment.getStatus()).isNotEqualTo(PaymentStatus.AUTHORIZED));
 

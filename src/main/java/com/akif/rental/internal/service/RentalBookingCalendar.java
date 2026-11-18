@@ -19,7 +19,7 @@ import java.util.Set;
 @Transactional(readOnly = true)
 public class RentalBookingCalendar implements CarBookingCalendar {
 
-    private static final List<RentalStatus> BLOCKING_STATUSES = List.of(RentalStatus.CONFIRMED, RentalStatus.IN_USE);
+    private static final List<RentalStatus> BLOCKING_STATUSES = List.of(RentalStatus.REQUESTED, RentalStatus.CONFIRMED, RentalStatus.IN_USE);
 
     private final RentalRepository rentalRepository;
 

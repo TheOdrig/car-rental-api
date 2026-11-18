@@ -65,9 +65,9 @@ public class DashboardQueryService {
         log.debug("Fetching fleet status data");
 
         int totalCars = carService.countTotalActiveCars();
-        int availableCars = carService.countByStatus(CarStatusType.AVAILABLE);
-        int rentedCars = carService.countByStatus(CarStatusType.RENTED);
-        int reservedCars = carService.countByStatus(CarStatusType.RESERVED);
+        int rentedCars = rentalService.countByStatus(RentalStatus.IN_USE);
+        int reservedCars = rentalService.countByStatus(RentalStatus.CONFIRMED);
+        int availableCars = Math.max(0, carService.countByStatus(CarStatusType.AVAILABLE) - rentedCars);
         int maintenanceCars = carService.countByStatus(CarStatusType.MAINTENANCE);
         int inspectionCars = carService.countByStatus(CarStatusType.INSPECTION);
         int damagedCars = carService.countByStatus(CarStatusType.DAMAGED);

@@ -32,13 +32,16 @@ import org.mockito.Spy;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -187,18 +190,18 @@ class RentalServiceTest {
         @DisplayName("Should successfully create rental request")
         void shouldSuccessfullyCreateRentalRequest() {
             when(authService.getUserByUsername("testuser")).thenReturn(testUser);
-            when(carService.getCarById(1L)).thenReturn(testCar);
+            when(carService.getCarForBooking(1L)).thenReturn(testCar);
             when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(0L);
             when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any())).thenReturn(testPricingResult);
-            when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
+            when(rentalRepository.saveAndFlush(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
 
             RentalResponse result = rentalService.requestRental(rentalRequest, "testuser");
 
             assertThat(result).isNotNull();
             verify(authService).getUserByUsername("testuser");
-            verify(carService).getCarById(1L);
-            verify(rentalRepository).save(any(Rental.class));
+            verify(carService).getCarForBooking(1L);
+            verify(rentalRepository).saveAndFlush(any(Rental.class));
         }
 
         @Test
@@ -210,25 +213,60 @@ class RentalServiceTest {
                     .build();
 
             when(authService.getUserByUsername("testuser")).thenReturn(testUser);
-            when(carService.getCarById(1L)).thenReturn(reservedCar);
+            when(carService.getCarForBooking(1L)).thenReturn(reservedCar);
 
             assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, "testuser"))
                     .isInstanceOf(CarNotAvailableException.class);
 
-            verify(rentalRepository, never()).save(any());
+            verify(rentalRepository, never()).saveAndFlush(any());
         }
 
         @Test
         @DisplayName("Should throw exception when date overlap exists")
         void shouldThrowExceptionWhenDateOverlapExists() {
             when(authService.getUserByUsername("testuser")).thenReturn(testUser);
-            when(carService.getCarById(1L)).thenReturn(testCar);
+            when(carService.getCarForBooking(1L)).thenReturn(testCar);
             when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(1L);
 
             assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, "testuser"))
-                    .isInstanceOf(RentalDateOverlapException.class);
+                    .isInstanceOf(CarNotAvailableException.class)
+                    .satisfies(error -> assertThat(((CarNotAvailableException) error).getHttpStatus())
+                            .isEqualTo(HttpStatus.CONFLICT));
 
-            verify(rentalRepository, never()).save(any());
+            verify(rentalRepository, never()).saveAndFlush(any());
+        }
+
+        @Test
+        @DisplayName("Should map the database exclusion violation to a conflict")
+        void shouldMapExclusionViolationToConflict() {
+            when(authService.getUserByUsername("testuser")).thenReturn(testUser);
+            when(carService.getCarForBooking(1L)).thenReturn(testCar);
+            when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(0L);
+            when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any())).thenReturn(testPricingResult);
+            when(rentalRepository.saveAndFlush(any(Rental.class))).thenThrow(
+                    new DataIntegrityViolationException("exclusion", new SQLException("conflict", "23P01")));
+
+            assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, "testuser"))
+                    .isInstanceOf(CarNotAvailableException.class)
+                    .satisfies(error -> {
+                        CarNotAvailableException exception = (CarNotAvailableException) error;
+                        assertThat(exception.getHttpStatus()).isEqualTo(HttpStatus.CONFLICT);
+                        assertThat(exception.getErrorCode()).isEqualTo("CAR_NOT_AVAILABLE");
+                    });
+        }
+
+        @Test
+        @DisplayName("Should rethrow other integrity violations")
+        void shouldRethrowOtherIntegrityViolations() {
+            when(authService.getUserByUsername("testuser")).thenReturn(testUser);
+            when(carService.getCarForBooking(1L)).thenReturn(testCar);
+            when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(0L);
+            when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any())).thenReturn(testPricingResult);
+            when(rentalRepository.saveAndFlush(any(Rental.class))).thenThrow(
+                    new DataIntegrityViolationException("unique", new SQLException("duplicate", "23505")));
+
+            assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, "testuser"))
+                    .isInstanceOf(DataIntegrityViolationException.class);
         }
 
         @Test
@@ -241,7 +279,7 @@ class RentalServiceTest {
                     null);
 
             when(authService.getUserByUsername("testuser")).thenReturn(testUser);
-            when(carService.getCarById(1L)).thenReturn(testCar);
+            when(carService.getCarForBooking(1L)).thenReturn(testCar);
 
             assertThatThrownBy(() -> rentalService.requestRental(pastRequest, "testuser"))
                     .isInstanceOf(RentalValidationException.class)
@@ -260,11 +298,9 @@ class RentalServiceTest {
             PaymentDto paymentDto = createTestPaymentDto();
 
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
-            when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(0L);
             when(paymentService.authorize(any(), any(), any())).thenReturn(successResult);
             when(paymentService.createPayment(any())).thenReturn(paymentDto);
             when(paymentService.updatePaymentStatus(anyLong(), any(), any(), any())).thenReturn(paymentDto);
-            when(carService.reserveCar(anyLong())).thenReturn(testCar);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
 
@@ -273,7 +309,7 @@ class RentalServiceTest {
             assertThat(result).isNotNull();
             verify(paymentService).authorize(any(), any(), any());
             verify(paymentService).createPayment(any());
-            verify(carService).reserveCar(1L);
+            verify(carService, never()).reserveCar(anyLong());
             verify(eventPublisher).publishEvent(any(Object.class));
         }
 
@@ -283,7 +319,6 @@ class RentalServiceTest {
             PaymentResult failedResult = new PaymentResult(false, null, "Card declined");
 
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
-            when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(0L);
             when(paymentService.authorize(any(), any(), any())).thenReturn(failedResult);
 
             assertThatThrownBy(() -> rentalService.confirmRental(1L, null))
@@ -302,7 +337,6 @@ class RentalServiceTest {
         void shouldSuccessfullyCancelRequestedRentalWithoutRefund() {
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
             when(authService.getUserByUsername("testuser")).thenReturn(testUser);
-            when(carService.getCarById(1L)).thenReturn(testCar);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
 
@@ -360,14 +394,13 @@ class RentalServiceTest {
             testRental.pickUp(null);
 
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
-            when(carService.releaseCar(1L)).thenReturn(testCar);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
 
             RentalResponse result = rentalService.returnRental(1L, "Return notes");
 
             assertThat(result).isNotNull();
-            verify(carService).releaseCar(1L);
+            verify(carService, never()).releaseCar(anyLong());
         }
     }
 

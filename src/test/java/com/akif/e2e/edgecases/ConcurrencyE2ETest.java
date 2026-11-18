@@ -36,12 +36,12 @@ class ConcurrencyE2ETest extends E2ETestBase {
     private CarRepository carRepository;
 
     @Nested
-    @DisplayName("Concurrent Rental Confirmation Tests")
-    class ConcurrentRentalConfirmationTests {
+    @DisplayName("Competing Request Tests")
+    class CompetingRequestTests {
 
         @Test
-        @DisplayName("Should allow only one rental confirmation when multiple REQUESTED rentals exist for same car and dates")
-        void shouldAllowOnlyOneConfirmation_whenMultipleRequestedRentalsExist() throws Exception {
+        @DisplayName("Should accept only the first request when several users ask for the same car and dates")
+        void shouldAcceptOnlyFirstRequest_whenSeveralUsersAskForSameCarAndDates() throws Exception {
             User testAdmin = TestDataBuilder.createTestAdmin();
             testAdmin = userRepository.save(testAdmin);
             String adminToken = generateAdminToken(testAdmin);
@@ -51,30 +51,31 @@ class ConcurrencyE2ETest extends E2ETestBase {
 
             LocalDate startDate = LocalDate.now().plusDays(10);
             LocalDate endDate = LocalDate.now().plusDays(15);
-            
+
             List<Long> rentalIds = new ArrayList<>();
             for (int i = 0; i < 3; i++) {
                 User testUser = TestDataBuilder.createTestUser("user" + i);
                 testUser = userRepository.save(testUser);
                 String userToken = generateUserToken(testUser);
-                
+
                 RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(
                         testCar.getId(), startDate, endDate);
-                Long rentalId = createAndGetRentalId(rentalRequest, userToken);
-                rentalIds.add(rentalId);
+
+                if (i == 0) {
+                    rentalIds.add(createAndGetRentalId(rentalRequest, userToken));
+                } else {
+                    mockMvc.perform(post("/api/rentals/request")
+                                    .header("Authorization", "Bearer " + userToken)
+                                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(rentalRequest)))
+                            .andExpect(status().isConflict())
+                            .andExpect(jsonPath("$.errorCode").value("CAR_NOT_AVAILABLE"));
+                }
             }
 
             mockMvc.perform(post("/api/rentals/{id}/confirm", rentalIds.get(0))
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
-
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalIds.get(1))
-                            .header("Authorization", "Bearer " + adminToken))
-                    .andExpect(status().isConflict());
-
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalIds.get(2))
-                            .header("Authorization", "Bearer " + adminToken))
-                    .andExpect(status().isConflict());
         }
     }
 

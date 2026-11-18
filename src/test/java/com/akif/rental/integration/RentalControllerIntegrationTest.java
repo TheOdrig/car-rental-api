@@ -369,12 +369,13 @@ class RentalControllerIntegrationTest {
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request2)))
-                                        .andExpect(status().isBadRequest());
+                                        .andExpect(status().isConflict())
+                                        .andExpect(jsonPath("$.errorCode").value("CAR_NOT_AVAILABLE"));
                 }
 
                 @Test
-                @DisplayName("Should allow multiple REQUESTED rentals for same dates")
-                void shouldAllowMultipleRequestedRentalsForSameDates() throws Exception {
+                @DisplayName("Should reject a second REQUESTED rental for overlapping dates")
+                void shouldRejectSecondRequestedRentalForOverlappingDates() throws Exception {
                         RentalRequest request1 = new RentalRequest(
                                         testCar.getId(),
                                         LocalDate.now().plusDays(1),
@@ -397,7 +398,8 @@ class RentalControllerIntegrationTest {
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request2)))
-                                        .andExpect(status().isCreated());
+                                        .andExpect(status().isConflict())
+                                        .andExpect(jsonPath("$.errorCode").value("CAR_NOT_AVAILABLE"));
                 }
         }
 }
