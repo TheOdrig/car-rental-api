@@ -95,6 +95,7 @@ class RentalLifecycleE2ETest extends E2ETestBase {
             payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
             assertThat(payment.getStatus()).isEqualTo(PaymentStatus.AUTHORIZED);
+            moveStartToToday(rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -189,6 +190,7 @@ class RentalLifecycleE2ETest extends E2ETestBase {
             eventCaptor.clear();
 
             payRental(rentalId);
+            moveStartToToday(rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)

@@ -76,6 +76,7 @@ class AuthorizationE2ETest extends E2ETestBase {
                     .andExpect(status().isOk());
 
             payRental(rentalId);
+            moveStartToToday(rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + userToken)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -105,6 +106,7 @@ class AuthorizationE2ETest extends E2ETestBase {
                     .andExpect(status().isOk());
 
             payRental(rentalId);
+            moveStartToToday(rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -176,6 +178,7 @@ class AuthorizationE2ETest extends E2ETestBase {
                     .andExpect(status().isOk());
 
             payRental(rentalId);
+            moveStartToToday(rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
@@ -204,6 +207,7 @@ class AuthorizationE2ETest extends E2ETestBase {
                     .andExpect(status().isOk());
 
             payRental(rentalId);
+            moveStartToToday(rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)

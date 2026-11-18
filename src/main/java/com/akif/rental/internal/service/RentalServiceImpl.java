@@ -279,6 +279,10 @@ public class RentalServiceImpl implements RentalService {
                     RentalStatus.CONFIRMED.name());
         }
 
+        if (LocalDate.now(clock).isBefore(rental.getStartDate())) {
+            throw new RentalValidationException("Pickup is not allowed before the start date " + rental.getStartDate());
+        }
+
         requireCarAvailable(rental.getCarId());
         if (rentalRepository.existsByCarIdAndStatusAndIsDeletedFalseAndIdNot(
                 rental.getCarId(), RentalStatus.IN_USE, rental.getId())) {
@@ -440,9 +444,12 @@ public class RentalServiceImpl implements RentalService {
             return new RefundInfo(false, BigDecimal.ZERO, null);
         }
 
-        LocalDate today = LocalDate.now(clock);
+        LocalDate refundFrom = LocalDate.now(clock);
+        if (refundFrom.isBefore(rental.getStartDate())) {
+            refundFrom = rental.getStartDate();
+        }
         LocalDate endDate = rental.getEndDate();
-        long remainingDays = Math.min(ChronoUnit.DAYS.between(today, endDate), rental.getDays());
+        long remainingDays = Math.min(ChronoUnit.DAYS.between(refundFrom, endDate), rental.getDays());
 
         if (remainingDays <= 0) {
             log.info("No remaining days for refund. RentalId: {}", rental.getId());

@@ -85,6 +85,11 @@ public abstract class E2ETestBase {
                 .ifPresent(payment -> paymentService.createOrGetIntentForRental(rentalId));
     }
 
+    protected void moveStartToToday(Long rentalId) {
+        jdbcTemplate.update("UPDATE car_rental.rentals SET start_date = ? WHERE id = ? AND start_date > ?",
+                LocalDate.now(clock), rentalId, LocalDate.now(clock));
+    }
+
     protected void advanceClockToPaymentWindowOf(Long rentalId) {
         LocalDate start = rentalRepository.findById(rentalId).orElseThrow().getStartDate();
         LocalDate opens = start.minusDays(rentalProperties.getPaymentWindowDays());

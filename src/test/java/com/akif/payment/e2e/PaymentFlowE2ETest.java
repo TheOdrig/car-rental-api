@@ -99,6 +99,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
     }
 
     private void pickup(Long rentalId) throws Exception {
+        moveStartToToday(rentalId);
         mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -308,6 +309,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
         void pickupRequiresPayment() throws Exception {
             Long rentalId = confirmedRentalId();
 
+            moveStartToToday(rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -341,6 +343,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
             doReturn(PaymentResult.failure("network"), PaymentResult.success("x", "ok"))
                     .when(paymentGateway).capture(anyString(), anyString());
 
+            moveStartToToday(rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -588,6 +591,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
         void pickupWithoutAuthorizedPayment() throws Exception {
             Long rentalId = confirmedRentalId();
 
+            moveStartToToday(rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -603,6 +607,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
             paymentRepository.delete(rentalPayment(rentalId));
             paymentRepository.flush();
 
+            moveStartToToday(rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)

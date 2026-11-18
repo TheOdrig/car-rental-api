@@ -384,6 +384,7 @@ class DashboardE2ETest extends E2ETestBase {
                         assertThat(approveResultDto.success()).isTrue();
 
                         payRental(rentalId);
+                        moveStartToToday(rentalId);
                         MvcResult pickupResult = mockMvc
                                         .perform(post("/api/v1/admin/quick-actions/rentals/{id}/pickup", rentalId)
                                                         .header("Authorization", "Bearer " + adminToken))

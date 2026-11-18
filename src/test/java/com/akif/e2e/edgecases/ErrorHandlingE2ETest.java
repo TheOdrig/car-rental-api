@@ -147,6 +147,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             PickupRequest pickupRequest = new PickupRequest(null);
 
             payRental(rentalId);
+            moveStartToToday(rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -235,6 +236,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             Rental rental = rentalRepository.findById(rentalId)
                     .orElseThrow(() -> new AssertionError("Rental not found: " + rentalId));
             assertThat(rental.getStatus()).isEqualTo(RentalStatus.CONFIRMED);
+            moveStartToToday(rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isConflict())

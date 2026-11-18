@@ -398,6 +398,7 @@ class RentalServiceTest {
         @DisplayName("pickup is rejected when the car is no longer AVAILABLE")
         void pickupRejectedWhenCarUnavailable() {
             testRental.confirm(null);
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now());
             when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(carCatalog.getCarForBooking(1L)).thenReturn(carWithStatus(CarStatusType.DAMAGED));
 
@@ -411,6 +412,7 @@ class RentalServiceTest {
         @DisplayName("pickup is rejected with a conflict while another rental of the car is in use")
         void pickupRejectedWhenAnotherRentalInUse() {
             testRental.confirm(null);
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now());
             when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(carCatalog.getCarForBooking(1L)).thenReturn(carWithStatus(CarStatusType.AVAILABLE));
             when(rentalRepository.existsByCarIdAndStatusAndIsDeletedFalseAndIdNot(
@@ -508,6 +510,7 @@ class RentalServiceTest {
         @DisplayName("Should successfully process pickup and capture payment")
         void shouldSuccessfullyProcessPickupAndCapturePayment() {
             testRental.confirm(null);
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now());
             PaymentDto paymentDto = createTestPaymentDto();
             PaymentResult captureResult = new PaymentResult(true, "TXN-123", "Captured");
 
@@ -525,9 +528,49 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should refuse pickup before the start date")
+        void shouldRefusePickupBeforeStartDate() {
+            testRental.confirm(null);
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
+
+            assertThatThrownBy(() -> rentalService.pickupRental(1L, null))
+                    .isInstanceOf(com.akif.rental.internal.exception.RentalValidationException.class)
+                    .satisfies(error -> assertThat(((com.akif.rental.internal.exception.RentalValidationException) error)
+                            .getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST));
+
+            verify(paymentService, never()).capturePayment(anyLong());
+            assertThat(testRental.getStatus()).isEqualTo(RentalStatus.CONFIRMED);
+        }
+
+        @Test
+        @DisplayName("Should never refund more than the whole price when the rental has not started yet")
+        void shouldRefundAtMostTheWholePriceBeforeStart() {
+            testRental.confirm(null);
+            testRental.pickUp(null);
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now().plusDays(2));
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "endDate", LocalDate.now().plusDays(7));
+            PaymentDto captured = new PaymentDto(1L, 1L, testUser.email(), testCar.licensePlate(),
+                    testRental.getTotalPrice(), testRental.getCurrency(), PaymentStatus.CAPTURED, "CARD",
+                    "TXN-123", null, null, null);
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
+            when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
+            when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(captured));
+            when(paymentService.refundPayment(anyLong(), any(BigDecimal.class), any()))
+                    .thenReturn(new PaymentResult(true, "re_1", "Refunded"));
+
+            rentalService.earlyReturnRental(1L, null);
+
+            ArgumentCaptor<BigDecimal> amount = ArgumentCaptor.forClass(BigDecimal.class);
+            verify(paymentService).refundPayment(anyLong(), amount.capture(), any());
+            assertThat(amount.getValue()).isEqualByComparingTo("2500.00");
+        }
+
+        @Test
         @DisplayName("Should successfully process return")
         void shouldSuccessfullyProcessReturn() {
             testRental.confirm(null);
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now());
             testRental.pickUp(null);
 
             when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));

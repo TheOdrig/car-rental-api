@@ -49,6 +49,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("RentalController Integration Tests")
 class RentalControllerIntegrationTest {
 
+    @Autowired
+    private com.akif.rental.internal.repository.RentalRepository rentalRepository;
+
         @Autowired
         private WebApplicationContext webApplicationContext;
 
@@ -223,6 +226,7 @@ class RentalControllerIntegrationTest {
                                         .andExpect(jsonPath("$.status").value("Confirmed"));
 
                         payRental(rentalId);
+                        startToday(rentalId);
                         mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                                         .header("Authorization", adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
@@ -410,4 +414,11 @@ class RentalControllerIntegrationTest {
                                         .andExpect(jsonPath("$.code").value("CAR_DATES_UNAVAILABLE"));
                 }
         }
+
+    private void startToday(Long rentalId) {
+        com.akif.rental.domain.model.Rental rental = rentalRepository.findById(rentalId).orElseThrow();
+        org.springframework.test.util.ReflectionTestUtils.setField(rental, "startDate", LocalDate.now());
+        rentalRepository.saveAndFlush(rental);
+    }
+
 }

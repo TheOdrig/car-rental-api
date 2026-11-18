@@ -49,6 +49,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class RentalControllerAuthorizationTest {
 
     @Autowired
+    private com.akif.rental.internal.repository.RentalRepository rentalRepository;
+
+    @Autowired
     private WebApplicationContext webApplicationContext;
 
     @Autowired
@@ -281,6 +284,7 @@ class RentalControllerAuthorizationTest {
                 .andExpect(status().isOk());
 
         paymentService.createOrGetIntentForRental(rentalId);
+        startToday(rentalId);
 
         return rentalId;
     }
@@ -296,4 +300,11 @@ class RentalControllerAuthorizationTest {
 
         return rentalId;
     }
+
+    private void startToday(Long rentalId) {
+        com.akif.rental.domain.model.Rental rental = rentalRepository.findById(rentalId).orElseThrow();
+        org.springframework.test.util.ReflectionTestUtils.setField(rental, "startDate", LocalDate.now());
+        rentalRepository.saveAndFlush(rental);
+    }
+
 }

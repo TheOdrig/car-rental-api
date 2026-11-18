@@ -82,6 +82,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.getDisplayName()));
 
                         payRental(rentalId);
+                        moveStartToToday(rentalId);
                         mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
@@ -257,6 +258,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .andExpect(status().isOk());
 
                         payRental(rentalId);
+                        moveStartToToday(rentalId);
                         mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
@@ -328,6 +330,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .andExpect(status().isOk());
 
                         payRental(rentalId);
+                        moveStartToToday(rentalId);
                         mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
@@ -451,6 +454,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .andExpect(status().isOk());
 
                         payRental(rentalId);
+                        moveStartToToday(rentalId);
                         mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
@@ -544,6 +548,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .andExpect(status().isOk());
 
                         payRental(rentalId1);
+                        moveStartToToday(rentalId1);
                         mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId1)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
@@ -600,6 +605,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .andExpect(status().isOk());
 
                         payRental(rentalId);
+                        moveStartToToday(rentalId);
                         mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)

@@ -182,6 +182,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
             payRental(rentalId);
+            moveStartToToday(rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
