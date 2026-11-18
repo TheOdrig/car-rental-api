@@ -36,5 +36,7 @@ public interface EmailNotificationService {
 
     void sendDamageChargeFailedNotification(DamageChargeFailedEvent event);
 
+    void sendPaymentRetryRequest(PaymentRetryRequestedEvent event);
+
     void sendPasswordResetEmail(String email, String resetLink);
 }

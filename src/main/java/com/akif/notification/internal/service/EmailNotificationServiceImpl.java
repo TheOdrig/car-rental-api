@@ -411,6 +411,31 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
     @Override
     @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
+    public void sendPaymentRetryRequest(PaymentRetryRequestedEvent event) {
+        log.info("Queuing payment retry email. RentalId: {}, Recipient: {}",
+                event.rentalId(), event.customerEmail());
+
+        String body = templateService.renderPaymentRetryEmail(event);
+        EmailMessage message = new EmailMessage(
+                event.customerEmail(),
+                "Payment needed - Rental #" + event.rentalId(),
+                body,
+                EmailType.PAYMENT_RETRY,
+                event.rentalId());
+
+        try {
+            emailSender.send(message);
+            log.info("Payment retry email sent successfully. RentalId: {}, To: {}, Timestamp: {}",
+                    event.rentalId(), event.customerEmail(), LocalDateTime.now(clock));
+        } catch (EmailSendException e) {
+            log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
+                    event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
+            throw e;
+        }
+    }
+
+    @Override
+    @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendPasswordResetEmail(String email, String resetLink) {
         log.info("Queuing password reset email. Recipient: {}", email);
 

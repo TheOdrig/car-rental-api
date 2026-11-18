@@ -258,6 +258,21 @@ public class EmailTemplateService implements IEmailTemplateService {
     }
 
     @Override
+    public String renderPaymentRetryEmail(PaymentRetryRequestedEvent event) {
+        log.debug("Rendering payment retry email for rental ID: {}", event.rentalId());
+
+        Context context = new Context();
+        context.setVariable("rentalId", event.rentalId());
+        context.setVariable("carBrand", event.carBrand());
+        context.setVariable("carModel", event.carModel());
+        context.setVariable("payBy", event.payBy().format(DATE_FORMATTER));
+        context.setVariable("amount", event.amount());
+        context.setVariable("currency", event.currency().name());
+
+        return templateEngine.process("email/payment/payment-retry", context);
+    }
+
+    @Override
     public String renderPasswordResetEmail(String email, String resetLink) {
         log.debug("Rendering password reset email for: {}", email);
 

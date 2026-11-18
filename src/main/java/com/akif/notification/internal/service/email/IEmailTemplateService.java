@@ -36,5 +36,7 @@ public interface IEmailTemplateService {
 
     String renderDamageChargeFailedEmail(DamageChargeFailedEvent event);
 
+    String renderPaymentRetryEmail(PaymentRetryRequestedEvent event);
+
     String renderPasswordResetEmail(String email, String resetLink);
 }

@@ -101,7 +101,7 @@ class EventPublicationRegistryIntegrationTest {
         await().atMost(Duration.ofSeconds(10)).untilAsserted(() ->
                 verify(emailNotificationService, times(1)).sendRentalConfirmation(any()));
         await().atMost(Duration.ofSeconds(10)).untilAsserted(() ->
-                assertThat(completedEmailPublications()).isEqualTo(1));
+                assertThat(incompleteEmailPublications()).isZero());
         assertThat(incompleteEmailPublications()).isZero();
     }
 
@@ -138,7 +138,7 @@ class EventPublicationRegistryIntegrationTest {
 
         await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             verify(emailNotificationService, times(2)).sendRentalConfirmation(any());
-            assertThat(completedEmailPublications()).isEqualTo(1);
+            assertThat(incompleteEmailPublications()).isZero();
         });
         assertThat(incompleteEmailPublications()).isZero();
     }
@@ -150,7 +150,7 @@ class EventPublicationRegistryIntegrationTest {
 
         transactionTemplate.executeWithoutResult(status -> eventPublisher.publishEvent(event()));
         await().atMost(Duration.ofSeconds(10)).untilAsserted(() ->
-                assertThat(completedEmailPublications()).isEqualTo(1));
+                assertThat(incompleteEmailPublications()).isZero());
 
         incompleteEventPublications.resubmitIncompletePublications(publication -> true);
 

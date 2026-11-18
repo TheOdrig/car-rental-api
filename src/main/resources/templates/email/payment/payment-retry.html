@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Needed - CarRental</title>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+        style="background-color: #f4f4f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                    style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden;">
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/header :: header('Payment Needed')}"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 32px 30px;">
+                            <p style="margin: 0 0 16px 0; font-size: 16px; color: #111827;">
+                                The card authorization for your rental <strong>#<span th:text="${rentalId}">1</span></strong>
+                                (<span th:text="${carBrand}">Brand</span> <span th:text="${carModel}">Model</span>)
+                                is no longer active.
+                            </p>
+                            <p style="margin: 0 0 16px 0; font-size: 16px; color: #111827;">
+                                Please pay again before <strong th:text="${payBy}">the pickup date</strong>
+                                to keep your reservation. Amount:
+                                <strong><span th:text="${amount}">0.00</span> <span th:text="${currency}">USD</span></strong>.
+                            </p>
+                            <p style="margin: 0; font-size: 14px; color: #6b7280;">
+                                Reservations without a completed payment are cancelled automatically on the pickup date.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0;">
+                            <div th:replace="~{email/shared/footer :: footer}"></div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

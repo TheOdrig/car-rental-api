@@ -15,5 +15,6 @@ public enum EmailType {
     DAMAGE_DISPUTED,
     DAMAGE_RESOLVED,
 
+    PAYMENT_RETRY,
     PASSWORD_RESET
 }

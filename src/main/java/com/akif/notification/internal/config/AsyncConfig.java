@@ -21,7 +21,7 @@ import java.util.concurrent.Executor;
 public class AsyncConfig implements AsyncConfigurer {
 
     private int corePoolSize = 2;
-    private int maxPoolSize = 10;
+    private int maxPoolSize = 4;
     private int queueCapacity = 100;
 
     @Override
