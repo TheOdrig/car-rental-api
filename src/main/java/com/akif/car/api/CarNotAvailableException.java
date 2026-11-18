@@ -27,6 +27,12 @@ public class CarNotAvailableException extends BaseException {
         super(ERROR_CODE, message, status);
     }
 
+    public static CarNotAvailableException stillInUse(Long carId) {
+        return new CarNotAvailableException(
+                String.format("Car with id %d is still out on another rental", carId),
+                HttpStatus.CONFLICT);
+    }
+
     public static CarNotAvailableException bookedForDates(Long carId, LocalDate startDate, LocalDate endDate) {
         return new CarNotAvailableException(
                 String.format("Car with id %d is already booked between %s and %s", carId, startDate, endDate),

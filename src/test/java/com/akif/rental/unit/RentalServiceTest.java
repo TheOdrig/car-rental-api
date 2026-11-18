@@ -382,6 +382,58 @@ class RentalServiceTest {
     }
 
     @Nested
+    @DisplayName("Fleet status guards on confirm and pickup")
+    class FleetGuardTests {
+
+        private CarResponse carWithStatus(CarStatusType status) {
+            return CarResponse.builder().id(1L).carStatusType(status).build();
+        }
+
+        @Test
+        @DisplayName("confirm is rejected when the car is no longer AVAILABLE")
+        void confirmRejectedWhenCarUnavailable() {
+            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(carService.getCarForBooking(1L)).thenReturn(carWithStatus(CarStatusType.MAINTENANCE));
+
+            assertThatThrownBy(() -> rentalService.confirmRental(1L, null))
+                    .isInstanceOf(CarNotAvailableException.class);
+
+            verify(paymentService, never()).authorize(any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("pickup is rejected when the car is no longer AVAILABLE")
+        void pickupRejectedWhenCarUnavailable() {
+            testRental.confirm(null);
+            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(carService.getCarForBooking(1L)).thenReturn(carWithStatus(CarStatusType.DAMAGED));
+
+            assertThatThrownBy(() -> rentalService.pickupRental(1L, null))
+                    .isInstanceOf(CarNotAvailableException.class);
+
+            verify(paymentService, never()).capture(any(), any());
+        }
+
+        @Test
+        @DisplayName("pickup is rejected with a conflict while another rental of the car is in use")
+        void pickupRejectedWhenAnotherRentalInUse() {
+            testRental.confirm(null);
+            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(carService.getCarForBooking(1L)).thenReturn(carWithStatus(CarStatusType.AVAILABLE));
+            when(rentalRepository.existsByCarIdAndStatusAndIsDeletedFalseAndIdNot(
+                    1L, RentalStatus.IN_USE, 1L)).thenReturn(true);
+
+            assertThatThrownBy(() -> rentalService.pickupRental(1L, null))
+                    .isInstanceOf(CarNotAvailableException.class)
+                    .satisfies(error -> assertThat(((CarNotAvailableException) error).getHttpStatus())
+                            .isEqualTo(HttpStatus.CONFLICT));
+
+            verify(paymentService, never()).capture(any(), any());
+            assertThat(testRental.getStatus()).isEqualTo(RentalStatus.CONFIRMED);
+        }
+    }
+
+    @Nested
     @DisplayName("Confirm Rental Tests")
     class ConfirmRentalTests {
 
@@ -392,6 +444,7 @@ class RentalServiceTest {
             PaymentDto paymentDto = createTestPaymentDto();
 
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(carService.getCarForBooking(1L)).thenReturn(testCar);
             when(paymentService.authorize(any(), any(), any())).thenReturn(successResult);
             when(paymentService.createPayment(any())).thenReturn(paymentDto);
             when(paymentService.updatePaymentStatus(anyLong(), any(), any(), any())).thenReturn(paymentDto);
@@ -413,6 +466,7 @@ class RentalServiceTest {
             PaymentResult failedResult = new PaymentResult(false, null, "Card declined");
 
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(carService.getCarForBooking(1L)).thenReturn(testCar);
             when(paymentService.authorize(any(), any(), any())).thenReturn(failedResult);
 
             assertThatThrownBy(() -> rentalService.confirmRental(1L, null))
@@ -468,6 +522,7 @@ class RentalServiceTest {
             PaymentResult captureResult = new PaymentResult(true, "TXN-123", "Captured");
 
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(carService.getCarForBooking(1L)).thenReturn(testCar);
             when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(paymentDto));
             when(paymentService.capture(any(), any())).thenReturn(captureResult);
             when(paymentService.updatePaymentStatus(anyLong(), any(), any(), any())).thenReturn(paymentDto);

@@ -204,6 +204,23 @@ class BookingIntegrityIntegrationTest {
     }
 
     @Test
+    @DisplayName("an overdue in-use rental is detected as blocking pickup of the next rental on the car")
+    void overdueInUseRentalBlocksNextPickup() {
+        Car car = carRepository.save(TestDataBuilder.createAvailableCar());
+        User renter = userRepository.save(TestDataBuilder.createTestUser("overdue"));
+        LocalDate today = LocalDate.now();
+        var overdue = rentalRepository.save(TestDataBuilder.createRental(
+                car, renter, today.minusDays(6), today.minusDays(2), RentalStatus.IN_USE));
+        var next = rentalRepository.save(TestDataBuilder.createRental(
+                car, renter, today, today.plusDays(3), RentalStatus.CONFIRMED));
+
+        assertThat(rentalRepository.existsByCarIdAndStatusAndIsDeletedFalseAndIdNot(
+                car.getId(), RentalStatus.IN_USE, next.getId())).isTrue();
+        assertThat(rentalRepository.existsByCarIdAndStatusAndIsDeletedFalseAndIdNot(
+                car.getId(), RentalStatus.IN_USE, overdue.getId())).isFalse();
+    }
+
+    @Test
     @DisplayName("overlapping dates are rejected with 409 and the car-not-available code")
     void overlappingDatesRejected() throws Exception {
         Car car = carRepository.save(TestDataBuilder.createAvailableCar());

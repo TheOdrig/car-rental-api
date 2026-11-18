@@ -239,6 +239,8 @@ public class RentalServiceImpl implements RentalService {
                     RentalStatus.REQUESTED.name());
         }
 
+        requireCarAvailable(rental.getCarId());
+
         PaymentResult authResult = paymentService.authorize(
                 rental.getTotalPrice(),
                 rental.getCurrency(),
@@ -299,6 +301,12 @@ public class RentalServiceImpl implements RentalService {
             throw new InvalidRentalStateException(
                     rental.getStatus().name(),
                     RentalStatus.CONFIRMED.name());
+        }
+
+        requireCarAvailable(rental.getCarId());
+        if (rentalRepository.existsByCarIdAndStatusAndIsDeletedFalseAndIdNot(
+                rental.getCarId(), RentalStatus.IN_USE, rental.getId())) {
+            throw CarNotAvailableException.stillInUse(rental.getCarId());
         }
 
         PaymentDto payment = findPaymentByRentalId(rentalId);
@@ -526,6 +534,15 @@ public class RentalServiceImpl implements RentalService {
         RentalResponse result = rentalMapper.toDto(rental);
         log.info("Successfully retrieved rental: ID={}, Status={}", result.id(), result.status());
         return result;
+    }
+
+    private void requireCarAvailable(Long carId) {
+        CarResponse car = findCarById(carId);
+        if (car.getCarStatusType() != CarStatusType.AVAILABLE) {
+            throw new CarNotAvailableException(
+                    carId,
+                    "Car status is: " + car.getCarStatusType().getDisplayName());
+        }
     }
 
     private Rental findRentalById(Long id) {
