@@ -550,7 +550,7 @@ class PaymentReviewFixesIntegrationTest {
         payment.capture();
         paymentRepository.saveAndFlush(payment);
 
-        rentalService.cancelRental(rental.getId(), customer.getUsername(), "plans changed");
+        rentalService.earlyReturnRental(rental.getId(), "returned early");
 
         ArgumentCaptor<BigDecimal> amount = ArgumentCaptor.forClass(BigDecimal.class);
         verify(paymentGateway).refund(anyString(), amount.capture(), org.mockito.ArgumentMatchers.eq(CurrencyType.JPY), anyString());

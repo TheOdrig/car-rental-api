@@ -39,7 +39,7 @@ public enum RentalStatus {
     }
 
     public boolean canCancel() {
-        return this == REQUESTED || this == CONFIRMED || this == IN_USE;
+        return this == REQUESTED || this == CONFIRMED;
     }
 
     public static RentalStatus fromString(String status) {

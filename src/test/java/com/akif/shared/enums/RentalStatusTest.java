@@ -109,9 +109,9 @@ class RentalStatusTest {
         }
 
         @Test
-        @DisplayName("Should return true when status is IN_USE")
-        void shouldReturnTrueWhenStatusIsInUse() {
-            assertThat(RentalStatus.IN_USE.canCancel()).isTrue();
+        @DisplayName("Should return false when status is IN_USE")
+        void shouldReturnFalseWhenStatusIsInUse() {
+            assertThat(RentalStatus.IN_USE.canCancel()).isFalse();
         }
 
         @Test

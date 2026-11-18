@@ -38,6 +38,7 @@ public final class ApiAccessPolicy {
             rule(HttpMethod.POST, "/api/v1/rentals/*/confirm", Access.ADMIN),
             rule(HttpMethod.POST, "/api/v1/rentals/*/pickup", Access.ADMIN),
             rule(HttpMethod.POST, "/api/v1/rentals/*/return", Access.ADMIN),
+            rule(HttpMethod.POST, "/api/v1/rentals/*/early-return", Access.ADMIN),
             rule(HttpMethod.POST, "/api/v1/rentals/*/cancel", Access.AUTHENTICATED),
             rule(HttpMethod.POST, "/api/v1/rentals/*/payment-intent", Access.USER),
             rule(HttpMethod.GET, "/api/v1/rentals/*/payment", Access.AUTHENTICATED),

@@ -96,6 +96,7 @@ POST /api/v1/rentals/request USER
 GET /api/v1/rentals/{id} AUTHENTICATED
 POST /api/v1/rentals/{id}/cancel AUTHENTICATED
 POST /api/v1/rentals/{id}/confirm ADMIN
+POST /api/v1/rentals/{id}/early-return ADMIN
 GET /api/v1/rentals/{id}/payment AUTHENTICATED
 POST /api/v1/rentals/{id}/payment-intent USER
 POST /api/v1/rentals/{id}/pickup ADMIN

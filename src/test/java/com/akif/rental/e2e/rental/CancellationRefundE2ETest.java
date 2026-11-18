@@ -169,31 +169,18 @@ class CancellationRefundE2ETest extends E2ETestBase {
     }
 
     @Nested
-    @DisplayName("IN_USE Rental Cancellation Tests")
-    class InUseRentalCancellationTests {
+    @DisplayName("IN_USE Rental Tests")
+    class InUseRentalTests {
 
-        @Test
-        @DisplayName("Should cancel IN_USE rental and process partial refund")
-        void shouldCancelInUseRentalWithPartialRefund() throws Exception {
-            User testUser = TestDataBuilder.createTestUser();
-            testUser = userRepository.save(testUser);
-            String userToken = generateUserToken(testUser);
-
-            User testAdmin = TestDataBuilder.createTestAdmin();
-            testAdmin = userRepository.save(testAdmin);
-            String adminToken = generateAdminToken(testAdmin);
-
-            Car testCar = TestDataBuilder.createAvailableCar();
-            testCar = carRepository.save(testCar);
+        private Long inUseRental(String userToken, String adminToken) throws Exception {
+            Car testCar = carRepository.save(TestDataBuilder.createAvailableCar());
 
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
             mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.getDisplayName()));
-
+                    .andExpect(status().isOk());
             payRental(rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
@@ -201,37 +188,65 @@ class CancellationRefundE2ETest extends E2ETestBase {
                             .content("{}"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(RentalStatus.IN_USE.getDisplayName()));
+            return rentalId;
+        }
 
-            Payment payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
+        private Payment paymentOf(Long rentalId) {
+            return paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
-            assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CAPTURED);
-            BigDecimal originalAmount = payment.getAmount();
+        }
 
+        @Test
+        @DisplayName("A customer cannot cancel an IN_USE rental and no refund is made")
+        void customerCannotCancelInUseRental() throws Exception {
+            String userToken = generateUserToken(userRepository.save(TestDataBuilder.createTestUser()));
+            String adminToken = generateAdminToken(userRepository.save(TestDataBuilder.createTestAdmin()));
+            Long rentalId = inUseRental(userToken, adminToken);
             eventCaptor.clear();
 
             mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                             .header("Authorization", "Bearer " + userToken))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("RENTAL_CANCEL_NOT_ALLOWED"));
+
+            assertThat(paymentOf(rentalId).getStatus()).isEqualTo(PaymentStatus.CAPTURED);
+            assertThat(paymentOf(rentalId).refundedTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(eventCaptor.getEventsOfType(RentalCancelledEvent.class)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("An admin cannot cancel an IN_USE rental either")
+        void adminCannotCancelInUseRental() throws Exception {
+            String userToken = generateUserToken(userRepository.save(TestDataBuilder.createTestUser()));
+            String adminToken = generateAdminToken(userRepository.save(TestDataBuilder.createTestAdmin()));
+            Long rentalId = inUseRental(userToken, adminToken);
+
+            mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("RENTAL_CANCEL_NOT_ALLOWED"));
+        }
+
+        @Test
+        @DisplayName("Only an admin can end an IN_USE rental early, with a partial refund of the unused days")
+        void adminEarlyReturnRefundsUnusedDays() throws Exception {
+            String userToken = generateUserToken(userRepository.save(TestDataBuilder.createTestUser()));
+            String adminToken = generateAdminToken(userRepository.save(TestDataBuilder.createTestAdmin()));
+            Long rentalId = inUseRental(userToken, adminToken);
+            BigDecimal originalAmount = paymentOf(rentalId).getAmount();
+
+            mockMvc.perform(post("/api/v1/rentals/{id}/early-return", rentalId)
+                            .header("Authorization", "Bearer " + userToken))
+                    .andExpect(status().isForbidden());
+
+            mockMvc.perform(post("/api/v1/rentals/{id}/early-return", rentalId)
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.id").value(rentalId))
-                    .andExpect(jsonPath("$.status").value(RentalStatus.CANCELLED.getDisplayName()));
+                    .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.getDisplayName()));
 
-            payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
-                    .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
-            assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
-
-            List<RentalCancelledEvent> cancelledEvents = eventCaptor.getEventsOfType(RentalCancelledEvent.class);
-            assertThat(cancelledEvents).hasSize(1);
-
-            RentalCancelledEvent event = cancelledEvents.get(0);
-            assertThat(event.rentalId()).isEqualTo(rentalId);
-            assertThat(event.customerEmail()).isEqualTo(testUser.getEmail());
-            assertThat(event.refundProcessed()).isTrue();
-            assertThat(event.refundAmount()).isNotNull();
-
-            assertThat(event.refundAmount()).isLessThanOrEqualTo(originalAmount);
-            assertThat(event.refundTransactionId()).isNotNull();
-
-            log.info("Successfully cancelled IN_USE rental with partial refund");
+            Payment payment = paymentOf(rentalId);
+            assertThat(payment.refundedTotal()).isPositive();
+            assertThat(payment.refundedTotal()).isLessThanOrEqualTo(originalAmount);
         }
     }
 }

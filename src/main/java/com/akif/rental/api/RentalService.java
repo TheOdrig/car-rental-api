@@ -19,6 +19,8 @@ public interface RentalService extends UserRentalStatisticsProvider {
 
     RentalResponse returnRental(Long rentalId, String returnNotes);
 
+    RentalResponse earlyReturnRental(Long rentalId, String returnNotes);
+
     RentalResponse cancelRental(Long rentalId, String username, String reason);
 
     Page<RentalResponse> getMyRentals(String username, Pageable pageable);

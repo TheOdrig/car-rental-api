@@ -132,11 +132,33 @@ public class RentalController {
                 return ResponseEntity.ok(rental);
         }
 
+        @PostMapping("/{id}/early-return")
+        @PreAuthorize("hasRole('ADMIN')")
+        @Operation(summary = "Early return", description = "Admin returns the car before the end date; the unused days are refunded partially through the normal refund path. Late and damage handling are unchanged.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Early return processed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RentalResponse.class))),
+                        @ApiResponse(responseCode = "400", description = "Invalid rental state"),
+                        @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
+                        @ApiResponse(responseCode = "404", description = "Rental not found")
+        })
+        public ResponseEntity<RentalResponse> earlyReturnRental(
+                        @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
+                        @Parameter(description = "Return notes") @RequestBody(required = false) ReturnRequest request) {
+
+                log.info("POST /api/v1/rentals/{}/early-return", id);
+
+                String notes = (request != null) ? request.notes() : null;
+                RentalResponse rental = rentalService.earlyReturnRental(id, notes);
+
+                log.info("Early return processed successfully. RentalId: {}", id);
+                return ResponseEntity.ok(rental);
+        }
+
         @PostMapping("/{id}/cancel")
-        @Operation(summary = "Cancel rental", description = "Cancel a rental (user can cancel own, admin can cancel any)")
+        @Operation(summary = "Cancel rental", description = "Cancel a REQUESTED or CONFIRMED rental (user can cancel own, admin can cancel any). A rental in use ends only through the return flow.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Rental cancelled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RentalResponse.class))),
-                        @ApiResponse(responseCode = "400", description = "Invalid rental state"),
+                        @ApiResponse(responseCode = "400", description = "Rental cannot be cancelled in its current status (RENTAL_CANCEL_NOT_ALLOWED)"),
                         @ApiResponse(responseCode = "403", description = "Access denied"),
                         @ApiResponse(responseCode = "404", description = "Rental not found")
         })

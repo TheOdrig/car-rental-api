@@ -18,6 +18,7 @@ import com.akif.payment.api.CreatePaymentRequest;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.internal.config.RentalProperties;
 import com.akif.rental.internal.exception.InvalidRentalStateException;
+import com.akif.rental.internal.exception.RentalCancelNotAllowedException;
 import com.akif.rental.internal.exception.OpenRentalRequestLimitException;
 import com.akif.rental.internal.exception.PaymentWindowNotOpenException;
 import com.akif.rental.internal.exception.PaymentNotAuthorizedException;
@@ -324,7 +325,17 @@ public class RentalServiceImpl implements RentalService {
     @Override
     @Transactional
     public RentalResponse returnRental(Long rentalId, String returnNotes) {
-        log.info("Processing return for rental: {}", rentalId);
+        return completeReturn(rentalId, returnNotes, false);
+    }
+
+    @Override
+    @Transactional
+    public RentalResponse earlyReturnRental(Long rentalId, String returnNotes) {
+        return completeReturn(rentalId, returnNotes, true);
+    }
+
+    private RentalResponse completeReturn(Long rentalId, String returnNotes, boolean refundUnusedDays) {
+        log.info("Processing return for rental: {} (refundUnusedDays={})", rentalId, refundUnusedDays);
 
         Rental rental = findRentalForUpdate(rentalId);
 
@@ -341,6 +352,10 @@ public class RentalServiceImpl implements RentalService {
 
             log.info("Processing late return penalty for rental: {}", rentalId);
             processPenaltyForLateReturn(rental, actualReturnTime);
+        }
+
+        if (refundUnusedDays) {
+            refundPartialPayment(rental);
         }
 
         rental.markReturned(actualReturnTime, returnNotes);
@@ -366,8 +381,7 @@ public class RentalServiceImpl implements RentalService {
         }
 
         if (!rental.getStatus().canCancel()) {
-            throw new InvalidRentalStateException(
-                    "Cannot cancel rental in status: " + rental.getStatus().name());
+            throw new RentalCancelNotAllowedException(rental.getStatus().name());
         }
 
         RentalStatus currentStatus = rental.getStatus();
@@ -375,8 +389,6 @@ public class RentalServiceImpl implements RentalService {
         RefundInfo refundInfo = new RefundInfo(false, BigDecimal.ZERO, null);
         if (currentStatus == RentalStatus.CONFIRMED) {
             refundInfo = refundPayment(rentalId);
-        } else if (currentStatus == RentalStatus.IN_USE) {
-            refundInfo = refundPartialPayment(rental);
         }
 
         rental.cancel(reason);

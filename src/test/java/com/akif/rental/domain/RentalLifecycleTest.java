@@ -83,6 +83,13 @@ class RentalLifecycleTest {
     }
 
     @Test
+    @DisplayName("cancel is rejected while the car is in use")
+    void cancelRejectedWhileInUse() {
+        assertThatThrownBy(() -> rentalIn(RentalStatus.IN_USE).cancel("keep the refund"))
+                .isInstanceOf(InvalidStatusTransitionException.class);
+    }
+
+    @Test
     @DisplayName("flagLate keeps the first detection time and updates the late hours")
     void flagLateKeepsFirstDetectionTime() {
         Rental rental = rentalIn(RentalStatus.IN_USE);
