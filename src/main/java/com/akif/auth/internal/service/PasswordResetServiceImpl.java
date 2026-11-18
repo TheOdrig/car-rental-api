@@ -91,7 +91,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         resetToken.markAsUsed();
         tokenRepository.save(resetToken);
 
-        log.info("Password reset successfully for email: {}", resetToken.getEmail());
+        log.info("Password reset completed for user id: {}", user.getId());
     }
 
     @Override

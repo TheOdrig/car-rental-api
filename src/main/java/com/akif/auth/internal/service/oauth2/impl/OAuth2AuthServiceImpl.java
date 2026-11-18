@@ -85,7 +85,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
                 .build()
                 .toUriString();
 
-        log.debug("Generated authorization URL for provider {}: {}", provider, authorizationUrl);
+        log.debug("Generated authorization URL for provider {}", provider);
         return authorizationUrl;
     }
 
