@@ -24,6 +24,7 @@ public final class ApiAccessPolicy {
     private static final Pattern PATH_VARIABLE = Pattern.compile("[{][^}]+[}]");
 
     public static final List<String> DOCUMENTATION_PATHS = List.of("/swagger-ui/**", "/v3/api-docs/**");
+    public static final String SWAGGER_UI_ENTRY = "/swagger-ui.html";
 
     public static final List<Rule> RULES = List.of(
             any("/api/v1/auth/**", Access.PUBLIC),

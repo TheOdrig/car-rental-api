@@ -6,6 +6,7 @@ import com.akif.shared.security.ratelimit.RateLimitFilter;
 import com.akif.shared.security.ratelimit.RateLimitProperties;
 import com.akif.shared.security.ratelimit.RateLimitService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
@@ -75,7 +76,8 @@ public class SecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource)
+    public SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource,
+                                           @Value("${springdoc.swagger-ui.enabled:true}") boolean swaggerUiEnabled)
             throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
@@ -83,6 +85,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(ApiAccessPolicy.DOCUMENTATION_PATHS.toArray(String[]::new)).permitAll();
+                    if (swaggerUiEnabled) {
+                        auth.requestMatchers(ApiAccessPolicy.SWAGGER_UI_ENTRY).permitAll();
+                    }
                     ApiAccessPolicy.RULES.forEach(rule -> apply(auth, rule));
                     auth.anyRequest().authenticated();
                 })

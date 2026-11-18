@@ -145,6 +145,14 @@ public class SecurityConfigTest {
         }
 
         @Test
+        @DisplayName("Should redirect the Swagger UI entry path without JWT token")
+        void shouldRedirectSwaggerUiEntryPath() throws Exception {
+            mockMvc.perform(get("/swagger-ui.html"))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(header().string("Location", org.hamcrest.Matchers.containsString("/swagger-ui/index.html")));
+        }
+
+        @Test
         @DisplayName("Should allow access to API docs without JWT token")
         void shouldAllowAccessToApiDocs() throws Exception {
             mockMvc.perform(get("/v3/api-docs"))
