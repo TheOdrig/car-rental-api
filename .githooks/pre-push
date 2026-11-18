@@ -1,2 +1,7 @@
 #!/usr/bin/env bash
-exec bash "$(git rev-parse --show-toplevel)/scripts/verify.sh"
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+bash scripts/check-no-ai-files.sh
+bash scripts/check-artifacts.sh
+./mvnw -B -q -ntp test -Djacoco.skip=true -Dtest='LogSafetyTest,ModularityTests,OpenApiContractTest,EndpointInventoryTest'
+echo "pre-push: fast checks OK; run scripts/verify.sh for the full gate"
