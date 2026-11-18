@@ -6,8 +6,10 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 @Component
 @Profile("prod")
@@ -50,11 +52,12 @@ public class ProdConfigurationValidator {
 
     static void validate(Environment environment) {
         List<String> problems = new ArrayList<>();
+        Lookup lookup = new Lookup(environment, problems);
 
         for (String key : REQUIRED_SECRETS) {
-            String value = environment.getProperty(key);
+            String value = lookup.get(key);
             if (isBlank(value)) {
-                problems.add(key + " is missing");
+                lookup.reportMissing(key);
             } else if (value.getBytes(StandardCharsets.UTF_8).length < MIN_SECRET_BYTES) {
                 problems.add(key + " must be at least " + MIN_SECRET_BYTES + " bytes");
             } else if (looksWeak(value)) {
@@ -63,21 +66,21 @@ public class ProdConfigurationValidator {
         }
 
         for (String key : REQUIRED_VALUES) {
-            if (isBlank(environment.getProperty(key))) {
-                problems.add(key + " is missing");
+            if (isBlank(lookup.get(key))) {
+                lookup.reportMissing(key);
             }
         }
 
-        String stripeKey = environment.getProperty("stripe.api.key");
+        String stripeKey = lookup.get("stripe.api.key");
         if (!isBlank(stripeKey) && (!stripeKey.startsWith("sk_") || looksWeak(stripeKey))) {
             problems.add("stripe.api.key must be a real Stripe secret key");
         }
-        String webhookSecret = environment.getProperty("stripe.webhook.secret");
+        String webhookSecret = lookup.get("stripe.webhook.secret");
         if (!isBlank(webhookSecret) && (!webhookSecret.startsWith("whsec_") || looksWeak(webhookSecret))) {
             problems.add("stripe.webhook.secret must be a real Stripe signing secret");
         }
 
-        String origins = environment.getProperty("cors.allowed-origins");
+        String origins = lookup.get("cors.allowed-origins");
         if (!isBlank(origins)) {
             for (String origin : origins.split(",")) {
                 String trimmed = origin.trim();
@@ -87,7 +90,7 @@ public class ProdConfigurationValidator {
             }
         }
 
-        validateProxySettings(environment, problems);
+        validateProxySettings(lookup, problems);
 
         if (!problems.isEmpty()) {
             throw new IllegalStateException(
@@ -95,17 +98,17 @@ public class ProdConfigurationValidator {
         }
     }
 
-    private static void validateProxySettings(Environment environment, List<String> problems) {
-        String trust = environment.getProperty(TRUST_KEY);
+    private static void validateProxySettings(Lookup lookup, List<String> problems) {
+        String trust = lookup.get(TRUST_KEY);
         if (isBlank(trust)) {
-            problems.add(TRUST_KEY + " is missing; set TRUST_FORWARDED_HEADERS to true or false explicitly");
+            lookup.reportMissing(TRUST_KEY, "set TRUST_FORWARDED_HEADERS to true or false explicitly");
         } else if (!"true".equalsIgnoreCase(trust.trim()) && !"false".equalsIgnoreCase(trust.trim())) {
             problems.add(TRUST_KEY + " must be true or false");
         }
 
-        String hops = environment.getProperty(HOPS_KEY);
+        String hops = lookup.get(HOPS_KEY);
         if (isBlank(hops)) {
-            problems.add(HOPS_KEY + " is missing; set TRUSTED_PROXY_HOPS to the number of proxies in front of the app");
+            lookup.reportMissing(HOPS_KEY, "set TRUSTED_PROXY_HOPS to the number of proxies in front of the app");
         } else {
             try {
                 if (Integer.parseInt(hops.trim()) < 1) {
@@ -113,6 +116,41 @@ public class ProdConfigurationValidator {
                 }
             } catch (NumberFormatException e) {
                 problems.add(HOPS_KEY + " must be an integer");
+            }
+        }
+    }
+
+    private static final class Lookup {
+
+        private final Environment environment;
+        private final List<String> problems;
+        private final Set<String> unresolved = new HashSet<>();
+
+        private Lookup(Environment environment, List<String> problems) {
+            this.environment = environment;
+            this.problems = problems;
+        }
+
+        private String get(String key) {
+            try {
+                return environment.getProperty(key);
+            } catch (IllegalArgumentException e) {
+                if (unresolved.add(key)) {
+                    problems.add(key + " references an unset environment variable");
+                }
+                return null;
+            }
+        }
+
+        private void reportMissing(String key) {
+            if (!unresolved.contains(key)) {
+                problems.add(key + " is missing");
+            }
+        }
+
+        private void reportMissing(String key, String hint) {
+            if (!unresolved.contains(key)) {
+                problems.add(key + " is missing; " + hint);
             }
         }
     }

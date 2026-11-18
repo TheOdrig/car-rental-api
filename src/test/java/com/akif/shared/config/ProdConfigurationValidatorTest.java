@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.env.MockEnvironment;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -141,5 +142,25 @@ class ProdConfigurationValidatorTest {
                 .hasMessageContaining("trusted-proxy-hops must be at least 1");
         assertThatThrownBy(() -> new ProdConfigurationValidator(text))
                 .hasMessageContaining("trusted-proxy-hops must be an integer");
+    }
+
+    @Test
+    @DisplayName("reports every problem at once even when properties hold unresolved placeholders")
+    void reportsAllProblemsDespiteUnresolvedPlaceholders() {
+        MockEnvironment environment = validEnvironment();
+        environment.withProperty("jwt.secret", "${PROD_VALIDATOR_UNSET_JWT}");
+        environment.withProperty("stripe.api.key", "${PROD_VALIDATOR_UNSET_STRIPE}");
+        environment.withProperty("r2.bucket-name", "${PROD_VALIDATOR_UNSET_BUCKET}");
+        environment.withProperty("oauth2.state.secret", "short");
+        environment.withProperty("spring.datasource.password", "");
+
+        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("jwt.secret references an unset environment variable")
+                .hasMessageContaining("stripe.api.key references an unset environment variable")
+                .hasMessageContaining("r2.bucket-name references an unset environment variable")
+                .hasMessageContaining("oauth2.state.secret must be at least 32 bytes")
+                .hasMessageContaining("spring.datasource.password is missing")
+                .satisfies(error -> assertThat(error.getMessage()).doesNotContain("jwt.secret is missing"));
     }
 }
