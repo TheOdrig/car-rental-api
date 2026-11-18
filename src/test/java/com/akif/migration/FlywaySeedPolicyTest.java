@@ -14,6 +14,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,6 +36,16 @@ class FlywaySeedPolicyTest {
                 .doesNotContain("seed");
         assertThat(load("application-test.properties").getProperty("spring.flyway.locations", ""))
                 .doesNotContain("seed");
+    }
+
+    @Test
+    @DisplayName("seed image URLs use https and avoid the retired focus.bg host")
+    void seedImageUrlsAreStable() throws IOException {
+        for (String name : List.of("R__seed_02_cars.sql", "R__seed_03_rentals.sql")) {
+            String sql = new String(new ClassPathResource("db/seed/" + name).getInputStream().readAllBytes(),
+                    StandardCharsets.UTF_8);
+            assertThat(sql).doesNotContain("focus.bg").doesNotContain("http://");
+        }
     }
 
     @Test

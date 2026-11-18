@@ -473,7 +473,7 @@ INSERT INTO car_rental.rentals (
     NOW() - INTERVAL '45 days', NOW() - INTERVAL '40 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'okan.tekin@outlook.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '35SEA013'),
-    'Seat', 'Leon', '35SEA013', 'https://cdn3.focus.bg/autodata/i/seat/leon/leon-cupra-ii/large/c34323f28221796d10f7df07e042d14f.jpg',
+    'Seat', 'Leon', '35SEA013', 'https://commons.wikimedia.org/wiki/Special:FilePath/SEAT_Leon_Cupra_002.jpg?width=800',
     'okan.tekin@outlook.com', 'Okan Tekin',
     '2025-09-20', '2025-09-25', 5,
     'USD', 45.00, 225.00,

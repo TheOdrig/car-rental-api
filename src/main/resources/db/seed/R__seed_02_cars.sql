@@ -129,8 +129,8 @@ INSERT INTO car_rental.car (
     '35SEA013', 'VSSZZZ5FZJR000018', 'Seat', 'Leon', 2019,
     45.00, 'USD', 0, 'AVAILABLE',
     'Gasoline', 'Manual', 'Hatchback', 'Yellow', 62000, 5, 5,
-    'https://cdn3.focus.bg/autodata/i/seat/leon/leon-cupra-ii/large/c34323f28221796d10f7df07e042d14f.jpg',
-    'https://cdn3.focus.bg/autodata/i/seat/leon/leon-cupra-ii/large/c34323f28221796d10f7df07e042d14f.jpg'
+    'https://commons.wikimedia.org/wiki/Special:FilePath/SEAT_Leon_Cupra_002.jpg?width=800',
+    'https://commons.wikimedia.org/wiki/Special:FilePath/SEAT_Leon_Cupra_002.jpg?width=800'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
 INSERT INTO car_rental.car (
