@@ -6,7 +6,12 @@ import com.akif.car.api.CarStatusType;
 import com.akif.car.internal.dto.request.CarRequest;
 import com.akif.car.internal.mapper.CarMapper;
 import com.akif.car.internal.repository.CarRepository;
+import com.akif.car.internal.service.CarCommandService;
+import com.akif.car.internal.service.CarLookup;
+import com.akif.car.internal.service.CarQueryService;
 import com.akif.car.internal.service.CarServiceImpl;
+import com.akif.car.internal.service.CarStatisticsService;
+import com.akif.car.internal.service.CarStatusService;
 import com.akif.shared.enums.CurrencyType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +19,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import java.time.Clock;
-import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -40,8 +44,17 @@ class CarServiceImplBugFixTest {
     @Spy
     private Clock clock = Clock.systemDefaultZone();
 
-    @InjectMocks
     private CarServiceImpl carService;
+
+    @BeforeEach
+    void wireService() {
+        CarLookup carLookup = new CarLookup(carRepository);
+        carService = new CarServiceImpl(
+                new CarQueryService(clock, carRepository, carMapper, carLookup),
+                new CarCommandService(clock, carRepository, carMapper, carLookup),
+                new CarStatusService(clock, carRepository, carMapper, carLookup),
+                new CarStatisticsService(carRepository));
+    }
 
     private Car testCar;
     private CarResponse testCarResponse;

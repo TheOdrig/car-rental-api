@@ -22,6 +22,7 @@ public class CacheConfig {
     public static final String CAR_STATUS_COUNTS_CACHE = "car-status-counts";
     public static final String CAR_BRAND_COUNTS_CACHE = "car-brand-counts";
     public static final String CAR_AVERAGE_PRICES_CACHE = "car-average-prices";
+    public static final String FILTER_OPTIONS_CACHE = "filter-options";
 
     public static final String DAILY_SUMMARY_CACHE = "dailySummary";
     public static final String FLEET_STATUS_CACHE = "fleetStatus";
