@@ -25,6 +25,8 @@ class RateLimitEndpointClassifierTest {
         assertThat(classify("POST", "/api/auth/forgot-password")).contains(RateLimitCategory.PASSWORD_RESET);
         assertThat(classify("POST", "/api/auth/reset-password")).contains(RateLimitCategory.PASSWORD_RESET);
         assertThat(classify("GET", "/api/oauth2/callback/google")).contains(RateLimitCategory.OAUTH2_CALLBACK);
+        assertThat(classify("POST", "/api/rentals/request")).contains(RateLimitCategory.RENTAL_REQUEST);
+        assertThat(classify("POST", "/api/rentals/reques%74")).contains(RateLimitCategory.RENTAL_REQUEST);
     }
 
     @Test
@@ -50,7 +52,6 @@ class RateLimitEndpointClassifierTest {
         assertThat(classify("GET", "/api/auth/login")).isEmpty();
         assertThat(classify("POST", "/api/auth/logout")).isEmpty();
         assertThat(classify("GET", "/api/cars")).isEmpty();
-        assertThat(classify("POST", "/api/rentals/request")).isEmpty();
-        assertThat(classify("GET", "/api/oauth2/authorize/google")).isEmpty();
+                assertThat(classify("GET", "/api/oauth2/authorize/google")).isEmpty();
     }
 }

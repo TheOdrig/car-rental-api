@@ -36,7 +36,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "security.rate-limit.limits.password-reset.capacity=2",
         "security.rate-limit.limits.password-reset.period-seconds=600",
         "security.rate-limit.limits.oauth2-callback.capacity=2",
-        "security.rate-limit.limits.oauth2-callback.period-seconds=60"
+        "security.rate-limit.limits.oauth2-callback.period-seconds=60",
+        "security.rate-limit.limits.rental-request.capacity=2",
+        "security.rate-limit.limits.rental-request.period-seconds=600"
 })
 @Import(TestcontainersConfiguration.class)
 @AutoConfigureMockMvc
@@ -146,6 +148,18 @@ class RateLimitIntegrationTest {
         }
 
         assertRateLimited(mockMvc.perform(json("/api/auth/forgot-password", body)).andReturn());
+    }
+
+    @Test
+    @DisplayName("rental requests are limited")
+    void rentalRequestsAreLimited() throws Exception {
+        String body = "{\"carId\":1}";
+        for (int i = 0; i < 2; i++) {
+            MvcResult result = mockMvc.perform(json("/api/rentals/request", body)).andReturn();
+            assertThat(result.getResponse().getStatus()).isNotEqualTo(429);
+        }
+
+        assertRateLimited(mockMvc.perform(json("/api/rentals/request", body)).andReturn());
     }
 
     @Test

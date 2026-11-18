@@ -5,5 +5,6 @@ public enum RateLimitCategory {
     REGISTER,
     REFRESH,
     PASSWORD_RESET,
-    OAUTH2_CALLBACK
+    OAUTH2_CALLBACK,
+    RENTAL_REQUEST
 }

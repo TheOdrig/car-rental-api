@@ -26,6 +26,13 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
         Optional<Rental> findByIdAndIsDeletedFalse(Long id);
 
+        @Query("SELECT r FROM Rental r " +
+                        "WHERE r.status = :status " +
+                        "AND r.createTime < :cutoff " +
+                        "AND r.isDeleted = false")
+        List<Rental> findStaleRequests(@Param("status") RentalStatus status,
+                        @Param("cutoff") java.time.LocalDateTime cutoff);
+
         Page<Rental> findByIsDeletedFalse(Pageable pageable);
 
         @Query("SELECT COUNT(r) FROM Rental r " +

@@ -13,7 +13,9 @@ import com.akif.payment.api.PaymentDto;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.api.CreatePaymentRequest;
 import com.akif.rental.api.RentalStatus;
+import com.akif.rental.internal.config.RentalProperties;
 import com.akif.rental.internal.exception.InvalidRentalStateException;
+import com.akif.rental.internal.exception.OpenRentalRequestLimitException;
 import com.akif.rental.internal.exception.RentalNotFoundException;
 import com.akif.rental.internal.exception.RentalValidationException;
 import com.akif.rental.internal.dto.penalty.PenaltyResult;
@@ -77,6 +79,7 @@ public class RentalServiceImpl implements RentalService {
     private final ApplicationEventPublisher eventPublisher;
     private final PenaltyCalculationService penaltyCalculationService;
     private final PenaltyPaymentService penaltyPaymentService;
+    private final RentalProperties rentalProperties;
 
     @Override
     @Transactional
@@ -93,6 +96,7 @@ public class RentalServiceImpl implements RentalService {
         }
 
         validateRentalDates(request.startDate(), request.endDate());
+        checkOpenRequestLimit(user.id());
         checkDateOverlap(car.getId(), request.startDate(), request.endDate());
 
         PricingResult pricingResult = dynamicPricingService.calculatePrice(
@@ -163,14 +167,27 @@ public class RentalServiceImpl implements RentalService {
     }
 
     private void validateRentalDates(LocalDate startDate, LocalDate endDate) {
-        if (startDate.isBefore(LocalDate.now(clock))) {
+        LocalDate today = LocalDate.now(clock);
+        if (startDate.isBefore(today)) {
             throw new RentalValidationException("Start date cannot be in the past");
         }
-        if (endDate.isBefore(startDate)) {
+        if (!endDate.isAfter(startDate)) {
             throw new RentalValidationException("End date must be after start date");
         }
-        if (startDate.isAfter(endDate)) {
-            throw new RentalValidationException("Invalid date range");
+        if (startDate.isAfter(today.plusDays(rentalProperties.getMaxLeadDays()))) {
+            throw new RentalValidationException(
+                    "Start date cannot be more than " + rentalProperties.getMaxLeadDays() + " days ahead");
+        }
+        if (calculateDays(startDate, endDate) > rentalProperties.getMaxRentalDays()) {
+            throw new RentalValidationException(
+                    "Rental cannot be longer than " + rentalProperties.getMaxRentalDays() + " days");
+        }
+    }
+
+    private void checkOpenRequestLimit(Long userId) {
+        long open = rentalRepository.countByUserIdAndStatusAndIsDeletedFalse(userId, RentalStatus.REQUESTED);
+        if (open >= rentalProperties.getMaxOpenRequestsPerUser()) {
+            throw new OpenRentalRequestLimitException(rentalProperties.getMaxOpenRequestsPerUser());
         }
     }
 

@@ -161,6 +161,49 @@ class BookingIntegrityIntegrationTest {
     }
 
     @Test
+    @DisplayName("a user cannot hold more than three open requests")
+    void openRequestCapEnforced() throws Exception {
+        String token = tokenFor(userRepository.save(TestDataBuilder.createTestUser("hoarder")));
+        for (int i = 0; i < 3; i++) {
+            Car car = carRepository.save(TestDataBuilder.createAvailableCar());
+            assertThat(book(token, car.getId(), start, end).getResponse().getStatus()).isEqualTo(201);
+        }
+
+        Car fourth = carRepository.save(TestDataBuilder.createAvailableCar());
+        MvcResult rejected = book(token, fourth.getId(), start, end);
+
+        assertThat(rejected.getResponse().getStatus()).isEqualTo(409);
+        assertThat(errorCode(rejected)).isEqualTo("OPEN_RENTAL_REQUEST_LIMIT_EXCEEDED");
+        assertThat(rentalRepository.count()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("a rental longer than 30 days is rejected by validation")
+    void overlongRentalRejected() throws Exception {
+        Car car = carRepository.save(TestDataBuilder.createAvailableCar());
+        String token = tokenFor(userRepository.save(TestDataBuilder.createTestUser("long-renter")));
+
+        MvcResult result = book(token, car.getId(), start, start.plusDays(30));
+
+        assertThat(result.getResponse().getStatus()).isEqualTo(400);
+        assertThat(errorCode(result)).isEqualTo("VALIDATION_FAILED");
+        assertThat(book(token, car.getId(), start, start.plusDays(29)).getResponse().getStatus()).isEqualTo(201);
+    }
+
+    @Test
+    @DisplayName("a start date more than 180 days ahead is rejected by validation")
+    void farFutureRentalRejected() throws Exception {
+        Car car = carRepository.save(TestDataBuilder.createAvailableCar());
+        String token = tokenFor(userRepository.save(TestDataBuilder.createTestUser("planner")));
+        LocalDate far = LocalDate.now().plusDays(181);
+
+        MvcResult result = book(token, car.getId(), far, far.plusDays(2));
+
+        assertThat(result.getResponse().getStatus()).isEqualTo(400);
+        assertThat(errorCode(result)).isEqualTo("VALIDATION_FAILED");
+    }
+
+    @Test
     @DisplayName("overlapping dates are rejected with 409 and the car-not-available code")
     void overlappingDatesRejected() throws Exception {
         Car car = carRepository.save(TestDataBuilder.createAvailableCar());

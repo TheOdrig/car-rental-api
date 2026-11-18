@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.akif.rental.internal.config.RentalProperties;
+import com.akif.rental.internal.exception.OpenRentalRequestLimitException;
 import com.akif.shared.enums.Role;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -90,6 +92,9 @@ class RentalServiceTest {
 
     @Spy
     private Clock clock = Clock.systemDefaultZone();
+
+    @Spy
+    private RentalProperties rentalProperties = new RentalProperties();
 
     @InjectMocks
     private RentalServiceImpl rentalService;
@@ -284,6 +289,95 @@ class RentalServiceTest {
             assertThatThrownBy(() -> rentalService.requestRental(pastRequest, "testuser"))
                     .isInstanceOf(RentalValidationException.class)
                     .hasMessageContaining("past");
+        }
+    }
+
+    @Nested
+    @DisplayName("Request limits")
+    class RequestLimitTests {
+
+        private void prepare() {
+            when(authService.getUserByUsername("testuser")).thenReturn(testUser);
+            when(carService.getCarForBooking(1L)).thenReturn(testCar);
+        }
+
+        @Test
+        @DisplayName("rejects an end date equal to the start date")
+        void rejectsSameDayRange() {
+            prepare();
+            LocalDate day = LocalDate.now().plusDays(3);
+
+            assertThatThrownBy(() -> rentalService.requestRental(new RentalRequest(1L, day, day, null), "testuser"))
+                    .isInstanceOf(RentalValidationException.class)
+                    .hasMessageContaining("End date must be after start date");
+        }
+
+        @Test
+        @DisplayName("rejects a rental longer than the configured maximum")
+        void rejectsTooLongRental() {
+            prepare();
+            LocalDate start = LocalDate.now().plusDays(1);
+
+            assertThatThrownBy(() -> rentalService.requestRental(
+                    new RentalRequest(1L, start, start.plusDays(30), null), "testuser"))
+                    .isInstanceOf(RentalValidationException.class)
+                    .hasMessageContaining("30 days");
+        }
+
+        @Test
+        @DisplayName("accepts a rental of exactly the maximum inclusive length")
+        void acceptsMaximumLength() {
+            prepare();
+            LocalDate start = LocalDate.now().plusDays(1);
+            when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(0L);
+            when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any())).thenReturn(testPricingResult);
+            when(rentalRepository.saveAndFlush(any(Rental.class))).thenReturn(testRental);
+            when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
+
+            assertThat(rentalService.requestRental(
+                    new RentalRequest(1L, start, start.plusDays(29), null), "testuser")).isNotNull();
+        }
+
+        @Test
+        @DisplayName("rejects a start date beyond the configured lead time")
+        void rejectsTooFarAhead() {
+            prepare();
+            LocalDate start = LocalDate.now().plusDays(181);
+
+            assertThatThrownBy(() -> rentalService.requestRental(
+                    new RentalRequest(1L, start, start.plusDays(2), null), "testuser"))
+                    .isInstanceOf(RentalValidationException.class)
+                    .hasMessageContaining("180 days");
+        }
+
+        @Test
+        @DisplayName("honours a tighter configured maximum length")
+        void honoursConfiguredLength() {
+            prepare();
+            rentalProperties.setMaxRentalDays(7);
+            LocalDate start = LocalDate.now().plusDays(1);
+
+            assertThatThrownBy(() -> rentalService.requestRental(
+                    new RentalRequest(1L, start, start.plusDays(7), null), "testuser"))
+                    .isInstanceOf(RentalValidationException.class)
+                    .hasMessageContaining("7 days");
+        }
+
+        @Test
+        @DisplayName("rejects a new request once the user has the maximum number of open requests")
+        void rejectsWhenOpenRequestCapReached() {
+            prepare();
+            when(rentalRepository.countByUserIdAndStatusAndIsDeletedFalse(1L, RentalStatus.REQUESTED))
+                    .thenReturn(3);
+
+            assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, "testuser"))
+                    .isInstanceOf(OpenRentalRequestLimitException.class)
+                    .satisfies(error -> {
+                        OpenRentalRequestLimitException exception = (OpenRentalRequestLimitException) error;
+                        assertThat(exception.getHttpStatus()).isEqualTo(HttpStatus.CONFLICT);
+                        assertThat(exception.getErrorCode()).isEqualTo("OPEN_RENTAL_REQUEST_LIMIT_EXCEEDED");
+                    });
+            verify(rentalRepository, never()).saveAndFlush(any());
         }
     }
 
