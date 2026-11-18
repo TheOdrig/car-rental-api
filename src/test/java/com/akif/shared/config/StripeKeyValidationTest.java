@@ -20,6 +20,7 @@ class StripeKeyValidationTest {
                 .withProperty("cors.allowed-origins", "https://rent.example.com")
                 .withProperty("stripe.api.key", "sk_test_51Habcdefghijklmnop")
                 .withProperty("stripe.webhook.secret", "whsec_abcdefghijklmnop")
+                .withProperty("stripe.metadata.environment", "prod")
                 .withProperty("r2.endpoint", "https://acc.r2.cloudflarestorage.com")
                 .withProperty("r2.bucket-name", "bucket")
                 .withProperty("r2.access-key-id", "id")

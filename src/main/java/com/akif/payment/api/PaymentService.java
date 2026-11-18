@@ -1,5 +1,7 @@
 package com.akif.payment.api;
 
+import com.akif.shared.enums.CurrencyType;
+
 import java.math.BigDecimal;
 
 import java.time.*;
@@ -26,11 +28,11 @@ public interface PaymentService {
 
     PaymentResult chargePayment(Long paymentId);
 
-    PaymentResult chargeDamage(Long rentalId, Long damageId, BigDecimal amount);
+    PaymentResult chargeDamage(Long rentalId, Long damageId, BigDecimal amount, CurrencyType currency);
 
-    PaymentResult refundPayment(Long paymentId, BigDecimal refundAmount);
+    PaymentResult refundPayment(Long paymentId, BigDecimal refundAmount, String operationKey);
 
-    PaymentResult refund(String transactionId, BigDecimal amount);
+    PaymentResult refund(String transactionId, BigDecimal amount, String operationKey);
 
     BigDecimal sumCapturedPaymentsBetween(LocalDateTime start, LocalDateTime end);
 

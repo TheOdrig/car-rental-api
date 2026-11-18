@@ -19,16 +19,25 @@ public class IdempotencyKeyGenerator {
         return key(rentalId, paymentId, "capture", attempt);
     }
 
+    public String forOrphanCancel(String intentId) {
+        return PREFIX + ":orphan-cancel:" + intentId;
+    }
+
     public String forCancel(Long rentalId, Long paymentId, int attempt) {
         return key(rentalId, paymentId, "cancel", attempt);
     }
 
-    public String forRefund(Long rentalId, Long paymentId, int refundSequence) {
-        return key(rentalId, paymentId, "refund", refundSequence);
+    public String forPenaltyCharge(Long rentalId, int attempt) {
+        return String.format("%s:rental-%d:penalty:%d", PREFIX, rentalId, attempt);
     }
 
-    public String forOffSessionCharge(Long rentalId, Long paymentId, int attempt) {
-        return key(rentalId, paymentId, "charge", attempt);
+    public String forDamageCharge(Long damageId, int attempt) {
+        return String.format("%s:damage-%d:charge:%d", PREFIX, damageId, attempt);
+    }
+
+    public String forRefundOperation(String operationKey, int failedAttempts) {
+        String base = PREFIX + ":" + operationKey;
+        return failedAttempts <= 0 ? base : base + ":retry-" + failedAttempts;
     }
 
     private String key(Long rentalId, Long paymentId, String operation, int version) {

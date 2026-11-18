@@ -4,6 +4,7 @@ import com.akif.payment.api.PaymentResult;
 import com.akif.payment.internal.config.StripeConfig;
 import com.akif.payment.internal.exception.StripeIntegrationException;
 import com.akif.payment.internal.service.gateway.ChargeCommand;
+import com.akif.payment.internal.service.gateway.ChargeResult;
 import com.akif.payment.internal.service.gateway.GatewayIntent;
 import com.akif.payment.internal.service.gateway.GatewayIntentStatus;
 import com.akif.payment.internal.service.gateway.IntentCommand;
@@ -191,7 +192,7 @@ class StripePaymentGatewayTest {
         ChargeCommand command = new ChargeCommand(9L, 3L, new BigDecimal("40.00"), CurrencyType.USD,
                 "cus_saved", "pm_saved", "Penalty");
 
-        PaymentResult result = gateway.chargeSavedMethod(command, "charge-key");
+        ChargeResult result = gateway.chargeSavedMethod(command, "charge-key");
 
         assertThat(result.success()).isTrue();
         Recorded request = stripe.requestsTo("POST", "/v1/payment_intents").get(0);
@@ -210,9 +211,37 @@ class StripePaymentGatewayTest {
         ChargeCommand command = new ChargeCommand(9L, 3L, new BigDecimal("40.00"), CurrencyType.USD,
                 "cus_saved", "pm_saved", "Penalty");
 
-        PaymentResult result = gateway.chargeSavedMethod(command, "charge-key");
+        ChargeResult result = gateway.chargeSavedMethod(command, "charge-key");
 
         assertThat(result.success()).isFalse();
-        assertThat(result.message()).contains("declined");
+        assertThat(result.definitiveDecline()).isTrue();
+        assertThat(result.result().message()).contains("declined");
     }
+
+    @Test
+    @DisplayName("keeps the idempotency key usable when Stripe answers with a server error")
+    void serverErrorIsAmbiguous() {
+        stripe.enqueueError(500, "api_error", "internal", "Stripe had a problem.");
+        ChargeCommand command = new ChargeCommand(9L, 3L, new BigDecimal("40.00"), CurrencyType.USD,
+                "cus_saved", "pm_saved", "Penalty");
+
+        ChargeResult result = gateway.chargeSavedMethod(command, "charge-key");
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.definitiveDecline()).isFalse();
+    }
+
+    @Test
+    @DisplayName("keeps the idempotency key usable when the connection to Stripe fails")
+    void connectionErrorIsAmbiguous() {
+        stripe.close();
+        ChargeCommand command = new ChargeCommand(9L, 3L, new BigDecimal("40.00"), CurrencyType.USD,
+                "cus_saved", "pm_saved", "Penalty");
+
+        ChargeResult result = gateway.chargeSavedMethod(command, "charge-key");
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.definitiveDecline()).isFalse();
+    }
+
 }

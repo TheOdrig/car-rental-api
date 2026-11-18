@@ -17,5 +17,7 @@ public interface PaymentGateway {
 
     PaymentResult refund(String intentId, BigDecimal amount, CurrencyType currency, String idempotencyKey);
 
-    PaymentResult chargeSavedMethod(ChargeCommand command, String idempotencyKey);
+    long refundedMinor(String intentId);
+
+    ChargeResult chargeSavedMethod(ChargeCommand command, String idempotencyKey);
 }

@@ -31,6 +31,7 @@ public class ProdConfigurationValidator {
             "cors.allowed-origins",
             "stripe.api.key",
             "stripe.webhook.secret",
+            "stripe.metadata.environment",
             "r2.endpoint",
             "r2.bucket-name",
             "r2.access-key-id",

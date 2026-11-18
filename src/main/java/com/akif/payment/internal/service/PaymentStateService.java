@@ -1,5 +1,6 @@
 package com.akif.payment.internal.service;
 
+import com.akif.payment.api.PaymentCancelledEvent;
 import com.akif.payment.api.PaymentCapturedEvent;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.domain.Payment;
@@ -58,7 +59,7 @@ public class PaymentStateService {
 
     public boolean markCaptured(Payment payment, String transactionId) {
         boolean transitioned = payment.capture();
-        if (transactionId != null) {
+        if (transactionId != null && payment.getStripePaymentIntentId() == null) {
             payment.attachIntent(transactionId, payment.getIdempotencyKey());
         }
         paymentRepository.save(payment);
@@ -85,6 +86,31 @@ public class PaymentStateService {
 
     public boolean applyCancellation(Payment payment) {
         boolean changed = payment.cancel();
+        if (changed) {
+            paymentRepository.save(payment);
+        }
+        return changed;
+    }
+
+    public boolean applyRemoteCancellation(Payment payment) {
+        boolean changed = applyCancellation(payment);
+        if (changed && payment.getKind() == PaymentKind.RENTAL) {
+            eventPublisher.publishEvent(new PaymentCancelledEvent(
+                    payment.getId(),
+                    payment.getRentalId(),
+                    payment.getUserEmail(),
+                    payment.getAmount(),
+                    payment.getCurrency(),
+                    LocalDateTime.now(clock)));
+        }
+        return changed;
+    }
+
+    public boolean reverseRefund(Payment payment, BigDecimal amount) {
+        BigDecimal before = payment.refundedTotal();
+        PaymentStatus statusBefore = payment.getStatus();
+        payment.reverseRefund(amount);
+        boolean changed = payment.refundedTotal().compareTo(before) != 0 || payment.getStatus() != statusBefore;
         if (changed) {
             paymentRepository.save(payment);
         }

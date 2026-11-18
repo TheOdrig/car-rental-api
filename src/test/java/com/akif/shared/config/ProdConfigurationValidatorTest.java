@@ -23,6 +23,7 @@ class ProdConfigurationValidatorTest {
                 .withProperty("cors.allowed-origins", "https://rent.example.com")
                 .withProperty("stripe.api.key", "sk_test_51Habcdefghijklmnop")
                 .withProperty("stripe.webhook.secret", "whsec_abcdefghijklmnop")
+                .withProperty("stripe.metadata.environment", "prod")
                 .withProperty("r2.endpoint", "https://acc.r2.cloudflarestorage.com")
                 .withProperty("r2.bucket-name", "bucket")
                 .withProperty("r2.access-key-id", "id")
@@ -42,6 +43,17 @@ class ProdConfigurationValidatorTest {
     @DisplayName("accepts a complete configuration")
     void acceptsCompleteConfiguration() {
         assertThatCode(() -> new ProdConfigurationValidator(validEnvironment())).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("fails when the Stripe metadata environment tag is missing")
+    void failsWhenStripeEnvironmentTagMissing() {
+        MockEnvironment environment = validEnvironment();
+        environment.withProperty("stripe.metadata.environment", "");
+
+        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("stripe.metadata.environment is missing");
     }
 
     @Test

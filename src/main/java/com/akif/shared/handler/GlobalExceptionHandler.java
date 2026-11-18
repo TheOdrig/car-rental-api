@@ -48,7 +48,11 @@ public class GlobalExceptionHandler {
         @ExceptionHandler(BaseException.class)
         public ResponseEntity<ErrorResponseDto> handleBaseException(BaseException ex, WebRequest request) {
                 log.error("[{}] {}", ex.getErrorCode(), ex.getMessage());
-                return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
+                ResponseEntity<ErrorResponseDto> response = buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
+                if (!ex.getDetails().isEmpty() && response.getBody() != null) {
+                        response.getBody().setDetails(ex.getDetails());
+                }
+                return response;
         }
 
         @ExceptionHandler(MethodArgumentNotValidException.class)

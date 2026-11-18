@@ -9,6 +9,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payments",
@@ -90,6 +91,9 @@ public class Payment extends BaseEntity {
 
     @Column(name = "failure_reason", length = 500)
     private String failureReason;
+
+    @Column(name = "last_synced_at")
+    private LocalDateTime lastSyncedAt;
 
     public void applyStatus(PaymentStatus newStatus, String newTransactionId, String newFailureReason) {
         this.status = newStatus;
@@ -200,6 +204,18 @@ public class Payment extends BaseEntity {
         }
         if (refundedTotal().compareTo(amount) >= 0 && status == PaymentStatus.CAPTURED) {
             this.status = PaymentStatus.REFUNDED;
+        }
+    }
+
+    public void markSynced(LocalDateTime at) {
+        this.lastSyncedAt = at;
+    }
+
+    public void reverseRefund(BigDecimal amountToReverse) {
+        BigDecimal reduced = refundedTotal().subtract(amountToReverse);
+        this.refundedAmount = reduced.signum() > 0 ? reduced : BigDecimal.ZERO;
+        if (status == PaymentStatus.REFUNDED && refundedTotal().compareTo(amount) < 0) {
+            this.status = PaymentStatus.CAPTURED;
         }
     }
 

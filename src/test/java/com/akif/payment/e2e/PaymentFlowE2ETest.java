@@ -306,7 +306,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isConflict());
 
             assertThat(rentalPayment(rentalId).getStatus()).isEqualTo(PaymentStatus.PENDING);
         }
@@ -368,7 +368,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
             Long paymentId = capturedPaymentId();
             BigDecimal amount = paymentRepository.findById(paymentId).orElseThrow().getAmount();
 
-            PaymentResult result = paymentService.refundPayment(paymentId, amount.add(BigDecimal.ONE));
+            PaymentResult result = paymentService.refundPayment(paymentId, amount.add(BigDecimal.ONE), "op-over");
 
             assertThat(result.success()).isFalse();
             verify(paymentGateway, times(0)).refund(anyString(), any(), any(), anyString());
@@ -379,8 +379,8 @@ class PaymentFlowE2ETest extends E2ETestBase {
         void nonPositiveRefundRejected() throws Exception {
             Long paymentId = capturedPaymentId();
 
-            assertThat(paymentService.refundPayment(paymentId, BigDecimal.ZERO).success()).isFalse();
-            assertThat(paymentService.refundPayment(paymentId, new BigDecimal("-5")).success()).isFalse();
+            assertThat(paymentService.refundPayment(paymentId, BigDecimal.ZERO, "op-zero").success()).isFalse();
+            assertThat(paymentService.refundPayment(paymentId, new BigDecimal("-5"), "op-neg").success()).isFalse();
         }
 
         @Test
@@ -389,13 +389,13 @@ class PaymentFlowE2ETest extends E2ETestBase {
             Long rentalId = confirmedRentalId();
             payRental(rentalId);
 
-            PaymentResult result = paymentService.refundPayment(rentalPayment(rentalId).getId(), BigDecimal.ONE);
+            PaymentResult result = paymentService.refundPayment(rentalPayment(rentalId).getId(), BigDecimal.ONE, "op-uncaptured");
 
             assertThat(result.success()).isFalse();
         }
 
         @Test
-        @DisplayName("keeps the idempotency key when a failed refund is retried and moves on after a success")
+        @DisplayName("keeps the idempotency key when a failed refund is retried and uses a new key for another operation")
         void refundKeySequence() throws Exception {
             Long paymentId = capturedPaymentId();
             BigDecimal amount = paymentRepository.findById(paymentId).orElseThrow().getAmount();
@@ -405,9 +405,9 @@ class PaymentFlowE2ETest extends E2ETestBase {
                     .doCallRealMethod()
                     .when(paymentGateway).refund(anyString(), any(), any(), anyString());
 
-            assertThat(paymentService.refundPayment(paymentId, part).success()).isFalse();
-            assertThat(paymentService.refundPayment(paymentId, part).success()).isTrue();
-            assertThat(paymentService.refundPayment(paymentId, part).success()).isTrue();
+            assertThat(paymentService.refundPayment(paymentId, part, "op-a").success()).isFalse();
+            assertThat(paymentService.refundPayment(paymentId, part, "op-a").success()).isTrue();
+            assertThat(paymentService.refundPayment(paymentId, part, "op-b").success()).isTrue();
 
             ArgumentCaptor<String> keys = ArgumentCaptor.forClass(String.class);
             verify(paymentGateway, times(3)).refund(anyString(), any(), any(), keys.capture());
@@ -423,11 +423,11 @@ class PaymentFlowE2ETest extends E2ETestBase {
             Long paymentId = capturedPaymentId();
             BigDecimal amount = paymentRepository.findById(paymentId).orElseThrow().getAmount();
 
-            assertThat(paymentService.refundPayment(paymentId, amount).success()).isTrue();
+            assertThat(paymentService.refundPayment(paymentId, amount, "op-full").success()).isTrue();
 
             assertThat(paymentRepository.findById(paymentId).orElseThrow().getStatus())
                     .isEqualTo(PaymentStatus.REFUNDED);
-            assertThat(paymentService.refundPayment(paymentId, BigDecimal.ONE).success()).isFalse();
+            assertThat(paymentService.refundPayment(paymentId, BigDecimal.ONE, "op-after-full").success()).isFalse();
         }
 
         @Test
@@ -436,10 +436,10 @@ class PaymentFlowE2ETest extends E2ETestBase {
             Long paymentId = capturedPaymentId();
             Payment payment = paymentRepository.findById(paymentId).orElseThrow();
 
-            assertThat(paymentService.refund(payment.getTransactionId(), payment.getAmount().add(BigDecimal.ONE)).success())
+            assertThat(paymentService.refund(payment.getTransactionId(), payment.getAmount().add(BigDecimal.ONE), "op-tx-over").success())
                     .isFalse();
-            assertThat(paymentService.refund(payment.getTransactionId(), BigDecimal.ONE).success()).isTrue();
-            assertThat(paymentService.refund("unknown-transaction", BigDecimal.ONE).success()).isFalse();
+            assertThat(paymentService.refund(payment.getTransactionId(), BigDecimal.ONE, "op-tx").success()).isTrue();
+            assertThat(paymentService.refund("unknown-transaction", BigDecimal.ONE, "op-unknown").success()).isFalse();
         }
     }
 
@@ -493,9 +493,9 @@ class PaymentFlowE2ETest extends E2ETestBase {
             pickup(rentalId);
             Rental rental = rentalRepository.findById(rentalId).orElseThrow();
 
-            PaymentResult first = paymentService.chargeDamage(rentalId, 77L, new BigDecimal("300.00"));
-            PaymentResult second = paymentService.chargeDamage(rentalId, 77L, new BigDecimal("300.00"));
-            PaymentResult changed = paymentService.chargeDamage(rentalId, 77L, new BigDecimal("350.00"));
+            PaymentResult first = paymentService.chargeDamage(rentalId, 77L, new BigDecimal("300.00"), null);
+            PaymentResult second = paymentService.chargeDamage(rentalId, 77L, new BigDecimal("300.00"), null);
+            PaymentResult changed = paymentService.chargeDamage(rentalId, 77L, new BigDecimal("350.00"), null);
 
             assertThat(first.success()).isTrue();
             assertThat(second.success()).isTrue();
@@ -514,7 +514,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
         void damageWithoutPayment() throws Exception {
             confirmedRentalId();
 
-            PaymentResult result = paymentService.chargeDamage(123456L, 5L, new BigDecimal("10.00"));
+            PaymentResult result = paymentService.chargeDamage(123456L, 5L, new BigDecimal("10.00"), null);
 
             assertThat(result.success()).isFalse();
         }
@@ -532,5 +532,98 @@ class PaymentFlowE2ETest extends E2ETestBase {
 
         assertThat(rentalPayment(rentalId).getStatus()).isEqualTo(PaymentStatus.CANCELLED);
         verify(paymentGateway, times(1)).cancel(anyString(), anyString());
+    }
+
+    @Nested
+    @DisplayName("Payment window and pickup errors")
+    class WindowAndPickupErrors {
+
+        @Autowired
+        private com.akif.rental.internal.config.RentalProperties rentalProperties;
+
+        @Test
+        @DisplayName("payment-intent before the window opens answers 409 PAYMENT_WINDOW_NOT_OPEN with the opening date")
+        void windowNotOpen() throws Exception {
+            Long rentalId = confirmedRentalId();
+            Rental rental = rentalRepository.findById(rentalId).orElseThrow();
+            int original = rentalProperties.getPaymentWindowDays();
+            rentalProperties.setPaymentWindowDays(0);
+            try {
+                java.time.LocalDate opensOn = rental.getStartDate();
+                mockMvc.perform(post("/api/rentals/{id}/payment-intent", rentalId)
+                                .header("Authorization", "Bearer " + customerToken))
+                        .andExpect(status().isConflict())
+                        .andExpect(jsonPath("$.errorCode").value("PAYMENT_WINDOW_NOT_OPEN"))
+                        .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString(opensOn.toString())))
+                        .andExpect(jsonPath("$.details.paymentOpensOn").value(opensOn.toString()));
+                verify(paymentGateway, times(0)).createIntent(any(), anyString());
+            } finally {
+                rentalProperties.setPaymentWindowDays(original);
+            }
+        }
+
+        @Test
+        @DisplayName("payment-intent inside the window is allowed")
+        void windowOpen() throws Exception {
+            Long rentalId = confirmedRentalId();
+            int original = rentalProperties.getPaymentWindowDays();
+            rentalProperties.setPaymentWindowDays(5);
+            try {
+                mockMvc.perform(post("/api/rentals/{id}/payment-intent", rentalId)
+                                .header("Authorization", "Bearer " + customerToken))
+                        .andExpect(status().isOk());
+            } finally {
+                rentalProperties.setPaymentWindowDays(original);
+            }
+        }
+
+        @Test
+        @DisplayName("pickup without an authorized payment answers 409 PAYMENT_NOT_AUTHORIZED")
+        void pickupWithoutAuthorizedPayment() throws Exception {
+            Long rentalId = confirmedRentalId();
+
+            mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{}"))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.errorCode").value("PAYMENT_NOT_AUTHORIZED"));
+        }
+
+        @Test
+        @DisplayName("pickup with no payment on record answers 404 PAYMENT_NOT_FOUND")
+        void pickupWithoutPayment() throws Exception {
+            Long rentalId = confirmedRentalId();
+            paymentRepository.delete(rentalPayment(rentalId));
+            paymentRepository.flush();
+
+            mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{}"))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.errorCode").value("PAYMENT_NOT_FOUND"));
+        }
+
+        @Test
+        @DisplayName("repeated GET /payment inside the throttle interval calls Stripe once")
+        void statusRefreshIsThrottled() throws Exception {
+            Long rentalId = confirmedRentalId();
+            Payment payment = rentalPayment(rentalId);
+            payment.attachIntent("stub_pi_throttle", "k");
+            paymentRepository.saveAndFlush(payment);
+            doReturn(new com.akif.payment.internal.service.gateway.GatewayIntent(
+                    "stub_pi_throttle", null,
+                    com.akif.payment.internal.service.gateway.GatewayIntentStatus.REQUIRES_PAYMENT_METHOD,
+                    null, null, 0L, "usd")).when(paymentGateway).retrieveIntent("stub_pi_throttle");
+
+            for (int i = 0; i < 4; i++) {
+                mockMvc.perform(get("/api/rentals/{id}/payment", rentalId)
+                                .header("Authorization", "Bearer " + customerToken))
+                        .andExpect(status().isOk());
+            }
+
+            verify(paymentGateway, times(1)).retrieveIntent("stub_pi_throttle");
+        }
     }
 }

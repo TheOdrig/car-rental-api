@@ -2,6 +2,7 @@ package com.akif.payment.unit.gateway.impl;
 
 import com.akif.payment.api.PaymentResult;
 import com.akif.payment.internal.service.gateway.ChargeCommand;
+import com.akif.payment.internal.service.gateway.ChargeResult;
 import com.akif.payment.internal.service.gateway.GatewayIntent;
 import com.akif.payment.internal.service.gateway.GatewayIntentStatus;
 import com.akif.payment.internal.service.gateway.IntentCommand;
@@ -95,10 +96,10 @@ class StubPaymentGatewayTest {
     @Test
     @DisplayName("charges a saved method successfully")
     void chargesSavedMethod() {
-        PaymentResult result = gateway.chargeSavedMethod(
+        ChargeResult result = gateway.chargeSavedMethod(
                 new ChargeCommand(1L, 2L, BigDecimal.TEN, CurrencyType.USD, "cus", "pm", "d"), "charge-key");
 
         assertThat(result.success()).isTrue();
-        assertThat(result.transactionId()).startsWith("stub_pi_");
+        assertThat(result.result().transactionId()).startsWith("stub_pi_");
     }
 }

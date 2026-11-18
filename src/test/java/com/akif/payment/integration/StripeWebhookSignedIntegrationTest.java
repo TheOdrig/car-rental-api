@@ -137,7 +137,7 @@ class StripeWebhookSignedIntegrationTest {
         return "{\"id\":\"" + eventId + "\",\"object\":\"event\",\"type\":\"" + type + "\",\"data\":{\"object\":{"
                 + "\"id\":\"" + intent + "\",\"object\":\"payment_intent\",\"amount\":" + amountMinor
                 + ",\"currency\":\"" + currency + "\",\"status\":\"" + status + "\",\"customer\":\"cus_wh\","
-                + "\"payment_method\":\"pm_wh\",\"metadata\":{\"payment_id\":\"" + payment.getId() + "\"},"
+                + "\"payment_method\":\"pm_wh\",\"metadata\":{\"env\":\"test\",\"payment_id\":\"" + payment.getId() + "\"},"
                 + "\"last_payment_error\":{\"message\":\"Your card was declined.\",\"code\":\"card_declined\"}}}}";
     }
 
@@ -444,5 +444,127 @@ class StripeWebhookSignedIntegrationTest {
         assertThat(stored.getPayload()).isEqualTo(payload);
         assertThat(stored.getProcessedAt()).isNotNull();
         assertThat(new BigDecimal(String.valueOf(webhookEventRepository.count()))).isGreaterThanOrEqualTo(BigDecimal.ONE);
+    }
+
+    @Test
+    @DisplayName("a late cancel from an old intent does not cancel the payment that already tracks a new intent")
+    void lateCancelFromOldIntentIsIgnored() throws Exception {
+        String payload = intentEvent("evt_old1", "payment_intent.canceled", "canceled", minor(), currency(), "pi_old_one");
+
+        deliver(payload).andExpect(status().isOk());
+
+        assertThat(reload().getStatus()).isEqualTo(PaymentStatus.PENDING);
+        assertThat(reload().getStripePaymentIntentId()).isEqualTo(intentId);
+        assertThat(webhookEventRepository.findByEventId("evt_old1").orElseThrow().getStatus())
+                .isEqualTo(WebhookEventStatus.PROCESSED);
+    }
+
+    @Test
+    @DisplayName("a late cancel from an old intent never cancels a payment whose new intent is not stored yet")
+    void lateCancelWhileRestartingIsIgnored() throws Exception {
+        payment.nextAttempt();
+        payment = paymentRepository.saveAndFlush(payment);
+
+        deliver(intentEvent("evt_old2", "payment_intent.canceled", "canceled", minor(), currency(), "pi_old_two"))
+                .andExpect(status().isOk());
+
+        assertThat(reload().getStatus()).isEqualTo(PaymentStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("an event for another intent never overwrites the stored intent id on capture")
+    void foreignIntentDoesNotOverwriteStoredIntent() throws Exception {
+        deliver(intentEvent("evt_fo1", "payment_intent.succeeded", "succeeded", minor(), currency(), "pi_other_one"))
+                .andExpect(status().isOk());
+
+        Payment untouched = reload();
+        assertThat(untouched.getStatus()).isEqualTo(PaymentStatus.PENDING);
+        assertThat(untouched.getStripePaymentIntentId()).isEqualTo(intentId);
+    }
+
+    @Test
+    @DisplayName("markCaptured attaches the intent id only when none is stored")
+    void markCapturedKeepsStoredIntent() {
+        Payment stored = reload();
+
+        stateService.markCaptured(stored, "pi_should_not_replace");
+
+        assertThat(reload().getStripePaymentIntentId()).isEqualTo(intentId);
+    }
+
+    @Test
+    @DisplayName("an event tagged for another environment is ignored")
+    void foreignEnvironmentIsIgnored() throws Exception {
+        String payload = intentEvent("evt_env1", "payment_intent.succeeded", "succeeded")
+                .replace("\"env\":\"test\"", "\"env\":\"staging\"");
+
+        deliver(payload).andExpect(status().isOk());
+
+        assertThat(reload().getStatus()).isEqualTo(PaymentStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("an event without an environment tag is ignored")
+    void missingEnvironmentIsIgnored() throws Exception {
+        String payload = intentEvent("evt_env2", "payment_intent.succeeded", "succeeded")
+                .replace("\"env\":\"test\",", "");
+
+        deliver(payload).andExpect(status().isOk());
+
+        assertThat(reload().getStatus()).isEqualTo(PaymentStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("a payment amount that cannot be expressed in minor units is recorded FAILED with a 200 response")
+    void precisionProblemIsRecordedNotRetried() throws Exception {
+        jdbcTemplate.update("UPDATE car_rental.payments SET currency = 'JPY', amount = 100.50 WHERE id = ?", payment.getId());
+
+        deliver(intentEvent("evt_prec", "payment_intent.succeeded", "succeeded", 100, "jpy", intentId))
+                .andExpect(status().isOk());
+
+        assertThat(webhookEventRepository.findByEventId("evt_prec").orElseThrow().getStatus())
+                .isEqualTo(WebhookEventStatus.FAILED);
+    }
+
+    @Test
+    @DisplayName("a body above the configured limit is rejected with 413")
+    void oversizedBodyIsRejected() throws Exception {
+        String padding = "x".repeat(300_000);
+
+        mockMvc.perform(post("/api/webhooks/stripe")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Stripe-Signature", "t=1,v1=abc")
+                        .content("{\"pad\":\"" + padding + "\"}"))
+                .andExpect(status().is(413));
+    }
+
+    @Test
+    @DisplayName("a cancel for the tracked intent publishes a pay-again event")
+    void trackedCancelPublishesEvent() throws Exception {
+        eventCaptor.clear();
+
+        deliver(intentEvent("evt_pc1", "payment_intent.canceled", "canceled")).andExpect(status().isOk());
+
+        assertThat(eventCaptor.getEventsOfType(com.akif.payment.api.PaymentCancelledEvent.class)).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("refund.failed removes the failed refund from the refunded total")
+    void failedRefundLowersTotal() throws Exception {
+        deliver(intentEvent("evt_rf0", "payment_intent.succeeded", "succeeded")).andExpect(status().isOk());
+        jdbcTemplate.update("INSERT INTO car_rental.payment_refunds (payment_id, operation_key, stripe_refund_id, amount, status) "
+                + "VALUES (?, 'op-x', 're_wh_1', 5.00, 'SUCCEEDED')", payment.getId());
+        deliver(refundEvent("evt_rf1", 500)).andExpect(status().isOk());
+        assertThat(reload().getRefundedAmount()).isEqualByComparingTo("5.00");
+
+        String failed = "{\"id\":\"evt_rf2\",\"object\":\"event\",\"type\":\"refund.failed\",\"data\":{\"object\":{"
+                + "\"id\":\"re_wh_1\",\"object\":\"refund\",\"amount\":500,\"currency\":\"" + currency()
+                + "\",\"status\":\"failed\",\"payment_intent\":\"" + intentId + "\"}}}";
+        deliver(failed).andExpect(status().isOk());
+
+        assertThat(reload().getRefundedAmount()).isEqualByComparingTo("0");
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT status FROM car_rental.payment_refunds WHERE stripe_refund_id = 're_wh_1'", String.class))
+                .isEqualTo("FAILED");
     }
 }

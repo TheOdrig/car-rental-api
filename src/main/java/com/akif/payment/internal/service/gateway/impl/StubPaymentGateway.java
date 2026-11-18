@@ -2,6 +2,7 @@ package com.akif.payment.internal.service.gateway.impl;
 
 import com.akif.payment.api.PaymentResult;
 import com.akif.payment.internal.service.gateway.ChargeCommand;
+import com.akif.payment.internal.service.gateway.ChargeResult;
 import com.akif.payment.internal.service.gateway.GatewayIntent;
 import com.akif.payment.internal.service.gateway.GatewayIntentStatus;
 import com.akif.payment.internal.service.gateway.IntentCommand;
@@ -28,6 +29,8 @@ public class StubPaymentGateway implements PaymentGateway {
 
     private final Map<String, GatewayIntentStatus> intents = new ConcurrentHashMap<>();
     private final Map<String, GatewayIntent> created = new ConcurrentHashMap<>();
+    private final Map<String, BigDecimal> refunds = new ConcurrentHashMap<>();
+    private final Map<String, Long> refundedMinor = new ConcurrentHashMap<>();
 
     @PostConstruct
     void announce() {
@@ -71,14 +74,23 @@ public class StubPaymentGateway implements PaymentGateway {
 
     @Override
     public PaymentResult refund(String intentId, BigDecimal amount, CurrencyType currency, String idempotencyKey) {
-        return PaymentResult.success("stub_re_" + stableId(idempotencyKey), "Payment refunded (STUB)");
+        String refundId = "stub_re_" + stableId(idempotencyKey);
+        if (refunds.putIfAbsent(refundId, amount) == null) {
+            refundedMinor.merge(intentId, StripeAmounts.toMinorUnits(amount, currency), Long::sum);
+        }
+        return PaymentResult.success(refundId, "Payment refunded (STUB)");
     }
 
     @Override
-    public PaymentResult chargeSavedMethod(ChargeCommand command, String idempotencyKey) {
+    public long refundedMinor(String intentId) {
+        return refundedMinor.getOrDefault(intentId, 0L);
+    }
+
+    @Override
+    public ChargeResult chargeSavedMethod(ChargeCommand command, String idempotencyKey) {
         String id = STUB_PREFIX + stableId(idempotencyKey);
         intents.put(id, GatewayIntentStatus.SUCCEEDED);
-        return PaymentResult.success(id, "Charge succeeded (STUB)");
+        return ChargeResult.success(id, "Charge succeeded (STUB)");
     }
 
     private String stableId(String key) {

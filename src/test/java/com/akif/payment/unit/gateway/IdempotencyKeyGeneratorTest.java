@@ -17,8 +17,9 @@ class IdempotencyKeyGeneratorTest {
         assertThat(keys.forIntent(5L, 9L, 1)).isEqualTo(keys.forIntent(5L, 9L, 1));
         assertThat(keys.forCapture(5L, 9L, 1)).isEqualTo(keys.forCapture(5L, 9L, 1));
         assertThat(keys.forCancel(5L, 9L, 1)).isEqualTo(keys.forCancel(5L, 9L, 1));
-        assertThat(keys.forRefund(5L, 9L, 0)).isEqualTo(keys.forRefund(5L, 9L, 0));
-        assertThat(keys.forOffSessionCharge(5L, 9L, 1)).isEqualTo(keys.forOffSessionCharge(5L, 9L, 1));
+        assertThat(keys.forRefundOperation("rental-5:cancel-refund", 0)).isEqualTo(keys.forRefundOperation("rental-5:cancel-refund", 0));
+        assertThat(keys.forPenaltyCharge(5L, 1)).isEqualTo(keys.forPenaltyCharge(5L, 1));
+        assertThat(keys.forDamageCharge(7L, 1)).isEqualTo(keys.forDamageCharge(7L, 1));
         assertThat(keys.forCustomer(5L)).isEqualTo(keys.forCustomer(5L));
     }
 
@@ -35,14 +36,24 @@ class IdempotencyKeyGeneratorTest {
         assertThat(keys.forIntent(5L, 9L, 1))
                 .isNotEqualTo(keys.forCapture(5L, 9L, 1))
                 .isNotEqualTo(keys.forCancel(5L, 9L, 1))
-                .isNotEqualTo(keys.forOffSessionCharge(5L, 9L, 1));
+                .isNotEqualTo(keys.forPenaltyCharge(5L, 1));
     }
 
     @Test
     @DisplayName("differs per attempt so a new attempt is a new Stripe operation")
     void differsPerAttempt() {
         assertThat(keys.forIntent(5L, 9L, 1)).isNotEqualTo(keys.forIntent(5L, 9L, 2));
-        assertThat(keys.forRefund(5L, 9L, 0)).isNotEqualTo(keys.forRefund(5L, 9L, 1));
+        assertThat(keys.forPenaltyCharge(5L, 1)).isNotEqualTo(keys.forPenaltyCharge(5L, 2));
+        assertThat(keys.forRefundOperation("waiver-3:refund", 0)).isNotEqualTo(keys.forRefundOperation("waiver-3:refund", 1));
+    }
+
+    @Test
+    @DisplayName("charge and refund keys follow the business identity, not the payment row")
+    void businessIdentity() {
+        assertThat(keys.forPenaltyCharge(5L, 1)).isEqualTo("car-rental:rental-5:penalty:1");
+        assertThat(keys.forDamageCharge(7L, 2)).isEqualTo("car-rental:damage-7:charge:2");
+        assertThat(keys.forRefundOperation("rental-5:cancel-refund", 0)).isEqualTo("car-rental:rental-5:cancel-refund");
+        assertThat(keys.forRefundOperation("rental-5:cancel-refund", 1)).isEqualTo("car-rental:rental-5:cancel-refund:retry-1");
     }
 
     @Test

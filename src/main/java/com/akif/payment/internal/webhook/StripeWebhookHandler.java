@@ -1,22 +1,27 @@
 package com.akif.payment.internal.webhook;
 
 import com.akif.payment.domain.Payment;
+import com.akif.payment.domain.PaymentRefund;
 import com.akif.payment.domain.WebhookEvent;
 import com.akif.payment.domain.enums.WebhookEventStatus;
 import com.akif.payment.internal.config.StripeConfig;
 import com.akif.payment.internal.exception.WebhookRejectedException;
 import com.akif.payment.internal.exception.WebhookSignatureException;
+import com.akif.payment.internal.repository.PaymentRefundRepository;
 import com.akif.payment.internal.repository.PaymentRepository;
 import com.akif.payment.internal.repository.WebhookEventRepository;
 import com.akif.payment.internal.service.PaymentStateService;
 import com.akif.payment.internal.service.gateway.GatewayIntent;
 import com.akif.payment.internal.service.gateway.GatewayIntentStatus;
+import com.akif.payment.internal.service.gateway.IdempotencyKeyGenerator;
+import com.akif.payment.internal.service.gateway.PaymentGateway;
 import com.akif.payment.internal.service.gateway.StripeAmounts;
 import com.stripe.exception.EventDataObjectDeserializationException;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Charge;
 import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
+import com.stripe.model.Refund;
 import com.stripe.model.StripeObject;
 import com.stripe.net.Webhook;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +46,9 @@ public class StripeWebhookHandler {
     private final PaymentRepository paymentRepository;
     private final WebhookEventRepository webhookEventRepository;
     private final PaymentStateService stateService;
+    private final PaymentRefundRepository refundRepository;
+    private final PaymentGateway paymentGateway;
+    private final IdempotencyKeyGenerator keys;
     private final TransactionTemplate processingTx;
     private final TransactionTemplate isolatedTx;
 
@@ -50,12 +58,18 @@ public class StripeWebhookHandler {
             PaymentRepository paymentRepository,
             WebhookEventRepository webhookEventRepository,
             PaymentStateService stateService,
+            PaymentRefundRepository refundRepository,
+            PaymentGateway paymentGateway,
+            IdempotencyKeyGenerator keys,
             PlatformTransactionManager transactionManager) {
         this.clock = clock;
         this.stripeConfig = stripeConfig;
         this.paymentRepository = paymentRepository;
         this.webhookEventRepository = webhookEventRepository;
         this.stateService = stateService;
+        this.refundRepository = refundRepository;
+        this.paymentGateway = paymentGateway;
+        this.keys = keys;
         this.processingTx = new TransactionTemplate(transactionManager);
         this.isolatedTx = new TransactionTemplate(transactionManager);
         this.isolatedTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -136,6 +150,7 @@ public class StripeWebhookHandler {
                  "payment_intent.payment_failed",
                  "payment_intent.canceled" -> handleIntentEvent(event.getType(), (PaymentIntent) object(event));
             case "charge.refunded" -> handleChargeRefunded((Charge) object(event));
+            case "refund.failed", "refund.updated" -> handleRefundUpdated((Refund) object(event));
             default -> log.info("[AUDIT] Webhook ignored | Event: {} | Type: {}", event.getId(), event.getType());
         }
     }
@@ -151,12 +166,24 @@ public class StripeWebhookHandler {
     }
 
     private void handleIntentEvent(String type, PaymentIntent intent) {
-        Optional<Payment> located = locate(intent);
-        if (located.isEmpty()) {
+        if (!belongsToThisEnvironment(intent)) {
+            log.warn("[AUDIT] Webhook ignored, foreign environment tag | Type: {} | Intent: {}", type, intent.getId());
+            return;
+        }
+        Located located = locate(type, intent);
+        if (located.payment() == null) {
             log.warn("[AUDIT] Webhook has no matching payment | Type: {} | Intent: {}", type, intent.getId());
             return;
         }
-        Payment payment = located.get();
+        Payment payment = located.payment();
+        if (located.stale()) {
+            log.warn("[AUDIT] Webhook ignored, intent is not the tracked one | Type: {} | Intent: {} | Payment: {}",
+                    type, intent.getId(), payment.getId());
+            if ("payment_intent.amount_capturable_updated".equals(type)) {
+                cancelOrphan(intent.getId());
+            }
+            return;
+        }
 
         switch (type) {
             case "payment_intent.amount_capturable_updated" -> {
@@ -168,9 +195,23 @@ public class StripeWebhookHandler {
                 stateService.applyIntent(payment, toGatewayIntent(intent));
             }
             case "payment_intent.payment_failed" -> stateService.applyFailure(payment, failureReason(intent));
-            case "payment_intent.canceled" -> stateService.applyCancellation(payment);
+            case "payment_intent.canceled" -> stateService.applyRemoteCancellation(payment);
             default -> {
             }
+        }
+    }
+
+    private boolean belongsToThisEnvironment(PaymentIntent intent) {
+        String expected = stripeConfig.getMetadataEnvironment();
+        String actual = intent.getMetadata() != null ? intent.getMetadata().get("env") : null;
+        return expected != null && !expected.isBlank() && expected.equals(actual);
+    }
+
+    private void cancelOrphan(String intentId) {
+        try {
+            paymentGateway.cancel(intentId, keys.forOrphanCancel(intentId));
+        } catch (RuntimeException e) {
+            log.error("Could not cancel the untracked payment intent {}: {}", intentId, e.getMessage());
         }
     }
 
@@ -193,24 +234,63 @@ public class StripeWebhookHandler {
         stateService.applyRefundTotal(payment, StripeAmounts.fromMinorUnits(refundedMinor, payment.getCurrency()));
     }
 
-    private Optional<Payment> locate(PaymentIntent intent) {
-        Optional<Payment> byIntent = paymentRepository.findByIntentIdForUpdate(intent.getId());
-        if (byIntent.isPresent()) {
-            return byIntent;
+    private void handleRefundUpdated(Refund refund) {
+        Optional<PaymentRefund> row = refundRepository.findByStripeRefundId(refund.getId());
+        if (row.isEmpty()) {
+            log.warn("[AUDIT] Refund webhook has no matching refund | Refund: {}", refund.getId());
+            return;
         }
-        String paymentId = intent.getMetadata() != null ? intent.getMetadata().get("payment_id") : null;
-        if (paymentId == null) {
-            return Optional.empty();
+        String status = refund.getStatus();
+        boolean failed = "failed".equals(status) || "canceled".equals(status);
+        if (!failed) {
+            return;
         }
-        try {
-            return paymentRepository.findByIdForUpdate(Long.valueOf(paymentId));
-        } catch (NumberFormatException e) {
-            return Optional.empty();
+        PaymentRefund stored = row.get();
+        Optional<Payment> located = paymentRepository.findByIdForUpdate(stored.getPaymentId());
+        if (located.isEmpty()) {
+            return;
+        }
+        if (stored.markFailed()) {
+            refundRepository.save(stored);
+            stateService.reverseRefund(located.get(), stored.getAmount());
+            log.warn("[AUDIT] Refund failed at the gateway | Refund: {} | Payment: {}", refund.getId(), stored.getPaymentId());
         }
     }
 
+    private Located locate(String type, PaymentIntent intent) {
+        Optional<Payment> byIntent = paymentRepository.findByIntentIdForUpdate(intent.getId());
+        if (byIntent.isPresent()) {
+            return new Located(byIntent.get(), false);
+        }
+        String paymentId = intent.getMetadata() != null ? intent.getMetadata().get("payment_id") : null;
+        if (paymentId == null) {
+            return new Located(null, false);
+        }
+        Optional<Payment> byMetadata;
+        try {
+            byMetadata = paymentRepository.findByIdForUpdate(Long.valueOf(paymentId));
+        } catch (NumberFormatException e) {
+            return new Located(null, false);
+        }
+        if (byMetadata.isEmpty()) {
+            return new Located(null, false);
+        }
+        Payment payment = byMetadata.get();
+        boolean fallbackAllowed = payment.getStripePaymentIntentId() == null
+                && !"payment_intent.canceled".equals(type);
+        return new Located(payment, !fallbackAllowed);
+    }
+
+    private record Located(Payment payment, boolean stale) {
+    }
+
     private void requireMatchingAmount(Payment payment, PaymentIntent intent) {
-        long expected = StripeAmounts.toMinorUnits(payment.getAmount(), payment.getCurrency());
+        long expected;
+        try {
+            expected = StripeAmounts.toMinorUnits(payment.getAmount(), payment.getCurrency());
+        } catch (IllegalArgumentException e) {
+            throw new WebhookRejectedException("Payment amount " + payment.getId() + " cannot be expressed in minor units");
+        }
         boolean amountMatches = intent.getAmount() != null && intent.getAmount() == expected;
         boolean currencyMatches = intent.getCurrency() != null
                 && intent.getCurrency().equalsIgnoreCase(payment.getCurrency().name());

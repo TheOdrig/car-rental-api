@@ -21,6 +21,12 @@ public class StripeConfig {
     @Value("${stripe.publishable-key:}")
     private String publishableKey;
 
+    @Value("${stripe.webhook.max-body-bytes:262144}")
+    private long webhookMaxBodyBytes;
+
+    @Value("${stripe.metadata.environment:}")
+    private String metadataEnvironment;
+
     @Value("${stripe.api.base-url:https://api.stripe.com}")
     private String apiBaseUrl;
 
