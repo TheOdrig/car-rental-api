@@ -58,9 +58,8 @@ class JpyRentalFlowE2ETest extends E2ETestBase {
         Long rentalId = createAndGetRentalId(TestDataBuilder.createRentalRequest(car.getId()), customerToken);
         Rental rental = rentalRepository.findById(rentalId).orElseThrow();
         assertThat(rental.getCurrency()).isEqualTo(CurrencyType.JPY);
-        assertThat(rental.getTotalPrice().stripTrailingZeros().scale()).isLessThanOrEqualTo(0);
-        assertThat(rental.getTotalPrice().scale()).isZero();
-        assertThat(rental.getDailyPrice().scale()).isZero();
+        assertThat(rental.getTotalPrice().remainder(BigDecimal.ONE)).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(rental.getDailyPrice().remainder(BigDecimal.ONE)).isEqualByComparingTo(BigDecimal.ZERO);
 
         mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                         .header("Authorization", "Bearer " + adminToken))

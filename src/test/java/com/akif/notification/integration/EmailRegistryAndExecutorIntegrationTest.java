@@ -43,8 +43,8 @@ import static org.mockito.Mockito.verify;
 @SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
-@DisplayName("Notification review fixes")
-class NotificationReviewFixesIntegrationTest {
+@DisplayName("Email event registry and executor")
+class EmailRegistryAndExecutorIntegrationTest {
 
     @Autowired
     private PasswordResetService passwordResetService;

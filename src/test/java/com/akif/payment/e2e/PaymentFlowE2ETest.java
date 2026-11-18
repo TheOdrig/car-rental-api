@@ -7,6 +7,7 @@ import com.akif.car.domain.Car;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.e2e.infrastructure.E2ETestBase;
 import com.akif.e2e.infrastructure.TestDataBuilder;
+import com.akif.e2e.infrastructure.TestFixtures;
 import com.akif.payment.api.CreatePaymentRequest;
 import com.akif.payment.api.PaymentCapturedEvent;
 import com.akif.payment.api.PaymentDto;
@@ -31,6 +32,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,6 +75,10 @@ class PaymentFlowE2ETest extends E2ETestBase {
     private Car car;
 
     private Long confirmedRentalId() throws Exception {
+        return confirmedRentalId(TestFixtures.FUTURE_START, TestFixtures.FUTURE_END);
+    }
+
+    private Long confirmedRentalId(LocalDate start, LocalDate end) throws Exception {
         customer = userRepository.save(TestDataBuilder.createTestUser());
         otherCustomer = userRepository.save(TestDataBuilder.createTestUser("otherrenter", Role.USER));
         admin = userRepository.save(TestDataBuilder.createTestAdmin());
@@ -81,7 +87,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
         adminToken = generateAdminToken(admin);
         car = carRepository.save(TestDataBuilder.createAvailableCar());
 
-        Long rentalId = createAndGetRentalId(TestDataBuilder.createRentalRequest(car.getId()), customerToken);
+        Long rentalId = createAndGetRentalId(TestDataBuilder.createRentalRequest(car.getId(), start, end), customerToken);
         mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk());
@@ -538,43 +544,43 @@ class PaymentFlowE2ETest extends E2ETestBase {
     @DisplayName("Payment window and pickup errors")
     class WindowAndPickupErrors {
 
-        @Autowired
-        private com.akif.rental.internal.config.RentalProperties rentalProperties;
-
         @Test
         @DisplayName("payment-intent before the window opens answers 409 PAYMENT_WINDOW_NOT_OPEN with the opening date")
         void windowNotOpen() throws Exception {
-            Long rentalId = confirmedRentalId();
-            Rental rental = rentalRepository.findById(rentalId).orElseThrow();
-            int original = rentalProperties.getPaymentWindowDays();
-            rentalProperties.setPaymentWindowDays(0);
-            try {
-                java.time.LocalDate opensOn = rental.getStartDate();
-                mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
-                                .header("Authorization", "Bearer " + customerToken))
-                        .andExpect(status().isConflict())
-                        .andExpect(jsonPath("$.code").value("PAYMENT_WINDOW_NOT_OPEN"))
-                        .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString(opensOn.toString())))
-                        .andExpect(jsonPath("$.details.paymentOpensOn").value(opensOn.toString()));
-                verify(paymentGateway, times(0)).createIntent(any(), anyString());
-            } finally {
-                rentalProperties.setPaymentWindowDays(original);
-            }
+            LocalDate start = LocalDate.now().plusDays(10);
+            Long rentalId = confirmedRentalId(start, start.plusDays(3));
+            LocalDate opensOn = start.minusDays(rentalProperties.getPaymentWindowDays());
+
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
+                            .header("Authorization", "Bearer " + customerToken))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.code").value("PAYMENT_WINDOW_NOT_OPEN"))
+                    .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString(opensOn.toString())))
+                    .andExpect(jsonPath("$.details.paymentOpensOn").value(opensOn.toString()));
+            verify(paymentGateway, times(0)).createIntent(any(), anyString());
         }
 
         @Test
-        @DisplayName("payment-intent inside the window is allowed")
+        @DisplayName("payment-intent is allowed once the clock reaches the opening date of the real window")
+        void windowOpensWhenTheClockReachesIt() throws Exception {
+            LocalDate start = LocalDate.now().plusDays(10);
+            Long rentalId = confirmedRentalId(start, start.plusDays(3));
+
+            advanceClockToPaymentWindowOf(rentalId);
+
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
+                            .header("Authorization", "Bearer " + generateUserToken(customer)))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("payment-intent inside the window is allowed without touching the clock")
         void windowOpen() throws Exception {
             Long rentalId = confirmedRentalId();
-            int original = rentalProperties.getPaymentWindowDays();
-            rentalProperties.setPaymentWindowDays(5);
-            try {
-                mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
-                                .header("Authorization", "Bearer " + customerToken))
-                        .andExpect(status().isOk());
-            } finally {
-                rentalProperties.setPaymentWindowDays(original);
-            }
+
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
+                            .header("Authorization", "Bearer " + customerToken))
+                    .andExpect(status().isOk());
         }
 
         @Test

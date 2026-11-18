@@ -3,18 +3,17 @@ package com.akif.e2e.infrastructure;
 import lombok.Getter;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @Component
-@ActiveProfiles("test")
 @Getter
 public class TestEventCaptor {
-    
-    private final List<Object> capturedEvents = new ArrayList<>();
+
+    private final List<Object> capturedEvents = new CopyOnWriteArrayList<>();
 
     @EventListener
     public void captureEvent(Object event) {

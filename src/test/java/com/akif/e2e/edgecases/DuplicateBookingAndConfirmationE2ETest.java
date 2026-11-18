@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import com.akif.testsupport.TestcontainersConfiguration;
 
 import java.time.LocalDate;
@@ -26,8 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
-@DisplayName("Concurrency E2E Tests")
-class ConcurrencyE2ETest extends E2ETestBase {
+@DisplayName("Duplicate booking and confirmation E2E Tests")
+class DuplicateBookingAndConfirmationE2ETest extends E2ETestBase {
 
     @Autowired
     private UserRepository userRepository;
@@ -66,7 +67,7 @@ class ConcurrencyE2ETest extends E2ETestBase {
                 } else {
                     mockMvc.perform(post("/api/v1/rentals/request")
                                     .header("Authorization", "Bearer " + userToken)
-                                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                                    .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(rentalRequest)))
                             .andExpect(status().isConflict())
                             .andExpect(jsonPath("$.code").value("CAR_DATES_UNAVAILABLE"));

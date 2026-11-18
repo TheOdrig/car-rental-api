@@ -45,7 +45,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -76,9 +75,8 @@ import static org.mockito.Mockito.verify;
 @SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
-@TestPropertySource(properties = "payment.isolated-transactions=true")
-@DisplayName("Payment review fixes with committed transactions")
-class PaymentReviewFixesIntegrationTest {
+@DisplayName("Payments with committed transactions")
+class PaymentCommittedTransactionsIntegrationTest {
 
     @Autowired
     private com.akif.payment.internal.config.InstallationIdentity installation;

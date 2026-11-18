@@ -4,17 +4,25 @@ import com.akif.auth.domain.User;
 import com.akif.payment.api.PaymentService;
 import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalRequest;
+import com.akif.rental.internal.config.RentalProperties;
+import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.rental.internal.scheduler.ReminderScheduler;
 import com.akif.shared.enums.Role;
 import com.akif.shared.security.JwtTokenService;
 import tools.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Import;
+import com.akif.testsupport.MutableClock;
+import com.akif.testsupport.TestClockConfiguration;
+import com.akif.testsupport.TestDatabase;
 import com.akif.testsupport.TestcontainersConfiguration;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,8 +31,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,10 +42,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, TestClockConfiguration.class})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Transactional
 public abstract class E2ETestBase {
     
     @Autowired
@@ -53,6 +62,21 @@ public abstract class E2ETestBase {
     @Autowired
     protected PaymentService paymentService;
 
+    @Autowired
+    protected MutableClock clock;
+
+    @Autowired
+    protected JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    protected RentalRepository rentalRepository;
+
+    @Autowired
+    protected RentalProperties rentalProperties;
+
+    @Autowired
+    private CacheManager cacheManager;
+
     @MockitoBean
     protected ReminderScheduler reminderScheduler;
 
@@ -61,10 +85,31 @@ public abstract class E2ETestBase {
                 .ifPresent(payment -> paymentService.createOrGetIntentForRental(rentalId));
     }
 
+    protected void advanceClockToPaymentWindowOf(Long rentalId) {
+        LocalDate start = rentalRepository.findById(rentalId).orElseThrow().getStartDate();
+        LocalDate opens = start.minusDays(rentalProperties.getPaymentWindowDays());
+        long days = ChronoUnit.DAYS.between(LocalDate.now(clock), opens);
+        if (days > 0) {
+            clock.advance(Duration.ofDays(days));
+        }
+    }
+
     @BeforeEach
     public void setUp() {
+        resetState();
+    }
+
+    @AfterEach
+    public void tearDownState() {
+        resetState();
+    }
+
+    private void resetState() {
         SecurityContextHolder.clearContext();
         eventCaptor.clear();
+        clock.reset();
+        cacheManager.getCacheNames().forEach(name -> cacheManager.getCache(name).clear());
+        TestDatabase.truncateAll(jdbcTemplate);
     }
 
     protected String generateUserToken(User user) {

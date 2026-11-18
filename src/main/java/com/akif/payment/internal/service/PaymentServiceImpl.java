@@ -73,13 +73,7 @@ class PaymentServiceImpl implements PaymentService {
     @Value("${payment.sync-min-interval-seconds:10}")
     private long syncMinIntervalSeconds;
 
-    @Value("${payment.isolated-transactions:true}")
-    private boolean isolatedTransactions;
-
     private TransactionTemplate isolated() {
-        if (!isolatedTransactions) {
-            return transactionTemplate;
-        }
         TransactionTemplate template = new TransactionTemplate(transactionManager);
         template.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         return template;
