@@ -1,5 +1,6 @@
 package com.akif.shared.config;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -48,7 +49,7 @@ public class CacheConfig {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager() {
             @Override
             @NonNull
-            protected com.github.benmanes.caffeine.cache.Cache<Object, Object> createNativeCaffeineCache(@NonNull String name) {
+            protected Cache<Object, Object> createNativeCaffeineCache(@NonNull String name) {
                 Integer ttlMinutes = CACHE_TTL_MINUTES.getOrDefault(name, 10);
                 return Caffeine.newBuilder()
                         .expireAfterWrite(ttlMinutes, TimeUnit.MINUTES)

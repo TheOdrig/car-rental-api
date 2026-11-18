@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
+import java.util.TreeSet;
 
 @Service
 @RequiredArgsConstructor
@@ -73,7 +74,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 user.getEmail(),
                 user.getFirstName(),
                 user.getLastName(),
-                user.getRoles(),
+                new TreeSet<>(user.getRoles()),
                 userStatus,
                 user.getAvatarUrl(),
                 user.getEnabled() != null && user.getEnabled(),
@@ -110,7 +111,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 user.getEmail(),
                 user.getPhone(),
                 user.getAvatarUrl(),
-                user.getRoles(),
+                new TreeSet<>(user.getRoles()),
                 user.getCreateTime(),
                 null,
                 verification,
