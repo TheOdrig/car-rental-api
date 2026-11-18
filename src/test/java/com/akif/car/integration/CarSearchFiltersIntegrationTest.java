@@ -10,6 +10,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -130,5 +132,44 @@ class CarSearchFiltersIntegrationTest {
                 .andExpect(status().isOk());
         mockMvc.perform(post("/api/v1/cars/search").contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().is4xxClientError());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "maxKilometer,1000000",
+            "minDoors,1",
+            "maxSeats,10",
+            "minSeats,0",
+            "minRating,0.5",
+            "minPrice,-1",
+            "size,101"
+    })
+    @DisplayName("out-of-range filter values are rejected")
+    void rejectsOutOfRange(String name, String value) throws Exception {
+        mockMvc.perform(get("/api/v1/cars/search").param(name, value))
+                .andExpect(status().isBadRequest());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "maxKilometer,999999,3",
+            "maxKilometer,0,0",
+            "minDoors,2,3",
+            "minDoors,6,0",
+            "maxSeats,9,3",
+            "maxSeats,1,0",
+            "minRating,1.0,2",
+            "minRating,4.5,1",
+            "minRating,5.0,0",
+            "engineType,PETROL,2",
+            "engineType,electric,0",
+            "color,red,1",
+            "color,green,0"
+    })
+    @DisplayName("boundary filter values return the expected number of cars")
+    void boundaryValues(String name, String value, int expected) throws Exception {
+        mockMvc.perform(get("/api/v1/cars/search").param(name, value))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(expected));
     }
 }
