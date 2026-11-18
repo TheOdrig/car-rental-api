@@ -15,6 +15,9 @@ public class ProdConfigurationValidator {
 
     static final int MIN_SECRET_BYTES = 32;
 
+    private static final String TRUST_KEY = "security.rate-limit.trust-forwarded-headers";
+    private static final String HOPS_KEY = "security.rate-limit.trusted-proxy-hops";
+
     private static final List<String> REQUIRED_SECRETS = List.of(
             "jwt.secret",
             "oauth2.state.secret");
@@ -84,9 +87,33 @@ public class ProdConfigurationValidator {
             }
         }
 
+        validateProxySettings(environment, problems);
+
         if (!problems.isEmpty()) {
             throw new IllegalStateException(
                     "Invalid production configuration: " + String.join("; ", problems));
+        }
+    }
+
+    private static void validateProxySettings(Environment environment, List<String> problems) {
+        String trust = environment.getProperty(TRUST_KEY);
+        if (isBlank(trust)) {
+            problems.add(TRUST_KEY + " is missing; set TRUST_FORWARDED_HEADERS to true or false explicitly");
+        } else if (!"true".equalsIgnoreCase(trust.trim()) && !"false".equalsIgnoreCase(trust.trim())) {
+            problems.add(TRUST_KEY + " must be true or false");
+        }
+
+        String hops = environment.getProperty(HOPS_KEY);
+        if (isBlank(hops)) {
+            problems.add(HOPS_KEY + " is missing; set TRUSTED_PROXY_HOPS to the number of proxies in front of the app");
+        } else {
+            try {
+                if (Integer.parseInt(hops.trim()) < 1) {
+                    problems.add(HOPS_KEY + " must be at least 1");
+                }
+            } catch (NumberFormatException e) {
+                problems.add(HOPS_KEY + " must be an integer");
+            }
         }
     }
 

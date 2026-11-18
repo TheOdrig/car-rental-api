@@ -15,6 +15,7 @@ public class RateLimitProperties {
     private boolean enabled = true;
     private boolean trustForwardedHeaders = false;
     private int trustedProxyHops = 1;
+    private String trustedClientIpHeader = "";
     private int maxTrackedClients = 100_000;
     private Map<RateLimitCategory, Limit> limits = new EnumMap<>(RateLimitCategory.class);
 

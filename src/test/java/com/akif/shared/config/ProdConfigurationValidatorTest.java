@@ -32,7 +32,9 @@ class ProdConfigurationValidatorTest {
                 .withProperty("oauth2.google.client-id", "g-id")
                 .withProperty("oauth2.google.client-secret", "g-secret")
                 .withProperty("oauth2.github.client-id", "gh-id")
-                .withProperty("oauth2.github.client-secret", "gh-secret");
+                .withProperty("oauth2.github.client-secret", "gh-secret")
+                .withProperty("security.rate-limit.trust-forwarded-headers", "true")
+                .withProperty("security.rate-limit.trusted-proxy-hops", "1");
     }
 
     @Test
@@ -110,5 +112,34 @@ class ProdConfigurationValidatorTest {
         assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("spring.datasource.password is missing");
+    }
+
+    @Test
+    @DisplayName("fails when the forwarded-header trust flag is not set explicitly")
+    void failsWhenTrustFlagMissing() {
+        MockEnvironment environment = validEnvironment();
+        environment.withProperty("security.rate-limit.trust-forwarded-headers", "");
+
+        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("security.rate-limit.trust-forwarded-headers is missing");
+    }
+
+    @Test
+    @DisplayName("fails when the trusted proxy hop count is missing or invalid")
+    void failsWhenProxyHopsInvalid() {
+        MockEnvironment missing = validEnvironment();
+        missing.withProperty("security.rate-limit.trusted-proxy-hops", "");
+        MockEnvironment zero = validEnvironment();
+        zero.withProperty("security.rate-limit.trusted-proxy-hops", "0");
+        MockEnvironment text = validEnvironment();
+        text.withProperty("security.rate-limit.trusted-proxy-hops", "two");
+
+        assertThatThrownBy(() -> new ProdConfigurationValidator(missing))
+                .hasMessageContaining("security.rate-limit.trusted-proxy-hops is missing");
+        assertThatThrownBy(() -> new ProdConfigurationValidator(zero))
+                .hasMessageContaining("trusted-proxy-hops must be at least 1");
+        assertThatThrownBy(() -> new ProdConfigurationValidator(text))
+                .hasMessageContaining("trusted-proxy-hops must be an integer");
     }
 }

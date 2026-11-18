@@ -71,4 +71,47 @@ class ClientIpResolverTest {
     void acceptsIpv6() {
         assertThat(resolver(true, 1).resolve(request("10.0.0.5", "2001:db8::1"))).isEqualTo("2001:db8::1");
     }
+
+    @Test
+    @DisplayName("joins every X-Forwarded-For header line before counting hops")
+    void joinsMultipleHeaderLines() {
+        MockHttpServletRequest request = request("10.0.0.5", "9.9.9.9");
+        request.addHeader("X-Forwarded-For", "203.0.113.7");
+        request.addHeader("X-Forwarded-For", "172.16.0.1");
+
+        assertThat(resolver(true, 2).resolve(request)).isEqualTo("203.0.113.7");
+        assertThat(resolver(true, 1).resolve(request)).isEqualTo("172.16.0.1");
+    }
+
+    @Test
+    @DisplayName("prefers the trusted client IP header only when trust is enabled")
+    void usesTrustedClientIpHeader() {
+        MockHttpServletRequest request = request("10.0.0.5", "203.0.113.7, 172.68.1.1");
+        request.addHeader("CF-Connecting-IP", "198.51.100.23");
+
+        RateLimitProperties trusted = new RateLimitProperties();
+        trusted.setTrustForwardedHeaders(true);
+        trusted.setTrustedClientIpHeader("CF-Connecting-IP");
+        RateLimitProperties untrusted = new RateLimitProperties();
+        untrusted.setTrustForwardedHeaders(false);
+        untrusted.setTrustedClientIpHeader("CF-Connecting-IP");
+
+        assertThat(new ClientIpResolver(trusted).resolve(request)).isEqualTo("198.51.100.23");
+        assertThat(new ClientIpResolver(untrusted).resolve(request)).isEqualTo("10.0.0.5");
+    }
+
+    @Test
+    @DisplayName("falls back to X-Forwarded-For when the trusted client IP header is absent or not an IP")
+    void trustedHeaderFallsBack() {
+        RateLimitProperties properties = new RateLimitProperties();
+        properties.setTrustForwardedHeaders(true);
+        properties.setTrustedClientIpHeader("CF-Connecting-IP");
+        ClientIpResolver resolver = new ClientIpResolver(properties);
+
+        assertThat(resolver.resolve(request("10.0.0.5", "203.0.113.7"))).isEqualTo("203.0.113.7");
+
+        MockHttpServletRequest garbage = request("10.0.0.5", "203.0.113.7");
+        garbage.addHeader("CF-Connecting-IP", "not-an-ip");
+        assertThat(resolver.resolve(garbage)).isEqualTo("203.0.113.7");
+    }
 }

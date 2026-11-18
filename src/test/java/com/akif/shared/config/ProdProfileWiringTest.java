@@ -38,6 +38,8 @@ import static org.assertj.core.api.Assertions.assertThat;
         "oauth2.google.client-secret=g-secret",
         "oauth2.github.client-id=gh-id",
         "oauth2.github.client-secret=gh-secret",
+        "security.rate-limit.trust-forwarded-headers=true",
+        "security.rate-limit.trusted-proxy-hops=1",
         "spring.datasource.password=ignored",
         "spring.datasource.username=ignored",
         "spring.datasource.url=jdbc:postgresql://ignored/ignored",

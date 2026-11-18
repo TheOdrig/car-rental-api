@@ -5,6 +5,9 @@ import org.springframework.stereotype.Component;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.regex.Pattern;
 
 @Component
@@ -26,19 +29,37 @@ public class ClientIpResolver {
             return remoteAddress;
         }
 
-        String header = request.getHeader(FORWARDED_FOR_HEADER);
-        if (header == null || header.isBlank()) {
-            return remoteAddress;
+        String trustedHeader = properties.getTrustedClientIpHeader();
+        if (trustedHeader != null && !trustedHeader.isBlank()) {
+            String value = request.getHeader(trustedHeader.trim());
+            if (value != null && isIpLiteral(value.trim())) {
+                return normalize(value);
+            }
         }
 
-        String[] entries = header.split(",");
-        int index = entries.length - Math.max(1, properties.getTrustedProxyHops());
+        List<String> entries = forwardedEntries(request);
+        int index = entries.size() - Math.max(1, properties.getTrustedProxyHops());
         if (index < 0) {
             return remoteAddress;
         }
 
-        String candidate = entries[index].trim();
+        String candidate = entries.get(index);
         return isIpLiteral(candidate) ? normalize(candidate) : remoteAddress;
+    }
+
+    private static List<String> forwardedEntries(HttpServletRequest request) {
+        List<String> entries = new ArrayList<>();
+        Enumeration<String> headers = request.getHeaders(FORWARDED_FOR_HEADER);
+        while (headers != null && headers.hasMoreElements()) {
+            String header = headers.nextElement();
+            if (header == null) {
+                continue;
+            }
+            for (String entry : header.split(",", -1)) {
+                entries.add(entry.trim());
+            }
+        }
+        return entries;
     }
 
     private static String normalize(String address) {
