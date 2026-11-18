@@ -1,5 +1,8 @@
+DELETE FROM car_rental.rentals
+WHERE user_email LIKE '%@example.com' AND id < 900001;
+
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -8,7 +11,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '365 days', NOW() - INTERVAL '360 days', FALSE, 0,
+    900001, NOW() - INTERVAL '365 days', NOW() - INTERVAL '360 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'ahmet.yilmaz@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '34ABC123'),
     'Volkswagen', 'Golf', '34ABC123', 'https://images.unsplash.com/photo-1718629879998-ee8cfc09df39?auto=format&fit=crop&q=80&w=400',
@@ -17,10 +20,34 @@ INSERT INTO car_rental.rentals (
     'USD', 35.00, 175.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -29,7 +56,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '355 days', NOW() - INTERVAL '348 days', FALSE, 0,
+    900002, NOW() - INTERVAL '355 days', NOW() - INTERVAL '348 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'zeynep.kaya@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '16RNL005'),
     'Renault', 'Clio', '16RNL005', 'https://images.unsplash.com/photo-1594502225401-a9eab8b405dd?auto=format&fit=crop&q=80&w=400',
@@ -38,10 +65,34 @@ INSERT INTO car_rental.rentals (
     'USD', 40.00, 280.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -50,7 +101,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '330 days', NOW() - INTERVAL '325 days', FALSE, 0,
+    900003, NOW() - INTERVAL '330 days', NOW() - INTERVAL '325 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'mehmet.demir@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '16XYZ321'),
     'Honda', 'Civic', '16XYZ321', 'https://images.unsplash.com/photo-1605515321331-46a63d31758c?auto=format&fit=crop&q=80&w=400',
@@ -59,10 +110,34 @@ INSERT INTO car_rental.rentals (
     'USD', 45.00, 225.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -71,7 +146,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '315 days', NOW() - INTERVAL '307 days', FALSE, 0,
+    900004, NOW() - INTERVAL '315 days', NOW() - INTERVAL '307 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'ayse.ozturk@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '34HYN006'),
     'Hyundai', 'Tucson', '34HYN006', 'https://images.unsplash.com/photo-1705624843697-4461f9dce482?auto=format&fit=crop&q=80&w=400',
@@ -80,10 +155,34 @@ INSERT INTO car_rental.rentals (
     'USD', 85.00, 680.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -92,7 +191,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '300 days', NOW() - INTERVAL '295 days', FALSE, 0,
+    900005, NOW() - INTERVAL '300 days', NOW() - INTERVAL '295 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'can.arslan@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '06DEF456'),
     'BMW', '320i', '06DEF456', 'https://images.unsplash.com/photo-1639056067266-43a821cf0a1f?auto=format&fit=crop&q=80&w=400',
@@ -101,10 +200,34 @@ INSERT INTO car_rental.rentals (
     'USD', 95.00, 475.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -113,7 +236,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '285 days', NOW() - INTERVAL '282 days', FALSE, 0,
+    900006, NOW() - INTERVAL '285 days', NOW() - INTERVAL '282 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'elif.sahin@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '16CTR015'),
     'Citroen', 'C3', '16CTR015', 'https://images.unsplash.com/photo-1609030429269-ca5b7a409310?auto=format&fit=crop&q=80&w=400',
@@ -122,10 +245,34 @@ INSERT INTO car_rental.rentals (
     'USD', 38.00, 114.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -134,7 +281,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '275 days', NOW() - INTERVAL '271 days', FALSE, 0,
+    900007, NOW() - INTERVAL '275 days', NOW() - INTERVAL '271 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'burak.celik@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '01MNO654'),
     'Toyota', 'Corolla', '01MNO654', 'https://www.thedrive.com/wp-content/uploads/2023/05/02/corollahatch-1-scaled.jpg?w=400',
@@ -143,10 +290,34 @@ INSERT INTO car_rental.rentals (
     'USD', 65.00, 260.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -155,7 +326,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '260 days', NOW() - INTERVAL '253 days', FALSE, 0,
+    900008, NOW() - INTERVAL '260 days', NOW() - INTERVAL '253 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'selin.yildiz@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '34MRC001'),
     'Mercedes', 'C200', '34MRC001', 'https://www.sixt.com.tr/storage/cache/a4831ea1285880c2536797abe33a35a517ddeacf.webp',
@@ -164,10 +335,34 @@ INSERT INTO car_rental.rentals (
     'USD', 120.00, 840.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -176,7 +371,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '245 days', NOW() - INTERVAL '242 days', FALSE, 0,
+    900009, NOW() - INTERVAL '245 days', NOW() - INTERVAL '242 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'emre.koc@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '35FIA004'),
     'Fiat', 'Egea', '35FIA004', 'https://www.log.com.tr/wp-content/uploads/2023/01/2025-fiat-egea-tipo-suv-benzeri-bir-formda-olacak-copy-1000x562.jpg',
@@ -185,10 +380,34 @@ INSERT INTO car_rental.rentals (
     'USD', 42.00, 126.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -197,7 +416,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '235 days', NOW() - INTERVAL '233 days', FALSE, 0,
+    900010, NOW() - INTERVAL '235 days', NOW() - INTERVAL '233 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'deniz.aksoy@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '35MZD008'),
     'Mazda', '3', '35MZD008', 'https://images.unsplash.com/photo-1643142311721-c36cd233fb95?auto=format&fit=crop&q=80&w=400',
@@ -206,10 +425,34 @@ INSERT INTO car_rental.rentals (
     'USD', 55.00, 110.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -218,7 +461,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '220 days', NOW() - INTERVAL '215 days', FALSE, 0,
+    900011, NOW() - INTERVAL '220 days', NOW() - INTERVAL '215 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'gokhan.erdogan@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '06VLV010'),
     'Volvo', 'XC60', '06VLV010', 'https://images.unsplash.com/photo-1629897046038-371765238f26?auto=format&fit=crop&q=80&w=400',
@@ -227,10 +470,34 @@ INSERT INTO car_rental.rentals (
     'USD', 145.00, 725.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -239,7 +506,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '205 days', NOW() - INTERVAL '200 days', FALSE, 0,
+    900012, NOW() - INTERVAL '205 days', NOW() - INTERVAL '200 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'merve.kilic@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '06KIA007'),
     'Kia', 'Sportage', '06KIA007', 'https://images.unsplash.com/photo-1688893287585-b1bc00e608fc?auto=format&fit=crop&q=80&w=400',
@@ -248,10 +515,34 @@ INSERT INTO car_rental.rentals (
     'USD', 80.00, 400.00,
     'RETURNED', 'GRACE_PERIOD',
     '2025-05-20 14:30:00', 2, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -260,7 +551,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '190 days', NOW() - INTERVAL '187 days', FALSE, 0,
+    900013, NOW() - INTERVAL '190 days', NOW() - INTERVAL '187 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'ali.polat@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '16SKD011'),
     'Skoda', 'Octavia', '16SKD011', 'https://images.unsplash.com/photo-1673822317394-6fd502a324e6?auto=format&fit=crop&q=80&w=400',
@@ -269,10 +560,34 @@ INSERT INTO car_rental.rentals (
     'USD', 60.00, 180.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -281,7 +596,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '175 days', NOW() - INTERVAL '165 days', FALSE, 0,
+    900014, NOW() - INTERVAL '175 days', NOW() - INTERVAL '165 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'ipek.ozdemir@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '34TSL002'),
     'Tesla', 'Model 3', '34TSL002', 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=400',
@@ -290,10 +605,34 @@ INSERT INTO car_rental.rentals (
     'USD', 180.00, 1800.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -302,7 +641,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '160 days', NOW() - INTERVAL '153 days', FALSE, 0,
+    900015, NOW() - INTERVAL '160 days', NOW() - INTERVAL '153 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'murat.aydin@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '35JKL789'),
     'Audi', 'A4', '35JKL789', 'https://images.unsplash.com/photo-1710011115921-7e67a8e4b483?auto=format&fit=crop&q=80&w=400',
@@ -311,10 +650,34 @@ INSERT INTO car_rental.rentals (
     'USD', 90.00, 630.00,
     'RETURNED', 'LATE',
     '2025-06-23 16:00:00', 16, 90.00, TRUE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -323,7 +686,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '145 days', NOW() - INTERVAL '140 days', FALSE, 0,
+    900016, NOW() - INTERVAL '145 days', NOW() - INTERVAL '140 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'ceren.ozer@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '06FRD003'),
     'Ford', 'Focus', '06FRD003', 'https://images.unsplash.com/photo-1708849894321-2c9bc515df0e?auto=format&fit=crop&q=80&w=400',
@@ -332,10 +695,34 @@ INSERT INTO car_rental.rentals (
     'USD', 48.00, 240.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -344,7 +731,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '130 days', NOW() - INTERVAL '120 days', FALSE, 0,
+    900017, NOW() - INTERVAL '130 days', NOW() - INTERVAL '120 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'yusuf.karaca@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '34MRC001'),
     'Mercedes', 'C200', '34MRC001', 'https://www.sixt.com.tr/storage/cache/a4831ea1285880c2536797abe33a35a517ddeacf.webp',
@@ -353,10 +740,34 @@ INSERT INTO car_rental.rentals (
     'USD', 120.00, 1200.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -365,7 +776,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '115 days', NOW() - INTERVAL '108 days', FALSE, 0,
+    900018, NOW() - INTERVAL '115 days', NOW() - INTERVAL '108 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'ahmet.yilmaz@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '34HYN006'),
     'Hyundai', 'Tucson', '34HYN006', 'https://images.unsplash.com/photo-1705624843697-4461f9dce482?auto=format&fit=crop&q=80&w=400',
@@ -374,10 +785,34 @@ INSERT INTO car_rental.rentals (
     'USD', 85.00, 595.00,
     'RETURNED', 'GRACE_PERIOD',
     '2025-07-22 11:00:00', 3, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -386,7 +821,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '100 days', NOW() - INTERVAL '97 days', FALSE, 0,
+    900019, NOW() - INTERVAL '100 days', NOW() - INTERVAL '97 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'zeynep.kaya@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '06OPL014'),
     'Opel', 'Astra', '06OPL014', 'https://images.unsplash.com/photo-1582639510494-c80b5de9f148?auto=format&fit=crop&q=80&w=400',
@@ -395,10 +830,34 @@ INSERT INTO car_rental.rentals (
     'USD', 42.00, 126.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -407,7 +866,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '90 days', NOW() - INTERVAL '83 days', FALSE, 0,
+    900020, NOW() - INTERVAL '90 days', NOW() - INTERVAL '83 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'esra.dogan@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '06VLV010'),
     'Volvo', 'XC60', '06VLV010', 'https://images.unsplash.com/photo-1629897046038-371765238f26?auto=format&fit=crop&q=80&w=400',
@@ -416,10 +875,34 @@ INSERT INTO car_rental.rentals (
     'USD', 145.00, 1015.00,
     'RETURNED', 'LATE',
     '2025-08-13 10:00:00', 10, 145.00, TRUE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -428,7 +911,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '75 days', NOW() - INTERVAL '70 days', FALSE, 0,
+    900021, NOW() - INTERVAL '75 days', NOW() - INTERVAL '70 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'serkan.yilmaz@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '34NSN012'),
     'Nissan', 'Qashqai', '34NSN012', 'https://images.unsplash.com/photo-1538940714252-fc70779afa46?auto=format&fit=crop&q=80&w=400',
@@ -437,10 +920,34 @@ INSERT INTO car_rental.rentals (
     'USD', 75.00, 375.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -449,7 +956,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '60 days', NOW() - INTERVAL '55 days', FALSE, 0,
+    900022, NOW() - INTERVAL '60 days', NOW() - INTERVAL '55 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'pinar.sen@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '06DEF456'),
     'BMW', '320i', '06DEF456', 'https://images.unsplash.com/photo-1639056067266-43a821cf0a1f?auto=format&fit=crop&q=80&w=400',
@@ -458,10 +965,34 @@ INSERT INTO car_rental.rentals (
     'USD', 95.00, 475.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -470,7 +1001,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '45 days', NOW() - INTERVAL '40 days', FALSE, 0,
+    900023, NOW() - INTERVAL '45 days', NOW() - INTERVAL '40 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'okan.tekin@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '35SEA013'),
     'Seat', 'Leon', '35SEA013', 'https://commons.wikimedia.org/wiki/Special:FilePath/SEAT_Leon_Cupra_002.jpg?width=800',
@@ -479,10 +1010,34 @@ INSERT INTO car_rental.rentals (
     'USD', 45.00, 225.00,
     'RETURNED', 'SEVERELY_LATE',
     '2025-09-27 20:00:00', 44, 180.00, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -491,7 +1046,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     actual_return_time, late_hours, penalty_amount, penalty_paid
 ) VALUES (
-    NOW() - INTERVAL '30 days', NOW() - INTERVAL '25 days', FALSE, 0,
+    900024, NOW() - INTERVAL '30 days', NOW() - INTERVAL '25 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'mehmet.demir@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '16XYZ321'),
     'Honda', 'Civic', '16XYZ321', 'https://images.unsplash.com/photo-1605515321331-46a63d31758c?auto=format&fit=crop&q=80&w=400',
@@ -500,10 +1055,34 @@ INSERT INTO car_rental.rentals (
     'USD', 45.00, 225.00,
     'RETURNED', 'ON_TIME',
     NULL, NULL, NULL, FALSE
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    actual_return_time = EXCLUDED.actual_return_time,
+    late_hours = EXCLUDED.late_hours,
+    penalty_amount = EXCLUDED.penalty_amount,
+    penalty_paid = EXCLUDED.penalty_paid;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -511,7 +1090,7 @@ INSERT INTO car_rental.rentals (
     currency, daily_price, total_price,
     status, late_return_status
 ) VALUES (
-    NOW() - INTERVAL '3 days', NOW(), FALSE, 0,
+    900025, NOW() - INTERVAL '3 days', NOW(), FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'can.arslan@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '35FIA004'),
     'Fiat', 'Egea', '35FIA004', 'https://www.log.com.tr/wp-content/uploads/2023/01/2025-fiat-egea-tipo-suv-benzeri-bir-formda-olacak-copy-1000x562.jpg',
@@ -519,10 +1098,30 @@ INSERT INTO car_rental.rentals (
     CURRENT_DATE - INTERVAL '3 days', CURRENT_DATE + INTERVAL '2 days', 5,
     'USD', 42.00, 210.00,
     'IN_USE', NULL
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -530,7 +1129,7 @@ INSERT INTO car_rental.rentals (
     currency, daily_price, total_price,
     status, late_return_status
 ) VALUES (
-    NOW() - INTERVAL '5 days', NOW(), FALSE, 0,
+    900026, NOW() - INTERVAL '5 days', NOW(), FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'elif.sahin@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '34NSN012'),
     'Nissan', 'Qashqai', '34NSN012', 'https://images.unsplash.com/photo-1538940714252-fc70779afa46?auto=format&fit=crop&q=80&w=400',
@@ -538,10 +1137,30 @@ INSERT INTO car_rental.rentals (
     CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE + INTERVAL '1 day', 6,
     'USD', 75.00, 450.00,
     'IN_USE', NULL
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -549,7 +1168,7 @@ INSERT INTO car_rental.rentals (
     currency, daily_price, total_price,
     status, late_return_status
 ) VALUES (
-    NOW() - INTERVAL '1 day', NOW(), FALSE, 0,
+    900027, NOW() - INTERVAL '1 day', NOW(), FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'burak.celik@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '34TSL002'),
     'Tesla', 'Model 3', '34TSL002', 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=400',
@@ -557,10 +1176,30 @@ INSERT INTO car_rental.rentals (
     CURRENT_DATE - INTERVAL '1 day', CURRENT_DATE + INTERVAL '4 days', 5,
     'USD', 180.00, 900.00,
     'IN_USE', NULL
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -568,7 +1207,7 @@ INSERT INTO car_rental.rentals (
     currency, daily_price, total_price,
     status, late_return_status
 ) VALUES (
-    NOW() - INTERVAL '2 days', NOW(), FALSE, 0,
+    900028, NOW() - INTERVAL '2 days', NOW(), FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'selin.yildiz@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '06KIA007'),
     'Kia', 'Sportage', '06KIA007', 'https://images.unsplash.com/photo-1688893287585-b1bc00e608fc?auto=format&fit=crop&q=80&w=400',
@@ -576,10 +1215,30 @@ INSERT INTO car_rental.rentals (
     CURRENT_DATE + INTERVAL '3 days', CURRENT_DATE + INTERVAL '10 days', 7,
     'USD', 80.00, 560.00,
     'CONFIRMED', NULL
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -587,7 +1246,7 @@ INSERT INTO car_rental.rentals (
     currency, daily_price, total_price,
     status, late_return_status
 ) VALUES (
-    NOW() - INTERVAL '1 day', NOW(), FALSE, 0,
+    900029, NOW() - INTERVAL '1 day', NOW(), FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'emre.koc@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '34MRC001'),
     'Mercedes', 'C200', '34MRC001', 'https://www.sixt.com.tr/storage/cache/a4831ea1285880c2536797abe33a35a517ddeacf.webp',
@@ -595,10 +1254,30 @@ INSERT INTO car_rental.rentals (
     CURRENT_DATE + INTERVAL '7 days', CURRENT_DATE + INTERVAL '12 days', 5,
     'USD', 120.00, 600.00,
     'CONFIRMED', NULL
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -606,7 +1285,7 @@ INSERT INTO car_rental.rentals (
     currency, daily_price, total_price,
     status, late_return_status
 ) VALUES (
-    NOW() - INTERVAL '2 hours', NOW(), FALSE, 0,
+    900030, NOW() - INTERVAL '2 hours', NOW(), FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'deniz.aksoy@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '06DEF456'),
     'BMW', '320i', '06DEF456', 'https://images.unsplash.com/photo-1639056067266-43a821cf0a1f?auto=format&fit=crop&q=80&w=400',
@@ -614,10 +1293,30 @@ INSERT INTO car_rental.rentals (
     CURRENT_DATE + INTERVAL '5 days', CURRENT_DATE + INTERVAL '8 days', 3,
     'USD', 95.00, 285.00,
     'REQUESTED', NULL
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -625,7 +1324,7 @@ INSERT INTO car_rental.rentals (
     currency, daily_price, total_price,
     status, late_return_status
 ) VALUES (
-    NOW() - INTERVAL '4 hours', NOW(), FALSE, 0,
+    900031, NOW() - INTERVAL '4 hours', NOW(), FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'gokhan.erdogan@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '06VLV010'),
     'Volvo', 'XC60', '06VLV010', 'https://images.unsplash.com/photo-1629897046038-371765238f26?auto=format&fit=crop&q=80&w=400',
@@ -633,10 +1332,30 @@ INSERT INTO car_rental.rentals (
     CURRENT_DATE + INTERVAL '10 days', CURRENT_DATE + INTERVAL '17 days', 7,
     'USD', 145.00, 1015.00,
     'REQUESTED', NULL
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -644,7 +1363,7 @@ INSERT INTO car_rental.rentals (
     currency, daily_price, total_price,
     status, late_return_status
 ) VALUES (
-    NOW() - INTERVAL '1 hour', NOW(), FALSE, 0,
+    900032, NOW() - INTERVAL '1 hour', NOW(), FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'merve.kilic@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '35MZD008'),
     'Mazda', '3', '35MZD008', 'https://images.unsplash.com/photo-1643142311721-c36cd233fb95?auto=format&fit=crop&q=80&w=400',
@@ -652,10 +1371,30 @@ INSERT INTO car_rental.rentals (
     CURRENT_DATE + INTERVAL '2 days', CURRENT_DATE + INTERVAL '4 days', 2,
     'USD', 55.00, 110.00,
     'REQUESTED', NULL
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -664,7 +1403,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     cancellation_reason
 ) VALUES (
-    NOW() - INTERVAL '20 days', NOW() - INTERVAL '18 days', FALSE, 0,
+    900033, NOW() - INTERVAL '20 days', NOW() - INTERVAL '18 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'ali.polat@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '16RNL005'),
     'Renault', 'Clio', '16RNL005', 'https://images.unsplash.com/photo-1594502225401-a9eab8b405dd?auto=format&fit=crop&q=80&w=400',
@@ -673,10 +1412,31 @@ INSERT INTO car_rental.rentals (
     'USD', 40.00, 200.00,
     'CANCELLED', NULL,
     'Customer requested cancellation - travel plans changed'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    cancellation_reason = EXCLUDED.cancellation_reason;
 
 INSERT INTO car_rental.rentals (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     user_id, car_id,
     car_brand, car_model, car_license_plate, car_thumbnail_url,
     user_email, user_full_name,
@@ -685,7 +1445,7 @@ INSERT INTO car_rental.rentals (
     status, late_return_status,
     cancellation_reason
 ) VALUES (
-    NOW() - INTERVAL '15 days', NOW() - INTERVAL '14 days', FALSE, 0,
+    900034, NOW() - INTERVAL '15 days', NOW() - INTERVAL '14 days', FALSE, 0,
     (SELECT id FROM car_rental.users WHERE email = 'ipek.ozdemir@example.com'),
     (SELECT id FROM car_rental.car WHERE license_plate = '01MNO654'),
     'Toyota', 'Corolla', '01MNO654', 'https://www.thedrive.com/wp-content/uploads/2023/05/02/corollahatch-1-scaled.jpg?w=400',
@@ -694,4 +1454,25 @@ INSERT INTO car_rental.rentals (
     'USD', 65.00, 260.00,
     'CANCELLED', NULL,
     'Vehicle not available - double booking error'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    user_id = EXCLUDED.user_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    car_thumbnail_url = EXCLUDED.car_thumbnail_url,
+    user_email = EXCLUDED.user_email,
+    user_full_name = EXCLUDED.user_full_name,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    days = EXCLUDED.days,
+    currency = EXCLUDED.currency,
+    daily_price = EXCLUDED.daily_price,
+    total_price = EXCLUDED.total_price,
+    status = EXCLUDED.status,
+    late_return_status = EXCLUDED.late_return_status,
+    cancellation_reason = EXCLUDED.cancellation_reason;

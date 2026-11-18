@@ -1,5 +1,8 @@
+DELETE FROM car_rental.damage_reports
+WHERE customer_email LIKE '%@example.com' AND id < 920001;
+
 INSERT INTO car_rental.damage_reports (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     rental_id, car_id,
     car_brand, car_model, car_license_plate,
     rental_start_date, rental_end_date,
@@ -10,7 +13,7 @@ INSERT INTO car_rental.damage_reports (
     assessed_by, assessed_at, assessment_notes,
     resolved_by, resolved_at, resolution_notes
 ) VALUES (
-    NOW() - INTERVAL '90 days', NOW() - INTERVAL '85 days', FALSE, 0,
+    920001, NOW() - INTERVAL '90 days', NOW() - INTERVAL '85 days', FALSE, 0,
     (SELECT id FROM car_rental.rentals WHERE user_email = 'esra.dogan@example.com' AND car_license_plate = '06VLV010' AND status = 'RETURNED'),
     (SELECT id FROM car_rental.car WHERE license_plate = '06VLV010'),
     'Volvo', 'XC60', '06VLV010',
@@ -29,10 +32,39 @@ INSERT INTO car_rental.damage_reports (
     (SELECT id FROM car_rental.users WHERE email = 'admin@example.com'),
     NOW() - INTERVAL '85 days',
     'Customer paid liability. Repair completed successfully.'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    rental_id = EXCLUDED.rental_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    rental_start_date = EXCLUDED.rental_start_date,
+    rental_end_date = EXCLUDED.rental_end_date,
+    customer_email = EXCLUDED.customer_email,
+    customer_full_name = EXCLUDED.customer_full_name,
+    customer_user_id = EXCLUDED.customer_user_id,
+    description = EXCLUDED.description,
+    damage_location = EXCLUDED.damage_location,
+    severity = EXCLUDED.severity,
+    category = EXCLUDED.category,
+    status = EXCLUDED.status,
+    reported_by = EXCLUDED.reported_by,
+    reported_at = EXCLUDED.reported_at,
+    repair_cost_estimate = EXCLUDED.repair_cost_estimate,
+    customer_liability = EXCLUDED.customer_liability,
+    assessed_by = EXCLUDED.assessed_by,
+    assessed_at = EXCLUDED.assessed_at,
+    assessment_notes = EXCLUDED.assessment_notes,
+    resolved_by = EXCLUDED.resolved_by,
+    resolved_at = EXCLUDED.resolved_at,
+    resolution_notes = EXCLUDED.resolution_notes;
 
 INSERT INTO car_rental.damage_reports (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     rental_id, car_id,
     car_brand, car_model, car_license_plate,
     rental_start_date, rental_end_date,
@@ -43,7 +75,7 @@ INSERT INTO car_rental.damage_reports (
     assessed_by, assessed_at, assessment_notes,
     resolved_by, resolved_at, resolution_notes
 ) VALUES (
-    NOW() - INTERVAL '160 days', NOW() - INTERVAL '150 days', FALSE, 0,
+    920002, NOW() - INTERVAL '160 days', NOW() - INTERVAL '150 days', FALSE, 0,
     (SELECT id FROM car_rental.rentals WHERE user_email = 'murat.aydin@example.com' AND car_license_plate = '35JKL789' AND status = 'RETURNED'),
     (SELECT id FROM car_rental.car WHERE license_plate = '35JKL789'),
     'Audi', 'A4', '35JKL789',
@@ -62,10 +94,39 @@ INSERT INTO car_rental.damage_reports (
     (SELECT id FROM car_rental.users WHERE email = 'admin@example.com'),
     NOW() - INTERVAL '150 days',
     'Repair completed. Customer paid via credit card on file.'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    rental_id = EXCLUDED.rental_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    rental_start_date = EXCLUDED.rental_start_date,
+    rental_end_date = EXCLUDED.rental_end_date,
+    customer_email = EXCLUDED.customer_email,
+    customer_full_name = EXCLUDED.customer_full_name,
+    customer_user_id = EXCLUDED.customer_user_id,
+    description = EXCLUDED.description,
+    damage_location = EXCLUDED.damage_location,
+    severity = EXCLUDED.severity,
+    category = EXCLUDED.category,
+    status = EXCLUDED.status,
+    reported_by = EXCLUDED.reported_by,
+    reported_at = EXCLUDED.reported_at,
+    repair_cost_estimate = EXCLUDED.repair_cost_estimate,
+    customer_liability = EXCLUDED.customer_liability,
+    assessed_by = EXCLUDED.assessed_by,
+    assessed_at = EXCLUDED.assessed_at,
+    assessment_notes = EXCLUDED.assessment_notes,
+    resolved_by = EXCLUDED.resolved_by,
+    resolved_at = EXCLUDED.resolved_at,
+    resolution_notes = EXCLUDED.resolution_notes;
 
 INSERT INTO car_rental.damage_reports (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     rental_id, car_id,
     car_brand, car_model, car_license_plate,
     rental_start_date, rental_end_date,
@@ -76,7 +137,7 @@ INSERT INTO car_rental.damage_reports (
     assessed_by, assessed_at, assessment_notes,
     resolved_by, resolved_at, resolution_notes
 ) VALUES (
-    NOW() - INTERVAL '220 days', NOW() - INTERVAL '210 days', FALSE, 0,
+    920003, NOW() - INTERVAL '220 days', NOW() - INTERVAL '210 days', FALSE, 0,
     (SELECT id FROM car_rental.rentals WHERE user_email = 'gokhan.erdogan@example.com' AND car_license_plate = '06VLV010' AND status = 'RETURNED'),
     (SELECT id FROM car_rental.car WHERE license_plate = '06VLV010'),
     'Volvo', 'XC60', '06VLV010',
@@ -95,10 +156,39 @@ INSERT INTO car_rental.damage_reports (
     (SELECT id FROM car_rental.users WHERE email = 'admin@example.com'),
     NOW() - INTERVAL '210 days',
     'Cleaning completed. Customer charged cleaning fee.'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    rental_id = EXCLUDED.rental_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    rental_start_date = EXCLUDED.rental_start_date,
+    rental_end_date = EXCLUDED.rental_end_date,
+    customer_email = EXCLUDED.customer_email,
+    customer_full_name = EXCLUDED.customer_full_name,
+    customer_user_id = EXCLUDED.customer_user_id,
+    description = EXCLUDED.description,
+    damage_location = EXCLUDED.damage_location,
+    severity = EXCLUDED.severity,
+    category = EXCLUDED.category,
+    status = EXCLUDED.status,
+    reported_by = EXCLUDED.reported_by,
+    reported_at = EXCLUDED.reported_at,
+    repair_cost_estimate = EXCLUDED.repair_cost_estimate,
+    customer_liability = EXCLUDED.customer_liability,
+    assessed_by = EXCLUDED.assessed_by,
+    assessed_at = EXCLUDED.assessed_at,
+    assessment_notes = EXCLUDED.assessment_notes,
+    resolved_by = EXCLUDED.resolved_by,
+    resolved_at = EXCLUDED.resolved_at,
+    resolution_notes = EXCLUDED.resolution_notes;
 
 INSERT INTO car_rental.damage_reports (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     rental_id, car_id,
     car_brand, car_model, car_license_plate,
     rental_start_date, rental_end_date,
@@ -109,7 +199,7 @@ INSERT INTO car_rental.damage_reports (
     assessed_by, assessed_at, assessment_notes,
     payment_status
 ) VALUES (
-    NOW() - INTERVAL '45 days', NOW() - INTERVAL '40 days', FALSE, 0,
+    920004, NOW() - INTERVAL '45 days', NOW() - INTERVAL '40 days', FALSE, 0,
     (SELECT id FROM car_rental.rentals WHERE user_email = 'okan.tekin@example.com' AND car_license_plate = '35SEA013' AND status = 'RETURNED'),
     (SELECT id FROM car_rental.car WHERE license_plate = '35SEA013'),
     'Seat', 'Leon', '35SEA013',
@@ -126,10 +216,37 @@ INSERT INTO car_rental.damage_reports (
     NOW() - INTERVAL '42 days',
     'Bumper requires replacement. Paint matching needed.',
     'COMPLETED'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    rental_id = EXCLUDED.rental_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    rental_start_date = EXCLUDED.rental_start_date,
+    rental_end_date = EXCLUDED.rental_end_date,
+    customer_email = EXCLUDED.customer_email,
+    customer_full_name = EXCLUDED.customer_full_name,
+    customer_user_id = EXCLUDED.customer_user_id,
+    description = EXCLUDED.description,
+    damage_location = EXCLUDED.damage_location,
+    severity = EXCLUDED.severity,
+    category = EXCLUDED.category,
+    status = EXCLUDED.status,
+    reported_by = EXCLUDED.reported_by,
+    reported_at = EXCLUDED.reported_at,
+    repair_cost_estimate = EXCLUDED.repair_cost_estimate,
+    customer_liability = EXCLUDED.customer_liability,
+    assessed_by = EXCLUDED.assessed_by,
+    assessed_at = EXCLUDED.assessed_at,
+    assessment_notes = EXCLUDED.assessment_notes,
+    payment_status = EXCLUDED.payment_status;
 
 INSERT INTO car_rental.damage_reports (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     rental_id, car_id,
     car_brand, car_model, car_license_plate,
     rental_start_date, rental_end_date,
@@ -140,7 +257,7 @@ INSERT INTO car_rental.damage_reports (
     assessed_by, assessed_at, assessment_notes,
     payment_status
 ) VALUES (
-    NOW() - INTERVAL '30 days', NOW() - INTERVAL '25 days', FALSE, 0,
+    920005, NOW() - INTERVAL '30 days', NOW() - INTERVAL '25 days', FALSE, 0,
     (SELECT id FROM car_rental.rentals WHERE user_email = 'mehmet.demir@example.com' AND car_license_plate = '16XYZ321' AND status = 'RETURNED' LIMIT 1),
     (SELECT id FROM car_rental.car WHERE license_plate = '16XYZ321'),
     'Honda', 'Civic', '16XYZ321',
@@ -157,10 +274,37 @@ INSERT INTO car_rental.damage_reports (
     NOW() - INTERVAL '27 days',
     'New tire and rim required. Road hazard, standard liability applies.',
     'COMPLETED'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    rental_id = EXCLUDED.rental_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    rental_start_date = EXCLUDED.rental_start_date,
+    rental_end_date = EXCLUDED.rental_end_date,
+    customer_email = EXCLUDED.customer_email,
+    customer_full_name = EXCLUDED.customer_full_name,
+    customer_user_id = EXCLUDED.customer_user_id,
+    description = EXCLUDED.description,
+    damage_location = EXCLUDED.damage_location,
+    severity = EXCLUDED.severity,
+    category = EXCLUDED.category,
+    status = EXCLUDED.status,
+    reported_by = EXCLUDED.reported_by,
+    reported_at = EXCLUDED.reported_at,
+    repair_cost_estimate = EXCLUDED.repair_cost_estimate,
+    customer_liability = EXCLUDED.customer_liability,
+    assessed_by = EXCLUDED.assessed_by,
+    assessed_at = EXCLUDED.assessed_at,
+    assessment_notes = EXCLUDED.assessment_notes,
+    payment_status = EXCLUDED.payment_status;
 
 INSERT INTO car_rental.damage_reports (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     rental_id, car_id,
     car_brand, car_model, car_license_plate,
     rental_start_date, rental_end_date,
@@ -170,7 +314,7 @@ INSERT INTO car_rental.damage_reports (
     repair_cost_estimate, customer_liability,
     assessed_by, assessed_at, assessment_notes
 ) VALUES (
-    NOW() - INTERVAL '10 days', NOW() - INTERVAL '8 days', FALSE, 0,
+    920006, NOW() - INTERVAL '10 days', NOW() - INTERVAL '8 days', FALSE, 0,
     (SELECT id FROM car_rental.rentals WHERE user_email = 'serkan.yilmaz@example.com' AND car_license_plate = '34NSN012' AND status = 'RETURNED'),
     (SELECT id FROM car_rental.car WHERE license_plate = '34NSN012'),
     'Nissan', 'Qashqai', '34NSN012',
@@ -186,10 +330,36 @@ INSERT INTO car_rental.damage_reports (
     (SELECT id FROM car_rental.users WHERE email = 'admin@example.com'),
     NOW() - INTERVAL '8 days',
     'Mirror housing and glass replacement needed. Customer notified for payment.'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    rental_id = EXCLUDED.rental_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    rental_start_date = EXCLUDED.rental_start_date,
+    rental_end_date = EXCLUDED.rental_end_date,
+    customer_email = EXCLUDED.customer_email,
+    customer_full_name = EXCLUDED.customer_full_name,
+    customer_user_id = EXCLUDED.customer_user_id,
+    description = EXCLUDED.description,
+    damage_location = EXCLUDED.damage_location,
+    severity = EXCLUDED.severity,
+    category = EXCLUDED.category,
+    status = EXCLUDED.status,
+    reported_by = EXCLUDED.reported_by,
+    reported_at = EXCLUDED.reported_at,
+    repair_cost_estimate = EXCLUDED.repair_cost_estimate,
+    customer_liability = EXCLUDED.customer_liability,
+    assessed_by = EXCLUDED.assessed_by,
+    assessed_at = EXCLUDED.assessed_at,
+    assessment_notes = EXCLUDED.assessment_notes;
 
 INSERT INTO car_rental.damage_reports (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     rental_id, car_id,
     car_brand, car_model, car_license_plate,
     rental_start_date, rental_end_date,
@@ -200,7 +370,7 @@ INSERT INTO car_rental.damage_reports (
     assessed_by, assessed_at, assessment_notes,
     disputed_by, disputed_at, dispute_reason, dispute_comments
 ) VALUES (
-    NOW() - INTERVAL '20 days', NOW() - INTERVAL '15 days', FALSE, 0,
+    920007, NOW() - INTERVAL '20 days', NOW() - INTERVAL '15 days', FALSE, 0,
     (SELECT id FROM car_rental.rentals WHERE user_email = 'yusuf.karaca@example.com' AND car_license_plate = '34MRC001' AND status = 'RETURNED'),
     (SELECT id FROM car_rental.car WHERE license_plate = '34MRC001'),
     'Mercedes', 'C200', '34MRC001',
@@ -220,10 +390,40 @@ INSERT INTO car_rental.damage_reports (
     NOW() - INTERVAL '16 days',
     'Customer claims damage was pre-existing',
     'Customer states the scratch was present when vehicle was picked up but not documented in initial inspection.'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    rental_id = EXCLUDED.rental_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    rental_start_date = EXCLUDED.rental_start_date,
+    rental_end_date = EXCLUDED.rental_end_date,
+    customer_email = EXCLUDED.customer_email,
+    customer_full_name = EXCLUDED.customer_full_name,
+    customer_user_id = EXCLUDED.customer_user_id,
+    description = EXCLUDED.description,
+    damage_location = EXCLUDED.damage_location,
+    severity = EXCLUDED.severity,
+    category = EXCLUDED.category,
+    status = EXCLUDED.status,
+    reported_by = EXCLUDED.reported_by,
+    reported_at = EXCLUDED.reported_at,
+    repair_cost_estimate = EXCLUDED.repair_cost_estimate,
+    customer_liability = EXCLUDED.customer_liability,
+    assessed_by = EXCLUDED.assessed_by,
+    assessed_at = EXCLUDED.assessed_at,
+    assessment_notes = EXCLUDED.assessment_notes,
+    disputed_by = EXCLUDED.disputed_by,
+    disputed_at = EXCLUDED.disputed_at,
+    dispute_reason = EXCLUDED.dispute_reason,
+    dispute_comments = EXCLUDED.dispute_comments;
 
 INSERT INTO car_rental.damage_reports (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     rental_id, car_id,
     car_brand, car_model, car_license_plate,
     rental_start_date, rental_end_date,
@@ -231,7 +431,7 @@ INSERT INTO car_rental.damage_reports (
     description, damage_location, severity, category, status,
     reported_by, reported_at
 ) VALUES (
-    NOW() - INTERVAL '3 days', NOW() - INTERVAL '2 days', FALSE, 0,
+    920008, NOW() - INTERVAL '3 days', NOW() - INTERVAL '2 days', FALSE, 0,
     (SELECT id FROM car_rental.rentals WHERE user_email = 'pinar.sen@example.com' AND car_license_plate = '06DEF456' AND status = 'RETURNED'),
     (SELECT id FROM car_rental.car WHERE license_plate = '06DEF456'),
     'BMW', '320i', '06DEF456',
@@ -243,10 +443,31 @@ INSERT INTO car_rental.damage_reports (
     'SEVERE', 'MECHANICAL', 'UNDER_ASSESSMENT',
     (SELECT id FROM car_rental.users WHERE email = 'admin@example.com'),
     NOW() - INTERVAL '2 days'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    rental_id = EXCLUDED.rental_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    rental_start_date = EXCLUDED.rental_start_date,
+    rental_end_date = EXCLUDED.rental_end_date,
+    customer_email = EXCLUDED.customer_email,
+    customer_full_name = EXCLUDED.customer_full_name,
+    customer_user_id = EXCLUDED.customer_user_id,
+    description = EXCLUDED.description,
+    damage_location = EXCLUDED.damage_location,
+    severity = EXCLUDED.severity,
+    category = EXCLUDED.category,
+    status = EXCLUDED.status,
+    reported_by = EXCLUDED.reported_by,
+    reported_at = EXCLUDED.reported_at;
 
 INSERT INTO car_rental.damage_reports (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     rental_id, car_id,
     car_brand, car_model, car_license_plate,
     rental_start_date, rental_end_date,
@@ -254,7 +475,7 @@ INSERT INTO car_rental.damage_reports (
     description, damage_location, severity, category, status,
     reported_by, reported_at
 ) VALUES (
-    NOW() - INTERVAL '6 hours', NOW() - INTERVAL '6 hours', FALSE, 0,
+    920009, NOW() - INTERVAL '6 hours', NOW() - INTERVAL '6 hours', FALSE, 0,
     (SELECT id FROM car_rental.rentals WHERE user_email = 'ahmet.yilmaz@example.com' AND car_license_plate = '34HYN006' AND status = 'RETURNED'),
     (SELECT id FROM car_rental.car WHERE license_plate = '34HYN006'),
     'Hyundai', 'Tucson', '34HYN006',
@@ -266,10 +487,31 @@ INSERT INTO car_rental.damage_reports (
     'MINOR', 'GLASS', 'REPORTED',
     (SELECT id FROM car_rental.users WHERE email = 'admin@example.com'),
     NOW() - INTERVAL '6 hours'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    rental_id = EXCLUDED.rental_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    rental_start_date = EXCLUDED.rental_start_date,
+    rental_end_date = EXCLUDED.rental_end_date,
+    customer_email = EXCLUDED.customer_email,
+    customer_full_name = EXCLUDED.customer_full_name,
+    customer_user_id = EXCLUDED.customer_user_id,
+    description = EXCLUDED.description,
+    damage_location = EXCLUDED.damage_location,
+    severity = EXCLUDED.severity,
+    category = EXCLUDED.category,
+    status = EXCLUDED.status,
+    reported_by = EXCLUDED.reported_by,
+    reported_at = EXCLUDED.reported_at;
 
 INSERT INTO car_rental.damage_reports (
-    create_time, update_time, is_deleted, version,
+    id, create_time, update_time, is_deleted, version,
     rental_id, car_id,
     car_brand, car_model, car_license_plate,
     rental_start_date, rental_end_date,
@@ -277,7 +519,7 @@ INSERT INTO car_rental.damage_reports (
     description, damage_location, severity, category, status,
     reported_by, reported_at
 ) VALUES (
-    NOW() - INTERVAL '2 hours', NOW() - INTERVAL '2 hours', FALSE, 0,
+    920010, NOW() - INTERVAL '2 hours', NOW() - INTERVAL '2 hours', FALSE, 0,
     (SELECT id FROM car_rental.rentals WHERE user_email = 'zeynep.kaya@example.com' AND car_license_plate = '06OPL014' AND status = 'RETURNED'),
     (SELECT id FROM car_rental.car WHERE license_plate = '06OPL014'),
     'Opel', 'Astra', '06OPL014',
@@ -289,4 +531,25 @@ INSERT INTO car_rental.damage_reports (
     'MINOR', 'INTERIOR', 'REPORTED',
     (SELECT id FROM car_rental.users WHERE email = 'admin@example.com'),
     NOW() - INTERVAL '2 hours'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    update_time = EXCLUDED.update_time,
+    is_deleted = EXCLUDED.is_deleted,
+    version = EXCLUDED.version,
+    rental_id = EXCLUDED.rental_id,
+    car_id = EXCLUDED.car_id,
+    car_brand = EXCLUDED.car_brand,
+    car_model = EXCLUDED.car_model,
+    car_license_plate = EXCLUDED.car_license_plate,
+    rental_start_date = EXCLUDED.rental_start_date,
+    rental_end_date = EXCLUDED.rental_end_date,
+    customer_email = EXCLUDED.customer_email,
+    customer_full_name = EXCLUDED.customer_full_name,
+    customer_user_id = EXCLUDED.customer_user_id,
+    description = EXCLUDED.description,
+    damage_location = EXCLUDED.damage_location,
+    severity = EXCLUDED.severity,
+    category = EXCLUDED.category,
+    status = EXCLUDED.status,
+    reported_by = EXCLUDED.reported_by,
+    reported_at = EXCLUDED.reported_at;

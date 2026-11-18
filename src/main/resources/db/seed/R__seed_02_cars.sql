@@ -11,7 +11,24 @@ INSERT INTO car_rental.car (
     'Gasoline', 'Manual', 'Hatchback', 'White', 85000, 5, 5,
     'https://images.unsplash.com/photo-1718629879998-ee8cfc09df39?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1718629879998-ee8cfc09df39?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -26,7 +43,24 @@ INSERT INTO car_rental.car (
     'Gasoline', 'Automatic', 'Hatchback', 'Orange', 55000, 5, 5,
     'https://images.unsplash.com/photo-1594502225401-a9eab8b405dd?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1594502225401-a9eab8b405dd?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -41,7 +75,24 @@ INSERT INTO car_rental.car (
     'Gasoline', 'Manual', 'Hatchback', 'Turquoise', 32000, 5, 5,
     'https://images.unsplash.com/photo-1609030429269-ca5b7a409310?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1609030429269-ca5b7a409310?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -56,7 +107,24 @@ INSERT INTO car_rental.car (
     'Hybrid', 'Automatic', 'Sedan', 'Blue', 62000, 4, 5,
     'https://images.unsplash.com/photo-1605515321331-46a63d31758c?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1605515321331-46a63d31758c?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -71,7 +139,24 @@ INSERT INTO car_rental.car (
     'Diesel', 'Manual', 'Hatchback', 'Blue', 78000, 5, 5,
     'https://images.unsplash.com/photo-1708849894321-2c9bc515df0e?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1708849894321-2c9bc515df0e?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -86,7 +171,24 @@ INSERT INTO car_rental.car (
     'Diesel', 'Manual', 'Sedan', 'White', 42000, 4, 5,
     'https://www.log.com.tr/wp-content/uploads/2023/01/2025-fiat-egea-tipo-suv-benzeri-bir-formda-olacak-copy-1000x562.jpg',
     'https://www.log.com.tr/wp-content/uploads/2023/01/2025-fiat-egea-tipo-suv-benzeri-bir-formda-olacak-copy-1000x562.jpg'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -101,7 +203,24 @@ INSERT INTO car_rental.car (
     'Gasoline', 'Automatic', 'Hatchback', 'Red', 52000, 5, 5,
     'https://images.unsplash.com/photo-1643142311721-c36cd233fb95?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1643142311721-c36cd233fb95?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -116,7 +235,24 @@ INSERT INTO car_rental.car (
     'Diesel', 'Manual', 'Hatchback', 'Black', 98000, 5, 5,
     'https://images.unsplash.com/photo-1757695526350-1a2db6ff8e02?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1757695526350-1a2db6ff8e02?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -131,7 +267,24 @@ INSERT INTO car_rental.car (
     'Gasoline', 'Manual', 'Hatchback', 'Yellow', 62000, 5, 5,
     'https://commons.wikimedia.org/wiki/Special:FilePath/SEAT_Leon_Cupra_002.jpg?width=800',
     'https://commons.wikimedia.org/wiki/Special:FilePath/SEAT_Leon_Cupra_002.jpg?width=800'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -146,7 +299,24 @@ INSERT INTO car_rental.car (
     'Diesel', 'Automatic', 'Hatchback', 'Gray', 48000, 5, 5,
     'https://images.unsplash.com/photo-1582639510494-c80b5de9f148?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1582639510494-c80b5de9f148?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -161,7 +331,24 @@ INSERT INTO car_rental.car (
     'Hybrid', 'Automatic', 'Sedan', 'Red', 28000, 4, 5,
     'https://www.thedrive.com/wp-content/uploads/2023/05/02/corollahatch-1-scaled.jpg?w=1200',
     'https://www.thedrive.com/wp-content/uploads/2023/05/02/corollahatch-1-scaled.jpg?w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -176,7 +363,24 @@ INSERT INTO car_rental.car (
     'Diesel', 'Automatic', 'Sedan', 'Brown', 38000, 4, 5,
     'https://images.unsplash.com/photo-1673822317394-6fd502a324e6?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1673822317394-6fd502a324e6?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -191,7 +395,24 @@ INSERT INTO car_rental.car (
     'Diesel', 'Automatic', 'SUV', 'Green', 35000, 5, 5,
     'https://images.unsplash.com/photo-1705624843697-4461f9dce482?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1705624843697-4461f9dce482?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -206,7 +427,24 @@ INSERT INTO car_rental.car (
     'Diesel', 'Automatic', 'SUV', 'Gray', 48000, 5, 5,
     'https://images.unsplash.com/photo-1688893287585-b1bc00e608fc?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1688893287585-b1bc00e608fc?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -221,7 +459,24 @@ INSERT INTO car_rental.car (
     'Diesel', 'Automatic', 'SUV', 'White', 55000, 5, 5,
     'https://images.unsplash.com/photo-1538940714252-fc70779afa46?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1538940714252-fc70779afa46?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -236,7 +491,24 @@ INSERT INTO car_rental.car (
     'Diesel', 'Automatic', 'Sedan', 'Black', 45000, 4, 5,
     'https://images.unsplash.com/photo-1639056067266-43a821cf0a1f?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1639056067266-43a821cf0a1f?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -251,7 +523,24 @@ INSERT INTO car_rental.car (
     'Diesel', 'Automatic', 'Sedan', 'Gray', 120000, 4, 5,
     'https://images.unsplash.com/photo-1710011115921-7e67a8e4b483?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1710011115921-7e67a8e4b483?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -266,7 +555,24 @@ INSERT INTO car_rental.car (
     'Gasoline', 'Automatic', 'Sedan', 'Silver', 25000, 4, 5,
     'https://www.sixt.com.tr/storage/cache/a4831ea1285880c2536797abe33a35a517ddeacf.webp',
     'https://www.sixt.com.tr/storage/cache/a4831ea1285880c2536797abe33a35a517ddeacf.webp'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -281,7 +587,24 @@ INSERT INTO car_rental.car (
     'Hybrid', 'Automatic', 'SUV', 'Navy', 28000, 5, 5,
     'https://images.unsplash.com/photo-1629897046038-371765238f26?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1629897046038-371765238f26?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;
 
 INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
@@ -296,4 +619,21 @@ INSERT INTO car_rental.car (
     'Electric', 'Automatic', 'Sedan', 'White', 12000, 4, 5,
     'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=1200',
     'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=400'
-) ON CONFLICT (license_plate) DO NOTHING;
+) ON CONFLICT (license_plate) DO UPDATE SET
+    brand = EXCLUDED.brand,
+    model = EXCLUDED.model,
+    production_year = EXCLUDED.production_year,
+    price = EXCLUDED.price,
+    currency_type = EXCLUDED.currency_type,
+    damage_price = EXCLUDED.damage_price,
+    car_status_type = EXCLUDED.car_status_type,
+    fuel_type = EXCLUDED.fuel_type,
+    transmission_type = EXCLUDED.transmission_type,
+    body_type = EXCLUDED.body_type,
+    color = EXCLUDED.color,
+    kilometer = EXCLUDED.kilometer,
+    doors = EXCLUDED.doors,
+    seats = EXCLUDED.seats,
+    image_url = EXCLUDED.image_url,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    update_time = EXCLUDED.update_time;

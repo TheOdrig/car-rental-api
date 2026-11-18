@@ -4,6 +4,7 @@ import com.akif.testsupport.TestcontainersConfiguration;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.core.io.ClassPathResource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -15,8 +16,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,6 +32,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FlywaySeedPolicyTest {
 
     private static final String SEED_LOCATION = "classpath:db/seed";
+    private static final List<String> SEED_FILES = List.of("R__seed_01_users.sql", "R__seed_02_cars.sql",
+            "R__seed_03_rentals.sql", "R__seed_04_payments.sql", "R__seed_05_damages.sql",
+            "R__seed_06_admin_data.sql");
 
     @Test
     @DisplayName("dev profile adds the seed location and no other profile does")
@@ -112,6 +120,55 @@ class FlywaySeedPolicyTest {
         assertThat(count(url, "SELECT COUNT(*) FROM car_rental.rentals")).isPositive();
         assertThat(count(url, "SELECT COUNT(*) FROM car_rental.payments")).isPositive();
         assertThat(flyway.migrate().migrationsExecuted).isZero();
+    }
+
+    @Test
+    @DisplayName("editing a seed file re-runs it without duplicating rows and replaces legacy rows")
+    void editedSeedsRerunWithoutDuplicates(@TempDir Path seedDirectory) throws Exception {
+        for (String name : SEED_FILES) {
+            Files.copy(new ClassPathResource("db/seed/" + name).getInputStream(), seedDirectory.resolve(name));
+        }
+        String url = createDatabase("edited_seed");
+        Flyway flyway = Flyway.configure()
+                .dataSource(url, user(), password())
+                .schemas("car_rental")
+                .locations("classpath:db/migration", "filesystem:" + seedDirectory)
+                .load();
+        flyway.migrate();
+        Map<String, Long> before = seedRowCounts(url);
+        execute(url, "INSERT INTO car_rental.rentals (create_time, update_time, is_deleted, version, user_id, car_id, "
+                + "car_brand, car_model, car_license_plate, user_email, user_full_name, start_date, end_date, days, "
+                + "currency, daily_price, total_price, status, late_return_status) "
+                + "SELECT NOW(), NOW(), FALSE, 0, u.id, c.id, 'Legacy', 'Row', c.license_plate, u.email, 'Legacy', "
+                + "'2024-01-01', '2024-01-03', 3, 'USD', 10, 30, 'RETURNED', 'ON_TIME' "
+                + "FROM car_rental.users u, car_rental.car c WHERE u.email = 'ahmet.yilmaz@example.com' "
+                + "AND c.license_plate = '34ABC123'");
+
+        for (String name : SEED_FILES) {
+            Files.writeString(seedDirectory.resolve(name),
+                    Files.readString(seedDirectory.resolve(name)) + "\nSELECT 1;\n");
+        }
+
+        assertThat(flyway.migrate().migrationsExecuted).isEqualTo(SEED_FILES.size());
+        assertThat(seedRowCounts(url)).isEqualTo(before);
+        assertThat(count(url, "SELECT COUNT(*) FROM car_rental.rentals WHERE car_brand = 'Legacy'")).isZero();
+        assertThat(flyway.migrate().migrationsExecuted).isZero();
+    }
+
+    private static Map<String, Long> seedRowCounts(String url) throws SQLException {
+        Map<String, Long> counts = new LinkedHashMap<>();
+        for (String table : List.of("users", "car", "rentals", "payments", "damage_reports", "admin_notes",
+                "penalty_waivers")) {
+            counts.put(table, count(url, "SELECT COUNT(*) FROM car_rental." + table));
+        }
+        return counts;
+    }
+
+    private static void execute(String url, String sql) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(url, user(), password());
+                Statement statement = connection.createStatement()) {
+            statement.execute(sql);
+        }
     }
 
     private static Properties load(String name) throws IOException {
