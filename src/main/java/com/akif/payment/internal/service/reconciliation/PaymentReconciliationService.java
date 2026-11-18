@@ -1,5 +1,7 @@
 package com.akif.payment.internal.service.reconciliation;
 
+import java.time.Clock;
+
 import com.akif.payment.internal.dto.Discrepancy;
 import com.akif.payment.internal.dto.ReconciliationReport;
 import com.akif.payment.internal.dto.StripePayment;
@@ -28,21 +30,23 @@ import java.util.Map;
 @Slf4j
 public class PaymentReconciliationService {
 
+    private final Clock clock;
+
     private final PaymentRepository paymentRepository;
 
     public ReconciliationReport runDailyReconciliation(LocalDate date) {
-        LocalDateTime startTimestamp = LocalDateTime.now();
+        LocalDateTime startTimestamp = LocalDateTime.now(clock);
         
         log.info("[AUDIT] Reconciliation: STARTED | Date: {} | Timestamp: {}", date, startTimestamp);
         
         try {
             List<Payment> dbPayments = fetchDatabasePayments(date);
             log.info("[AUDIT] Reconciliation: DATABASE_FETCH_COMPLETED | Date: {} | DB Payments Count: {} | Timestamp: {}",
-                    date, dbPayments.size(), LocalDateTime.now());
+                    date, dbPayments.size(), LocalDateTime.now(clock));
             
             List<StripePayment> stripePayments = fetchStripePayments(date);
             log.info("[AUDIT] Reconciliation: STRIPE_FETCH_COMPLETED | Date: {} | Stripe Payments Count: {} | Timestamp: {}",
-                    date, stripePayments.size(), LocalDateTime.now());
+                    date, stripePayments.size(), LocalDateTime.now(clock));
             
             List<Discrepancy> discrepancies = comparePayments(dbPayments, stripePayments);
             
@@ -52,29 +56,29 @@ public class PaymentReconciliationService {
                 stripePayments.size(),
                 discrepancies,
                 !discrepancies.isEmpty(),
-                LocalDateTime.now()
+                LocalDateTime.now(clock)
             );
             
             if (!discrepancies.isEmpty()) {
                 log.warn("[AUDIT] Reconciliation: DISCREPANCIES_FOUND | Date: {} | Total Discrepancies: {} | Timestamp: {}",
-                        date, discrepancies.size(), LocalDateTime.now());
+                        date, discrepancies.size(), LocalDateTime.now(clock));
                 
                 for (Discrepancy discrepancy : discrepancies) {
                     log.warn("[AUDIT] Reconciliation Discrepancy: {} | Payment ID: {} | Stripe Payment Intent ID: {} | DB Amount: {} | Stripe Amount: {} | DB Status: {} | Stripe Status: {} | Description: {} | Timestamp: {}",
                             discrepancy.type(), discrepancy.paymentId(), discrepancy.stripePaymentIntentId(),
                             discrepancy.databaseAmount(), discrepancy.stripeAmount(), discrepancy.databaseStatus(),
-                            discrepancy.stripeStatus(), discrepancy.description(), LocalDateTime.now());
+                            discrepancy.stripeStatus(), discrepancy.description(), LocalDateTime.now(clock));
                 }
             }
             
             log.info("[AUDIT] Reconciliation: COMPLETED | Date: {} | DB Payments: {} | Stripe Payments: {} | Discrepancies: {} | Has Discrepancies: {} | Duration: {}ms | Timestamp: {}",
                     date, dbPayments.size(), stripePayments.size(), discrepancies.size(), !discrepancies.isEmpty(),
-                    java.time.Duration.between(startTimestamp, LocalDateTime.now()).toMillis(), LocalDateTime.now());
+                    java.time.Duration.between(startTimestamp, LocalDateTime.now(clock)).toMillis(), LocalDateTime.now(clock));
             
             return report;
         } catch (Exception e) {
             log.error("[AUDIT] Reconciliation: FAILED | Date: {} | Error: {} | Timestamp: {}",
-                    date, e.getMessage(), LocalDateTime.now());
+                    date, e.getMessage(), LocalDateTime.now(clock));
             throw new ReconciliationException(date, e.getMessage(), e);
         }
     }
@@ -123,7 +127,7 @@ public class PaymentReconciliationService {
             
         } catch (StripeException e) {
             log.error("[AUDIT] Reconciliation: STRIPE_FETCH_FAILED | Date: {} | Stripe Error Code: {} | Error: {} | Timestamp: {}",
-                    date, e.getCode(), e.getMessage(), LocalDateTime.now());
+                    date, e.getCode(), e.getMessage(), LocalDateTime.now(clock));
             throw new ReconciliationException(date, "Failed to fetch Stripe payments", e);
         }
     }

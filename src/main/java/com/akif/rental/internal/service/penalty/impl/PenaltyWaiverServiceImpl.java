@@ -1,5 +1,7 @@
 package com.akif.rental.internal.service.penalty.impl;
 
+import java.time.Clock;
+
 import com.akif.payment.api.PaymentDto;
 import com.akif.rental.internal.exception.PenaltyWaiverException;
 import com.akif.rental.internal.exception.RentalNotFoundException;
@@ -25,6 +27,8 @@ import java.util.Optional;
 @Slf4j
 @Transactional(readOnly = true)
 public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
+
+    private final Clock clock;
 
     private final RentalRepository rentalRepository;
     private final PenaltyWaiverRepository penaltyWaiverRepository;
@@ -60,7 +64,7 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
                 .remainingPenalty(remainingPenalty)
                 .reason(reason)
                 .adminId(adminId)
-                .waivedAt(LocalDateTime.now())
+                .waivedAt(LocalDateTime.now(clock))
                 .refundInitiated(false)
                 .isDeleted(false)
                 .build();

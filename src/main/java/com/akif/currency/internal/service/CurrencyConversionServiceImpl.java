@@ -1,5 +1,7 @@
 package com.akif.currency.internal.service;
 
+import java.time.Clock;
+
 import com.akif.currency.api.ConversionResult;
 import com.akif.currency.api.ExchangeRate;
 import com.akif.currency.internal.dto.exchangeRate.ExchangeRateResponse;
@@ -21,6 +23,8 @@ import java.time.LocalDateTime;
 @Slf4j
 public class CurrencyConversionServiceImpl implements CurrencyConversionService {
 
+    private final Clock clock;
+
     private static final CurrencyType BASE_CURRENCY = CurrencyType.USD;
 
     private final ExchangeRateCacheService cacheService;
@@ -36,7 +40,7 @@ public class CurrencyConversionServiceImpl implements CurrencyConversionService 
                     amount,
                     to,
                     BigDecimal.ONE,
-                    LocalDateTime.now(),
+                    LocalDateTime.now(clock),
                     RateSource.LIVE
             );
         }
@@ -63,7 +67,7 @@ public class CurrencyConversionServiceImpl implements CurrencyConversionService 
         log.debug("Getting exchange rate from {} to {}", from, to);
 
         if (from.equals(to)) {
-            return new ExchangeRate(from, to, BigDecimal.ONE, LocalDateTime.now(), RateSource.LIVE);
+            return new ExchangeRate(from, to, BigDecimal.ONE, LocalDateTime.now(clock), RateSource.LIVE);
         }
 
         ExchangeRateResponse ratesResponse = cacheService.getCachedRates(from);
@@ -72,7 +76,7 @@ public class CurrencyConversionServiceImpl implements CurrencyConversionService 
         if (rate == null) {
             log.warn("Rate not found for {} -> {}, using cross-rate calculation", from, to);
             rate = calculateCrossRate(from, to);
-            return new ExchangeRate(from, to, rate, LocalDateTime.now(), ratesResponse.source());
+            return new ExchangeRate(from, to, rate, LocalDateTime.now(clock), ratesResponse.source());
         }
 
         return new ExchangeRate(from, to, rate, ratesResponse.timestamp(), ratesResponse.source());

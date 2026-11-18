@@ -1,5 +1,7 @@
 package com.akif.payment.internal.webhook;
 
+import java.time.Clock;
+
 import com.akif.payment.internal.config.StripeConfig;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.domain.enums.WebhookEventStatus;
@@ -26,13 +28,15 @@ import java.util.Optional;
 @Slf4j
 public class StripeWebhookHandler {
 
+    private final Clock clock;
+
     private final StripeConfig stripeConfig;
     private final PaymentRepository paymentRepository;
     private final WebhookEventRepository webhookEventRepository;
 
     @Transactional
     public void handleWebhookEvent(String payload, String signature) {
-        LocalDateTime receivedTimestamp = LocalDateTime.now();
+        LocalDateTime receivedTimestamp = LocalDateTime.now(clock);
         
         log.info("[AUDIT] Webhook Event: RECEIVED | Timestamp: {}", receivedTimestamp);
 
@@ -40,10 +44,10 @@ public class StripeWebhookHandler {
         try {
             event = Webhook.constructEvent(payload, signature, stripeConfig.getWebhookSecret());
             log.info("[AUDIT] Webhook Event: SIGNATURE_VERIFIED | Event ID: {} | Event Type: {} | Timestamp: {}",
-                    event.getId(), event.getType(), LocalDateTime.now());
+                    event.getId(), event.getType(), LocalDateTime.now(clock));
         } catch (SignatureVerificationException e) {
             log.error("[AUDIT] Webhook Event: SIGNATURE_VERIFICATION_FAILED | Error: {} | Timestamp: {}",
-                    e.getMessage(), LocalDateTime.now());
+                    e.getMessage(), LocalDateTime.now(clock));
             throw new WebhookSignatureException("unknown", e);
         }
 
@@ -51,11 +55,11 @@ public class StripeWebhookHandler {
         String eventType = event.getType();
 
         log.info("[AUDIT] Webhook Event: PROCESSING_STARTED | Event ID: {} | Event Type: {} | Timestamp: {}",
-                eventId, eventType, LocalDateTime.now());
+                eventId, eventType, LocalDateTime.now(clock));
 
         if (isEventAlreadyProcessed(eventId)) {
             log.info("[AUDIT] Webhook Event: DUPLICATE_DETECTED | Event ID: {} | Event Type: {} | Processing Result: SKIPPED | Timestamp: {}",
-                    eventId, eventType, LocalDateTime.now());
+                    eventId, eventType, LocalDateTime.now(clock));
             return;
         }
 
@@ -95,15 +99,15 @@ public class StripeWebhookHandler {
             }
 
             webhookEvent.setStatus(WebhookEventStatus.PROCESSED);
-            webhookEvent.setProcessedAt(LocalDateTime.now());
+            webhookEvent.setProcessedAt(LocalDateTime.now(clock));
             webhookEventRepository.save(webhookEvent);
 
             log.info("[AUDIT] Webhook Event: PROCESSING_COMPLETED | Event ID: {} | Event Type: {} | Processing Result: SUCCESS | Timestamp: {}",
-                    eventId, eventType, LocalDateTime.now());
+                    eventId, eventType, LocalDateTime.now(clock));
 
         } catch (Exception e) {
             log.error("[AUDIT] Webhook Event: PROCESSING_FAILED | Event ID: {} | Event Type: {} | Processing Result: FAILED | Error: {} | Timestamp: {}",
-                    eventId, eventType, e.getMessage(), LocalDateTime.now());
+                    eventId, eventType, e.getMessage(), LocalDateTime.now(clock));
             webhookEvent.setStatus(WebhookEventStatus.FAILED);
             webhookEvent.setErrorMessage(e.getMessage());
             webhookEventRepository.save(webhookEvent);
@@ -116,7 +120,7 @@ public class StripeWebhookHandler {
         String paymentIntentId = session.getPaymentIntent();
         
         log.info("[AUDIT] Webhook Event: checkout.session.completed | Session ID: {} | Payment Intent ID: {} | Processing: STARTED | Timestamp: {}",
-                sessionId, paymentIntentId, LocalDateTime.now());
+                sessionId, paymentIntentId, LocalDateTime.now(clock));
 
         Payment payment = findPaymentBySessionId(sessionId);
         Long paymentId = payment.getId();
@@ -129,14 +133,14 @@ public class StripeWebhookHandler {
         paymentRepository.save(payment);
         
         log.info("[AUDIT] Webhook Event: checkout.session.completed | Session ID: {} | Payment ID: {} | Rental ID: {} | Status Updated: CAPTURED | Payment Intent ID: {} | Timestamp: {}",
-                sessionId, paymentId, rentalId, paymentIntentId, LocalDateTime.now());
+                sessionId, paymentId, rentalId, paymentIntentId, LocalDateTime.now(clock));
     }
 
     public void processCheckoutSessionExpired(Session session) {
         String sessionId = session.getId();
         
         log.info("[AUDIT] Webhook Event: checkout.session.expired | Session ID: {} | Processing: STARTED | Timestamp: {}",
-                sessionId, LocalDateTime.now());
+                sessionId, LocalDateTime.now(clock));
 
         Payment payment = findPaymentBySessionId(sessionId);
         Long paymentId = payment.getId();
@@ -148,14 +152,14 @@ public class StripeWebhookHandler {
         paymentRepository.save(payment);
         
         log.info("[AUDIT] Webhook Event: checkout.session.expired | Session ID: {} | Payment ID: {} | Rental ID: {} | Status Updated: FAILED | Failure Reason: Checkout session expired | Timestamp: {}",
-                sessionId, paymentId, rentalId, LocalDateTime.now());
+                sessionId, paymentId, rentalId, LocalDateTime.now(clock));
     }
 
     public void processPaymentIntentFailed(PaymentIntent paymentIntent) {
         String paymentIntentId = paymentIntent.getId();
         
         log.info("[AUDIT] Webhook Event: payment_intent.payment_failed | Payment Intent ID: {} | Processing: STARTED | Timestamp: {}",
-                paymentIntentId, LocalDateTime.now());
+                paymentIntentId, LocalDateTime.now(clock));
 
         Payment payment = findPaymentByPaymentIntentId(paymentIntentId);
         Long paymentId = payment.getId();
@@ -174,7 +178,7 @@ public class StripeWebhookHandler {
         paymentRepository.save(payment);
         
         log.info("[AUDIT] Webhook Event: payment_intent.payment_failed | Payment Intent ID: {} | Payment ID: {} | Rental ID: {} | Status Updated: FAILED | Stripe Error Code: {} | Failure Reason: {} | Timestamp: {}",
-                paymentIntentId, paymentId, rentalId, stripeErrorCode, failureReason, LocalDateTime.now());
+                paymentIntentId, paymentId, rentalId, stripeErrorCode, failureReason, LocalDateTime.now(clock));
     }
 
     public boolean isEventAlreadyProcessed(String eventId) {

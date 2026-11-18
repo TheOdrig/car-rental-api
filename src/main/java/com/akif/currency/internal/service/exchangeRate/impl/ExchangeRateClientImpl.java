@@ -13,6 +13,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -27,10 +28,14 @@ public class ExchangeRateClientImpl implements ExchangeRateClient {
 
     private final String apiKey;
 
-    public ExchangeRateClientImpl(RestClient exchangeRateRestClient, 
+    private final Clock clock;
+
+    public ExchangeRateClientImpl(RestClient exchangeRateRestClient,
+                                   Clock clock,
                                    ExchangeRateClientConfig config) {
         this.exchangeRateRestClient = exchangeRateRestClient;
         this.apiKey = config.getApiKey();
+        this.clock = clock;
     }
 
     @Override
@@ -76,7 +81,7 @@ public class ExchangeRateClientImpl implements ExchangeRateClient {
                 ? LocalDateTime.ofInstant(
                         Instant.ofEpochSecond(apiResponse.timeLastUpdated()),
                         ZoneId.systemDefault())
-                : LocalDateTime.now();
+                : LocalDateTime.now(clock);
 
         return new ExchangeRateResponse(
                 baseCurrency,

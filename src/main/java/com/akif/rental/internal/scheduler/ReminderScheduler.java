@@ -1,5 +1,7 @@
 package com.akif.rental.internal.scheduler;
 
+import java.time.Clock;
+
 import com.akif.rental.domain.enums.RentalStatus;
 import com.akif.rental.api.PickupReminderEvent;
 import com.akif.rental.api.ReturnReminderEvent;
@@ -23,6 +25,8 @@ import java.time.LocalDateTime;
 @Slf4j
 public class ReminderScheduler {
 
+    private final Clock clock;
+
     private final RentalRepository rentalRepository;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -31,7 +35,7 @@ public class ReminderScheduler {
     public void sendPickupReminders() {
         log.info("Scheduled pickup reminder job started");
         try {
-            LocalDate tomorrow = LocalDate.now().plusDays(1);
+            LocalDate tomorrow = LocalDate.now(clock).plusDays(1);
             int pageNumber = 0;
             int pageSize = 50;
             Page<Rental> rentalsPage;
@@ -71,7 +75,7 @@ public class ReminderScheduler {
     public void sendReturnReminders() {
         log.info("Scheduled return reminder job started");
         try {
-            LocalDate today = LocalDate.now();
+            LocalDate today = LocalDate.now(clock);
             int pageNumber = 0;
             int pageSize = 50;
             Page<Rental> rentalsPage;
@@ -111,7 +115,7 @@ public class ReminderScheduler {
                 this,
                 rental.getId(),
                 rental.getUserEmail(),
-                LocalDateTime.now(),
+                LocalDateTime.now(clock),
                 rental.getStartDate(),
                 "Pickup Location", // TODO: Add pickup location to Rental entity if needed
                 rental.getCarBrand(),
@@ -125,7 +129,7 @@ public class ReminderScheduler {
                 this,
                 rental.getId(),
                 rental.getUserEmail(),
-                LocalDateTime.now(),
+                LocalDateTime.now(clock),
                 rental.getEndDate(),
                 "Return Location", // TODO: Add return location to Rental entity if needed
                 rental.getDailyPrice()

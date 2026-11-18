@@ -1,5 +1,7 @@
 package com.akif.rental.internal.service;
 
+import java.time.Clock;
+
 import com.akif.car.api.CarResponse;
 import com.akif.car.domain.enums.CarStatusType;
 import com.akif.car.internal.exception.CarNotAvailableException;
@@ -58,6 +60,8 @@ import java.time.temporal.ChronoUnit;
 @Transactional(readOnly = true)
 public class RentalServiceImpl implements RentalService {
 
+    private final Clock clock;
+
     private static final String STUB_PAYMENT_METHOD = "STUB_GATEWAY";
 
     private final RentalRepository rentalRepository;
@@ -93,7 +97,7 @@ public class RentalServiceImpl implements RentalService {
                 request.carId(),
                 request.startDate(),
                 request.endDate(),
-                LocalDate.now());
+                LocalDate.now(clock));
 
         int days = pricingResult.rentalDays();
         BigDecimal dailyPrice = pricingResult.effectiveDailyPrice();
@@ -157,7 +161,7 @@ public class RentalServiceImpl implements RentalService {
     }
 
     private void validateRentalDates(LocalDate startDate, LocalDate endDate) {
-        if (startDate.isBefore(LocalDate.now())) {
+        if (startDate.isBefore(LocalDate.now(clock))) {
             throw new RentalValidationException("Start date cannot be in the past");
         }
         if (endDate.isBefore(startDate)) {
@@ -231,7 +235,7 @@ public class RentalServiceImpl implements RentalService {
                 this,
                 updatedRental.getId(),
                 updatedRental.getUserEmail(),
-                LocalDateTime.now(),
+                LocalDateTime.now(clock),
                 updatedRental.getCarBrand(),
                 updatedRental.getCarModel(),
                 updatedRental.getStartDate(),
@@ -295,7 +299,7 @@ public class RentalServiceImpl implements RentalService {
                 savedPayment.amount(),
                 savedPayment.currency(),
                 savedPayment.transactionId(),
-                LocalDateTime.now());
+                LocalDateTime.now(clock));
         eventPublisher.publishEvent(event);
         log.info("Published PaymentCapturedEvent for payment: {}, rental: {}", savedPayment.id(),
                 updatedRental.getId());
@@ -317,7 +321,7 @@ public class RentalServiceImpl implements RentalService {
                     RentalStatus.IN_USE.name());
         }
 
-        LocalDateTime actualReturnTime = LocalDateTime.now();
+        LocalDateTime actualReturnTime = LocalDateTime.now(clock);
         rental.setActualReturnTime(actualReturnTime);
 
         if (rental.getLateReturnStatus() != null &&
@@ -381,8 +385,8 @@ public class RentalServiceImpl implements RentalService {
                 this,
                 updatedRental.getId(),
                 updatedRental.getUserEmail(),
-                LocalDateTime.now(),
-                LocalDateTime.now(),
+                LocalDateTime.now(clock),
+                LocalDateTime.now(clock),
                 "Cancelled by " + (currentUser.isAdmin() ? "admin" : "customer") + ". Reason: " + reason,
                 refundInfo.refundProcessed(),
                 refundInfo.refundAmount(),
@@ -426,7 +430,7 @@ public class RentalServiceImpl implements RentalService {
             return new RefundInfo(false, BigDecimal.ZERO, null);
         }
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
         LocalDate endDate = rental.getEndDate();
         long remainingDays = ChronoUnit.DAYS.between(today, endDate);
 
@@ -591,7 +595,7 @@ public class RentalServiceImpl implements RentalService {
                 this,
                 rental.getId(),
                 rental.getUserEmail(),
-                LocalDateTime.now(),
+                LocalDateTime.now(clock),
                 rental.getCarBrand(),
                 rental.getCarModel(),
                 rental.getCarLicensePlate(),
@@ -652,17 +656,17 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     public int countTodaysPickups() {
-        return rentalRepository.countTodaysPickups(LocalDate.now());
+        return rentalRepository.countTodaysPickups(LocalDate.now(clock));
     }
 
     @Override
     public int countTodaysReturns() {
-        return rentalRepository.countTodaysReturns(LocalDate.now());
+        return rentalRepository.countTodaysReturns(LocalDate.now(clock));
     }
 
     @Override
     public int countOverdueRentals() {
-        return rentalRepository.countOverdueRentals(LocalDate.now());
+        return rentalRepository.countOverdueRentals(LocalDate.now(clock));
     }
 
     @Override
@@ -673,19 +677,19 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     public Page<RentalResponse> findTodaysPickups(Pageable pageable) {
-        Page<Rental> rentals = rentalRepository.findTodaysPickups(LocalDate.now(), pageable);
+        Page<Rental> rentals = rentalRepository.findTodaysPickups(LocalDate.now(clock), pageable);
         return rentals.map(rentalMapper::toDto);
     }
 
     @Override
     public Page<RentalResponse> findTodaysReturns(Pageable pageable) {
-        Page<Rental> rentals = rentalRepository.findTodaysReturns(LocalDate.now(), pageable);
+        Page<Rental> rentals = rentalRepository.findTodaysReturns(LocalDate.now(clock), pageable);
         return rentals.map(rentalMapper::toDto);
     }
 
     @Override
     public Page<RentalResponse> findOverdueRentals(Pageable pageable) {
-        Page<Rental> rentals = rentalRepository.findOverdueRentals(LocalDate.now(), pageable);
+        Page<Rental> rentals = rentalRepository.findOverdueRentals(LocalDate.now(clock), pageable);
         return rentals.map(rentalMapper::toDto);
     }
 

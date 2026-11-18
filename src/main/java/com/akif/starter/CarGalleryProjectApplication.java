@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ComponentScan(basePackages = { "com.akif" })
 @EnableJpaRepositories(basePackages = { "com.akif" })
 @EntityScan(basePackages = { "com.akif" })
-@EnableJpaAuditing
+@EnableJpaAuditing(dateTimeProviderRef = "auditingDateTimeProvider")
 @EnableCaching
 @EnableScheduling
 @SpringBootApplication

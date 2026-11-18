@@ -1,5 +1,7 @@
 package com.akif.car.web;
 
+import java.time.Clock;
+
 import com.akif.car.internal.dto.availability.AvailabilitySearchRequest;
 import com.akif.car.internal.dto.availability.AvailabilitySearchResponse;
 import com.akif.car.internal.dto.availability.CarAvailabilityCalendarDto;
@@ -30,6 +32,8 @@ import java.util.List;
 @Slf4j
 @Tag(name = "Availability Search", description = "Car availability search and calendar operations")
 public class AvailabilitySearchController {
+
+    private final Clock clock;
 
     private final CarAvailabilityService carAvailabilityService;
     private final SimilarCarService similarCarService;
@@ -75,7 +79,7 @@ public class AvailabilitySearchController {
         
         YearMonth targetMonth = month != null 
             ? YearMonth.parse(month, DateTimeFormatter.ofPattern("yyyy-MM"))
-            : YearMonth.now();
+            : YearMonth.now(clock);
         
         log.debug("GET /api/cars/{}/availability/calendar - Getting calendar for month: {}", id, targetMonth);
         
@@ -108,10 +112,10 @@ public class AvailabilitySearchController {
         
         LocalDate start = startDate != null 
             ? LocalDate.parse(startDate) 
-            : LocalDate.now();
+            : LocalDate.now(clock);
         LocalDate end = endDate != null 
             ? LocalDate.parse(endDate) 
-            : LocalDate.now().plusDays(30);
+            : LocalDate.now(clock).plusDays(30);
 
         int effectiveLimit = Math.min(limit, 10);
         

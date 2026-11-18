@@ -1,5 +1,7 @@
 package com.akif.car.internal.service;
 
+import java.time.Clock;
+
 import com.akif.car.api.CarDto;
 import com.akif.car.api.CarService;
 import com.akif.car.api.FilterOptionsResponse;
@@ -40,6 +42,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(readOnly = true)
 public class CarServiceImpl implements CarService {
+
+    private final Clock clock;
 
     private final CarRepository carRepository;
     private final CarMapper carMapper;
@@ -99,7 +103,7 @@ public class CarServiceImpl implements CarService {
         checkVinNumberUniqueness(carRequest.getVinNumber());
 
         Car car = carMapper.toEntity(carRequest);
-        car.setCreateTime(LocalDateTime.now());
+        car.setCreateTime(LocalDateTime.now(clock));
         car.setIsDeleted(false);
         car.setViewCount(0L);
         car.setLikeCount(0L);
@@ -136,7 +140,7 @@ public class CarServiceImpl implements CarService {
         }
 
         carMapper.updateEntity(carRequest, existingCar);
-        existingCar.setUpdateTime(LocalDateTime.now());
+        existingCar.setUpdateTime(LocalDateTime.now(clock));
 
         Car updatedCar = carRepository.save(existingCar);
         CarResponse result = carMapper.toDto(updatedCar);
@@ -176,7 +180,7 @@ public class CarServiceImpl implements CarService {
 
         Car car = findCarById(id);
         car.softDelete();
-        car.setUpdateTime(LocalDateTime.now());
+        car.setUpdateTime(LocalDateTime.now(clock));
 
         carRepository.save(car);
         log.info("Successfully soft deleted car: ID={}", id);
@@ -195,7 +199,7 @@ public class CarServiceImpl implements CarService {
 
         Car car = findCarById(id);
         car.restore();
-        car.setUpdateTime(LocalDateTime.now());
+        car.setUpdateTime(LocalDateTime.now(clock));
 
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
@@ -322,7 +326,7 @@ public class CarServiceImpl implements CarService {
     public Page<CarResponse> getNewCars(Pageable pageable) {
         log.debug("Getting new cars");
 
-        LocalDate oneYearAgo = LocalDate.now().minusYears(1);
+        LocalDate oneYearAgo = LocalDate.now(clock).minusYears(1);
         Page<Car> cars = carRepository.findByProductionYearGreaterThanEqualAndIsDeletedFalse(oneYearAgo.getYear(),
                 pageable);
         Page<CarResponse> result = cars.map(carMapper::toDto);
@@ -392,7 +396,7 @@ public class CarServiceImpl implements CarService {
         }
 
         car.markAsSold();
-        car.setUpdateTime(LocalDateTime.now());
+        car.setUpdateTime(LocalDateTime.now(clock));
 
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
@@ -420,7 +424,7 @@ public class CarServiceImpl implements CarService {
         }
 
         car.markAsReserved();
-        car.setUpdateTime(LocalDateTime.now());
+        car.setUpdateTime(LocalDateTime.now(clock));
 
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
@@ -449,7 +453,7 @@ public class CarServiceImpl implements CarService {
         }
 
         car.markAsAvailable();
-        car.setUpdateTime(LocalDateTime.now());
+        car.setUpdateTime(LocalDateTime.now(clock));
 
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
@@ -479,7 +483,7 @@ public class CarServiceImpl implements CarService {
         }
 
         car.markAsAvailable();
-        car.setUpdateTime(LocalDateTime.now());
+        car.setUpdateTime(LocalDateTime.now(clock));
 
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
@@ -502,7 +506,7 @@ public class CarServiceImpl implements CarService {
 
         Car car = findCarById(id);
         car.markAsMaintenance();
-        car.setUpdateTime(LocalDateTime.now());
+        car.setUpdateTime(LocalDateTime.now(clock));
 
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
@@ -525,7 +529,7 @@ public class CarServiceImpl implements CarService {
 
         Car car = findCarById(id);
         car.markAsAvailable();
-        car.setUpdateTime(LocalDateTime.now());
+        car.setUpdateTime(LocalDateTime.now(clock));
 
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
@@ -554,7 +558,7 @@ public class CarServiceImpl implements CarService {
         validateStatusTransition(car.getCarStatusType(), newStatus);
 
         car.setCarStatusType(newStatus);
-        car.setUpdateTime(LocalDateTime.now());
+        car.setUpdateTime(LocalDateTime.now(clock));
 
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
@@ -575,7 +579,7 @@ public class CarServiceImpl implements CarService {
         car.setPrice(priceUpdateRequest.price());
         car.setCurrencyType(priceUpdateRequest.currencyType());
         car.setDamagePrice(priceUpdateRequest.damagePrice());
-        car.setUpdateTime(LocalDateTime.now());
+        car.setUpdateTime(LocalDateTime.now(clock));
 
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
@@ -762,7 +766,7 @@ public class CarServiceImpl implements CarService {
             errors.add("Car status type is required");
         }
 
-        if (carRequest.getProductionYear() != null && carRequest.getProductionYear() > LocalDate.now().getYear()) {
+        if (carRequest.getProductionYear() != null && carRequest.getProductionYear() > LocalDate.now(clock).getYear()) {
             errors.add("Production year cannot be in the future");
         }
 

@@ -1,5 +1,7 @@
 package com.akif.payment.internal.service;
 
+import java.time.Clock;
+
 import com.akif.payment.api.CreatePaymentRequest;
 import com.akif.payment.api.PaymentDto;
 import com.akif.payment.api.PaymentService;
@@ -27,6 +29,8 @@ import java.util.*;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 class PaymentServiceImpl implements PaymentService {
+
+    private final Clock clock;
 
     private final PaymentGateway paymentGateway;
     private final PaymentRepository paymentRepository;
@@ -256,7 +260,7 @@ class PaymentServiceImpl implements PaymentService {
 
     @Override
     public List<DailyRevenueProjection> getDailyRevenue(int days) {
-        LocalDateTime startDate = LocalDateTime.now().minusDays(days);
+        LocalDateTime startDate = LocalDateTime.now(clock).minusDays(days);
         List<Payment> payments = paymentRepository.findByStatusAndCreateTimeAfter(
                 PaymentStatus.CAPTURED, startDate);
 
@@ -277,7 +281,7 @@ class PaymentServiceImpl implements PaymentService {
 
     @Override
     public List<MonthlyRevenueProjection> getMonthlyRevenue(int months) {
-        LocalDateTime startDate = LocalDateTime.now().minusMonths(months);
+        LocalDateTime startDate = LocalDateTime.now(clock).minusMonths(months);
         List<Payment> payments = paymentRepository.findByStatusAndCreateTimeAfter(
                 PaymentStatus.CAPTURED, startDate);
 

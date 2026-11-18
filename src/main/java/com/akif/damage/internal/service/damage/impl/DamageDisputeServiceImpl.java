@@ -1,5 +1,7 @@
 package com.akif.damage.internal.service.damage.impl;
 
+import java.time.Clock;
+
 import com.akif.auth.api.AuthService;
 import com.akif.auth.api.UserDto;
 import com.akif.damage.api.DamageDisputedEvent;
@@ -30,6 +32,8 @@ import java.time.LocalDateTime;
 @Slf4j
 @Transactional(readOnly = true)
 public class DamageDisputeServiceImpl implements DamageDisputeService {
+
+    private final Clock clock;
 
     private final DamageReportRepository damageReportRepository;
     private final ApplicationEventPublisher eventPublisher;
@@ -62,7 +66,7 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
         damageReport.setDisputeReason(request.reason());
         damageReport.setDisputeComments(request.comments());
         damageReport.setDisputedBy(user.id());
-        damageReport.setDisputedAt(LocalDateTime.now());
+        damageReport.setDisputedAt(LocalDateTime.now(clock));
         damageReport.updateStatus(DamageStatus.DISPUTED);
         damageReport = damageReportRepository.save(damageReport);
 
@@ -104,7 +108,7 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
         damageReport.setRepairCostEstimate(resolution.adjustedRepairCost());
         damageReport.setResolutionNotes(resolution.resolutionNotes());
         damageReport.setResolvedBy(user.id());
-        damageReport.setResolvedAt(LocalDateTime.now());
+        damageReport.setResolvedAt(LocalDateTime.now(clock));
         damageReport.updateStatus(DamageStatus.RESOLVED);
         damageReport = damageReportRepository.save(damageReport);
 

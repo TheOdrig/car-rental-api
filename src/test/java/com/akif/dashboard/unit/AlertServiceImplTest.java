@@ -23,7 +23,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import java.time.Clock;
 import org.mockito.InjectMocks;
+import org.mockito.Spy;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -64,6 +66,9 @@ class AlertServiceImplTest {
 
     @Mock
     private PaymentService paymentService;
+
+    @Spy
+    private Clock clock = Clock.systemDefaultZone();
 
     @InjectMocks
     private AlertServiceImpl alertService;
@@ -241,7 +246,7 @@ class AlertServiceImplTest {
         @Test
         @DisplayName("Should return existing alert when already acknowledged")
         void shouldReturnExistingAlertWhenAlreadyAcknowledged() {
-            testAlert.acknowledge("previousAdmin");
+            testAlert.acknowledge("previousAdmin", LocalDateTime.now());
             when(alertRepository.findById(1L)).thenReturn(Optional.of(testAlert));
             when(dashboardMapper.toAlertDto(testAlert)).thenReturn(testAlertDto);
 

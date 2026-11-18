@@ -1,5 +1,7 @@
 package com.akif.payment.internal.scheduler;
 
+import java.time.Clock;
+
 import com.akif.payment.internal.dto.Discrepancy;
 import com.akif.payment.internal.dto.ReconciliationReport;
 import com.akif.payment.internal.service.reconciliation.PaymentReconciliationService;
@@ -17,11 +19,13 @@ import java.time.LocalDate;
 @Profile("prod")
 public class ReconciliationScheduler {
 
+    private final Clock clock;
+
     private final PaymentReconciliationService reconciliationService;
 
     @Scheduled(cron = "0 0 2 * * *")
     public void runDailyReconciliation() {
-        LocalDate previousDay = LocalDate.now().minusDays(1);
+        LocalDate previousDay = LocalDate.now(clock).minusDays(1);
         log.info("Starting scheduled reconciliation for date: {}", previousDay);
 
         try {

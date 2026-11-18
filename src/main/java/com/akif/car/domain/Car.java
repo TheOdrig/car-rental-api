@@ -157,19 +157,19 @@ public class Car extends BaseEntity {
         return currencyType.formatAmountWithSeparators(price);
     }
 
-    public int getAge() {
+    public int ageAt(LocalDate today) {
         if (productionYear == null) {
             return 0;
         }
-        return LocalDate.now().getYear() - productionYear;
+        return today.getYear() - productionYear;
     }
 
-    public boolean isNew() {
-        return getAge() < 1;
+    public boolean isNewAt(LocalDate today) {
+        return ageAt(today) < 1;
     }
 
-    public boolean isOld() {
-        return getAge() > 10;
+    public boolean isOldAt(LocalDate today) {
+        return ageAt(today) > 10;
     }
 
     public String getFullName() {
@@ -200,29 +200,29 @@ public class Car extends BaseEntity {
         return price.add(damagePrice);
     }
 
-    public boolean needsService() {
+    public boolean needsServiceOn(LocalDate today) {
         if (nextServiceDate == null) {
             return false;
         }
-        return LocalDate.now().isAfter(nextServiceDate);
+        return today.isAfter(nextServiceDate);
     }
 
-    public boolean isInsuranceExpired() {
+    public boolean isInsuranceExpiredOn(LocalDate today) {
         if (insuranceExpiryDate == null) {
             return false;
         }
-        return LocalDate.now().isAfter(insuranceExpiryDate);
+        return today.isAfter(insuranceExpiryDate);
     }
 
-    public boolean isInspectionExpired() {
+    public boolean isInspectionExpiredOn(LocalDate today) {
         if (inspectionExpiryDate == null) {
             return false;
         }
-        return LocalDate.now().isAfter(inspectionExpiryDate);
+        return today.isAfter(inspectionExpiryDate);
     }
 
-    public boolean hasExpiredDocuments() {
-        return isInsuranceExpired() || isInspectionExpired();
+    public boolean hasExpiredDocumentsOn(LocalDate today) {
+        return isInsuranceExpiredOn(today) || isInspectionExpiredOn(today);
     }
 
 

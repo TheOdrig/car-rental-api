@@ -1,5 +1,7 @@
 package com.akif.car.web;
 
+import java.time.Clock;
+
 import com.akif.car.internal.dto.response.PricingResponse;
 import com.akif.car.internal.dto.pricing.PricingRequest;
 import com.akif.car.internal.service.pricing.DynamicPricingService;
@@ -25,6 +27,8 @@ import java.util.Map;
 @Tag(name = "Pricing", description = "Dynamic pricing management endpoints")
 public class PricingController {
 
+    private final Clock clock;
+
     private final DynamicPricingService dynamicPricingService;
 
     @PostMapping("/calculate")
@@ -38,7 +42,7 @@ public class PricingController {
             request.carId(),
             request.startDate(),
             request.endDate(),
-            LocalDate.now()
+            LocalDate.now(clock)
         );
 
         PricingResponse response = PricingResponse.fromPricingResult(result);

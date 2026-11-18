@@ -1,5 +1,7 @@
 package com.akif.currency.internal.service.exchangeRate.impl;
 
+import java.time.Clock;
+
 import com.akif.shared.config.CacheConfig;
 import com.akif.currency.internal.config.FallbackRatesConfig;
 import com.akif.currency.internal.dto.exchangeRate.ExchangeRateResponse;
@@ -24,6 +26,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class ExchangeRateCacheServiceImpl implements ExchangeRateCacheService {
+
+    private final Clock clock;
 
     private static final CurrencyType BASE_CURRENCY = CurrencyType.USD;
 
@@ -72,6 +76,6 @@ public class ExchangeRateCacheServiceImpl implements ExchangeRateCacheService {
             }
         }
 
-        return new ExchangeRateResponse(baseCurrency, LocalDateTime.now(), rates, RateSource.FALLBACK);
+        return new ExchangeRateResponse(baseCurrency, LocalDateTime.now(clock), rates, RateSource.FALLBACK);
     }
 }

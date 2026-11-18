@@ -1,5 +1,7 @@
 package com.akif.damage.internal.service;
 
+import java.time.Clock;
+
 import com.akif.damage.api.DamageService;
 import com.akif.damage.api.DamageReportDto;
 import com.akif.damage.api.UserDamageStatisticsDto;
@@ -22,6 +24,8 @@ import java.util.List;
 @Slf4j
 @Transactional(readOnly = true)
 public class DamageServiceImpl implements DamageService {
+
+    private final Clock clock;
 
     private final DamageReportRepository damageReportRepository;
     private final DamageMapper damageMapper;
@@ -56,7 +60,7 @@ public class DamageServiceImpl implements DamageService {
 
     @Override
     public int countUnresolvedDisputesOlderThan(int days) {
-        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(days);
+        LocalDateTime cutoffDate = LocalDateTime.now(clock).minusDays(days);
         return damageReportRepository.countUnresolvedDisputesOlderThan(cutoffDate);
     }
 

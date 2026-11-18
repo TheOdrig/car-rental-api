@@ -61,9 +61,9 @@ public class Alert extends BaseEntity {
     @Column(name = "acknowledged_by", length = 100)
     private String acknowledgedBy;
 
-    public void acknowledge(String adminUsername) {
+    public void acknowledge(String adminUsername, LocalDateTime at) {
         this.acknowledged = true;
-        this.acknowledgedAt = LocalDateTime.now();
+        this.acknowledgedAt = at;
         this.acknowledgedBy = adminUsername;
     }
 

@@ -1,5 +1,7 @@
 package com.akif.rental.internal.service.detection.impl;
 
+import java.time.Clock;
+
 import com.akif.rental.internal.config.PenaltyConfig;
 import com.akif.rental.internal.dto.penalty.PenaltyResult;
 import com.akif.rental.domain.enums.LateReturnStatus;
@@ -30,6 +32,8 @@ import java.time.LocalTime;
 @Transactional(readOnly = true)
 public class LateReturnDetectionServiceImpl implements LateReturnDetectionService {
 
+    private final Clock clock;
+
     private final RentalRepository rentalRepository;
     private final PenaltyConfig penaltyConfig;
     private final PenaltyCalculationService penaltyCalculationService;
@@ -42,8 +46,8 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
     public void detectLateReturns() {
         log.info("Starting late return detection process");
         
-        LocalDate currentDate = LocalDate.now();
-        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDate currentDate = LocalDate.now(clock);
+        LocalDateTime currentTime = LocalDateTime.now(clock);
         int pageNumber = 0;
         int totalProcessed = 0;
         int totalUpdated = 0;

@@ -1,5 +1,7 @@
 package com.akif.dashboard.internal.service;
 
+import java.time.Clock;
+
 import com.akif.car.api.CarService;
 import com.akif.car.domain.enums.CarStatusType;
 import com.akif.damage.api.DamageService;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -33,6 +36,8 @@ import java.util.List;
 @Slf4j
 @Transactional(readOnly = true)
 public class AlertServiceImpl implements AlertService {
+
+    private final Clock clock;
 
     private static final BigDecimal LOW_AVAILABILITY_THRESHOLD = new BigDecimal("20.00");
     private static final int DISPUTE_DAYS_THRESHOLD = 7;
@@ -72,7 +77,7 @@ public class AlertServiceImpl implements AlertService {
             return dashboardMapper.toAlertDto(alert);
         }
 
-        alert.acknowledge(adminUsername);
+        alert.acknowledge(adminUsername, LocalDateTime.now(clock));
         Alert savedAlert = alertRepository.save(alert);
 
         log.info("Alert {} acknowledged successfully", alertId);
@@ -254,7 +259,7 @@ public class AlertServiceImpl implements AlertService {
         if (endDate == null) {
             return 0;
         }
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
         if (!today.isAfter(endDate)) {
             return 0;
         }

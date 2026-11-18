@@ -1,5 +1,7 @@
 package com.akif.auth.internal.service;
 
+import java.time.Clock;
+
 import com.akif.auth.api.AdminNoteDto;
 import com.akif.auth.api.AdminUserDetailResponse;
 import com.akif.auth.api.AdminUserDetailResponse.AccountStatus;
@@ -35,6 +37,8 @@ import java.util.List;
 @Slf4j
 @Transactional(readOnly = true)
 public class AdminUserServiceImpl implements AdminUserService {
+
+    private final Clock clock;
 
     private final UserRepository userRepository;
     private final AdminNoteRepository adminNoteRepository;
@@ -129,7 +133,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         if (user.getCreateTime() != null) {
             customerSinceDays = (int) ChronoUnit.DAYS.between(
                     user.getCreateTime().toLocalDate(),
-                    LocalDateTime.now().toLocalDate());
+                    LocalDateTime.now(clock).toLocalDate());
         }
 
         return new UserStatistics(
@@ -179,7 +183,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         }
 
         user.setIsBanned(true);
-        user.setBannedAt(LocalDateTime.now());
+        user.setBannedAt(LocalDateTime.now(clock));
         user.setBannedBy(adminId);
         user.setBanReason(reason);
         user.setEnabled(false);
@@ -202,7 +206,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         }
 
         user.setIsBanned(false);
-        user.setUnbannedAt(LocalDateTime.now());
+        user.setUnbannedAt(LocalDateTime.now(clock));
         user.setEnabled(true);
 
         userRepository.save(user);
@@ -222,7 +226,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .adminId(adminId)
                 .adminUsername(adminUsername)
                 .text(text)
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(clock))
                 .build();
 
         AdminNote saved = adminNoteRepository.save(note);

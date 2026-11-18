@@ -1,5 +1,7 @@
 package com.akif.damage.internal.service.damage.impl;
 
+import java.time.Clock;
+
 import com.akif.auth.api.AuthService;
 import com.akif.auth.api.UserDto;
 import com.akif.car.api.CarService;
@@ -38,6 +40,8 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class DamageReportServiceImpl implements DamageReportService {
 
+    private final Clock clock;
+
     private final DamageReportRepository damageReportRepository;
     private final DamagePhotoRepository damagePhotoRepository;
     private final FileUploadService fileUploadService;
@@ -74,7 +78,7 @@ public class DamageReportServiceImpl implements DamageReportService {
                 .category(request.category())
                 .status(DamageStatus.REPORTED)
                 .reportedBy(user.id())
-                .reportedAt(LocalDateTime.now())
+                .reportedAt(LocalDateTime.now(clock))
                 .build();
 
         damageReport = damageReportRepository.save(damageReport);
@@ -144,7 +148,7 @@ public class DamageReportServiceImpl implements DamageReportService {
                     .fileSize(photo.getSize())
                     .contentType(photo.getContentType())
                     .uploadedBy(user.id())
-                    .uploadedAt(LocalDateTime.now())
+                    .uploadedAt(LocalDateTime.now(clock))
                     .displayOrder(++displayOrder)
                     .build();
 

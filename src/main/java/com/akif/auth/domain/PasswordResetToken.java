@@ -2,10 +2,13 @@ package com.akif.auth.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "password_reset_tokens", indexes = {
         @Index(name = "idx_password_reset_tokens_token", columnList = "token"),
         @Index(name = "idx_password_reset_tokens_email", columnList = "email"),
@@ -36,15 +39,15 @@ public class PasswordResetToken {
     private Boolean used = false;
 
     @Column(name = "created_at", nullable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @CreatedDate
+    private LocalDateTime createdAt;
 
-    public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiryDate);
+    public boolean isExpiredAt(LocalDateTime now) {
+        return now.isAfter(expiryDate);
     }
 
-    public boolean isValid() {
-        return !used && !isExpired();
+    public boolean isValidAt(LocalDateTime now) {
+        return !used && !isExpiredAt(now);
     }
 
     public void markAsUsed() {

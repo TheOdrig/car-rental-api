@@ -1,5 +1,7 @@
 package com.akif.damage.internal.service.damage.impl;
 
+import java.time.Clock;
+
 import com.akif.auth.api.AuthService;
 import com.akif.auth.api.UserDto;
 import com.akif.car.api.CarService;
@@ -28,6 +30,8 @@ import java.time.LocalDateTime;
 @Slf4j
 @Transactional(readOnly = true)
 public class DamageAssessmentServiceImpl implements DamageAssessmentService {
+
+    private final Clock clock;
 
     private final DamageReportRepository damageReportRepository;
     private final DamageConfig damageConfig;
@@ -71,7 +75,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
         damageReport.setInsuranceDeductible(deductible);
         damageReport.setAssessmentNotes(request.assessmentNotes());
         damageReport.setAssessedBy(user.id());
-        damageReport.setAssessedAt(LocalDateTime.now());
+        damageReport.setAssessedAt(LocalDateTime.now(clock));
         damageReport.updateStatus(DamageStatus.ASSESSED);
 
         damageReport = damageReportRepository.save(damageReport);
@@ -131,7 +135,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
         damageReport.setInsuranceDeductible(deductible);
         damageReport.setAssessmentNotes(request.assessmentNotes());
         damageReport.setAssessedBy(user.id());
-        damageReport.setAssessedAt(LocalDateTime.now());
+        damageReport.setAssessedAt(LocalDateTime.now(clock));
 
         damageReport = damageReportRepository.save(damageReport);
 

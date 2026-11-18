@@ -1,5 +1,7 @@
 package com.akif.dashboard.internal.service;
 
+import java.time.Clock;
+
 import com.akif.dashboard.api.DashboardService;
 import com.akif.dashboard.api.dto.DailySummaryDto;
 import com.akif.dashboard.api.dto.FleetStatusDto;
@@ -21,6 +23,8 @@ import java.time.LocalDate;
 @Slf4j
 @Transactional(readOnly = true)
 public class DashboardServiceImpl implements DashboardService {
+
+    private final Clock clock;
 
     private final DashboardQueryService queryService;
 
@@ -48,7 +52,7 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     @Cacheable(value = "monthlyMetrics", key = "'current'")
     public MonthlyMetricsDto getMonthlyMetrics() {
-        LocalDate endDate = LocalDate.now();
+        LocalDate endDate = LocalDate.now(clock);
         LocalDate startDate = endDate.withDayOfMonth(1);
         return getMonthlyMetrics(startDate, endDate);
     }

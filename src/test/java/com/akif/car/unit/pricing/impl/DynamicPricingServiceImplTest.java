@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -74,7 +75,7 @@ class DynamicPricingServiceImplTest {
             when(strategy1.calculate(any(PricingContext.class)))
                 .thenReturn(PriceModifier.discount("Test", new BigDecimal("0.90"), "10% discount"));
 
-            service = new DynamicPricingServiceImpl(List.of(strategy1), carRepository, config);
+            service = new DynamicPricingServiceImpl(Clock.systemDefaultZone(), List.of(strategy1), carRepository, config);
 
             PricingResult result = service.calculatePrice(
                 1L,
@@ -106,7 +107,7 @@ class DynamicPricingServiceImplTest {
             when(strategy2.calculate(any(PricingContext.class)))
                 .thenReturn(PriceModifier.surcharge("Strategy2", new BigDecimal("1.20"), "20% surcharge"));
 
-            service = new DynamicPricingServiceImpl(List.of(strategy1, strategy2), carRepository, config);
+            service = new DynamicPricingServiceImpl(Clock.systemDefaultZone(), List.of(strategy1, strategy2), carRepository, config);
 
             PricingResult result = service.calculatePrice(
                 1L,
@@ -131,7 +132,7 @@ class DynamicPricingServiceImplTest {
             when(strategy2.calculate(any(PricingContext.class)))
                 .thenReturn(PriceModifier.discount("Strategy2", new BigDecimal("0.85"), "15% discount"));
 
-            service = new DynamicPricingServiceImpl(List.of(strategy1, strategy2), carRepository, config);
+            service = new DynamicPricingServiceImpl(Clock.systemDefaultZone(), List.of(strategy1, strategy2), carRepository, config);
 
             PricingResult result = service.calculatePrice(
                 1L,
@@ -174,7 +175,7 @@ class DynamicPricingServiceImplTest {
             when(strategy1.calculate(any(PricingContext.class)))
                 .thenReturn(PriceModifier.discount("Test", new BigDecimal("0.10"), "90% discount"));
 
-            service = new DynamicPricingServiceImpl(List.of(strategy1), carRepository, config);
+            service = new DynamicPricingServiceImpl(Clock.systemDefaultZone(), List.of(strategy1), carRepository, config);
 
             PricingResult result = service.calculatePrice(
                 1L,
@@ -202,7 +203,7 @@ class DynamicPricingServiceImplTest {
             when(strategy1.calculate(any(PricingContext.class)))
                 .thenReturn(PriceModifier.neutral("Test", "No discount"));
 
-            service = new DynamicPricingServiceImpl(List.of(strategy1), carRepository, config);
+            service = new DynamicPricingServiceImpl(Clock.systemDefaultZone(), List.of(strategy1), carRepository, config);
 
             PricingResult result = service.previewPrice(
                 1L,

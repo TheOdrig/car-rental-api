@@ -1,5 +1,7 @@
 package com.akif.dashboard.internal.service;
 
+import java.time.Clock;
+
 import com.akif.car.api.CarService;
 import com.akif.car.domain.enums.CarStatusType;
 import com.akif.damage.api.DamageService;
@@ -34,6 +36,8 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class DashboardQueryService {
 
+    private final Clock clock;
+
     private final RentalService rentalService;
     private final CarService carService;
     private final PaymentService paymentService;
@@ -54,7 +58,7 @@ public class DashboardQueryService {
                 todaysReturns,
                 overdueRentals,
                 pendingDamageAssessments,
-                LocalDateTime.now());
+                LocalDateTime.now(clock));
     }
 
     public FleetStatusDto fetchFleetStatus() {
@@ -81,7 +85,7 @@ public class DashboardQueryService {
                 damagedCars,
                 soldCars,
                 occupancyRate,
-                LocalDateTime.now());
+                LocalDateTime.now(clock));
     }
 
     public MonthlyMetricsDto fetchMonthlyMetrics(LocalDate startDate, LocalDate endDate) {
@@ -107,7 +111,7 @@ public class DashboardQueryService {
                 averageRentalDurationDays,
                 startDate,
                 endDate,
-                LocalDateTime.now());
+                LocalDateTime.now(clock));
     }
 
     public RevenueAnalyticsDto fetchRevenueAnalytics() {
@@ -130,7 +134,7 @@ public class DashboardQueryService {
                 dailyRevenue,
                 monthlyRevenue,
                 breakdown,
-                LocalDateTime.now());
+                LocalDateTime.now(clock));
     }
 
     public Page<PendingItemDto> fetchPendingApprovals(Pageable pageable) {
@@ -163,7 +167,7 @@ public class DashboardQueryService {
     }
 
     private RevenueBreakdownDto calculateRevenueBreakdown() {
-        LocalDate endDate = LocalDate.now();
+        LocalDate endDate = LocalDate.now(clock);
         LocalDate startDate = endDate.minusMonths(12);
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
@@ -227,11 +231,11 @@ public class DashboardQueryService {
     }
 
     private Long calculateLateHours(LocalDate endDate) {
-        if (endDate == null || !endDate.isBefore(LocalDate.now())) {
+        if (endDate == null || !endDate.isBefore(LocalDate.now(clock))) {
             return null;
         }
         return java.time.temporal.ChronoUnit.HOURS.between(
                 endDate.atStartOfDay(),
-                LocalDateTime.now());
+                LocalDateTime.now(clock));
     }
 }

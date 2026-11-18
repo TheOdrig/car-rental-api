@@ -1,5 +1,7 @@
 package com.akif.damage.internal.service.damage.impl;
 
+import java.time.Clock;
+
 import com.akif.damage.api.DamageChargedEvent;
 import com.akif.damage.domain.enums.DamageStatus;
 import com.akif.damage.domain.model.DamageReport;
@@ -24,6 +26,8 @@ import java.time.LocalDateTime;
 @Slf4j
 @Transactional(readOnly = true)
 public class DamageChargeServiceImpl implements DamageChargeService {
+
+    private final Clock clock;
 
     private final DamageReportRepository damageReportRepository;
     private final ApplicationEventPublisher eventPublisher;
@@ -91,7 +95,7 @@ public class DamageChargeServiceImpl implements DamageChargeService {
                     damageReport.getCustomerEmail(),
                     damageReport.getCustomerLiability(),
                     result.transactionId(),
-                    LocalDateTime.now()
+                    LocalDateTime.now(clock)
             ));
             log.info("Damage charged successfully: damageId={}, transactionId={}",
                     damageReport.getId(), result.transactionId());

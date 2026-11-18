@@ -1,5 +1,7 @@
 package com.akif.car.internal.service.pricing.impl;
 
+import java.time.Clock;
+
 import com.akif.car.internal.dto.pricing.PriceModifier;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.dto.pricing.PricingResult;
@@ -26,6 +28,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DynamicPricingServiceImpl implements DynamicPricingService {
 
+    private final Clock clock;
+
     private final List<PricingStrategy> allStrategies;
     private final CarRepository carRepository;
     private final PricingConfig config;
@@ -45,7 +49,7 @@ public class DynamicPricingServiceImpl implements DynamicPricingService {
 
     @Override
     public PricingResult previewPrice(Long carId, LocalDate startDate, LocalDate endDate) {
-        return calculatePrice(carId, startDate, endDate, LocalDate.now());
+        return calculatePrice(carId, startDate, endDate, LocalDate.now(clock));
     }
 
     @Override

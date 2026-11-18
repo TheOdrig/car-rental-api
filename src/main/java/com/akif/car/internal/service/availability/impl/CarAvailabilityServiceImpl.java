@@ -1,5 +1,7 @@
 package com.akif.car.internal.service.availability.impl;
 
+import java.time.Clock;
+
 import com.akif.car.internal.dto.availability.AvailabilitySearchResponse;
 import com.akif.car.internal.dto.availability.AvailableCarDto;
 import com.akif.car.internal.dto.availability.CarAvailabilityCalendarDto;
@@ -44,6 +46,8 @@ import java.util.List;
 @Slf4j
 @Transactional(readOnly = true)
 public class CarAvailabilityServiceImpl implements CarAvailabilityService {
+
+    private final Clock clock;
 
     private final CarRepository carRepository;
     private final RentalRepository rentalRepository;
@@ -227,7 +231,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
     }
 
     private void validateRentalDates(LocalDate startDate, LocalDate endDate) {
-        if (startDate.isBefore(LocalDate.now())) {
+        if (startDate.isBefore(LocalDate.now(clock))) {
             throw new RentalValidationException("Start date cannot be in the past");
         }
         if (endDate.isBefore(startDate)) {
@@ -250,7 +254,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
     }
 
     private void validateCalendarMonth(YearMonth month) {
-        YearMonth currentMonth = YearMonth.now();
+        YearMonth currentMonth = YearMonth.now(clock);
         YearMonth maxMonth = currentMonth.plusMonths(3);
 
         if (month.isBefore(currentMonth)) {
@@ -279,7 +283,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
                 car.getId(),
                 startDate,
                 endDate,
-                LocalDate.now());
+                LocalDate.now(clock));
 
         List<String> appliedDiscounts = pricingResult.appliedModifiers().stream()
                 .map(PriceModifier::description)
