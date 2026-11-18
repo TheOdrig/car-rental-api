@@ -1,12 +1,9 @@
 package com.akif.shared.exception;
 
-import com.akif.auth.internal.dto.oauth2.OAuth2ErrorResponse;
-import com.akif.auth.internal.exception.OAuth2AuthenticationException;
-import com.akif.auth.domain.enums.OAuth2ErrorType;
 import com.akif.car.internal.exception.CarAlreadyExistsException;
 import com.akif.car.internal.exception.CarNotFoundException;
 import com.akif.car.internal.exception.CarValidationException;
-import com.akif.payment.internal.exception.PaymentFailedException;
+import com.akif.payment.api.PaymentFailedException;
 import com.akif.rental.internal.exception.RentalNotFoundException;
 import com.akif.shared.handler.ErrorResponseDto;
 import com.akif.shared.handler.GlobalExceptionHandler;
@@ -45,7 +42,6 @@ class GlobalExceptionHandlerTest {
         mockRequest.setRequestURI("/api/cars/123");
         webRequest = new ServletWebRequest(mockRequest);
     }
-
 
     @Nested
     @DisplayName("BaseException Handler Tests")
@@ -117,40 +113,6 @@ class GlobalExceptionHandlerTest {
         }
     }
 
-
-    @Nested
-    @DisplayName("OAuth2AuthenticationException Handler Tests")
-    class OAuth2ExceptionHandlerTests {
-
-        @Test
-        @DisplayName("Should return OAuth2ErrorResponse for OAuth2AuthenticationException")
-        void shouldReturnOAuth2ErrorResponse() {
-            OAuth2AuthenticationException exception = new OAuth2AuthenticationException(
-                    OAuth2ErrorType.AUTHENTICATION_FAILED, "google");
-
-            ResponseEntity<OAuth2ErrorResponse> response = handler.handleOAuth2AuthenticationException(exception);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-            assertThat(response.getBody()).isNotNull();
-            assertThat(response.getBody().error()).isEqualTo("authentication_failed");
-            assertThat(response.getBody().provider()).isEqualTo("google");
-        }
-
-        @Test
-        @DisplayName("Should handle OAuth2 provider unavailable error")
-        void shouldHandleProviderUnavailable() {
-            OAuth2AuthenticationException exception = new OAuth2AuthenticationException(
-                    OAuth2ErrorType.PROVIDER_UNAVAILABLE, "github");
-
-            ResponseEntity<OAuth2ErrorResponse> response = handler.handleOAuth2AuthenticationException(exception);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
-            Assertions.assertNotNull(response.getBody());
-            assertThat(response.getBody().error()).isEqualTo("provider_unavailable");
-        }
-    }
-
-
     @Nested
     @DisplayName("Security Exception Handler Tests")
     class SecurityExceptionHandlerTests {
@@ -182,7 +144,6 @@ class GlobalExceptionHandlerTest {
         }
     }
 
-
     @Nested
     @DisplayName("Validation Exception Handler Tests")
     class ValidationExceptionHandlerTests {
@@ -200,7 +161,6 @@ class GlobalExceptionHandlerTest {
             assertThat(response.getBody().getStatus()).isEqualTo(400);
         }
     }
-
 
     @Nested
     @DisplayName("HTTP Exception Handler Tests")
@@ -226,7 +186,6 @@ class GlobalExceptionHandlerTest {
         }
     }
 
-
     @Nested
     @DisplayName("Generic Exception Handler Tests")
     class GenericExceptionHandlerTests {
@@ -245,7 +204,6 @@ class GlobalExceptionHandlerTest {
             assertThat(response.getBody().getStatus()).isEqualTo(500);
         }
     }
-
 
     @Nested
     @DisplayName("Helper Method Tests")

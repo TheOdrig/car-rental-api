@@ -1,12 +1,13 @@
 package com.akif.auth.internal.exception;
 
+import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.BAD_REQUEST)
-public class InvalidPasswordException extends RuntimeException {
+public class InvalidPasswordException extends BaseException {
+
+    public static final String ERROR_CODE = "INVALID_PASSWORD";
 
     public InvalidPasswordException(String message) {
-        super(message);
+        super(ERROR_CODE, message, HttpStatus.BAD_REQUEST);
     }
 }

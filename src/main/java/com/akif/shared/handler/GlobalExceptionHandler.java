@@ -1,9 +1,6 @@
 package com.akif.shared.handler;
 
-import com.akif.auth.internal.dto.oauth2.OAuth2ErrorResponse;
-import com.akif.auth.internal.exception.InvalidPasswordException;
 import com.akif.shared.exception.BaseException;
-import com.akif.auth.internal.exception.OAuth2AuthenticationException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -43,32 +40,10 @@ public class GlobalExceptionHandler {
         private static final String ERROR_CODE_ENDPOINT_NOT_FOUND = "ENDPOINT_NOT_FOUND";
         private static final String ERROR_CODE_INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
 
-        @ExceptionHandler(OAuth2AuthenticationException.class)
-        public ResponseEntity<OAuth2ErrorResponse> handleOAuth2AuthenticationException(
-                        OAuth2AuthenticationException ex) {
-                log.error("[{}] OAuth2 error for provider '{}': {}",
-                                ex.getErrorType().getCode(), ex.getProvider(), ex.getMessage());
-
-                OAuth2ErrorResponse errorResponse = OAuth2ErrorResponse.of(
-                                ex.getErrorType().getCode(),
-                                ex.getMessage(),
-                                ex.getProvider());
-
-                return ResponseEntity.status(ex.getHttpStatus()).body(errorResponse);
-        }
-
         @ExceptionHandler(BaseException.class)
         public ResponseEntity<ErrorResponseDto> handleBaseException(BaseException ex, WebRequest request) {
                 log.error("[{}] {}", ex.getErrorCode(), ex.getMessage());
                 return buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
-        }
-
-        @ExceptionHandler(InvalidPasswordException.class)
-        public ResponseEntity<ErrorResponseDto> handleInvalidPasswordException(
-                        InvalidPasswordException ex, WebRequest request) {
-                log.error("[INVALID_PASSWORD] {}", ex.getMessage());
-                return buildErrorResponse("INVALID_PASSWORD", ex.getMessage(),
-                                HttpStatus.BAD_REQUEST, request);
         }
 
         @ExceptionHandler(MethodArgumentNotValidException.class)
