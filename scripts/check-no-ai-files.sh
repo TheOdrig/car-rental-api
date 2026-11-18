@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
-bad=$(git ls-files | grep -E '(^|/)(\.kiro|kiro\.steering|\.agent|\.agents|\.claude|\.codex|\.obsidian|specs)/|(^|/)(AGENTS|CLAUDE)\.md$|^docs/|^(CHANGELOG|CONTRIBUTING)\.md$|Zone\.Identifier$' || true)
+pattern='(^|/)(\.kiro|kiro\.steering|\.agent|\.agents|\.claude|\.codex|\.cursor|\.windsurf|\.obsidian|specs|docs)/|(^|/)\.aider[^/]*$|(^|/)(AGENTS|CLAUDE|GEMINI|CHANGELOG|CONTRIBUTING)\.md$|(^|/)\.(cursorrules|windsurfrules)$|(^|/)\.github/copilot-instructions\.md$|Zone\.Identifier$'
+bad=$(git ls-files | grep -iE "$pattern" || true)
 if [ -n "$bad" ]; then
   echo "check-no-ai-files: tracked files that must stay local-only:" >&2
   echo "$bad" >&2
