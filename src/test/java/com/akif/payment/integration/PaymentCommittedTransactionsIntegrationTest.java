@@ -381,6 +381,47 @@ class PaymentCommittedTransactionsIntegrationTest {
     }
 
     @Test
+    @DisplayName("a refund gives up with a retryable failure when the payment row stays locked past the lock timeout")
+    void refundGivesUpWhenRowStaysLocked() throws Exception {
+        Rental rental = capturedRental();
+        Payment payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rental.getId(), PaymentKind.RENTAL)
+                .orElseThrow();
+        Object target = org.springframework.test.util.AopTestUtils.getUltimateTargetObject(paymentService);
+        Object previous = org.springframework.test.util.ReflectionTestUtils.getField(target, "refundLockTimeoutMs");
+        org.springframework.test.util.ReflectionTestUtils.setField(target, "refundLockTimeoutMs", 700L);
+        CountDownLatch locked = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        ExecutorService pool = Executors.newSingleThreadExecutor();
+        try {
+            Future<?> holder = pool.submit(() -> new TransactionTemplate(transactionManager).executeWithoutResult(s -> {
+                jdbcTemplate.queryForList("SELECT id FROM car_rental.payments WHERE id = ? FOR UPDATE", payment.getId());
+                locked.countDown();
+                try {
+                    release.await(20, java.util.concurrent.TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }));
+            assertThat(locked.await(10, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+
+            long started = System.nanoTime();
+            PaymentResult result = paymentService.refundPayment(payment.getId(), BigDecimal.TEN, "waiver-lock:refund");
+            long elapsedMs = (System.nanoTime() - started) / 1_000_000;
+
+            assertThat(result.success()).isFalse();
+            assertThat(result.message()).contains("busy");
+            assertThat(elapsedMs).isLessThan(10_000L);
+            verify(paymentGateway, never()).refund(anyString(), any(), any(), anyString());
+            release.countDown();
+            holder.get(10, java.util.concurrent.TimeUnit.SECONDS);
+        } finally {
+            release.countDown();
+            pool.shutdownNow();
+            org.springframework.test.util.ReflectionTestUtils.setField(target, "refundLockTimeoutMs", previous);
+        }
+    }
+
+    @Test
     @DisplayName("a payment closed by a rental cancellation is not restarted by a payment-intent call that raced it")
     void cancelledRentalPaymentIsNotRestarted() {
         Rental rental = rental(LocalDate.now().plusDays(2), LocalDate.now().plusDays(5), RentalStatus.CONFIRMED);

@@ -30,13 +30,21 @@ public class StripeConfig {
     @Value("${stripe.api.base-url:https://api.stripe.com}")
     private String apiBaseUrl;
 
-    @Value("${stripe.api.max-network-retries:2}")
+    @Value("${stripe.api.max-network-retries:1}")
     private int maxNetworkRetries;
+
+    @Value("${stripe.api.connect-timeout-ms:3000}")
+    private int connectTimeoutMs;
+
+    @Value("${stripe.api.read-timeout-ms:10000}")
+    private int readTimeoutMs;
 
     public RequestOptions.RequestOptionsBuilder requestOptions() {
         return RequestOptions.builder()
                 .setApiKey(apiKey)
                 .setBaseUrl(apiBaseUrl)
+                .setConnectTimeout(connectTimeoutMs)
+                .setReadTimeout(readTimeoutMs)
                 .setMaxNetworkRetries(maxNetworkRetries);
     }
 }
