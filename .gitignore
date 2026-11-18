@@ -4,7 +4,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
 .apt_generated
 .classpath
 .factorypath
@@ -13,13 +12,11 @@ target/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
 .idea
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
 /nbproject/private/
 /nbbuild/
 /dist/
@@ -29,10 +26,8 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
 .vscode/
 
-### Environment Variables & Security ###
 .env
 .env.local
 .env.production
@@ -40,16 +35,20 @@ build/
 .env.test
 *.env
 
-### Database Files ###
 *.db
 *.sqlite
 *.sqlite3
 
-### Logs ###
 logs/
 *.log
 application-*.log
 
-### Temporary Files ###
 *.tmp
 *.temp
+
+*:Zone.Identifier
+*Zone.Identifier
+
+uploads/
+hs_err_pid*.log
+replay_pid*.log
