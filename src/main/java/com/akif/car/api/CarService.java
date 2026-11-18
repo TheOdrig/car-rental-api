@@ -48,12 +48,6 @@ public interface CarService {
     Page<CarResponse> getAllActiveCars(Pageable pageable);
     long getActiveCarCount();
 
-    CarResponse reserveCar(Long id);
-
-    CarResponse releaseCar(Long id);
-
-    CarResponse cancelReservation(Long id);
-
     CarResponse markAsMaintenance(Long id);
 
     CarResponse markAsAvailable(Long id);
@@ -73,8 +67,6 @@ public interface CarService {
     boolean existsByLicensePlate(String licensePlate);
 
     List<String> validateCarData(CarRequest carRequest);
-
-    boolean canCarBeReserved(Long id);
 
     Page<CarResponse> searchCarsByCriteria(String searchTerm, String brand, String model,
                                            BigDecimal minPrice, BigDecimal maxPrice,

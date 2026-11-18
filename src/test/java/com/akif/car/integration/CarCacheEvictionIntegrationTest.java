@@ -74,7 +74,7 @@ class CarCacheEvictionIntegrationTest {
         BigDecimal before = carService.getAveragePriceByBrand().get("Toyota");
 
         carService.updateCarPrice(carId,
-                new CarPriceUpdateRequest(new BigDecimal("999.00"), CurrencyType.TRY, BigDecimal.ZERO, "reprice", null));
+                new CarPriceUpdateRequest(new BigDecimal("999.00"), CurrencyType.TRY, "reprice", null));
 
         BigDecimal after = carService.getAveragePriceByBrand().get("Toyota");
         assertThat(after).isNotEqualByComparingTo(before);
@@ -90,7 +90,6 @@ class CarCacheEvictionIntegrationTest {
                 .productionYear(2020)
                 .price(new BigDecimal("250.00"))
                 .currencyType(CurrencyType.TRY)
-                .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
                 .build();
     }

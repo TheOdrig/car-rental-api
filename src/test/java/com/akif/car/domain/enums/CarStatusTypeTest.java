@@ -18,32 +18,8 @@ public class CarStatusTypeTest {
 
         assertThat(CarStatusType.AVAILABLE.isAvailable()).isTrue();
         assertThat(CarStatusType.MAINTENANCE.isAvailable()).isFalse();
-        assertThat(CarStatusType.RESERVED.isAvailable()).isFalse();
         assertThat(CarStatusType.DAMAGED.isAvailable()).isFalse();
         assertThat(CarStatusType.INSPECTION.isAvailable()).isFalse();
-    }
-
-    @Test
-    @DisplayName("canBeReserved should return true only for AVAILABLE status")
-    void canBeReserved_ShouldReturnTrueOnlyForAvailable() {
-
-        assertThat(CarStatusType.AVAILABLE.canBeReserved()).isTrue();
-        assertThat(CarStatusType.MAINTENANCE.canBeReserved()).isFalse();
-        assertThat(CarStatusType.RESERVED.canBeReserved()).isFalse();
-        assertThat(CarStatusType.DAMAGED.canBeReserved()).isFalse();
-        assertThat(CarStatusType.INSPECTION.canBeReserved()).isFalse();
-    }
-
-    @Test
-    @DisplayName("isInactive should return true for MAINTENANCE and RENTED statuses")
-    void isInactive_ShouldReturnTrueForMaintenanceAndRented() {
-
-        assertThat(CarStatusType.MAINTENANCE.isInactive()).isTrue();
-        assertThat(CarStatusType.RENTED.isInactive()).isTrue();
-        assertThat(CarStatusType.AVAILABLE.isInactive()).isFalse();
-        assertThat(CarStatusType.RESERVED.isInactive()).isFalse();
-        assertThat(CarStatusType.DAMAGED.isInactive()).isFalse();
-        assertThat(CarStatusType.INSPECTION.isInactive()).isFalse();
     }
 
     @Test
@@ -54,7 +30,6 @@ public class CarStatusTypeTest {
         assertThat(CarStatusType.INSPECTION.requiresAttention()).isTrue();
         assertThat(CarStatusType.AVAILABLE.requiresAttention()).isFalse();
         assertThat(CarStatusType.MAINTENANCE.requiresAttention()).isFalse();
-        assertThat(CarStatusType.RESERVED.requiresAttention()).isFalse();
     }
 
     @Test
@@ -63,16 +38,15 @@ public class CarStatusTypeTest {
 
         CarStatusType[] unavailableStatuses = CarStatusType.getUnavailableStatuses();
 
-        assertThat(unavailableStatuses).hasSize(4);
+        assertThat(unavailableStatuses).hasSize(3);
         assertThat(unavailableStatuses).containsExactlyInAnyOrder(
-                CarStatusType.RENTED,
                 CarStatusType.MAINTENANCE,
                 CarStatusType.DAMAGED,
                 CarStatusType.INSPECTION);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "AVAILABLE", " available ", " Available", "RENTED", " rented ", " Rented" })
+    @ValueSource(strings = { "AVAILABLE", " available ", " Available", "MAINTENANCE", " maintenance ", " Inspection" })
     @DisplayName("fromString should parse valid status string")
     void fromString_WithValidString_ShouldReturnCorrectEnum(String statusString) {
 

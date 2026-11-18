@@ -63,7 +63,6 @@ class CarSearchFiltersIntegrationTest {
         car.setProductionYear(2021);
         car.setPrice(new BigDecimal("1000"));
         car.setCurrencyType(CurrencyType.TRY);
-        car.setDamagePrice(BigDecimal.ZERO);
         car.setCarStatusType(CarStatusType.AVAILABLE);
         car.setDoors(doors);
         car.setSeats(seats);

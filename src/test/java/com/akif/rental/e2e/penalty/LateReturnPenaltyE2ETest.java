@@ -4,7 +4,6 @@ import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.car.domain.Car;
-import com.akif.car.api.CarStatusType;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.e2e.infrastructure.E2ETestBase;
 import com.akif.e2e.infrastructure.TestDataBuilder;
@@ -99,9 +98,6 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
         LocalDate pastStart = LocalDate.now().minusDays(daysAgo + 3);
         LocalDate pastEnd = LocalDate.now().minusDays(daysAgo);
 
-        car.setCarStatusType(CarStatusType.RESERVED);
-        carRepository.save(car);
-        
         return Rental.builder()
                 .userId(user.getId())
                 .userEmail(user.getEmail())

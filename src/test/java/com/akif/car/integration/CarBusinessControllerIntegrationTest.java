@@ -57,7 +57,6 @@ class CarBusinessControllerIntegrationTest {
         car.setProductionYear(2020);
         car.setPrice(new BigDecimal("250000"));
         car.setCurrencyType(CurrencyType.TRY);
-        car.setDamagePrice(BigDecimal.ZERO);
         car.setCarStatusType(CarStatusType.AVAILABLE);
         
         testCarId = carRepository.save(car).getId();
@@ -66,16 +65,6 @@ class CarBusinessControllerIntegrationTest {
     @AfterEach
     void tearDown() {
         carRepository.deleteAll();
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    @DisplayName("Should reserve car successfully")
-    void shouldReserveCar() throws Exception {
-        mockMvc.perform(post("/api/v1/cars/business/{id}/reserve", testCarId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(testCarId))
-                .andExpect(jsonPath("$.carStatusType").value("Reserved"));
     }
 
     @Test
@@ -103,7 +92,6 @@ class CarBusinessControllerIntegrationTest {
         CarPriceUpdateRequest request = new CarPriceUpdateRequest(
                 new BigDecimal("240000"),
                 CurrencyType.TRY,
-                BigDecimal.ZERO,
                 "Price update",
                 null
         );
@@ -118,18 +106,44 @@ class CarBusinessControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("Should check if car can be reserved")
-    void shouldCheckCanBeReserved() throws Exception {
-        mockMvc.perform(get("/api/v1/cars/business/{id}/can-reserve", testCarId))
+    @DisplayName("Should reject a transition to the status the car already has")
+    void shouldRejectSameStatusTransition() throws Exception {
+        CarStatusUpdateRequest request = new CarStatusUpdateRequest(CarStatusType.AVAILABLE, null, null);
+
+        mockMvc.perform(patch("/api/v1/cars/business/{id}/status", testCarId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_STATUS_TRANSITION"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Should move a car through maintenance and back to available")
+    void shouldMoveThroughMaintenance() throws Exception {
+        mockMvc.perform(post("/api/v1/cars/business/{id}/maintenance", testCarId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.canBeReserved").value(true));
+                .andExpect(jsonPath("$.carStatusType").value("Maintenance"));
+        mockMvc.perform(post("/api/v1/cars/business/{id}/available", testCarId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.carStatusType").value("Available"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Should no longer expose the car-level reservation endpoints")
+    void reservationEndpointsAreGone() throws Exception {
+        mockMvc.perform(post("/api/v1/cars/business/{id}/reserve", testCarId))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/v1/cars/business/{id}/can-reserve", testCarId))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     @WithMockUser(roles = "USER")
     @DisplayName("Should deny access to business endpoints for non-admin users")
     void shouldDenyAccessForNonAdmin() throws Exception {
-        mockMvc.perform(post("/api/v1/cars/business/{id}/reserve", testCarId))
+        mockMvc.perform(post("/api/v1/cars/business/{id}/maintenance", testCarId))
                 .andExpect(status().isForbidden());
     }
 }

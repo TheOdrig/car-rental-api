@@ -59,7 +59,6 @@ class CarControllerIntegrationTest {
                 .productionYear(2020)
                 .price(new BigDecimal("250000"))
                 .currencyType(CurrencyType.TRY)
-                .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
                 .build();
         testCar = carRepository.save(testCar);
@@ -105,7 +104,6 @@ class CarControllerIntegrationTest {
                 .productionYear(2021)
                 .price(new BigDecimal("300000"))
                 .currencyType(CurrencyType.TRY)
-                .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
                 .build();
 
@@ -131,7 +129,6 @@ class CarControllerIntegrationTest {
                 .productionYear(2020)
                 .price(new BigDecimal("260000"))
                 .currencyType(CurrencyType.TRY)
-                .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
                 .build();
 
@@ -203,7 +200,6 @@ class CarControllerIntegrationTest {
                 .productionYear(2021)
                 .price(new BigDecimal("300000"))
                 .currencyType(CurrencyType.TRY)
-                .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
                 .build();
         carRepository.save(secondCar);
@@ -226,7 +222,6 @@ class CarControllerIntegrationTest {
                 .productionYear(2023)
                 .price(new BigDecimal("5000000"))
                 .currencyType(CurrencyType.TRY)
-                .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
                 .build();
         carRepository.save(expensiveCar);

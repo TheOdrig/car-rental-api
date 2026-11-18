@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/cars/business")
@@ -27,34 +26,6 @@ import java.util.Map;
 public class CarBusinessController {
 
     private final CarService carService;
-
-    @PostMapping(value = "/{id}/reserve")
-    @Operation(summary = "Reserve car", description = "Reserve a car for a customer")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Car reserved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Car not found"),
-            @ApiResponse(responseCode = "400", description = "Car cannot be reserved")
-    })
-    public ResponseEntity<CarResponse> reserveCar(
-            @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        CarResponse car = carService.reserveCar(id);
-        return ResponseEntity.ok(car);
-    }
-
-    @PostMapping(value = "/{id}/cancel-reservation")
-    @Operation(summary = "Cancel reservation", description = "Cancel car reservation")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Reservation cancelled successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Car not found"),
-            @ApiResponse(responseCode = "400", description = "Car is not reserved")
-    })
-    public ResponseEntity<CarResponse> cancelReservation(
-            @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        CarResponse car = carService.cancelReservation(id);
-        return ResponseEntity.ok(car);
-    }
 
     @PostMapping(value = "/{id}/maintenance")
     @Operation(summary = "Mark car as maintenance", description = "Mark a car as under maintenance")
@@ -71,7 +42,7 @@ public class CarBusinessController {
     }
 
     @PostMapping(value = "/{id}/available")
-    @Operation(summary = "Mark car as available", description = "Mark a car as available for sale")
+    @Operation(summary = "Mark car as available", description = "Return a car to service as available for rental")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Car marked as available successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarResponse.class))),
@@ -112,19 +83,5 @@ public class CarBusinessController {
             @Parameter(description = "Price update data", required = true) @Valid @RequestBody CarPriceUpdateRequest priceUpdateRequest) {
         CarResponse car = carService.updateCarPrice(id, priceUpdateRequest);
         return ResponseEntity.ok(car);
-    }
-
-    @GetMapping(value = "/{id}/can-reserve")
-    @Operation(summary = "Check if car can be reserved", description = "Check if car can be reserved")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Check completed"),
-            @ApiResponse(responseCode = "404", description = "Car not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid car ID")
-    })
-    public ResponseEntity<Map<String, Boolean>> canCarBeReserved(
-            @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        log.info("GET /api/v1/cars/business/{}/can-reserve", id);
-        boolean canBeReserved = carService.canCarBeReserved(id);
-        return ResponseEntity.ok(Map.of("canBeReserved", canBeReserved));
     }
 }

@@ -3,6 +3,7 @@ package com.akif.car.domain;
 import com.akif.car.api.CarStatusType;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.shared.domain.BaseEntity;
+import com.akif.shared.exception.InvalidStatusTransitionException;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -53,11 +54,8 @@ public class Car extends BaseEntity {
     @Column(name = "currency_type",  nullable = false, length = 10)
     private CurrencyType currencyType;
 
-    @Column(name = "damage_price", precision = 12, scale = 2)
-    private BigDecimal damagePrice = BigDecimal.ZERO;
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "car_status_type",  nullable = false, length = 10)
+    @Column(name = "car_status_type",  nullable = false, length = 15)
     private CarStatusType carStatusType;
 
     @Column(name = "engine_type", length = 20)
@@ -118,14 +116,6 @@ public class Car extends BaseEntity {
         return carStatusType != null && carStatusType.isAvailable();
     }
 
-    public boolean canBeReserved() {
-        return carStatusType != null && carStatusType.canBeReserved();
-    }
-
-    public boolean requiresAttention() {
-        return carStatusType != null && carStatusType.requiresAttention();
-    }
-
     public String getFormattedPrice() {
         if (price == null || currencyType == null) {
             return "Price not set";
@@ -147,14 +137,6 @@ public class Car extends BaseEntity {
         return today.getYear() - productionYear;
     }
 
-    public boolean isNewAt(LocalDate today) {
-        return ageAt(today) < 1;
-    }
-
-    public boolean isOldAt(LocalDate today) {
-        return ageAt(today) > 10;
-    }
-
     public String getFullName() {
         if (brand == null || model == null) {
             return "Unknown Car";
@@ -169,63 +151,39 @@ public class Car extends BaseEntity {
         return getFullName() + " (" + productionYear + ")";
     }
 
-    public boolean hasDamage() {
-        return damagePrice != null && damagePrice.compareTo(BigDecimal.ZERO) > 0;
-    }
-
-    public BigDecimal getTotalPrice() {
-        if (price == null) {
-            return BigDecimal.ZERO;
+    public void changeFleetStatus(CarStatusType target) {
+        if (target == null) {
+            throw new InvalidStatusTransitionException("Target car status is required");
         }
-        if (damagePrice == null) {
-            return price;
+        if (target == carStatusType) {
+            throw new InvalidStatusTransitionException(
+                    String.format("Invalid status transition from %s to %s", carStatusType, target));
         }
-        return price.add(damagePrice);
-    }
-
-    public boolean needsServiceOn(LocalDate today) {
-        if (nextServiceDate == null) {
-            return false;
-        }
-        return today.isAfter(nextServiceDate);
-    }
-
-    public boolean isInsuranceExpiredOn(LocalDate today) {
-        if (insuranceExpiryDate == null) {
-            return false;
-        }
-        return today.isAfter(insuranceExpiryDate);
-    }
-
-    public boolean isInspectionExpiredOn(LocalDate today) {
-        if (inspectionExpiryDate == null) {
-            return false;
-        }
-        return today.isAfter(inspectionExpiryDate);
-    }
-
-    public boolean hasExpiredDocumentsOn(LocalDate today) {
-        return isInsuranceExpiredOn(today) || isInspectionExpiredOn(today);
+        this.carStatusType = target;
     }
 
     public void markAsAvailable() {
-        this.carStatusType = CarStatusType.AVAILABLE;
-    }
-
-    public void markAsReserved() {
-        this.carStatusType = CarStatusType.RESERVED;
+        if (carStatusType != CarStatusType.AVAILABLE) {
+            changeFleetStatus(CarStatusType.AVAILABLE);
+        }
     }
 
     public void markAsMaintenance() {
-        this.carStatusType = CarStatusType.MAINTENANCE;
+        if (carStatusType != CarStatusType.MAINTENANCE) {
+            changeFleetStatus(CarStatusType.MAINTENANCE);
+        }
     }
 
     public void markAsDamaged() {
-        this.carStatusType = CarStatusType.DAMAGED;
+        if (carStatusType != CarStatusType.DAMAGED) {
+            changeFleetStatus(CarStatusType.DAMAGED);
+        }
     }
 
     public void markAsInspection() {
-        this.carStatusType = CarStatusType.INSPECTION;
+        if (carStatusType != CarStatusType.INSPECTION) {
+            changeFleetStatus(CarStatusType.INSPECTION);
+        }
     }
 
     @Override
@@ -233,12 +191,12 @@ public class Car extends BaseEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Car car = (Car) o;
-        return Objects.equals(this.vinNumber, car.vinNumber);
+        return getId() != null && Objects.equals(getId(), car.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.vinNumber);
+        return getClass().hashCode();
     }
 
     @Override

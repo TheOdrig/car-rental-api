@@ -91,7 +91,6 @@ class LateReturnControllerIntegrationTest {
                 .productionYear(2020)
                 .price(new BigDecimal("250000"))
                 .currencyType(CurrencyType.TRY)
-                .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
                 .build();
         testCar = carRepository.save(testCar);

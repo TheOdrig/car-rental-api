@@ -101,17 +101,17 @@ class ErrorHandlingE2ETest extends E2ETestBase {
         }
 
         @Test
-        @DisplayName("Should return HTTP 400 when requesting rental for RESERVED car")
-        void shouldReturn400WhenCarIsReserved() throws Exception {
+        @DisplayName("Should return HTTP 400 when requesting rental for a car under INSPECTION")
+        void shouldReturn400WhenCarIsUnderInspection() throws Exception {
             User testUser = TestDataBuilder.createTestUser();
             testUser = userRepository.save(testUser);
             String userToken = generateUserToken(testUser);
 
-            Car reservedCar = TestDataBuilder.createAvailableCar();
-            reservedCar.setCarStatusType(CarStatusType.RESERVED);
-            reservedCar = carRepository.save(reservedCar);
+            Car inspectedCar = TestDataBuilder.createAvailableCar();
+            inspectedCar.setCarStatusType(CarStatusType.INSPECTION);
+            inspectedCar = carRepository.save(inspectedCar);
 
-            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(reservedCar.getId());
+            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(inspectedCar.getId());
 
             mockMvc.perform(post("/api/v1/rentals/request")
                             .header("Authorization", "Bearer " + userToken)

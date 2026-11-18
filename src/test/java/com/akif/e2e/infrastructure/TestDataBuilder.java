@@ -64,7 +64,6 @@ public class TestDataBuilder {
                 .price(price)
                 .currencyType(TestFixtures.DEFAULT_CURRENCY)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .damagePrice(BigDecimal.ZERO)
                 .engineType("Gasoline")
                 .fuelType("Gasoline")
                 .transmissionType("Automatic")

@@ -1,6 +1,5 @@
 package com.akif.car.api;
 
-import com.akif.car.api.CarStatusType;
 import com.akif.shared.enums.CurrencyType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -25,7 +24,6 @@ public class CarResponse {
     private Integer productionYear;
     private BigDecimal price;
     private CurrencyType currencyType;
-    private BigDecimal damagePrice;
     private CarStatusType carStatusType;
     private String engineType;
     private BigDecimal engineDisplacement;
@@ -64,22 +62,11 @@ public class CarResponse {
     private LocalDateTime updateTime;
     private Long version;
 
-    private Boolean isAvailable;
-    private Boolean canBeReserved;
-    private Boolean requiresAttention;
     private String formattedPrice;
     private String formattedPriceWithSeparators;
     private Integer age;
-    private Boolean isNew;
-    private Boolean isOld;
     private String fullName;
     private String displayName;
-    private Boolean hasDamage;
-    private BigDecimal totalPrice;
-    private Boolean needsService;
-    private Boolean isInsuranceExpired;
-    private Boolean isInspectionExpired;
-    private Boolean hasExpiredDocuments;
 
     private BigDecimal convertedPrice;
     private CurrencyType displayCurrency;

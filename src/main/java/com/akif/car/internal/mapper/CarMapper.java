@@ -8,19 +8,24 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Clock;
 import java.time.LocalDate;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-        imports = LocalDate.class)
+        unmappedTargetPolicy = ReportingPolicy.ERROR, imports = LocalDate.class)
 public abstract class CarMapper {
 
     @Autowired
     protected Clock clock;
 
     @Mapping(target = "age", expression = "java(car.ageAt(LocalDate.now(clock)))")
+    @Mapping(target = "convertedPrice", ignore = true)
+    @Mapping(target = "displayCurrency", ignore = true)
+    @Mapping(target = "exchangeRate", ignore = true)
+    @Mapping(target = "rateSource", ignore = true)
     public abstract CarResponse toDto(Car car);
 
     @Mapping(target = "id", ignore = true)
@@ -41,6 +46,7 @@ public abstract class CarMapper {
     @Mapping(target = "updatedBy", ignore = true)
     public abstract void updateEntity(CarRequest carRequest, @MappingTarget Car car);
 
+    @Mapping(target = "dailyPrice", source = "price")
     @Mapping(target = "currency", source = "currencyType")
     @Mapping(target = "status", source = "carStatusType")
     @Mapping(target = "available", expression = "java(car.isAvailable())")

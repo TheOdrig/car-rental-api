@@ -58,7 +58,6 @@ class CarControllerAuthorizationTest {
                 .productionYear(2020)
                 .price(new BigDecimal("250000"))
                 .currencyType(CurrencyType.TRY)
-                .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
                 .isDeleted(false)
                 .build();
@@ -86,7 +85,6 @@ class CarControllerAuthorizationTest {
                     .productionYear(2021)
                     .price(new BigDecimal("300000"))
                     .currencyType(CurrencyType.TRY)
-                    .damagePrice(BigDecimal.ZERO)
                     .carStatusType(CarStatusType.AVAILABLE)
                     .build();
 
@@ -110,7 +108,6 @@ class CarControllerAuthorizationTest {
         @WithMockUser(roles = "ADMIN")
         @DisplayName("POST /api/v1/cars/{id}/restore - Admin should be allowed to restore car")
         void adminShouldRestoreCar() throws Exception {
-            // First soft delete
             testCar.softDelete();
             carRepository.save(testCar);
 
@@ -137,7 +134,6 @@ class CarControllerAuthorizationTest {
                     .productionYear(2021)
                     .price(new BigDecimal("300000"))
                     .currencyType(CurrencyType.TRY)
-                    .damagePrice(BigDecimal.ZERO)
                     .carStatusType(CarStatusType.AVAILABLE)
                     .build();
 

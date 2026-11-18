@@ -202,7 +202,7 @@ class QuickActionControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when user tries to process pickup")
         void shouldReturn403WhenUserTriesToProcessPickup() throws Exception {
-            Rental rental = createTestRental(RentalStatus.CONFIRMED, CarStatusType.RESERVED);
+            Rental rental = createTestRental(RentalStatus.CONFIRMED, CarStatusType.AVAILABLE);
 
             payRental(rental.getId());
             mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/pickup", rental.getId())
@@ -213,7 +213,7 @@ class QuickActionControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when user tries to process return")
         void shouldReturn403WhenUserTriesToProcessReturn() throws Exception {
-            Rental rental = createTestRental(RentalStatus.IN_USE, CarStatusType.RESERVED);
+            Rental rental = createTestRental(RentalStatus.IN_USE, CarStatusType.AVAILABLE);
 
             mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/return", rental.getId())
                             .header("Authorization", userToken))
@@ -253,7 +253,7 @@ class QuickActionControllerIntegrationTest {
         @Test
         @DisplayName("Should return 400 when rental is not in REQUESTED state")
         void shouldReturn400WhenRentalIsNotInRequestedState() throws Exception {
-            Rental rental = createTestRental(RentalStatus.CONFIRMED, CarStatusType.RESERVED);
+            Rental rental = createTestRental(RentalStatus.CONFIRMED, CarStatusType.AVAILABLE);
 
             mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/approve", rental.getId())
                             .header("Authorization", adminToken))
@@ -348,7 +348,7 @@ class QuickActionControllerIntegrationTest {
         @Test
         @DisplayName("Should return 400 when rental is not in IN_USE state")
         void shouldReturn400WhenRentalIsNotInInUseState() throws Exception {
-            Rental rental = createTestRental(RentalStatus.CONFIRMED, CarStatusType.RESERVED);
+            Rental rental = createTestRental(RentalStatus.CONFIRMED, CarStatusType.AVAILABLE);
 
             mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/return", rental.getId())
                             .header("Authorization", adminToken))

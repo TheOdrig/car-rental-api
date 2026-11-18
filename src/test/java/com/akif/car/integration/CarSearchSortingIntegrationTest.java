@@ -70,7 +70,6 @@ class CarSearchSortingIntegrationTest {
         car.setProductionYear(year);
         car.setPrice(new BigDecimal(price));
         car.setCurrencyType(CurrencyType.TRY);
-        car.setDamagePrice(BigDecimal.ZERO);
         car.setCarStatusType(CarStatusType.AVAILABLE);
         car.setRating(rating == null ? null : new BigDecimal(rating));
         carRepository.save(car);

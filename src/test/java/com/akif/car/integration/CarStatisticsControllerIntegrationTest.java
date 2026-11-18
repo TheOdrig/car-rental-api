@@ -39,7 +39,7 @@ class CarStatisticsControllerIntegrationTest {
         createTestCar("34ABC123", "Toyota", "Corolla", new BigDecimal("250000"), CarStatusType.AVAILABLE);
         createTestCar("34XYZ456", "Toyota", "Camry", new BigDecimal("350000"), CarStatusType.AVAILABLE);
         createTestCar("34DEF789", "Honda", "Civic", new BigDecimal("280000"), CarStatusType.MAINTENANCE);
-        createTestCar("34GHI012", "BMW", "320i", new BigDecimal("450000"), CarStatusType.RESERVED);
+        createTestCar("34GHI012", "BMW", "320i", new BigDecimal("450000"), CarStatusType.INSPECTION);
     }
 
     @AfterEach
@@ -56,7 +56,6 @@ class CarStatisticsControllerIntegrationTest {
         car.setProductionYear(2020);
         car.setPrice(price);
         car.setCurrencyType(CurrencyType.TRY);
-        car.setDamagePrice(BigDecimal.ZERO);
         car.setCarStatusType(status);
         carRepository.save(car);
     }
@@ -80,7 +79,7 @@ class CarStatisticsControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.AVAILABLE").value(2))
                 .andExpect(jsonPath("$.MAINTENANCE").value(1))
-                .andExpect(jsonPath("$.RESERVED").value(1));
+                .andExpect(jsonPath("$.INSPECTION").value(1));
     }
 
     @Test

@@ -29,7 +29,7 @@ public class CarRequest {
 
     @NotBlank(message = "Brand cannot be blank")
     @Size(max = 50, message = "Brand cannot exceed 50 characters")
-    @Pattern(regexp = "^[a-zA-Z\\s]+$", message = "Brand can only contain letters and spaces")
+    @Pattern(regexp = "^\\p{L}[\\p{L}\\s\\-]*$", message = "Brand can only contain letters, spaces and hyphens")
     private String brand;
 
     @NotBlank(message = "Model cannot be blank")
@@ -49,10 +49,6 @@ public class CarRequest {
 
     @NotNull(message = "Currency type cannot be null")
     private CurrencyType currencyType;
-
-    @DecimalMin(value = "0.0", message = "Damage price cannot be negative")
-    @Digits(integer = 10, fraction = 2, message = "Damage price must have at most 10 integer digits and 2 decimal places")
-    private BigDecimal damagePrice = BigDecimal.ZERO;
 
     @NotNull(message = "Car status type cannot be null")
     private CarStatusType carStatusType;

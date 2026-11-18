@@ -59,7 +59,6 @@ class PricingControllerIntegrationTest {
                 .productionYear(2023)
                 .price(new BigDecimal("500"))
                 .currencyType(CurrencyType.TRY)
-                .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
                 .bodyType("Sedan")
                 .build();

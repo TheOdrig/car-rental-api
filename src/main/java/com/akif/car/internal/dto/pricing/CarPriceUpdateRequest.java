@@ -17,10 +17,6 @@ public record CarPriceUpdateRequest(
     @NotNull(message = "Currency type cannot be null")
     CurrencyType currencyType,
 
-    @DecimalMin(value = "0.0", message = "Damage price cannot be negative")
-    @Digits(integer = 10, fraction = 2, message = "Damage price must have at most 10 integer digits and 2 decimal places")
-    BigDecimal damagePrice,
-
     String reason,
     String notes
 ) {}

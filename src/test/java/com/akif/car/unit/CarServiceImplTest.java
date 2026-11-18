@@ -80,7 +80,6 @@ class CarServiceImplTest {
                 .productionYear(2020)
                 .price(new BigDecimal("250000"))
                 .currencyType(CurrencyType.TRY)
-                .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
@@ -95,7 +94,6 @@ class CarServiceImplTest {
                 .productionYear(2021)
                 .price(new BigDecimal("300000"))
                 .currencyType(CurrencyType.TRY)
-                .damagePrice(new BigDecimal("5000"))
                 .carStatusType(CarStatusType.AVAILABLE)
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
@@ -109,7 +107,6 @@ class CarServiceImplTest {
                 .productionYear(2019)
                 .price(new BigDecimal("1500000"))
                 .currencyType(CurrencyType.TRY)
-                .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.MAINTENANCE)
                 .build();
 
@@ -122,7 +119,6 @@ class CarServiceImplTest {
                 .productionYear(2020)
                 .price(new BigDecimal("250000"))
                 .currencyType(CurrencyType.TRY)
-                .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
                 .build();
     }

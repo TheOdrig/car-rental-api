@@ -41,7 +41,7 @@ class CarSearchControllerIntegrationTest {
 
         createTestCar("34ABC123", "Toyota", "Corolla", 2020, new BigDecimal("250000"), CarStatusType.AVAILABLE);
         createTestCar("34XYZ456", "Honda", "Civic", 2021, new BigDecimal("280000"), CarStatusType.AVAILABLE);
-        createTestCar("34DEF789", "BMW", "320i", 2022, new BigDecimal("450000"), CarStatusType.RESERVED);
+        createTestCar("34DEF789", "BMW", "320i", 2022, new BigDecimal("450000"), CarStatusType.MAINTENANCE);
     }
 
     @AfterEach
@@ -59,7 +59,6 @@ class CarSearchControllerIntegrationTest {
         car.setProductionYear(year);
         car.setPrice(price);
         car.setCurrencyType(CurrencyType.TRY);
-        car.setDamagePrice(BigDecimal.ZERO);
         car.setCarStatusType(status);
         carRepository.save(car);
     }

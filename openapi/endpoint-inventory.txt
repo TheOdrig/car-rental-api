@@ -47,11 +47,8 @@ POST /api/v1/cars ADMIN
 GET /api/v1/cars/active PUBLIC
 POST /api/v1/cars/availability/search PUBLIC
 POST /api/v1/cars/business/{id}/available ADMIN
-GET /api/v1/cars/business/{id}/can-reserve ADMIN
-POST /api/v1/cars/business/{id}/cancel-reservation ADMIN
 POST /api/v1/cars/business/{id}/maintenance ADMIN
 PATCH /api/v1/cars/business/{id}/price ADMIN
-POST /api/v1/cars/business/{id}/reserve ADMIN
 PATCH /api/v1/cars/business/{id}/status ADMIN
 GET /api/v1/cars/filter-options PUBLIC
 GET /api/v1/cars/licensePlate/{licensePlate} AUTHENTICATED

@@ -156,21 +156,6 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
-    public CarResponse reserveCar(Long id) {
-        return statusService.reserveCar(id);
-    }
-
-    @Override
-    public CarResponse releaseCar(Long id) {
-        return statusService.releaseCar(id);
-    }
-
-    @Override
-    public CarResponse cancelReservation(Long id) {
-        return statusService.cancelReservation(id);
-    }
-
-    @Override
     public CarResponse markAsMaintenance(Long id) {
         return statusService.markAsMaintenance(id);
     }
@@ -183,11 +168,6 @@ public class CarServiceImpl implements CarService {
     @Override
     public CarResponse updateCarStatus(Long id, CarStatusUpdateRequest statusUpdateRequest) {
         return statusService.updateCarStatus(id, statusUpdateRequest);
-    }
-
-    @Override
-    public boolean canCarBeReserved(Long id) {
-        return statusService.canCarBeReserved(id);
     }
 
     @Override

@@ -466,10 +466,6 @@
             "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
             "type" : "string"
           },
-          "damagePrice" : {
-            "minimum" : 0.0,
-            "type" : "number"
-          },
           "notes" : {
             "type" : "string"
           },
@@ -496,11 +492,11 @@
           "brand" : {
             "maxLength" : 50,
             "minLength" : 0,
-            "pattern" : "^[a-zA-Z\\s]+$",
+            "pattern" : "^\\p{L}[\\p{L}\\s\\-]*$",
             "type" : "string"
           },
           "carStatusType" : {
-            "enum" : [ "Available", "Rented", "Maintenance", "Reserved", "Damaged", "Inspection" ],
+            "enum" : [ "Available", "Maintenance", "Damaged", "Inspection" ],
             "type" : "string"
           },
           "color" : {
@@ -512,10 +508,6 @@
           "currencyType" : {
             "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
             "type" : "string"
-          },
-          "damagePrice" : {
-            "minimum" : 0.0,
-            "type" : "number"
           },
           "doors" : {
             "format" : "int32",
@@ -644,11 +636,8 @@
           "brand" : {
             "type" : "string"
           },
-          "canBeReserved" : {
-            "type" : "boolean"
-          },
           "carStatusType" : {
-            "enum" : [ "Available", "Rented", "Maintenance", "Reserved", "Damaged", "Inspection" ],
+            "enum" : [ "Available", "Maintenance", "Damaged", "Inspection" ],
             "type" : "string"
           },
           "color" : {
@@ -664,9 +653,6 @@
           "currencyType" : {
             "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
             "type" : "string"
-          },
-          "damagePrice" : {
-            "type" : "number"
           },
           "displayCurrency" : {
             "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
@@ -700,12 +686,6 @@
           "fullName" : {
             "type" : "string"
           },
-          "hasDamage" : {
-            "type" : "boolean"
-          },
-          "hasExpiredDocuments" : {
-            "type" : "boolean"
-          },
           "id" : {
             "format" : "int64",
             "type" : "integer"
@@ -721,21 +701,6 @@
             "format" : "date",
             "type" : "string"
           },
-          "isAvailable" : {
-            "type" : "boolean"
-          },
-          "isInspectionExpired" : {
-            "type" : "boolean"
-          },
-          "isInsuranceExpired" : {
-            "type" : "boolean"
-          },
-          "isNew" : {
-            "type" : "boolean"
-          },
-          "isOld" : {
-            "type" : "boolean"
-          },
           "kilometer" : {
             "format" : "int64",
             "type" : "integer"
@@ -749,9 +714,6 @@
           },
           "model" : {
             "type" : "string"
-          },
-          "needsService" : {
-            "type" : "boolean"
           },
           "nextServiceDate" : {
             "format" : "date",
@@ -777,18 +739,12 @@
             "format" : "date",
             "type" : "string"
           },
-          "requiresAttention" : {
-            "type" : "boolean"
-          },
           "seats" : {
             "format" : "int32",
             "type" : "integer"
           },
           "thumbnailUrl" : {
             "type" : "string"
-          },
-          "totalPrice" : {
-            "type" : "number"
           },
           "transmissionType" : {
             "type" : "string"
@@ -811,7 +767,7 @@
         "description" : "Status update data",
         "properties" : {
           "carStatusType" : {
-            "enum" : [ "Available", "Rented", "Maintenance", "Reserved", "Damaged", "Inspection" ],
+            "enum" : [ "Available", "Maintenance", "Damaged", "Inspection" ],
             "type" : "string"
           },
           "notes" : {
@@ -826,44 +782,10 @@
       },
       "CarSummaryResponse" : {
         "properties" : {
-          "age" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
           "brand" : {
             "type" : "string"
           },
-          "carStatusType" : {
-            "enum" : [ "Available", "Rented", "Maintenance", "Reserved", "Damaged", "Inspection" ],
-            "type" : "string"
-          },
-          "color" : {
-            "type" : "string"
-          },
-          "currencyType" : {
-            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
-            "type" : "string"
-          },
-          "displayName" : {
-            "type" : "string"
-          },
-          "formattedPrice" : {
-            "type" : "string"
-          },
-          "fullName" : {
-            "type" : "string"
-          },
           "id" : {
-            "format" : "int64",
-            "type" : "integer"
-          },
-          "isAvailable" : {
-            "type" : "boolean"
-          },
-          "isNew" : {
-            "type" : "boolean"
-          },
-          "kilometer" : {
             "format" : "int64",
             "type" : "integer"
           },
@@ -872,13 +794,6 @@
           },
           "model" : {
             "type" : "string"
-          },
-          "productionYear" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "rating" : {
-            "type" : "number"
           },
           "thumbnailUrl" : {
             "type" : "string"
@@ -2183,7 +2098,7 @@
         "properties" : {
           "code" : {
             "description" : "Stable machine readable error code",
-            "enum" : [ "ACCESS_DENIED", "ALERT_NOT_FOUND", "AUTHENTICATION_FAILED", "BAD_REQUEST", "CAR_ALREADY_EXISTS", "CAR_CANNOT_BE_RESERVED", "CAR_DATES_UNAVAILABLE", "CAR_NOT_AVAILABLE", "CAR_NOT_FOUND", "CAR_OPERATION_NOT_ALLOWED", "CAR_VALIDATION_FAILED", "CONCURRENT_MODIFICATION", "CONSTRAINT_VIOLATION", "DAMAGE_ASSESSMENT_ERROR", "DAMAGE_DISPUTE_ERROR", "DAMAGE_REPORT_ERROR", "DATA_CONFLICT", "EMAIL_SEND_FAILED", "ENDPOINT_NOT_FOUND", "FILE_UPLOAD_ERROR", "INTERNAL_SERVER_ERROR", "INVALID_JSON", "INVALID_MULTIPART_REQUEST", "INVALID_PARAMETER_TYPE", "INVALID_PASSWORD", "INVALID_PAYMENT_STATE", "INVALID_PENALTY_CONFIG", "INVALID_RENTAL_STATE", "INVALID_STATUS_TRANSITION", "INVALID_TOKEN", "INVALID_USER_STATE", "LATE_RETURN_ERROR", "METHOD_NOT_ALLOWED", "MISSING_PARAMETER", "NOT_ACCEPTABLE", "OAUTH2_ACCOUNT_ALREADY_LINKED", "OAUTH2_AUTHENTICATION_FAILED", "OAUTH2_AUTHORIZATION_DENIED", "OAUTH2_EMAIL_REQUIRED", "OAUTH2_INVALID_STATE", "OAUTH2_INVALID_TOKEN", "OAUTH2_LOCAL_ACCOUNT_UNVERIFIED", "OAUTH2_PROVIDER_NOT_SUPPORTED", "OAUTH2_PROVIDER_UNAVAILABLE", "OAUTH2_SOCIAL_LOGIN_REQUIRED", "OPEN_RENTAL_REQUEST_LIMIT_EXCEEDED", "PAYLOAD_TOO_LARGE", "PAYMENT_FAILED", "PAYMENT_NOT_AUTHORIZED", "PAYMENT_NOT_FOUND", "PAYMENT_WINDOW_NOT_OPEN", "PENALTY_CALCULATION_ERROR", "PENALTY_WAIVER_ERROR", "RATE_LIMIT_EXCEEDED", "RECONCILIATION_ERROR", "RENTAL_CANCEL_NOT_ALLOWED", "RENTAL_NOT_FOUND", "RENTAL_VALIDATION_FAILED", "STRIPE_INTEGRATION_ERROR", "TOKEN_EXPIRED", "UNSUPPORTED_MEDIA_TYPE", "USER_ALREADY_EXISTS", "USER_NOT_FOUND", "VALIDATION_FAILED", "WEBHOOK_PAYLOAD_TOO_LARGE", "WEBHOOK_PROCESSING_FAILED", "WEBHOOK_SIGNATURE_INVALID", "WEBHOOK_SIGNATURE_MISSING" ],
+            "enum" : [ "ACCESS_DENIED", "ALERT_NOT_FOUND", "AUTHENTICATION_FAILED", "BAD_REQUEST", "CAR_ALREADY_EXISTS", "CAR_DATES_UNAVAILABLE", "CAR_NOT_AVAILABLE", "CAR_NOT_FOUND", "CAR_VALIDATION_FAILED", "CONCURRENT_MODIFICATION", "CONSTRAINT_VIOLATION", "DAMAGE_ASSESSMENT_ERROR", "DAMAGE_DISPUTE_ERROR", "DAMAGE_REPORT_ERROR", "DATA_CONFLICT", "EMAIL_SEND_FAILED", "ENDPOINT_NOT_FOUND", "FILE_UPLOAD_ERROR", "INTERNAL_SERVER_ERROR", "INVALID_JSON", "INVALID_MULTIPART_REQUEST", "INVALID_PARAMETER_TYPE", "INVALID_PASSWORD", "INVALID_PAYMENT_STATE", "INVALID_RENTAL_STATE", "INVALID_STATUS_TRANSITION", "INVALID_TOKEN", "INVALID_USER_STATE", "METHOD_NOT_ALLOWED", "MISSING_PARAMETER", "NOT_ACCEPTABLE", "OAUTH2_ACCOUNT_ALREADY_LINKED", "OAUTH2_AUTHENTICATION_FAILED", "OAUTH2_AUTHORIZATION_DENIED", "OAUTH2_EMAIL_REQUIRED", "OAUTH2_INVALID_STATE", "OAUTH2_INVALID_TOKEN", "OAUTH2_LOCAL_ACCOUNT_UNVERIFIED", "OAUTH2_PROVIDER_NOT_SUPPORTED", "OAUTH2_PROVIDER_UNAVAILABLE", "OAUTH2_SOCIAL_LOGIN_REQUIRED", "OPEN_RENTAL_REQUEST_LIMIT_EXCEEDED", "PAYLOAD_TOO_LARGE", "PAYMENT_FAILED", "PAYMENT_NOT_AUTHORIZED", "PAYMENT_NOT_FOUND", "PAYMENT_WINDOW_NOT_OPEN", "PENALTY_WAIVER_ERROR", "RATE_LIMIT_EXCEEDED", "RECONCILIATION_ERROR", "RENTAL_CANCEL_NOT_ALLOWED", "RENTAL_NOT_FOUND", "RENTAL_VALIDATION_FAILED", "STRIPE_INTEGRATION_ERROR", "TOKEN_EXPIRED", "UNSUPPORTED_MEDIA_TYPE", "USER_ALREADY_EXISTS", "USER_NOT_FOUND", "VALIDATION_FAILED", "WEBHOOK_PAYLOAD_TOO_LARGE", "WEBHOOK_PROCESSING_FAILED", "WEBHOOK_SIGNATURE_INVALID", "WEBHOOK_SIGNATURE_MISSING" ],
             "type" : "string"
           },
           "detail" : {
@@ -6859,7 +6774,7 @@
     },
     "/api/v1/cars/business/{id}/available" : {
       "post" : {
-        "description" : "Mark a car as available for sale",
+        "description" : "Return a car to service as available for rental",
         "operationId" : "markAsAvailable",
         "parameters" : [ {
           "description" : "Car ID",
@@ -6934,169 +6849,6 @@
           }
         },
         "summary" : "Mark car as available",
-        "tags" : [ "Car Business" ]
-      }
-    },
-    "/api/v1/cars/business/{id}/can-reserve" : {
-      "get" : {
-        "description" : "Check if car can be reserved",
-        "operationId" : "canCarBeReserved",
-        "parameters" : [ {
-          "description" : "Car ID",
-          "in" : "path",
-          "name" : "id",
-          "required" : true,
-          "schema" : {
-            "format" : "int64",
-            "type" : "integer"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "additionalProperties" : {
-                    "type" : "boolean"
-                  },
-                  "type" : "object"
-                }
-              }
-            },
-            "description" : "Check completed"
-          },
-          "400" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Invalid car ID"
-          },
-          "401" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Authentication required"
-          },
-          "403" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Access denied"
-          },
-          "404" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Car not found"
-          },
-          "500" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Unexpected error"
-          }
-        },
-        "summary" : "Check if car can be reserved",
-        "tags" : [ "Car Business" ]
-      }
-    },
-    "/api/v1/cars/business/{id}/cancel-reservation" : {
-      "post" : {
-        "description" : "Cancel car reservation",
-        "operationId" : "cancelReservation",
-        "parameters" : [ {
-          "description" : "Car ID",
-          "in" : "path",
-          "name" : "id",
-          "required" : true,
-          "schema" : {
-            "format" : "int64",
-            "type" : "integer"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/CarResponse"
-                }
-              }
-            },
-            "description" : "Reservation cancelled successfully"
-          },
-          "400" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Car is not reserved"
-          },
-          "401" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Authentication required"
-          },
-          "403" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Access denied"
-          },
-          "404" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Car not found"
-          },
-          "500" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Unexpected error"
-          }
-        },
-        "summary" : "Cancel reservation",
         "tags" : [ "Car Business" ]
       }
     },
@@ -7267,86 +7019,6 @@
           }
         },
         "summary" : "Update car price",
-        "tags" : [ "Car Business" ]
-      }
-    },
-    "/api/v1/cars/business/{id}/reserve" : {
-      "post" : {
-        "description" : "Reserve a car for a customer",
-        "operationId" : "reserveCar",
-        "parameters" : [ {
-          "description" : "Car ID",
-          "in" : "path",
-          "name" : "id",
-          "required" : true,
-          "schema" : {
-            "format" : "int64",
-            "type" : "integer"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/CarResponse"
-                }
-              }
-            },
-            "description" : "Car reserved successfully"
-          },
-          "400" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Car cannot be reserved"
-          },
-          "401" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Authentication required"
-          },
-          "403" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Access denied"
-          },
-          "404" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Car not found"
-          },
-          "500" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Unexpected error"
-          }
-        },
-        "summary" : "Reserve car",
         "tags" : [ "Car Business" ]
       }
     },
@@ -7618,7 +7290,7 @@
           "name" : "carStatusType",
           "required" : false,
           "schema" : {
-            "enum" : [ "Available", "Rented", "Maintenance", "Reserved", "Damaged", "Inspection" ],
+            "enum" : [ "Available", "Maintenance", "Damaged", "Inspection" ],
             "type" : "string"
           }
         }, {
@@ -7924,7 +7596,7 @@
           "name" : "status",
           "required" : false,
           "schema" : {
-            "enum" : [ "Available", "Rented", "Maintenance", "Reserved", "Damaged", "Inspection" ],
+            "enum" : [ "Available", "Maintenance", "Damaged", "Inspection" ],
             "type" : "string"
           }
         }, {

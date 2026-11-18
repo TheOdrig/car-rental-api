@@ -8,10 +8,8 @@ import lombok.Getter;
 @JsonFormat(shape=JsonFormat.Shape.STRING)
 public enum CarStatusType {
 
-    AVAILABLE("Available", "Car is available for rental"),
-    RENTED("Rented", "Car is currently rented out"),
+    AVAILABLE("Available", "Car is in service and can be rented"),
     MAINTENANCE("Maintenance", "Car is under maintenance"),
-    RESERVED("Reserved", "Car is reserved for a customer"),
     DAMAGED("Damaged", "Car is damaged and needs repair"),
     INSPECTION("Inspection", "Car is being inspected");
 
@@ -31,24 +29,12 @@ public enum CarStatusType {
         return this == AVAILABLE;
     }
 
-    public boolean canBeReserved() {
-        return this == AVAILABLE;
-    }
-
-    public boolean canBeMaintained() {
-        return this == AVAILABLE || this == DAMAGED;
-    }
-
-    public boolean isInactive() {
-        return this == MAINTENANCE || this == RENTED;
-    }
-
     public boolean requiresAttention() {
         return this == DAMAGED || this == INSPECTION;
     }
 
     public static CarStatusType[] getUnavailableStatuses() {
-        return new CarStatusType[]{RENTED, MAINTENANCE, DAMAGED, INSPECTION};
+        return new CarStatusType[]{MAINTENANCE, DAMAGED, INSPECTION};
     }
 
     public static CarStatusType fromString(String status) {

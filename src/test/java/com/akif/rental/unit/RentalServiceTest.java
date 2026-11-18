@@ -215,13 +215,13 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should throw exception when car is not available")
         void shouldThrowExceptionWhenCarNotAvailable() {
-            CarResponse reservedCar = CarResponse.builder()
+            CarResponse maintenanceCar = CarResponse.builder()
                     .id(1L)
-                    .carStatusType(CarStatusType.RESERVED)
+                    .carStatusType(CarStatusType.MAINTENANCE)
                     .build();
 
             when(authService.getUserByUsername("testuser")).thenReturn(testUser);
-            when(carService.getCarForBooking(1L)).thenReturn(reservedCar);
+            when(carService.getCarForBooking(1L)).thenReturn(maintenanceCar);
 
             assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, "testuser"))
                     .isInstanceOf(CarNotAvailableException.class);
@@ -459,7 +459,6 @@ class RentalServiceTest {
             assertThat(request.getValue().amount()).isEqualByComparingTo(testRental.getTotalPrice());
             assertThat(request.getValue().currency()).isEqualTo(testRental.getCurrency());
             verifyNoMoreInteractions(paymentService);
-            verify(carService, never()).reserveCar(anyLong());
             verify(eventPublisher).publishEvent(any(Object.class));
         }
 
@@ -548,7 +547,6 @@ class RentalServiceTest {
             RentalResponse result = rentalService.returnRental(1L, "Return notes");
 
             assertThat(result).isNotNull();
-            verify(carService, never()).releaseCar(anyLong());
         }
     }
 

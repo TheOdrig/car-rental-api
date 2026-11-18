@@ -339,9 +339,7 @@ class AlertServiceImplTest {
     private RentalResponse createOverdueRental(Long id, LocalDate endDate) {
         UserSummaryResponse userSummary = new UserSummaryResponse(1L, "testuser", "test@example.com");
         CarSummaryResponse carSummary = new CarSummaryResponse(
-                1L, "34ABC123", "Toyota", "Corolla", 2023,
-                "1000 TL", null, CarStatusType.RESERVED, "White", 50000L,
-                null, null, 2, "Toyota Corolla", "Toyota Corolla 2023", false, false);
+                1L, "34ABC123", "Toyota", "Corolla", null);
 
         return new RentalResponse(
                 id, carSummary, userSummary,

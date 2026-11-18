@@ -117,7 +117,6 @@ public class CarCommandService {
         BigDecimal oldPrice = car.getPrice();
         car.setPrice(priceUpdateRequest.price());
         car.setCurrencyType(priceUpdateRequest.currencyType());
-        car.setDamagePrice(priceUpdateRequest.damagePrice());
         car.setUpdateTime(LocalDateTime.now(clock));
 
         CarResponse result = carMapper.toDto(carRepository.save(car));

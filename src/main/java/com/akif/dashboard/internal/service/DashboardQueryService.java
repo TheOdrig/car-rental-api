@@ -85,9 +85,9 @@ public class DashboardQueryService {
                 inspectionCars++;
             } else if (status == CarStatusType.DAMAGED) {
                 damagedCars++;
-            } else if (status == CarStatusType.RENTED || inUse.contains(car.getKey())) {
+            } else if (inUse.contains(car.getKey())) {
                 rentedCars++;
-            } else if (status == CarStatusType.RESERVED || reserved.contains(car.getKey())) {
+            } else if (reserved.contains(car.getKey())) {
                 reservedCars++;
             } else {
                 availableCars++;
