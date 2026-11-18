@@ -4,10 +4,6 @@ import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
 
-/**
- * Public DTO for cross-module Payment data access.
- * Used by rental module to receive payment information via PaymentService public API.
- */
 public record PaymentDto(
         Long id,
         Long rentalId,

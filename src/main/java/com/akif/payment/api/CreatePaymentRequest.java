@@ -6,10 +6,6 @@ import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
-/**
- * Request DTO for creating a new payment.
- * Used by rental module to create penalty payments via PaymentService.
- */
 public record CreatePaymentRequest(
         @NotNull Long rentalId,
         String userEmail,

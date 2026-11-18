@@ -359,7 +359,7 @@ class LateReturnReportServiceImplTest {
         @Test
         @DisplayName("Should calculate late days from late hours")
         void shouldCalculateLateDaysFromLateHours() {
-            ReflectionTestUtils.setField(testRental2, "lateHours", 72); // 3 days
+            ReflectionTestUtils.setField(testRental2, "lateHours", 72);
             LateReturnFilterDto filter = LateReturnFilterDto.builder()
                     .startDate(LocalDate.now().minusDays(10))
                     .endDate(LocalDate.now())

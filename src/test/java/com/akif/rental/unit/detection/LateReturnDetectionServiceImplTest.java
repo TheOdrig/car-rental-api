@@ -189,7 +189,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return LATE when 5 hours late")
         void shouldReturnLateWhen5HoursLate() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(6); // 5 hours after grace
+            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(6);
 
             LateReturnStatus status = service.calculateLateStatus(testRental, currentTime);
 
@@ -199,7 +199,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return LATE when 23 hours late")
         void shouldReturnLateWhen23HoursLate() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(24); // 23 hours after grace
+            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(24);
 
             LateReturnStatus status = service.calculateLateStatus(testRental, currentTime);
 
@@ -209,7 +209,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should calculate correct late hours for 3 hours late")
         void shouldCalculateCorrectLateHoursFor3HoursLate() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(4); // 3 hours after grace
+            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(4);
 
             long lateHours = service.calculateLateHours(testRental, currentTime);
 
@@ -224,7 +224,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return SEVERELY_LATE when exactly 24 hours late")
         void shouldReturnSeverelyLateWhenExactly24HoursLate() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(25); // 24 hours after grace
+            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(25);
 
             LateReturnStatus status = service.calculateLateStatus(testRental, currentTime);
 

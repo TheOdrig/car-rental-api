@@ -121,7 +121,7 @@ public class CustomUserDetailsServiceTest {
             assertThat(userDetails.getAuthorities()).hasSize(1);
             assertThat(userDetails.getAuthorities()).hasSize(1);
             assertThat(userDetails.getAuthorities().iterator().next().getAuthority()).isEqualTo("ROLE_USER");
-            assertThat(userDetails.isEnabled()).isFalse(); // User is disabled
+            assertThat(userDetails.isEnabled()).isFalse();
         }
 
         @Test
@@ -278,7 +278,7 @@ public class CustomUserDetailsServiceTest {
             assertThat(userDetails.isAccountNonExpired()).isTrue();
             assertThat(userDetails.isAccountNonLocked()).isTrue();
             assertThat(userDetails.isCredentialsNonExpired()).isTrue();
-            assertThat(userDetails.isEnabled()).isFalse(); // User is disabled
+            assertThat(userDetails.isEnabled()).isFalse();
         }
     }
 

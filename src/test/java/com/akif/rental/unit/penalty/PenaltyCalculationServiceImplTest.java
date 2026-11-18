@@ -88,7 +88,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should calculate penalty for 3 hours late")
         void shouldCalculatePenaltyFor3HoursLate() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(4); // 3 hours after grace
+            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(4);
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -205,7 +205,7 @@ class PenaltyCalculationServiceImplTest {
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
-            BigDecimal expectedCap = new BigDecimal("2500.00"); // 500 * 5
+            BigDecimal expectedCap = new BigDecimal("2500.00");
             assertThat(result.penaltyAmount()).isEqualByComparingTo(expectedCap);
             assertThat(result.cappedAtMax()).isTrue();
             assertThat(result.breakdown()).contains("capped at 5x daily rate");
@@ -245,7 +245,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should apply zero penalty within grace period")
         void shouldApplyZeroPenaltyWithinGracePeriod() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusMinutes(30); // 30 min late
+            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusMinutes(30);
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -259,7 +259,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should apply zero penalty at exactly grace period limit")
         void shouldApplyZeroPenaltyAtExactlyGracePeriodLimit() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusMinutes(60); // Exactly 60 min
+            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusMinutes(60);
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
