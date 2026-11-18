@@ -530,9 +530,22 @@ class StripeWebhookSignedIntegrationTest {
     }
 
     @Test
-    @DisplayName("an event without an installation identity is ignored")
-    void missingInstallationIsIgnored() throws Exception {
+    @DisplayName("an event without an installation identity is applied when the stored intent id matches")
+    void missingInstallationAppliesOnExactIntentMatch() throws Exception {
         String payload = intentEvent("evt_inst2", "payment_intent.succeeded", "succeeded")
+                .replace("\"installation_id\":\"" + installation.id() + "\",", "");
+
+        deliver(payload).andExpect(status().isOk());
+
+        assertThat(reload().getStatus()).isEqualTo(PaymentStatus.CAPTURED);
+    }
+
+    @Test
+    @DisplayName("an event without an installation identity is ignored on the metadata fallback path")
+    void missingInstallationIsIgnoredOnFallback() throws Exception {
+        payment.nextAttempt();
+        payment = paymentRepository.saveAndFlush(payment);
+        String payload = intentEvent("evt_inst4", "payment_intent.amount_capturable_updated", "requires_capture")
                 .replace("\"installation_id\":\"" + installation.id() + "\",", "");
 
         deliver(payload).andExpect(status().isOk());

@@ -174,7 +174,7 @@ public class StripeWebhookHandler {
             log.warn("[AUDIT] Webhook ignored, foreign environment tag | Type: {} | Intent: {}", type, intent.getId());
             return;
         }
-        if (!belongsToThisInstallation(intent)) {
+        if (hasForeignInstallationTag(intent)) {
             log.warn("[AUDIT] Webhook ignored, foreign installation tag | Type: {} | Intent: {}", type, intent.getId());
             return;
         }
@@ -218,6 +218,11 @@ public class StripeWebhookHandler {
     private boolean belongsToThisInstallation(PaymentIntent intent) {
         String actual = intent.getMetadata() != null ? intent.getMetadata().get("installation_id") : null;
         return actual != null && actual.equals(installation.id());
+    }
+
+    private boolean hasForeignInstallationTag(PaymentIntent intent) {
+        String actual = intent.getMetadata() != null ? intent.getMetadata().get("installation_id") : null;
+        return actual != null && !actual.equals(installation.id());
     }
 
     private void cancelOrphan(String intentId) {
