@@ -16,6 +16,8 @@ RUN java -Djarmode=tools -jar application.jar extract --layers --destination ext
 FROM eclipse-temurin:21-jre-alpine AS runtime
 WORKDIR /app
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0"
+ENV JAVA_TOOL_OPTIONS="-Duser.timezone=UTC"
+ENV TZ=UTC
 
 RUN addgroup -S spring && adduser -S -G spring spring
 COPY --from=layers /layers/extracted/dependencies/ ./
@@ -25,4 +27,4 @@ COPY --from=layers /layers/extracted/application/ ./
 
 USER spring
 EXPOSE 8082
-ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar application.jar"]
+ENTRYPOINT ["sh", "-c", "exec java -Duser.timezone=UTC $JAVA_OPTS -jar application.jar"]

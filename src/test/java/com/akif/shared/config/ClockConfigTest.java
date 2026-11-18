@@ -17,9 +17,15 @@ class ClockConfigTest {
     private final ClockConfig config = new ClockConfig();
 
     @Test
-    @DisplayName("exposes the system clock in the default zone")
+    @DisplayName("exposes the system clock in UTC")
     void exposesSystemClock() {
-        assertThat(config.clock().getZone()).isEqualTo(Clock.systemDefaultZone().getZone());
+        assertThat(config.clock().getZone()).isEqualTo(ZoneOffset.UTC);
+    }
+
+    @Test
+    @DisplayName("the test JVM runs in UTC so database defaults and application clocks agree")
+    void jvmRunsInUtc() {
+        assertThat(java.util.TimeZone.getDefault().getID()).isIn("UTC", "Etc/UTC", "GMT");
     }
 
     @Test

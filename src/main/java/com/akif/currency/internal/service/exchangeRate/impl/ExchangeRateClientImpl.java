@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -80,7 +79,7 @@ public class ExchangeRateClientImpl implements ExchangeRateClient {
         LocalDateTime timestamp = apiResponse.timeLastUpdated() != null
                 ? LocalDateTime.ofInstant(
                         Instant.ofEpochSecond(apiResponse.timeLastUpdated()),
-                        ZoneId.systemDefault())
+                        clock.getZone())
                 : LocalDateTime.now(clock);
 
         return new ExchangeRateResponse(
