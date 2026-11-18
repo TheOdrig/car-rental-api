@@ -1,5 +1,6 @@
 package com.akif.auth.e2e;
 
+import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.car.domain.Car;
@@ -7,7 +8,6 @@ import com.akif.car.internal.repository.CarRepository;
 import com.akif.e2e.infrastructure.E2ETestBase;
 import com.akif.e2e.infrastructure.TestDataBuilder;
 import com.akif.rental.internal.dto.request.RentalRequest;
-import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = CarGalleryProjectApplication.class)
+@SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @DisplayName("Authorization and Security E2E Tests")
 class AuthorizationE2ETest extends E2ETestBase {

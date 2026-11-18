@@ -5,7 +5,7 @@ import com.akif.auth.domain.User;
 import com.akif.auth.internal.dto.LoginRequest;
 import com.akif.auth.internal.dto.RefreshTokenRequest;
 import com.akif.auth.internal.dto.RegisterRequest;
-import com.akif.auth.internal.exceptipn.UserAlreadyExistsException;
+import com.akif.auth.internal.exception.UserAlreadyExistsException;
 import com.akif.auth.internal.mapper.UserMapper;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.auth.internal.service.AuthServiceImpl;

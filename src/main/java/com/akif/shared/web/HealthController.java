@@ -1,4 +1,4 @@
-package com.akif.starter;
+package com.akif.shared.web;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

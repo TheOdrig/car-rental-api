@@ -16,12 +16,10 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
             .info(new Info()
-                .title("Car Gallery API")
+                .title("Car Rental API")
                 .version("1.0")
-                .description("REST API for Car Gallery Management System")
-                .contact(new Contact()
-                    .name("API Support")
-                    .email("support@cargallery.com")))
+                .description("REST API for the car rental platform")
+                .contact(new Contact().name("API Support")))
             .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
             .components(new Components()
                 .addSecuritySchemes("bearerAuth",

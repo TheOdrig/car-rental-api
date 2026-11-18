@@ -1,7 +1,7 @@
 package com.akif.shared.exception;
 
 import com.akif.auth.internal.dto.oauth2.OAuth2ErrorResponse;
-import com.akif.auth.internal.exceptipn.OAuth2AuthenticationException;
+import com.akif.auth.internal.exception.OAuth2AuthenticationException;
 import com.akif.auth.domain.enums.OAuth2ErrorType;
 import com.akif.car.internal.exception.CarAlreadyExistsException;
 import com.akif.car.internal.exception.CarNotFoundException;

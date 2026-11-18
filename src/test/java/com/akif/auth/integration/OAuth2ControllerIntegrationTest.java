@@ -1,5 +1,6 @@
 package com.akif.auth.integration;
 
+import com.akif.CarRentalApplication;
 import com.akif.auth.api.AuthResponse;
 import com.akif.auth.domain.User;
 import com.akif.auth.domain.enums.AuthProvider;
@@ -8,7 +9,6 @@ import com.akif.auth.internal.repository.LinkedAccountRepository;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.auth.internal.service.oauth2.impl.OAuth2StateService;
 import com.akif.shared.enums.Role;
-import com.akif.starter.CarGalleryProjectApplication;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
-@SpringBootTest(classes = CarGalleryProjectApplication.class)
+@SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")

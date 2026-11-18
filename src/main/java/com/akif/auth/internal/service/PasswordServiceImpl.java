@@ -2,7 +2,7 @@ package com.akif.auth.internal.service;
 
 import com.akif.auth.api.PasswordService;
 import com.akif.auth.domain.User;
-import com.akif.auth.internal.exceptipn.InvalidPasswordException;
+import com.akif.auth.internal.exception.InvalidPasswordException;
 import com.akif.auth.internal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

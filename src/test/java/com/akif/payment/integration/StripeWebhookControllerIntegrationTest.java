@@ -1,8 +1,8 @@
 package com.akif.payment.integration;
 
+import com.akif.CarRentalApplication;
 import com.akif.payment.internal.exception.WebhookSignatureException;
 import com.akif.payment.internal.webhook.StripeWebhookHandler;
-import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(classes = CarGalleryProjectApplication.class)
+@SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")

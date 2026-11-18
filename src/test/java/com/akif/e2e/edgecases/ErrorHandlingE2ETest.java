@@ -1,5 +1,6 @@
 package com.akif.e2e.edgecases;
 
+import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.car.domain.Car;
@@ -18,7 +19,6 @@ import com.akif.rental.internal.dto.request.RentalRequest;
 import com.akif.rental.internal.exception.InvalidRentalStateException;
 import com.akif.payment.internal.exception.PaymentFailedException;
 import com.akif.rental.internal.repository.RentalRepository;
-import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = CarGalleryProjectApplication.class)
+@SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @DisplayName("Error Handling E2E Tests")
 class ErrorHandlingE2ETest extends E2ETestBase {

@@ -1,4 +1,4 @@
-package com.akif.auth.internal.exceptipn;
+package com.akif.auth.internal.exception;
 
 import com.akif.auth.domain.enums.OAuth2ErrorType;
 import com.akif.shared.exception.BaseException;

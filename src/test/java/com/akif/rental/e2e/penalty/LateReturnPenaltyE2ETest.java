@@ -1,5 +1,6 @@
 package com.akif.rental.e2e.penalty;
 
+import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.car.domain.Car;
@@ -23,7 +24,6 @@ import com.akif.rental.internal.dto.request.ReturnRequest;
 import com.akif.rental.internal.repository.PenaltyWaiverRepository;
 import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.rental.internal.service.detection.LateReturnDetectionService;
-import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +48,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = CarGalleryProjectApplication.class)
+@SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @DisplayName("Late Return Penalty E2E Tests")
 class LateReturnPenaltyE2ETest extends E2ETestBase {

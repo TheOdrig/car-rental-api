@@ -1,5 +1,6 @@
 package com.akif.payment.e2e;
 
+import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.car.domain.Car;
@@ -13,7 +14,6 @@ import com.akif.payment.internal.repository.PaymentRepository;
 import com.akif.payment.internal.service.gateway.PaymentGateway;
 import com.akif.rental.domain.enums.RentalStatus;
 import com.akif.rental.internal.dto.request.RentalRequest;
-import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = CarGalleryProjectApplication.class)
+@SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @DisplayName("Payment Gateway E2E Tests")
 class PaymentGatewayE2ETest extends E2ETestBase {

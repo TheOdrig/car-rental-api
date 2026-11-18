@@ -1,4 +1,4 @@
-package com.akif.starter;
+package com.akif;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,10 +16,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableCaching
 @EnableScheduling
 @SpringBootApplication
-public class CarGalleryProjectApplication {
+public class CarRentalApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CarGalleryProjectApplication.class, args);
+        SpringApplication.run(CarRentalApplication.class, args);
     }
 
 }

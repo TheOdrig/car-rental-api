@@ -1,4 +1,4 @@
-package com.akif.auth.internal.exceptipn;
+package com.akif.auth.internal.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

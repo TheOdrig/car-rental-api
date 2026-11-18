@@ -1,5 +1,6 @@
 package com.akif.currency.e2e;
 
+import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.car.domain.Car;
@@ -11,7 +12,6 @@ import com.akif.e2e.infrastructure.TestDataBuilder;
 import com.akif.rental.api.RentalResponse;
 import com.akif.rental.internal.dto.request.RentalRequest;
 import com.akif.shared.enums.CurrencyType;
-import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = CarGalleryProjectApplication.class)
+@SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @DisplayName("Currency Conversion Integration E2E Tests")
 class CurrencyConversionE2ETest extends E2ETestBase {

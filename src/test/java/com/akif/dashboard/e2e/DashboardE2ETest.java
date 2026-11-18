@@ -1,5 +1,6 @@
 package com.akif.dashboard.e2e;
 
+import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.car.domain.Car;
@@ -21,7 +22,6 @@ import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.dto.request.RentalRequest;
 import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.shared.enums.CurrencyType;
-import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -45,7 +45,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = CarGalleryProjectApplication.class)
+@SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @DisplayName("Dashboard E2E Tests")
 class DashboardE2ETest extends E2ETestBase {

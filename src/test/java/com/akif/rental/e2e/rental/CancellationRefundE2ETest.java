@@ -1,5 +1,6 @@
 package com.akif.rental.e2e.rental;
 
+import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.car.domain.Car;
@@ -12,7 +13,6 @@ import com.akif.payment.internal.repository.PaymentRepository;
 import com.akif.rental.api.RentalCancelledEvent;
 import com.akif.rental.domain.enums.RentalStatus;
 import com.akif.rental.internal.dto.request.RentalRequest;
-import com.akif.starter.CarGalleryProjectApplication;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = CarGalleryProjectApplication.class)
+@SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @DisplayName("Cancellation and Refund E2E Tests")
 @Slf4j

@@ -1,10 +1,10 @@
 package com.akif.car.integration;
 
+import com.akif.CarRentalApplication;
 import com.akif.car.domain.Car;
 import com.akif.car.domain.enums.CarStatusType;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.shared.enums.CurrencyType;
-import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(classes = CarGalleryProjectApplication.class)
+@SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")

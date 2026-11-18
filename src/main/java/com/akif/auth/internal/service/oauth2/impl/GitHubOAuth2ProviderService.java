@@ -3,7 +3,7 @@ package com.akif.auth.internal.service.oauth2.impl;
 import com.akif.auth.internal.config.OAuth2Properties;
 import com.akif.auth.internal.dto.oauth2.OAuth2TokenResponse;
 import com.akif.auth.internal.dto.oauth2.OAuth2UserInfo;
-import com.akif.auth.internal.exceptipn.OAuth2ProviderException;
+import com.akif.auth.internal.exception.OAuth2ProviderException;
 import com.akif.auth.internal.service.oauth2.OAuth2ProviderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;

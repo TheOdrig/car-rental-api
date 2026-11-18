@@ -1,5 +1,6 @@
 package com.akif.notification.integration;
 
+import com.akif.CarRentalApplication;
 import com.akif.notification.domain.EmailType;
 import com.akif.notification.internal.dto.EmailMessage;
 import com.akif.notification.internal.service.email.IEmailSender;
@@ -9,7 +10,6 @@ import com.akif.rental.api.RentalCancelledEvent;
 import com.akif.rental.api.RentalConfirmedEvent;
 import com.akif.rental.api.ReturnReminderEvent;
 import com.akif.shared.enums.CurrencyType;
-import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = CarGalleryProjectApplication.class)
+@SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")

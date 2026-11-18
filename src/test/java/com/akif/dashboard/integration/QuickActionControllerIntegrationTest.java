@@ -1,5 +1,6 @@
 package com.akif.dashboard.integration;
 
+import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.car.domain.Car;
@@ -12,7 +13,6 @@ import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.shared.enums.Role;
 import com.akif.shared.security.JwtTokenProvider;
-import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(classes = CarGalleryProjectApplication.class)
+@SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")

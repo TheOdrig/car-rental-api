@@ -1,7 +1,7 @@
 package com.akif.auth.unit;
 
 import com.akif.auth.domain.User;
-import com.akif.auth.internal.exceptipn.InvalidPasswordException;
+import com.akif.auth.internal.exception.InvalidPasswordException;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.auth.internal.service.PasswordServiceImpl;
 import org.junit.jupiter.api.BeforeEach;

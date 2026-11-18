@@ -1,5 +1,6 @@
 package com.akif.auth.integration;
 
+import com.akif.CarRentalApplication;
 import com.akif.auth.domain.PasswordResetToken;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.dto.ForgotPasswordRequest;
@@ -7,7 +8,6 @@ import com.akif.auth.internal.dto.ResetPasswordRequest;
 import com.akif.auth.internal.repository.PasswordResetTokenRepository;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.shared.enums.Role;
-import com.akif.starter.CarGalleryProjectApplication;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,7 +36,7 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(classes = CarGalleryProjectApplication.class)
+@SpringBootTest(classes = CarRentalApplication.class)
 @Import(TestcontainersConfiguration.class)
 @AutoConfigureWebMvc
 @ActiveProfiles("test")
