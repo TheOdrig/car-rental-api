@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -50,6 +51,7 @@ public abstract class E2ETestBase {
 
     @BeforeEach
     public void setUp() {
+        SecurityContextHolder.clearContext();
         eventCaptor.clear();
     }
 

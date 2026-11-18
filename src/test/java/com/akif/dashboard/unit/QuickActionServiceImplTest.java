@@ -7,6 +7,7 @@ import com.akif.dashboard.internal.service.QuickActionServiceImpl;
 import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalService;
 import com.akif.rental.domain.enums.RentalStatus;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -44,6 +45,11 @@ class QuickActionServiceImplTest {
     private RentalResponse confirmedRentalResponse;
     private RentalResponse inUseRentalResponse;
     private RentalResponse returnedRentalResponse;
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
 
     @BeforeEach
     void setUp() {
