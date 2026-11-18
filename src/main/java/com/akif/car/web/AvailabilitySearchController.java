@@ -95,8 +95,7 @@ public class AvailabilitySearchController {
     @Operation(summary = "Get similar available cars", 
                description = "Find similar cars that are available for the specified date range. If dates are not provided, defaults to today + 30 days.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Similar cars retrieved successfully",
-                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "200", description = "Similar cars retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid car ID or date parameters"),
             @ApiResponse(responseCode = "404", description = "Car not found")
     })

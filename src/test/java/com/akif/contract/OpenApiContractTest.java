@@ -158,6 +158,43 @@ class OpenApiContractTest {
         assertThat(names).contains("ProblemDetail", "FieldProblem");
     }
 
+    @Test
+    @DisplayName("every 2xx response with a body declares a schema")
+    void everySuccessResponseHasASchema() throws Exception {
+        JsonNode spec = mapper.readTree(generate());
+        List<String> missingSchema = new ArrayList<>();
+        List<String> bodyless = new ArrayList<>();
+        for (Map.Entry<String, JsonNode> path : spec.path("paths").properties()) {
+            for (String method : HTTP_METHODS) {
+                JsonNode operation = path.getValue().path(method);
+                if (operation.isMissingNode()) {
+                    continue;
+                }
+                for (Map.Entry<String, JsonNode> response : operation.path("responses").properties()) {
+                    if (!response.getKey().startsWith("2")) {
+                        continue;
+                    }
+                    String where = method.toUpperCase() + " " + path.getKey() + " " + response.getKey();
+                    JsonNode content = response.getValue().path("content");
+                    if (content.isMissingNode() || content.isEmpty()) {
+                        if (!response.getKey().equals("204")) {
+                            bodyless.add(where);
+                        }
+                        continue;
+                    }
+                    for (Map.Entry<String, JsonNode> media : content.properties()) {
+                        if (media.getValue().path("schema").isMissingNode()) {
+                            missingSchema.add(where + " " + media.getKey());
+                        }
+                    }
+                }
+            }
+        }
+        assertThat(missingSchema).isEmpty();
+        assertThat(bodyless).containsExactlyInAnyOrder(
+                "POST /api/v1/auth/logout 200", "POST /api/v1/exchange-rates/refresh 200");
+    }
+
     private String generate() throws Exception {
         String raw = mockMvc.perform(get("/v3/api-docs")).andReturn().getResponse().getContentAsString();
         JsonNode sorted = sort(mapper.readTree(raw));

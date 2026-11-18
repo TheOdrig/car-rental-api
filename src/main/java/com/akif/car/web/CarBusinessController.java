@@ -117,8 +117,7 @@ public class CarBusinessController {
     @GetMapping(value = "/{id}/can-reserve")
     @Operation(summary = "Check if car can be reserved", description = "Check if car can be reserved")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Check completed",
-                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "200", description = "Check completed"),
             @ApiResponse(responseCode = "404", description = "Car not found"),
             @ApiResponse(responseCode = "400", description = "Invalid car ID")
     })

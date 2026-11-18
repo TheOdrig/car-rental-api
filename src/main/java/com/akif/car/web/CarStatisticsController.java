@@ -30,8 +30,7 @@ public class CarStatisticsController {
     @GetMapping()
     @Operation(summary = "Get car statistics", description = "Retrieve comprehensive car statistics")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully",
-                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Object>> getCarStatistics() {
@@ -42,8 +41,7 @@ public class CarStatisticsController {
     @GetMapping(value = "/status-counts")
     @Operation(summary = "Get cars count by status", description = "Retrieve count of cars by status")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Status counts retrieved successfully",
-                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "200", description = "Status counts retrieved successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Long>> getCarsCountByStatus() {
@@ -54,8 +52,7 @@ public class CarStatisticsController {
     @GetMapping(value = "/brand-counts")
     @Operation(summary = "Get cars count by brand", description = "Retrieve count of cars by brand")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Brand counts retrieved successfully",
-                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "200", description = "Brand counts retrieved successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Long>> getCarsCountByBrand() {
@@ -66,8 +63,7 @@ public class CarStatisticsController {
     @GetMapping(value = "/average-prices")
     @Operation(summary = "Get average prices by brand", description = "Retrieve average prices by brand")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Average prices retrieved successfully",
-                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "200", description = "Average prices retrieved successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, BigDecimal>> getAveragePriceByBrand() {
@@ -78,8 +74,7 @@ public class CarStatisticsController {
     @GetMapping(value = "/count")
     @Operation(summary = "Get car count", description = "Get total number of cars")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Count retrieved successfully",
-                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "200", description = "Count retrieved successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Long>> getCarCount() {
@@ -90,8 +85,7 @@ public class CarStatisticsController {
     @GetMapping(value = "/count/active")
     @Operation(summary = "Get active car count", description = "Get number of active cars")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Active count retrieved successfully",
-                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "200", description = "Active count retrieved successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Long>> getActiveCarCount() {
@@ -102,8 +96,7 @@ public class CarStatisticsController {
     @PostMapping(value = "/validate")
     @Operation(summary = "Validate car data", description = "Validate car data without saving")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Validation completed",
-                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "200", description = "Validation completed"),
             @ApiResponse(responseCode = "400", description = "Invalid car data")
     })
     public ResponseEntity<Map<String, Object>> validateCarData(

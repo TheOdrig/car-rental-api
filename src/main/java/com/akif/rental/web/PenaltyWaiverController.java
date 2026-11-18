@@ -74,8 +74,7 @@ public class PenaltyWaiverController {
     @Operation(summary = "Get penalty history",
                description = "Retrieve all penalty waivers and adjustments for a rental (Admin only)")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Penalty history retrieved successfully",
-                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "200", description = "Penalty history retrieved successfully"),
             @ApiResponse(responseCode = "403", description = "Access denied - Admin only"),
             @ApiResponse(responseCode = "404", description = "Rental not found")
     })

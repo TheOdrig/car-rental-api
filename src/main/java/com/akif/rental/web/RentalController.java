@@ -194,7 +194,7 @@ public class RentalController {
         @PreAuthorize("hasRole('USER')")
         @Operation(summary = "Get my rentals", description = "Get current user's rental list with optional currency conversion")
         @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Rentals retrieved successfully", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "200", description = "Rentals retrieved successfully"),
                         @ApiResponse(responseCode = "401", description = "Unauthorized")
         })
         public ResponseEntity<PageResponse<RentalResponse>> getMyRentals(
@@ -217,7 +217,7 @@ public class RentalController {
         @GetMapping("/admin")
         @Operation(summary = "Get all rentals (Admin)", description = "Get all rentals (admin only) with optional currency conversion")
         @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Rentals retrieved successfully", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "200", description = "Rentals retrieved successfully"),
                         @ApiResponse(responseCode = "403", description = "Access denied")
         })
         public ResponseEntity<PageResponse<RentalResponse>> getAllRentals(

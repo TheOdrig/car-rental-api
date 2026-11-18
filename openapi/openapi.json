@@ -5395,7 +5395,14 @@
         "responses" : {
           "200" : {
             "content" : {
-              "application/json" : { }
+              "application/json" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/PenaltyWaiverResponse"
+                  },
+                  "type" : "array"
+                }
+              }
             },
             "description" : "Penalty history retrieved successfully"
           },
@@ -7069,7 +7076,14 @@
         "responses" : {
           "200" : {
             "content" : {
-              "application/json" : { }
+              "application/json" : {
+                "schema" : {
+                  "additionalProperties" : {
+                    "type" : "boolean"
+                  },
+                  "type" : "object"
+                }
+              }
             },
             "description" : "Check completed"
           },
@@ -8476,7 +8490,12 @@
         "responses" : {
           "200" : {
             "content" : {
-              "application/json" : { }
+              "application/json" : {
+                "schema" : {
+                  "additionalProperties" : { },
+                  "type" : "object"
+                }
+              }
             },
             "description" : "Statistics retrieved successfully"
           },
@@ -8503,7 +8522,14 @@
         "responses" : {
           "200" : {
             "content" : {
-              "application/json" : { }
+              "application/json" : {
+                "schema" : {
+                  "additionalProperties" : {
+                    "type" : "number"
+                  },
+                  "type" : "object"
+                }
+              }
             },
             "description" : "Average prices retrieved successfully"
           },
@@ -8530,7 +8556,15 @@
         "responses" : {
           "200" : {
             "content" : {
-              "application/json" : { }
+              "application/json" : {
+                "schema" : {
+                  "additionalProperties" : {
+                    "format" : "int64",
+                    "type" : "integer"
+                  },
+                  "type" : "object"
+                }
+              }
             },
             "description" : "Brand counts retrieved successfully"
           },
@@ -8557,7 +8591,15 @@
         "responses" : {
           "200" : {
             "content" : {
-              "application/json" : { }
+              "application/json" : {
+                "schema" : {
+                  "additionalProperties" : {
+                    "format" : "int64",
+                    "type" : "integer"
+                  },
+                  "type" : "object"
+                }
+              }
             },
             "description" : "Count retrieved successfully"
           },
@@ -8584,7 +8626,15 @@
         "responses" : {
           "200" : {
             "content" : {
-              "application/json" : { }
+              "application/json" : {
+                "schema" : {
+                  "additionalProperties" : {
+                    "format" : "int64",
+                    "type" : "integer"
+                  },
+                  "type" : "object"
+                }
+              }
             },
             "description" : "Active count retrieved successfully"
           },
@@ -8611,7 +8661,15 @@
         "responses" : {
           "200" : {
             "content" : {
-              "application/json" : { }
+              "application/json" : {
+                "schema" : {
+                  "additionalProperties" : {
+                    "format" : "int64",
+                    "type" : "integer"
+                  },
+                  "type" : "object"
+                }
+              }
             },
             "description" : "Status counts retrieved successfully"
           },
@@ -8648,7 +8706,12 @@
         "responses" : {
           "200" : {
             "content" : {
-              "application/json" : { }
+              "application/json" : {
+                "schema" : {
+                  "additionalProperties" : { },
+                  "type" : "object"
+                }
+              }
             },
             "description" : "Validation completed"
           },
@@ -9111,7 +9174,14 @@
         "responses" : {
           "200" : {
             "content" : {
-              "application/json" : { }
+              "application/json" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/SimilarCarDto"
+                  },
+                  "type" : "array"
+                }
+              }
             },
             "description" : "Similar cars retrieved successfully"
           },
@@ -10257,7 +10327,11 @@
         "responses" : {
           "200" : {
             "content" : {
-              "application/json" : { }
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseRentalResponse"
+                }
+              }
             },
             "description" : "Rentals retrieved successfully"
           },
@@ -10354,7 +10428,11 @@
         "responses" : {
           "200" : {
             "content" : {
-              "application/json" : { }
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseRentalResponse"
+                }
+              }
             },
             "description" : "Rentals retrieved successfully"
           },
