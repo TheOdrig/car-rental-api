@@ -33,6 +33,7 @@ public class PaymentReconciliationService {
     private final Clock clock;
 
     private final PaymentRepository paymentRepository;
+    private final com.akif.payment.internal.config.StripeConfig stripeConfig;
 
     public ReconciliationReport runDailyReconciliation(LocalDate date) {
         LocalDateTime startTimestamp = LocalDateTime.now(clock);
@@ -110,7 +111,7 @@ public class PaymentReconciliationService {
                 .build();
             
             List<StripePayment> stripePayments = new ArrayList<>();
-            Iterable<Charge> charges = Charge.list(params).autoPagingIterable();
+            Iterable<Charge> charges = Charge.list(params, stripeConfig.requestOptions().build()).autoPagingIterable();
             
             for (Charge charge : charges) {
                 stripePayments.add(new StripePayment(
@@ -230,7 +231,7 @@ public class PaymentReconciliationService {
         return switch (upper) {
             case "SUCCEEDED", "CAPTURED" -> "CAPTURED";
             case "PENDING", "PROCESSING" -> "PENDING";
-            case "FAILED", "CANCELED" -> "FAILED";
+            case "FAILED", "CANCELED", "CANCELLED" -> "FAILED";
             case "REFUNDED" -> "REFUNDED";
             default -> upper;
         };

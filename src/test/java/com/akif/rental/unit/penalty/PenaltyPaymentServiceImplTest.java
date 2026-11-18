@@ -137,7 +137,7 @@ class PenaltyPaymentServiceImplTest {
             Long userId = 100L;
             PaymentResult expectedResult = new PaymentResult(true, "TXN-12345", "Payment successful");
 
-            when(paymentService.chargePayment(eq(paymentId), eq(userId.toString()))).thenReturn(expectedResult);
+            when(paymentService.chargePayment(eq(paymentId))).thenReturn(expectedResult);
 
             PaymentResult result = penaltyPaymentService.chargePenalty(paymentId, userId);
 
@@ -145,7 +145,7 @@ class PenaltyPaymentServiceImplTest {
             assertThat(result.success()).isTrue();
             assertThat(result.transactionId()).isEqualTo("TXN-12345");
 
-            verify(paymentService).chargePayment(paymentId, userId.toString());
+            verify(paymentService).chargePayment(paymentId);
         }
 
         @Test
@@ -155,7 +155,7 @@ class PenaltyPaymentServiceImplTest {
             Long userId = 100L;
             PaymentResult expectedResult = new PaymentResult(false, null, "Insufficient funds");
 
-            when(paymentService.chargePayment(eq(paymentId), eq(userId.toString()))).thenReturn(expectedResult);
+            when(paymentService.chargePayment(eq(paymentId))).thenReturn(expectedResult);
 
             PaymentResult result = penaltyPaymentService.chargePenalty(paymentId, userId);
 

@@ -1,7 +1,6 @@
 package com.akif.payment.internal.config;
 
-import com.stripe.Stripe;
-import jakarta.annotation.PostConstruct;
+import com.stripe.net.RequestOptions;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -16,14 +15,22 @@ public class StripeConfig {
     @Value("${stripe.webhook.secret}")
     private String webhookSecret;
 
-    @Value("${stripe.success.url}")
-    private String successUrl;
+    @Value("${stripe.webhook.tolerance-seconds:300}")
+    private long webhookToleranceSeconds;
 
-    @Value("${stripe.cancel.url}")
-    private String cancelUrl;
+    @Value("${stripe.publishable-key:}")
+    private String publishableKey;
 
-    @PostConstruct
-    public void init() {
-        Stripe.apiKey = this.apiKey;
+    @Value("${stripe.api.base-url:https://api.stripe.com}")
+    private String apiBaseUrl;
+
+    @Value("${stripe.api.max-network-retries:2}")
+    private int maxNetworkRetries;
+
+    public RequestOptions.RequestOptionsBuilder requestOptions() {
+        return RequestOptions.builder()
+                .setApiKey(apiKey)
+                .setBaseUrl(apiBaseUrl)
+                .setMaxNetworkRetries(maxNetworkRetries);
     }
 }

@@ -10,7 +10,9 @@ import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalSummaryDto;
 import com.akif.rental.domain.enums.LateReturnStatus;
 import com.akif.payment.api.PaymentDto;
+import com.akif.payment.api.PaymentIntentResult;
 import com.akif.payment.api.PaymentStatus;
+import com.akif.payment.api.PaymentSummary;
 import com.akif.payment.api.CreatePaymentRequest;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.internal.config.RentalProperties;
@@ -19,7 +21,6 @@ import com.akif.rental.internal.exception.OpenRentalRequestLimitException;
 import com.akif.rental.internal.exception.RentalNotFoundException;
 import com.akif.rental.internal.exception.RentalValidationException;
 import com.akif.rental.internal.dto.penalty.PenaltyResult;
-import com.akif.payment.api.PaymentCapturedEvent;
 import com.akif.rental.api.PenaltySummaryEvent;
 import com.akif.rental.api.RentalCancelledEvent;
 import com.akif.rental.api.RentalConfirmedEvent;
@@ -48,6 +49,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -65,7 +67,7 @@ public class RentalServiceImpl implements RentalService {
 
     private final Clock clock;
 
-    private static final String STUB_PAYMENT_METHOD = "STUB_GATEWAY";
+    private static final String CARD_PAYMENT_METHOD = "CARD";
     private static final String EXCLUSION_VIOLATION = "23P01";
 
     private final RentalRepository rentalRepository;
@@ -241,16 +243,6 @@ public class RentalServiceImpl implements RentalService {
 
         requireCarAvailable(rental.getCarId());
 
-        PaymentResult authResult = paymentService.authorize(
-                rental.getTotalPrice(),
-                rental.getCurrency(),
-                rental.getUserId().toString());
-
-        if (!authResult.success()) {
-            throw new PaymentFailedException(
-                    "Payment authorization failed: " + authResult.message());
-        }
-
         PaymentDto paymentDto = paymentService.createPayment(
                 new CreatePaymentRequest(
                         rental.getId(),
@@ -258,13 +250,7 @@ public class RentalServiceImpl implements RentalService {
                         rental.getCarLicensePlate(),
                         rental.getTotalPrice(),
                         rental.getCurrency(),
-                        STUB_PAYMENT_METHOD));
-
-        paymentService.updatePaymentStatus(
-                paymentDto.id(),
-                PaymentStatus.AUTHORIZED,
-                authResult.transactionId(),
-                null);
+                        CARD_PAYMENT_METHOD));
 
         rental.confirm(notes);
 
@@ -286,7 +272,7 @@ public class RentalServiceImpl implements RentalService {
         eventPublisher.publishEvent(event);
         log.info("Published RentalConfirmedEvent for rental: {}", updatedRental.getId());
 
-        logRentalOperationSuccess("confirmed", result, "TransactionId: " + authResult.transactionId());
+        logRentalOperationSuccess("confirmed", result, "PaymentId: " + paymentDto.id());
         return result;
     }
 
@@ -310,14 +296,12 @@ public class RentalServiceImpl implements RentalService {
         }
 
         PaymentDto payment = findPaymentByRentalId(rentalId);
-        if (payment.status() != PaymentStatus.AUTHORIZED) {
+        if (payment.status() != PaymentStatus.AUTHORIZED && payment.status() != PaymentStatus.CAPTURED) {
             throw new InvalidRentalStateException(
                     "Payment must be AUTHORIZED before pickup. Current status: " + payment.status());
         }
 
-        PaymentResult captureResult = paymentService.capture(
-                payment.transactionId(),
-                payment.amount());
+        PaymentResult captureResult = paymentService.capturePayment(payment.id());
 
         if (!captureResult.success()) {
             throw new PaymentFailedException(
@@ -325,27 +309,9 @@ public class RentalServiceImpl implements RentalService {
                     "Payment capture failed: " + captureResult.message());
         }
 
-        PaymentDto savedPayment = paymentService.updatePaymentStatus(
-                payment.id(),
-                PaymentStatus.CAPTURED,
-                captureResult.transactionId(),
-                null);
-
         rental.pickUp(pickupNotes);
         Rental updatedRental = rentalRepository.save(rental);
         RentalResponse result = rentalMapper.toDto(updatedRental);
-
-        PaymentCapturedEvent event = new PaymentCapturedEvent(
-                savedPayment.id(),
-                updatedRental.getId(),
-                updatedRental.getUserEmail(),
-                savedPayment.amount(),
-                savedPayment.currency(),
-                savedPayment.transactionId(),
-                LocalDateTime.now(clock));
-        eventPublisher.publishEvent(event);
-        log.info("Published PaymentCapturedEvent for payment: {}, rental: {}", savedPayment.id(),
-                updatedRental.getId());
 
         logRentalOperationSuccess("picked up", result, "Notes: " + (pickupNotes != null ? pickupNotes : "None"));
         return result;
@@ -443,10 +409,22 @@ public class RentalServiceImpl implements RentalService {
             }
 
             return new RefundInfo(true, payment.amount(), refundResult.transactionId());
-        } else if (payment.status() == PaymentStatus.AUTHORIZED) {
-            paymentService.updatePaymentStatus(payment.id(), PaymentStatus.REFUNDED, null, null);
-            log.info("Payment was only authorized, no refund needed. RentalId: {}", rentalId);
+        } else if (payment.status() == PaymentStatus.AUTHORIZED
+                || payment.status() == PaymentStatus.PENDING
+                || payment.status() == PaymentStatus.FAILED) {
+            PaymentResult cancelResult = paymentService.cancelPayment(payment.id());
+            if (!cancelResult.success()) {
+                throw new PaymentFailedException(
+                        payment.transactionId(),
+                        "Payment cancellation failed: " + cancelResult.message());
+            }
+            boolean holdReleased = payment.status() == PaymentStatus.AUTHORIZED;
+            log.info("Payment cancelled before capture. RentalId: {}, HoldReleased: {}", rentalId, holdReleased);
 
+            return holdReleased
+                    ? new RefundInfo(true, payment.amount(), payment.transactionId())
+                    : new RefundInfo(false, BigDecimal.ZERO, null);
+        } else if (payment.status() == PaymentStatus.REFUNDED) {
             return new RefundInfo(true, payment.amount(), payment.transactionId());
         }
 
@@ -464,7 +442,7 @@ public class RentalServiceImpl implements RentalService {
 
         LocalDate today = LocalDate.now(clock);
         LocalDate endDate = rental.getEndDate();
-        long remainingDays = ChronoUnit.DAYS.between(today, endDate);
+        long remainingDays = Math.min(ChronoUnit.DAYS.between(today, endDate), rental.getDays());
 
         if (remainingDays <= 0) {
             log.info("No remaining days for refund. RentalId: {}", rental.getId());
@@ -534,6 +512,38 @@ public class RentalServiceImpl implements RentalService {
         RentalResponse result = rentalMapper.toDto(rental);
         log.info("Successfully retrieved rental: ID={}, Status={}", result.id(), result.status());
         return result;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public PaymentIntentResult createPaymentIntent(Long rentalId, String username) {
+        Rental rental = findRentalById(rentalId);
+        UserDto user = findUserByUsername(username);
+
+        if (!rental.getUserId().equals(user.id())) {
+            throw new AccessDeniedException("You can only pay for your own rentals");
+        }
+        if (rental.getStatus() != RentalStatus.CONFIRMED) {
+            throw new InvalidRentalStateException(rental.getStatus().name(), RentalStatus.CONFIRMED.name());
+        }
+
+        PaymentIntentResult result = paymentService.createOrGetIntentForRental(rentalId);
+        log.info("Payment intent ready for rental: {}, status: {}", rentalId, result.status());
+        return result;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public PaymentSummary getRentalPayment(Long rentalId, String username) {
+        Rental rental = findRentalById(rentalId);
+        UserDto user = findUserByUsername(username);
+
+        if (!user.isAdmin() && !rental.getUserId().equals(user.id())) {
+            throw new AccessDeniedException("You can only view your own rentals");
+        }
+
+        return paymentService.syncAndGetSummaryForRental(rentalId)
+                .orElseThrow(() -> new RentalNotFoundException("Payment not found for rental: " + rentalId));
     }
 
     private void requireCarAvailable(Long carId) {

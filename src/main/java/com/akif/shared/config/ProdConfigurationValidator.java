@@ -72,8 +72,20 @@ public class ProdConfigurationValidator {
         }
 
         String stripeKey = lookup.get("stripe.api.key");
-        if (!isBlank(stripeKey) && (!stripeKey.startsWith("sk_") || looksWeak(stripeKey))) {
-            problems.add("stripe.api.key must be a real Stripe secret key");
+        if (!isBlank(stripeKey)) {
+            if (isLiveKey(stripeKey)) {
+                problems.add("stripe.api.key must be a Stripe test-mode key; live keys are rejected");
+            } else if (!isTestSecretKey(stripeKey) || looksWeak(stripeKey)) {
+                problems.add("stripe.api.key must be a real Stripe test-mode secret key");
+            }
+        }
+        String publishableKey = lookup.get("stripe.publishable-key");
+        if (!isBlank(publishableKey)) {
+            if (isLiveKey(publishableKey)) {
+                problems.add("stripe.publishable-key must be a Stripe test-mode key; live keys are rejected");
+            } else if (!publishableKey.startsWith("pk_test_")) {
+                problems.add("stripe.publishable-key must be a Stripe test-mode publishable key");
+            }
         }
         String webhookSecret = lookup.get("stripe.webhook.secret");
         if (!isBlank(webhookSecret) && (!webhookSecret.startsWith("whsec_") || looksWeak(webhookSecret))) {
@@ -153,6 +165,14 @@ public class ProdConfigurationValidator {
                 problems.add(key + " is missing; " + hint);
             }
         }
+    }
+
+    private static boolean isLiveKey(String key) {
+        return key.startsWith("sk_live_") || key.startsWith("pk_live_") || key.startsWith("rk_live_");
+    }
+
+    private static boolean isTestSecretKey(String key) {
+        return key.startsWith("sk_test_") || key.startsWith("rk_test_");
     }
 
     private static boolean isBlank(String value) {

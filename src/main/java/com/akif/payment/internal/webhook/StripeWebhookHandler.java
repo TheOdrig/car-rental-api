@@ -1,210 +1,253 @@
 package com.akif.payment.internal.webhook;
 
-import java.time.Clock;
-
-import com.akif.payment.internal.config.StripeConfig;
-import com.akif.payment.domain.enums.WebhookEventStatus;
-import com.akif.payment.internal.exception.WebhookSignatureException;
 import com.akif.payment.domain.Payment;
 import com.akif.payment.domain.WebhookEvent;
+import com.akif.payment.domain.enums.WebhookEventStatus;
+import com.akif.payment.internal.config.StripeConfig;
+import com.akif.payment.internal.exception.WebhookRejectedException;
+import com.akif.payment.internal.exception.WebhookSignatureException;
 import com.akif.payment.internal.repository.PaymentRepository;
 import com.akif.payment.internal.repository.WebhookEventRepository;
+import com.akif.payment.internal.service.PaymentStateService;
+import com.akif.payment.internal.service.gateway.GatewayIntent;
+import com.akif.payment.internal.service.gateway.GatewayIntentStatus;
+import com.akif.payment.internal.service.gateway.StripeAmounts;
+import com.stripe.exception.EventDataObjectDeserializationException;
 import com.stripe.exception.SignatureVerificationException;
+import com.stripe.model.Charge;
 import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
-import com.stripe.model.checkout.Session;
+import com.stripe.model.StripeObject;
 import com.stripe.net.Webhook;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class StripeWebhookHandler {
 
-    private final Clock clock;
+    private static final int MAX_ERROR_LENGTH = 1000;
 
+    private final Clock clock;
     private final StripeConfig stripeConfig;
     private final PaymentRepository paymentRepository;
     private final WebhookEventRepository webhookEventRepository;
+    private final PaymentStateService stateService;
+    private final TransactionTemplate processingTx;
+    private final TransactionTemplate isolatedTx;
 
-    @Transactional
+    public StripeWebhookHandler(
+            Clock clock,
+            StripeConfig stripeConfig,
+            PaymentRepository paymentRepository,
+            WebhookEventRepository webhookEventRepository,
+            PaymentStateService stateService,
+            PlatformTransactionManager transactionManager) {
+        this.clock = clock;
+        this.stripeConfig = stripeConfig;
+        this.paymentRepository = paymentRepository;
+        this.webhookEventRepository = webhookEventRepository;
+        this.stateService = stateService;
+        this.processingTx = new TransactionTemplate(transactionManager);
+        this.isolatedTx = new TransactionTemplate(transactionManager);
+        this.isolatedTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    }
+
     public void handleWebhookEvent(String payload, String signature) {
-        LocalDateTime receivedTimestamp = LocalDateTime.now(clock);
-        
-        log.info("[AUDIT] Webhook Event: RECEIVED | Timestamp: {}", receivedTimestamp);
-
-        Event event;
-        try {
-            event = Webhook.constructEvent(payload, signature, stripeConfig.getWebhookSecret());
-            log.info("[AUDIT] Webhook Event: SIGNATURE_VERIFIED | Event ID: {} | Event Type: {} | Timestamp: {}",
-                    event.getId(), event.getType(), LocalDateTime.now(clock));
-        } catch (SignatureVerificationException e) {
-            log.error("[AUDIT] Webhook Event: SIGNATURE_VERIFICATION_FAILED | Error: {} | Timestamp: {}",
-                    e.getMessage(), LocalDateTime.now(clock));
-            throw new WebhookSignatureException("unknown", e);
-        }
-
+        Event event = verify(payload, signature);
         String eventId = event.getId();
         String eventType = event.getType();
+        log.info("[AUDIT] Webhook verified | Event: {} | Type: {}", eventId, eventType);
 
-        log.info("[AUDIT] Webhook Event: PROCESSING_STARTED | Event ID: {} | Event Type: {} | Timestamp: {}",
-                eventId, eventType, LocalDateTime.now(clock));
-
-        if (isEventAlreadyProcessed(eventId)) {
-            log.info("[AUDIT] Webhook Event: DUPLICATE_DETECTED | Event ID: {} | Event Type: {} | Processing Result: SKIPPED | Timestamp: {}",
-                    eventId, eventType, LocalDateTime.now(clock));
-            return;
-        }
-
-        WebhookEvent webhookEvent = WebhookEvent.builder()
-                .eventId(eventId)
-                .eventType(eventType)
-                .payload(payload)
-                .status(WebhookEventStatus.PROCESSING)
-                .build();
-        webhookEventRepository.save(webhookEvent);
+        storeIfAbsent(eventId, eventType, payload);
 
         try {
-            switch (eventType) {
-                case "checkout.session.completed":
-                    Session completedSession = (Session) event.getDataObjectDeserializer()
-                            .getObject()
-                            .orElseThrow(() -> new IllegalStateException("Failed to deserialize session"));
-                    processCheckoutSessionCompleted(completedSession);
-                    break;
-
-                case "checkout.session.expired":
-                    Session expiredSession = (Session) event.getDataObjectDeserializer()
-                            .getObject()
-                            .orElseThrow(() -> new IllegalStateException("Failed to deserialize session"));
-                    processCheckoutSessionExpired(expiredSession);
-                    break;
-
-                case "payment_intent.payment_failed":
-                    PaymentIntent failedIntent = (PaymentIntent) event.getDataObjectDeserializer()
-                            .getObject()
-                            .orElseThrow(() -> new IllegalStateException("Failed to deserialize payment intent"));
-                    processPaymentIntentFailed(failedIntent);
-                    break;
-
-                default:
-                    log.warn("Unhandled event type: {}", eventType);
-            }
-
-            webhookEvent.markProcessed(LocalDateTime.now(clock));
-            webhookEventRepository.save(webhookEvent);
-
-            log.info("[AUDIT] Webhook Event: PROCESSING_COMPLETED | Event ID: {} | Event Type: {} | Processing Result: SUCCESS | Timestamp: {}",
-                    eventId, eventType, LocalDateTime.now(clock));
-
-        } catch (Exception e) {
-            log.error("[AUDIT] Webhook Event: PROCESSING_FAILED | Event ID: {} | Event Type: {} | Processing Result: FAILED | Error: {} | Timestamp: {}",
-                    eventId, eventType, e.getMessage(), LocalDateTime.now(clock));
-            webhookEvent.markFailed(e.getMessage());
-            webhookEventRepository.save(webhookEvent);
+            processingTx.executeWithoutResult(status -> processStored(event));
+        } catch (WebhookRejectedException rejected) {
+            log.error("[AUDIT] Webhook rejected | Event: {} | Type: {} | Reason: {}",
+                    eventId, eventType, rejected.getMessage());
+            recordFailure(eventId, rejected.getMessage());
+        } catch (RuntimeException e) {
+            log.error("[AUDIT] Webhook processing failed | Event: {} | Type: {} | Error: {}",
+                    eventId, eventType, e.getMessage());
+            recordFailure(eventId, e.getMessage());
             throw e;
         }
     }
 
-    public void processCheckoutSessionCompleted(Session session) {
-        String sessionId = session.getId();
-        String paymentIntentId = session.getPaymentIntent();
-        
-        log.info("[AUDIT] Webhook Event: checkout.session.completed | Session ID: {} | Payment Intent ID: {} | Processing: STARTED | Timestamp: {}",
-                sessionId, paymentIntentId, LocalDateTime.now(clock));
-
-        Payment payment = findPaymentBySessionId(sessionId);
-        Long paymentId = payment.getId();
-        Long rentalId = payment.getRentalId();
-        
-        payment.markCheckoutCompleted(paymentIntentId);
-        
-        paymentRepository.save(payment);
-        
-        log.info("[AUDIT] Webhook Event: checkout.session.completed | Session ID: {} | Payment ID: {} | Rental ID: {} | Status Updated: CAPTURED | Payment Intent ID: {} | Timestamp: {}",
-                sessionId, paymentId, rentalId, paymentIntentId, LocalDateTime.now(clock));
-    }
-
-    public void processCheckoutSessionExpired(Session session) {
-        String sessionId = session.getId();
-        
-        log.info("[AUDIT] Webhook Event: checkout.session.expired | Session ID: {} | Processing: STARTED | Timestamp: {}",
-                sessionId, LocalDateTime.now(clock));
-
-        Payment payment = findPaymentBySessionId(sessionId);
-        Long paymentId = payment.getId();
-        Long rentalId = payment.getRentalId();
-        
-        payment.markFailed("Checkout session expired", null);
-        
-        paymentRepository.save(payment);
-        
-        log.info("[AUDIT] Webhook Event: checkout.session.expired | Session ID: {} | Payment ID: {} | Rental ID: {} | Status Updated: FAILED | Failure Reason: Checkout session expired | Timestamp: {}",
-                sessionId, paymentId, rentalId, LocalDateTime.now(clock));
-    }
-
-    public void processPaymentIntentFailed(PaymentIntent paymentIntent) {
-        String paymentIntentId = paymentIntent.getId();
-        
-        log.info("[AUDIT] Webhook Event: payment_intent.payment_failed | Payment Intent ID: {} | Processing: STARTED | Timestamp: {}",
-                paymentIntentId, LocalDateTime.now(clock));
-
-        Payment payment = findPaymentByPaymentIntentId(paymentIntentId);
-        Long paymentId = payment.getId();
-        Long rentalId = payment.getRentalId();
-        
-        String failureReason = "Payment failed";
-        String stripeErrorCode = null;
-        if (paymentIntent.getLastPaymentError() != null) {
-            failureReason = paymentIntent.getLastPaymentError().getMessage();
-            stripeErrorCode = paymentIntent.getLastPaymentError().getCode();
+    private Event verify(String payload, String signature) {
+        try {
+            return Webhook.constructEvent(
+                    payload,
+                    signature,
+                    stripeConfig.getWebhookSecret(),
+                    stripeConfig.getWebhookToleranceSeconds(),
+                    clock);
+        } catch (SignatureVerificationException e) {
+            log.warn("[AUDIT] Webhook signature verification failed");
+            throw new WebhookSignatureException("unknown", e);
+        } catch (RuntimeException e) {
+            log.warn("[AUDIT] Webhook payload could not be parsed");
+            throw new WebhookSignatureException("unknown", e);
         }
-        payment.markFailed(failureReason, null);
-        
-        paymentRepository.save(payment);
-        
-        log.info("[AUDIT] Webhook Event: payment_intent.payment_failed | Payment Intent ID: {} | Payment ID: {} | Rental ID: {} | Status Updated: FAILED | Stripe Error Code: {} | Failure Reason: {} | Timestamp: {}",
-                paymentIntentId, paymentId, rentalId, stripeErrorCode, failureReason, LocalDateTime.now(clock));
     }
 
-    public boolean isEventAlreadyProcessed(String eventId) {
-        Optional<WebhookEvent> existingEvent = webhookEventRepository.findByEventId(eventId);
-        
-        if (existingEvent.isPresent()) {
-            WebhookEventStatus status = existingEvent.get().getStatus();
+    private void storeIfAbsent(String eventId, String eventType, String payload) {
+        try {
+            isolatedTx.executeWithoutResult(status -> webhookEventRepository.saveAndFlush(WebhookEvent.builder()
+                    .eventId(eventId)
+                    .eventType(eventType)
+                    .payload(payload)
+                    .status(WebhookEventStatus.RECEIVED)
+                    .build()));
+        } catch (DataIntegrityViolationException duplicate) {
+            log.info("[AUDIT] Webhook already stored | Event: {}", eventId);
+        }
+    }
 
-            if (status == WebhookEventStatus.PROCESSED || 
-                status == WebhookEventStatus.PROCESSING ||
-                status == WebhookEventStatus.DUPLICATE) {
+    private void processStored(Event event) {
+        WebhookEvent stored = webhookEventRepository.findByEventIdForUpdate(event.getId())
+                .orElseThrow(() -> new IllegalStateException("Webhook event row missing: " + event.getId()));
 
-                if (status == WebhookEventStatus.PROCESSED) {
-                    WebhookEvent event = existingEvent.get();
-                    event.markDuplicate();
-                    webhookEventRepository.save(event);
-                }
-                
-                return true;
+        if (stored.getStatus() == WebhookEventStatus.PROCESSED || stored.getStatus() == WebhookEventStatus.DUPLICATE) {
+            log.info("[AUDIT] Webhook duplicate skipped | Event: {} | Type: {}", event.getId(), event.getType());
+            return;
+        }
+
+        dispatch(event);
+
+        stored.markProcessed(LocalDateTime.now(clock));
+        webhookEventRepository.save(stored);
+        log.info("[AUDIT] Webhook processed | Event: {} | Type: {}", event.getId(), event.getType());
+    }
+
+    private void dispatch(Event event) {
+        switch (event.getType()) {
+            case "payment_intent.amount_capturable_updated",
+                 "payment_intent.succeeded",
+                 "payment_intent.payment_failed",
+                 "payment_intent.canceled" -> handleIntentEvent(event.getType(), (PaymentIntent) object(event));
+            case "charge.refunded" -> handleChargeRefunded((Charge) object(event));
+            default -> log.info("[AUDIT] Webhook ignored | Event: {} | Type: {}", event.getId(), event.getType());
+        }
+    }
+
+    private StripeObject object(Event event) {
+        return event.getDataObjectDeserializer().getObject().orElseGet(() -> {
+            try {
+                return event.getDataObjectDeserializer().deserializeUnsafe();
+            } catch (EventDataObjectDeserializationException e) {
+                throw new WebhookRejectedException("Event data could not be deserialized");
+            }
+        });
+    }
+
+    private void handleIntentEvent(String type, PaymentIntent intent) {
+        Optional<Payment> located = locate(intent);
+        if (located.isEmpty()) {
+            log.warn("[AUDIT] Webhook has no matching payment | Type: {} | Intent: {}", type, intent.getId());
+            return;
+        }
+        Payment payment = located.get();
+
+        switch (type) {
+            case "payment_intent.amount_capturable_updated" -> {
+                requireMatchingAmount(payment, intent);
+                stateService.applyIntent(payment, toGatewayIntent(intent));
+            }
+            case "payment_intent.succeeded" -> {
+                requireMatchingAmount(payment, intent);
+                stateService.applyIntent(payment, toGatewayIntent(intent));
+            }
+            case "payment_intent.payment_failed" -> stateService.applyFailure(payment, failureReason(intent));
+            case "payment_intent.canceled" -> stateService.applyCancellation(payment);
+            default -> {
             }
         }
-        
-        return false;
     }
 
-    private Payment findPaymentBySessionId(String sessionId) {
-        return paymentRepository.findByStripeSessionIdAndIsDeletedFalse(sessionId)
-                .orElseThrow(() -> new IllegalStateException(
-                        "Payment not found for session: " + sessionId));
+    private void handleChargeRefunded(Charge charge) {
+        String intentId = charge.getPaymentIntent();
+        if (intentId == null) {
+            return;
+        }
+        Optional<Payment> located = paymentRepository.findByIntentIdForUpdate(intentId);
+        if (located.isEmpty()) {
+            log.warn("[AUDIT] Refund webhook has no matching payment | Intent: {}", intentId);
+            return;
+        }
+        Payment payment = located.get();
+        if (charge.getCurrency() == null
+                || !charge.getCurrency().equalsIgnoreCase(payment.getCurrency().name())) {
+            throw new WebhookRejectedException("Refund currency does not match the payment");
+        }
+        long refundedMinor = charge.getAmountRefunded() != null ? charge.getAmountRefunded() : 0L;
+        stateService.applyRefundTotal(payment, StripeAmounts.fromMinorUnits(refundedMinor, payment.getCurrency()));
     }
 
-    private Payment findPaymentByPaymentIntentId(String paymentIntentId) {
-        return paymentRepository.findByStripePaymentIntentIdAndIsDeletedFalse(paymentIntentId)
-                .orElseThrow(() -> new IllegalStateException(
-                        "Payment not found for payment intent: " + paymentIntentId));
+    private Optional<Payment> locate(PaymentIntent intent) {
+        Optional<Payment> byIntent = paymentRepository.findByIntentIdForUpdate(intent.getId());
+        if (byIntent.isPresent()) {
+            return byIntent;
+        }
+        String paymentId = intent.getMetadata() != null ? intent.getMetadata().get("payment_id") : null;
+        if (paymentId == null) {
+            return Optional.empty();
+        }
+        try {
+            return paymentRepository.findByIdForUpdate(Long.valueOf(paymentId));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+
+    private void requireMatchingAmount(Payment payment, PaymentIntent intent) {
+        long expected = StripeAmounts.toMinorUnits(payment.getAmount(), payment.getCurrency());
+        boolean amountMatches = intent.getAmount() != null && intent.getAmount() == expected;
+        boolean currencyMatches = intent.getCurrency() != null
+                && intent.getCurrency().equalsIgnoreCase(payment.getCurrency().name());
+        if (!amountMatches || !currencyMatches) {
+            throw new WebhookRejectedException("Intent amount or currency does not match payment " + payment.getId());
+        }
+    }
+
+    private GatewayIntent toGatewayIntent(PaymentIntent intent) {
+        return new GatewayIntent(
+                intent.getId(),
+                null,
+                GatewayIntentStatus.fromStripe(intent.getStatus()),
+                intent.getPaymentMethod(),
+                intent.getCustomer(),
+                intent.getAmount() != null ? intent.getAmount() : 0L,
+                intent.getCurrency());
+    }
+
+    private String failureReason(PaymentIntent intent) {
+        if (intent.getLastPaymentError() != null && intent.getLastPaymentError().getMessage() != null) {
+            return intent.getLastPaymentError().getMessage();
+        }
+        return "Payment failed";
+    }
+
+    private void recordFailure(String eventId, String message) {
+        String trimmed = message == null ? "Processing failed"
+                : message.length() > MAX_ERROR_LENGTH ? message.substring(0, MAX_ERROR_LENGTH) : message;
+        try {
+            isolatedTx.executeWithoutResult(status -> webhookEventRepository.findByEventId(eventId)
+                    .ifPresent(stored -> {
+                        stored.markFailed(trimmed);
+                        webhookEventRepository.save(stored);
+                    }));
+        } catch (RuntimeException e) {
+            log.error("Could not record webhook failure for event {}", eventId);
+        }
     }
 }

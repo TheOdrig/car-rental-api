@@ -9,7 +9,10 @@ import com.akif.car.internal.repository.CarRepository;
 import com.akif.e2e.infrastructure.E2ETestBase;
 import com.akif.e2e.infrastructure.TestDataBuilder;
 import com.akif.e2e.infrastructure.TestFixtures;
-import com.akif.payment.api.PaymentResult;
+import com.akif.payment.api.PaymentStatus;
+import com.akif.payment.domain.Payment;
+import com.akif.payment.domain.enums.PaymentKind;
+import com.akif.payment.internal.repository.PaymentRepository;
 import com.akif.payment.internal.service.gateway.PaymentGateway;
 import com.akif.rental.api.GracePeriodWarningEvent;
 import com.akif.rental.api.LateReturnNotificationEvent;
@@ -71,6 +74,27 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
     @MockitoSpyBean
     private PaymentGateway paymentGateway;
 
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    private Payment savePaidRentalPayment(Rental rental) {
+        return paymentRepository.save(Payment.builder()
+                .rentalId(rental.getId())
+                .kind(PaymentKind.RENTAL)
+                .userEmail(rental.getUserEmail())
+                .carLicensePlate(rental.getCarLicensePlate())
+                .amount(rental.getTotalPrice())
+                .currency(rental.getCurrency())
+                .status(PaymentStatus.CAPTURED)
+                .paymentMethod("CARD")
+                .stripePaymentIntentId("stub_pi_seed_" + rental.getId())
+                .transactionId("stub_pi_seed_" + rental.getId())
+                .stripeCustomerId("cus_test")
+                .stripePaymentMethodId("pm_test")
+                .isDeleted(false)
+                .build());
+    }
+
     private Rental createPastRental(User user, Car car, int daysAgo) {
         LocalDate pastStart = LocalDate.now().minusDays(daysAgo + 3);
         LocalDate pastEnd = LocalDate.now().minusDays(daysAgo);
@@ -129,10 +153,7 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
         List<SeverelyLateNotificationEvent> severeEvents = eventCaptor.getEventsOfType(SeverelyLateNotificationEvent.class);
         assertThat(lateEvents.size() + severeEvents.size()).isGreaterThan(0);
 
-        when(paymentGateway.authorize(any(BigDecimal.class), any(), anyString()))
-                .thenReturn(new PaymentResult(true, "auth_txn_123", "Penalty authorized"));
-        when(paymentGateway.capture(anyString(), any(BigDecimal.class)))
-                .thenReturn(new PaymentResult(true, "penalty_txn_123", "Penalty captured"));
+        savePaidRentalPayment(rental);
 
         eventCaptor.clear();
         ReturnRequest returnRequest = new ReturnRequest("Late return");
@@ -235,10 +256,7 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
 
         lateReturnDetectionService.detectLateReturns();
 
-        when(paymentGateway.authorize(any(BigDecimal.class), any(), anyString()))
-                .thenReturn(new PaymentResult(true, "auth_txn_456", "Penalty authorized"));
-        when(paymentGateway.capture(anyString(), any(BigDecimal.class)))
-                .thenReturn(new PaymentResult(true, "penalty_txn_456", "Penalty captured"));
+        savePaidRentalPayment(rental);
 
         ReturnRequest returnRequest = new ReturnRequest("Late return");
 
@@ -248,7 +266,7 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
                         .content(objectMapper.writeValueAsString(returnRequest)))
                 .andExpect(status().isOk());
 
-        verify(paymentGateway).capture(anyString(), any(BigDecimal.class));
+        verify(paymentGateway).chargeSavedMethod(any(), anyString());
 
         rental = rentalRepository.findByIdAndIsDeletedFalse(rentalId)
                 .orElseThrow(() -> new AssertionError("Rental not found: " + rentalId));
@@ -271,12 +289,7 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
 
         lateReturnDetectionService.detectLateReturns();
 
-        when(paymentGateway.authorize(any(BigDecimal.class), any(), anyString()))
-                .thenReturn(new PaymentResult(true, "auth_txn_789", "Penalty authorized"));
-        when(paymentGateway.capture(anyString(), any(BigDecimal.class)))
-                .thenReturn(new PaymentResult(true, "penalty_txn_789", "Penalty captured"));
-        when(paymentGateway.refund(anyString(), any(BigDecimal.class)))
-                .thenReturn(new PaymentResult(true, "refund_txn_789", "Refund processed"));
+        savePaidRentalPayment(rental);
 
         ReturnRequest returnRequest = new ReturnRequest("Late return");
 
@@ -314,7 +327,7 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
         assertThat(waiver.getReason()).isEqualTo("Customer complaint - first time late");
         assertThat(waiver.getAdminId()).isEqualTo(testAdmin.getId());
 
-        verify(paymentGateway).refund(anyString(), any(BigDecimal.class));
+        verify(paymentGateway).refund(anyString(), any(BigDecimal.class), any(), anyString());
     }
 
     @Test
@@ -332,10 +345,7 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
 
         lateReturnDetectionService.detectLateReturns();
 
-        when(paymentGateway.authorize(any(BigDecimal.class), any(), anyString()))
-                .thenReturn(new PaymentResult(true, "auth_txn_999", "Penalty authorized"));
-        when(paymentGateway.capture(anyString(), any(BigDecimal.class)))
-                .thenReturn(new PaymentResult(true, "penalty_txn_999", "Penalty captured"));
+        savePaidRentalPayment(rental);
 
         ReturnRequest returnRequest = new ReturnRequest("Late return");
 

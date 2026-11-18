@@ -11,7 +11,6 @@ import com.akif.car.internal.repository.CarRepository;
 import com.akif.e2e.infrastructure.E2ETestBase;
 import com.akif.e2e.infrastructure.TestDataBuilder;
 import com.akif.payment.api.PaymentResult;
-import com.akif.payment.internal.service.gateway.PaymentGateway;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.dto.request.PickupRequest;
@@ -50,9 +49,6 @@ class ErrorHandlingE2ETest extends E2ETestBase {
 
     @Autowired
     private RentalRepository rentalRepository;
-
-    @MockitoBean
-    private PaymentGateway paymentGateway;
 
     @Nested
     @DisplayName("Non-Existent Car Tests")
@@ -150,6 +146,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
 
             PickupRequest pickupRequest = new PickupRequest(null);
 
+            payRental(rentalId);
             mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -202,9 +199,6 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            when(paymentGateway.authorize(any(), any(), anyString()))
-                    .thenReturn(PaymentResult.success("TEST-AUTH-123", "Authorized"));
-
             mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
@@ -224,34 +218,27 @@ class ErrorHandlingE2ETest extends E2ETestBase {
     class PaymentFailureTests {
 
         @Test
-        @DisplayName("Should keep rental in REQUESTED state when payment authorization fails")
-        void shouldKeepRentalRequestedWhenPaymentFails() throws Exception {
-            User testUser = TestDataBuilder.createTestUser();
-            testUser = userRepository.save(testUser);
+        @DisplayName("Should confirm the rental and leave the payment PENDING until the customer pays")
+        void shouldLeavePaymentPendingAfterConfirm() throws Exception {
+            User testUser = userRepository.save(TestDataBuilder.createTestUser());
             String userToken = generateUserToken(testUser);
-
-            User testAdmin = TestDataBuilder.createTestAdmin();
-            testAdmin = userRepository.save(testAdmin);
+            User testAdmin = userRepository.save(TestDataBuilder.createTestAdmin());
             String adminToken = generateAdminToken(testAdmin);
+            Car testCar = carRepository.save(TestDataBuilder.createAvailableCar());
 
-            Car testCar = TestDataBuilder.createAvailableCar();
-            testCar = carRepository.save(testCar);
-
-            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
-            Long rentalId = createAndGetRentalId(rentalRequest, userToken);
-
-            when(paymentGateway.authorize(any(), any(), anyString()))
-                    .thenReturn(PaymentResult.failure("Payment authorization failed"));
+            Long rentalId = createAndGetRentalId(TestDataBuilder.createRentalRequest(testCar.getId()), userToken);
 
             mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
-                    .andExpect(status().isPaymentRequired())
-                    .andExpect(jsonPath("$.errorCode").value(PaymentFailedException.ERROR_CODE))
-                    .andExpect(jsonPath("$.message").exists());
+                    .andExpect(status().isOk());
 
             Rental rental = rentalRepository.findById(rentalId)
                     .orElseThrow(() -> new AssertionError("Rental not found: " + rentalId));
-            assertThat(rental.getStatus()).isEqualTo(RentalStatus.REQUESTED);
+            assertThat(rental.getStatus()).isEqualTo(RentalStatus.CONFIRMED);
+            mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.errorCode").value(InvalidRentalStateException.ERROR_CODE));
         }
     }
 }

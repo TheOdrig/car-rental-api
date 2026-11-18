@@ -1,6 +1,8 @@
 package com.akif.rental.web;
 
 import com.akif.currency.api.ConversionResult;
+import com.akif.payment.api.PaymentIntentResult;
+import com.akif.payment.api.PaymentSummary;
 import com.akif.rental.api.RentalResponse;
 import com.akif.rental.internal.dto.request.ApproveRequest;
 import com.akif.rental.internal.dto.request.CancelRequest;
@@ -149,6 +151,41 @@ public class RentalController {
 
                 log.info("Rental cancelled successfully. RentalId: {}", id);
                 return ResponseEntity.ok(rental);
+        }
+
+        @PostMapping("/{id}/payment-intent")
+        @PreAuthorize("hasRole('USER')")
+        @Operation(summary = "Start or resume payment", description = "Creates the Stripe PaymentIntent for a confirmed rental (idempotent) and returns the client secret for Stripe Elements. The amount is always computed by the server.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Payment intent ready", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PaymentIntentResult.class))),
+                        @ApiResponse(responseCode = "400", description = "Rental is not confirmed"),
+                        @ApiResponse(responseCode = "403", description = "Not the rental owner"),
+                        @ApiResponse(responseCode = "404", description = "Rental or payment not found"),
+                        @ApiResponse(responseCode = "409", description = "Payment already settled")
+        })
+        public ResponseEntity<PaymentIntentResult> createPaymentIntent(
+                        @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
+                        Authentication authentication) {
+
+                String username = authentication.getName();
+                log.info("POST /api/rentals/{}/payment-intent - User: {}", id, username);
+                return ResponseEntity.ok(rentalService.createPaymentIntent(id, username));
+        }
+
+        @GetMapping("/{id}/payment")
+        @Operation(summary = "Get rental payment status", description = "Returns the payment status of a rental (owner or admin). Pending payments are refreshed from Stripe.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Payment status", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PaymentSummary.class))),
+                        @ApiResponse(responseCode = "403", description = "Access denied"),
+                        @ApiResponse(responseCode = "404", description = "Rental or payment not found")
+        })
+        public ResponseEntity<PaymentSummary> getRentalPayment(
+                        @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
+                        Authentication authentication) {
+
+                String username = authentication.getName();
+                log.debug("GET /api/rentals/{}/payment - User: {}", id, username);
+                return ResponseEntity.ok(rentalService.getRentalPayment(id, username));
         }
 
         @GetMapping("/me")

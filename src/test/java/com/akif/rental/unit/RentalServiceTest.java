@@ -27,7 +27,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import java.time.Clock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
+import com.akif.payment.api.CreatePaymentRequest;
 import org.mockito.Spy;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -398,7 +400,7 @@ class RentalServiceTest {
             assertThatThrownBy(() -> rentalService.confirmRental(1L, null))
                     .isInstanceOf(CarNotAvailableException.class);
 
-            verify(paymentService, never()).authorize(any(), any(), any());
+            verify(paymentService, never()).createPayment(any());
         }
 
         @Test
@@ -411,7 +413,7 @@ class RentalServiceTest {
             assertThatThrownBy(() -> rentalService.pickupRental(1L, null))
                     .isInstanceOf(CarNotAvailableException.class);
 
-            verify(paymentService, never()).capture(any(), any());
+            verify(paymentService, never()).capturePayment(anyLong());
         }
 
         @Test
@@ -428,7 +430,7 @@ class RentalServiceTest {
                     .satisfies(error -> assertThat(((CarNotAvailableException) error).getHttpStatus())
                             .isEqualTo(HttpStatus.CONFLICT));
 
-            verify(paymentService, never()).capture(any(), any());
+            verify(paymentService, never()).capturePayment(anyLong());
             assertThat(testRental.getStatus()).isEqualTo(RentalStatus.CONFIRMED);
         }
     }
@@ -438,41 +440,39 @@ class RentalServiceTest {
     class ConfirmRentalTests {
 
         @Test
-        @DisplayName("Should successfully confirm rental and authorize payment")
-        void shouldSuccessfullyConfirmRentalAndAuthorizePayment() {
-            PaymentResult successResult = new PaymentResult(true, "TXN-123", "Success");
+        @DisplayName("Should confirm the rental and create a pending payment without charging")
+        void shouldConfirmRentalAndCreatePendingPayment() {
             PaymentDto paymentDto = createTestPaymentDto();
 
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
             when(carService.getCarForBooking(1L)).thenReturn(testCar);
-            when(paymentService.authorize(any(), any(), any())).thenReturn(successResult);
             when(paymentService.createPayment(any())).thenReturn(paymentDto);
-            when(paymentService.updatePaymentStatus(anyLong(), any(), any(), any())).thenReturn(paymentDto);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
 
             RentalResponse result = rentalService.confirmRental(1L, null);
 
             assertThat(result).isNotNull();
-            verify(paymentService).authorize(any(), any(), any());
-            verify(paymentService).createPayment(any());
+            ArgumentCaptor<CreatePaymentRequest> request = ArgumentCaptor.forClass(CreatePaymentRequest.class);
+            verify(paymentService).createPayment(request.capture());
+            assertThat(request.getValue().amount()).isEqualByComparingTo(testRental.getTotalPrice());
+            assertThat(request.getValue().currency()).isEqualTo(testRental.getCurrency());
+            verifyNoMoreInteractions(paymentService);
             verify(carService, never()).reserveCar(anyLong());
             verify(eventPublisher).publishEvent(any(Object.class));
         }
 
         @Test
-        @DisplayName("Should throw exception when payment authorization fails")
-        void shouldThrowExceptionWhenPaymentAuthorizationFails() {
-            PaymentResult failedResult = new PaymentResult(false, null, "Card declined");
-
+        @DisplayName("Should keep the rental REQUESTED when the car is unavailable and not create a payment")
+        void shouldNotCreatePaymentWhenCarUnavailable() {
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
-            when(carService.getCarForBooking(1L)).thenReturn(testCar);
-            when(paymentService.authorize(any(), any(), any())).thenReturn(failedResult);
+            when(carService.getCarForBooking(1L)).thenReturn(CarResponse.builder().id(1L).carStatusType(CarStatusType.MAINTENANCE).build());
 
             assertThatThrownBy(() -> rentalService.confirmRental(1L, null))
-                    .isInstanceOf(PaymentFailedException.class);
+                    .isInstanceOf(CarNotAvailableException.class);
 
-            verify(carService, never()).reserveCar(anyLong());
+            verifyNoInteractions(paymentService);
+            assertThat(testRental.getStatus()).isEqualTo(RentalStatus.REQUESTED);
         }
     }
 
@@ -524,16 +524,14 @@ class RentalServiceTest {
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
             when(carService.getCarForBooking(1L)).thenReturn(testCar);
             when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(paymentDto));
-            when(paymentService.capture(any(), any())).thenReturn(captureResult);
-            when(paymentService.updatePaymentStatus(anyLong(), any(), any(), any())).thenReturn(paymentDto);
+            when(paymentService.capturePayment(anyLong())).thenReturn(captureResult);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
 
             RentalResponse result = rentalService.pickupRental(1L, "Pickup notes");
 
             assertThat(result).isNotNull();
-            verify(paymentService).capture(any(), any());
-            verify(eventPublisher).publishEvent(any(Object.class));
+            verify(paymentService).capturePayment(paymentDto.id());
         }
 
         @Test
@@ -597,7 +595,7 @@ class RentalServiceTest {
                 testRental.getTotalPrice(),
                 testRental.getCurrency(),
                 PaymentStatus.AUTHORIZED,
-                "STUB_GATEWAY",
+                "CARD",
                 "TXN-123",
                 null,
                 null,

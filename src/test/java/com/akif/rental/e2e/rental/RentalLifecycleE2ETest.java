@@ -87,10 +87,14 @@ class RentalLifecycleE2ETest extends E2ETestBase {
                     .andExpect(jsonPath("$.id").value(rentalId))
                     .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.getDisplayName()));
 
-            Payment payment = paymentRepository.findByRentalIdAndIsDeletedFalse(rentalId)
+            Payment payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
+                    .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
+            assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PENDING);
+
+            payRental(rentalId);
+            payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
             assertThat(payment.getStatus()).isEqualTo(PaymentStatus.AUTHORIZED);
-
             mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -99,7 +103,7 @@ class RentalLifecycleE2ETest extends E2ETestBase {
                     .andExpect(jsonPath("$.id").value(rentalId))
                     .andExpect(jsonPath("$.status").value(RentalStatus.IN_USE.getDisplayName()));
 
-            payment = paymentRepository.findByRentalIdAndIsDeletedFalse(rentalId)
+            payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
             assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CAPTURED);
 
@@ -184,6 +188,7 @@ class RentalLifecycleE2ETest extends E2ETestBase {
 
             eventCaptor.clear();
 
+            payRental(rentalId);
             mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)

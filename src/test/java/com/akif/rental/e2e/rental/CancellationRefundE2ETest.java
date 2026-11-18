@@ -64,7 +64,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            Optional<Payment> paymentOptional = paymentRepository.findByRentalIdAndIsDeletedFalse(rentalId);
+            Optional<Payment> paymentOptional = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL);
             assertThat(paymentOptional).isEmpty();
 
             mockMvc.perform(post("/api/rentals/{id}/cancel", rentalId)
@@ -73,7 +73,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
                     .andExpect(jsonPath("$.id").value(rentalId))
                     .andExpect(jsonPath("$.status").value(RentalStatus.CANCELLED.getDisplayName()));
 
-            paymentOptional = paymentRepository.findByRentalIdAndIsDeletedFalse(rentalId);
+            paymentOptional = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL);
             assertThat(paymentOptional).isEmpty();
 
             log.info("Successfully cancelled REQUESTED rental without payment operations");
@@ -85,7 +85,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
     class ConfirmedRentalCancellationTests {
 
         @Test
-        @DisplayName("Should cancel CONFIRMED rental and process refund")
+        @DisplayName("Should cancel CONFIRMED rental and release the authorization hold")
         void shouldCancelConfirmedRentalWithRefund() throws Exception {
             User testUser = TestDataBuilder.createTestUser();
             testUser = userRepository.save(testUser);
@@ -106,7 +106,12 @@ class CancellationRefundE2ETest extends E2ETestBase {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.getDisplayName()));
 
-            Payment payment = paymentRepository.findByRentalIdAndIsDeletedFalse(rentalId)
+            Payment payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
+                    .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
+            assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PENDING);
+
+            payRental(rentalId);
+            payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
             assertThat(payment.getStatus()).isEqualTo(PaymentStatus.AUTHORIZED);
 
@@ -118,9 +123,9 @@ class CancellationRefundE2ETest extends E2ETestBase {
                     .andExpect(jsonPath("$.id").value(rentalId))
                     .andExpect(jsonPath("$.status").value(RentalStatus.CANCELLED.getDisplayName()));
 
-            payment = paymentRepository.findByRentalIdAndIsDeletedFalse(rentalId)
+            payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
-            assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
+            assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CANCELLED);
 
             List<RentalCancelledEvent> cancelledEvents = eventCaptor.getEventsOfType(RentalCancelledEvent.class);
             assertThat(cancelledEvents).hasSize(1);
@@ -133,6 +138,33 @@ class CancellationRefundE2ETest extends E2ETestBase {
             assertThat(event.refundTransactionId()).isNotNull();
 
             log.info("Successfully cancelled CONFIRMED rental with refund");
+        }
+
+        @Test
+        @DisplayName("Should cancel an unpaid CONFIRMED rental and cancel the pending payment without a refund")
+        void shouldCancelUnpaidConfirmedRental() throws Exception {
+            User testUser = userRepository.save(TestDataBuilder.createTestUser());
+            String userToken = generateUserToken(testUser);
+            User testAdmin = userRepository.save(TestDataBuilder.createTestAdmin());
+            String adminToken = generateAdminToken(testAdmin);
+            Car testCar = carRepository.save(TestDataBuilder.createAvailableCar());
+
+            Long rentalId = createAndGetRentalId(TestDataBuilder.createRentalRequest(testCar.getId()), userToken);
+            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk());
+            eventCaptor.clear();
+
+            mockMvc.perform(post("/api/rentals/{id}/cancel", rentalId)
+                            .header("Authorization", "Bearer " + userToken))
+                    .andExpect(status().isOk());
+
+            Payment payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
+                    .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
+            assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CANCELLED);
+
+            RentalCancelledEvent event = eventCaptor.getEventsOfType(RentalCancelledEvent.class).get(0);
+            assertThat(event.refundProcessed()).isFalse();
         }
     }
 
@@ -162,6 +194,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.getDisplayName()));
 
+            payRental(rentalId);
             mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -169,7 +202,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(RentalStatus.IN_USE.getDisplayName()));
 
-            Payment payment = paymentRepository.findByRentalIdAndIsDeletedFalse(rentalId)
+            Payment payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
             assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CAPTURED);
             BigDecimal originalAmount = payment.getAmount();
@@ -182,7 +215,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
                     .andExpect(jsonPath("$.id").value(rentalId))
                     .andExpect(jsonPath("$.status").value(RentalStatus.CANCELLED.getDisplayName()));
 
-            payment = paymentRepository.findByRentalIdAndIsDeletedFalse(rentalId)
+            payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
             assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
 

@@ -121,7 +121,7 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
         }
 
         Long rentalId = waiver.getRental().getId();
-        Optional<PaymentDto> paymentOpt = paymentService.getPaymentByRentalId(rentalId);
+        Optional<PaymentDto> paymentOpt = paymentService.getPenaltyPaymentByRentalId(rentalId);
 
         if (paymentOpt.isEmpty()) {
             log.warn("No payment found for rental: {}, cannot process refund", rentalId);

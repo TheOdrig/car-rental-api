@@ -11,7 +11,6 @@ import com.akif.rental.api.RentalService;
 import com.akif.rental.api.RentalSummaryDto;
 import com.akif.payment.api.PaymentService;
 import com.akif.payment.api.PaymentResult;
-import com.akif.shared.enums.CurrencyType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -73,13 +72,10 @@ public class DamageChargeServiceImpl implements DamageChargeService {
         DamageReport damageReport = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
                 .orElseThrow(() -> new DamageAssessmentException("Damage report not found: " + damageId));
 
-        RentalSummaryDto rental = rentalService.getRentalSummaryById(damageReport.getRentalId());
-
-        PaymentResult result = paymentService.authorize(
-                damageReport.getCustomerLiability(),
-                CurrencyType.TRY,
-                rental.userId().toString()
-        );
+        PaymentResult result = paymentService.chargeDamage(
+                damageReport.getRentalId(),
+                damageReport.getId(),
+                damageReport.getCustomerLiability());
 
         if (result.success()) {
             damageReport.markCharged(result.transactionId());

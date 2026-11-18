@@ -73,6 +73,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/rentals/*/pickup").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/rentals/*/return").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/rentals/*/cancel").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/rentals/*/payment-intent").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/rentals/*/payment").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/rentals/me").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/api/rentals/admin").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/rentals/*").authenticated()

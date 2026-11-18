@@ -149,9 +149,7 @@ class DamageChargeServiceTest {
         void shouldChargeDamageSuccessfullyById() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L))
                     .thenReturn(Optional.of(testDamageReport));
-            when(rentalService.getRentalSummaryById(testDamageReport.getRentalId()))
-                    .thenReturn(testRentalSummary);
-            when(paymentService.authorize(any(), any(), any()))
+            when(paymentService.chargeDamage(any(), any(), any()))
                     .thenReturn(new PaymentResult(true, "TXN-12345", "Success"));
 
             PaymentResult result = damageChargeService.chargeDamageById(1L);
@@ -177,9 +175,7 @@ class DamageChargeServiceTest {
         void shouldHandlePaymentFailure() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L))
                     .thenReturn(Optional.of(testDamageReport));
-            when(rentalService.getRentalSummaryById(testDamageReport.getRentalId()))
-                    .thenReturn(testRentalSummary);
-            when(paymentService.authorize(any(), any(), any()))
+            when(paymentService.chargeDamage(any(), any(), any()))
                     .thenReturn(new PaymentResult(false, null, "Payment failed"));
 
             PaymentResult result = damageChargeService.chargeDamageById(1L);

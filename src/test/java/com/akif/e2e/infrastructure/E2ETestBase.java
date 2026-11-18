@@ -1,6 +1,7 @@
 package com.akif.e2e.infrastructure;
 
 import com.akif.auth.domain.User;
+import com.akif.payment.api.PaymentService;
 import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalRequest;
 import com.akif.rental.internal.scheduler.ReminderScheduler;
@@ -49,8 +50,16 @@ public abstract class E2ETestBase {
     @Autowired
     protected TestEventCaptor eventCaptor;
 
+    @Autowired
+    protected PaymentService paymentService;
+
     @MockitoBean
     protected ReminderScheduler reminderScheduler;
+
+    protected void payRental(Long rentalId) {
+        paymentService.getPaymentByRentalId(rentalId)
+                .ifPresent(payment -> paymentService.createOrGetIntentForRental(rentalId));
+    }
 
     @BeforeEach
     public void setUp() {

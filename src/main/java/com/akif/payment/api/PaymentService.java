@@ -1,8 +1,5 @@
 package com.akif.payment.api;
 
-import com.akif.payment.internal.dto.CheckoutSessionRequest;
-import com.akif.shared.enums.CurrencyType;
-
 import java.math.BigDecimal;
 
 import java.time.*;
@@ -11,28 +8,29 @@ import java.util.Optional;
 
 public interface PaymentService {
 
-    PaymentResult authorize(BigDecimal amount, CurrencyType currency, String customerId);
-
-    PaymentResult capture(String transactionId, BigDecimal amount);
-
-    PaymentResult refund(String transactionId, BigDecimal amount);
-
-    CheckoutSessionResult createCheckoutSession(CheckoutSessionRequest request);
-
     PaymentDto createPayment(CreatePaymentRequest request);
+
+    PaymentIntentResult createOrGetIntentForRental(Long rentalId);
+
+    Optional<PaymentSummary> syncAndGetSummaryForRental(Long rentalId);
 
     Optional<PaymentDto> getPaymentById(Long paymentId);
 
     Optional<PaymentDto> getPaymentByRentalId(Long rentalId);
 
-    PaymentDto updatePaymentStatus(Long paymentId, PaymentStatus status, String transactionId, String failureReason);
+    Optional<PaymentDto> getPenaltyPaymentByRentalId(Long rentalId);
 
-    PaymentResult chargePayment(Long paymentId, String customerId);
+    PaymentResult capturePayment(Long paymentId);
+
+    PaymentResult cancelPayment(Long paymentId);
+
+    PaymentResult chargePayment(Long paymentId);
+
+    PaymentResult chargeDamage(Long rentalId, Long damageId, BigDecimal amount);
 
     PaymentResult refundPayment(Long paymentId, BigDecimal refundAmount);
 
-    PaymentDto addRefundedAmount(Long paymentId, BigDecimal refundAmount, String refundTransactionId);
-
+    PaymentResult refund(String transactionId, BigDecimal amount);
 
     BigDecimal sumCapturedPaymentsBetween(LocalDateTime start, LocalDateTime end);
 
@@ -54,4 +52,3 @@ public interface PaymentService {
         int getRentalCount();
     }
 }
-

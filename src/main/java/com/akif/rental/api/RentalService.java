@@ -27,6 +27,10 @@ public interface RentalService extends UserRentalStatisticsProvider {
 
     RentalResponse getRentalById(Long id, String username);
 
+    com.akif.payment.api.PaymentIntentResult createPaymentIntent(Long rentalId, String username);
+
+    com.akif.payment.api.PaymentSummary getRentalPayment(Long rentalId, String username);
+
     RentalSummaryDto getRentalSummaryById(Long rentalId);
 
     void incrementDamageReportCount(Long rentalId);

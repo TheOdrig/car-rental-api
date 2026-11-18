@@ -11,7 +11,8 @@ public enum PaymentStatus {
     AUTHORIZED("Authorized", "Payment authorized, not yet captured"),
     CAPTURED("Captured", "Payment captured"),
     FAILED("Failed", "Payment failed"),
-    REFUNDED("Refunded", "Payment refunded");
+    REFUNDED("Refunded", "Payment refunded"),
+    CANCELLED("Cancelled", "Payment cancelled before capture");
 
     private final String displayName;
     private final String description;

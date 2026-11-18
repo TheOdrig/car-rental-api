@@ -2,47 +2,36 @@ package com.akif.payment.internal.service.gateway;
 
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 @Component
 public class IdempotencyKeyGenerator {
 
-    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    private static final String PREFIX = "car-rental";
 
-    public String generateForCheckout(Long rentalId, LocalDateTime timestamp) {
-        String input = String.format("checkout:%d:%s", rentalId, timestamp.format(TIMESTAMP_FORMATTER));
-        return generateHash(input);
+    public String forCustomer(Long rentalId) {
+        return String.format("%s:rental-%d:customer", PREFIX, rentalId);
     }
 
-    public String generateForRefund(Long paymentId, BigDecimal amount) {
-        String input = String.format("refund:%d:%s", paymentId, amount.toPlainString());
-        return generateHash(input);
+    public String forIntent(Long rentalId, Long paymentId, int attempt) {
+        return key(rentalId, paymentId, "intent-create", attempt);
     }
 
-    private String generateHash(String input) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
-            return bytesToHex(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 algorithm not available", e);
-        }
+    public String forCapture(Long rentalId, Long paymentId, int attempt) {
+        return key(rentalId, paymentId, "capture", attempt);
     }
 
-    private String bytesToHex(byte[] bytes) {
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : bytes) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
-        return hexString.toString();
+    public String forCancel(Long rentalId, Long paymentId, int attempt) {
+        return key(rentalId, paymentId, "cancel", attempt);
+    }
+
+    public String forRefund(Long rentalId, Long paymentId, int refundSequence) {
+        return key(rentalId, paymentId, "refund", refundSequence);
+    }
+
+    public String forOffSessionCharge(Long rentalId, Long paymentId, int attempt) {
+        return key(rentalId, paymentId, "charge", attempt);
+    }
+
+    private String key(Long rentalId, Long paymentId, String operation, int version) {
+        return String.format("%s:rental-%d:payment-%d:%s:%d", PREFIX, rentalId, paymentId, operation, version);
     }
 }

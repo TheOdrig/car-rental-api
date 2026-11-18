@@ -1,155 +1,64 @@
 package com.akif.payment.unit.gateway;
 
 import com.akif.payment.internal.service.gateway.IdempotencyKeyGenerator;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("IdempotencyKeyGenerator Tests")
+@DisplayName("IdempotencyKeyGenerator")
 class IdempotencyKeyGeneratorTest {
 
-    private IdempotencyKeyGenerator generator;
+    private final IdempotencyKeyGenerator keys = new IdempotencyKeyGenerator();
 
-    @BeforeEach
-    void setUp() {
-        generator = new IdempotencyKeyGenerator();
+    @Test
+    @DisplayName("is deterministic for the same inputs")
+    void deterministic() {
+        assertThat(keys.forIntent(5L, 9L, 1)).isEqualTo(keys.forIntent(5L, 9L, 1));
+        assertThat(keys.forCapture(5L, 9L, 1)).isEqualTo(keys.forCapture(5L, 9L, 1));
+        assertThat(keys.forCancel(5L, 9L, 1)).isEqualTo(keys.forCancel(5L, 9L, 1));
+        assertThat(keys.forRefund(5L, 9L, 0)).isEqualTo(keys.forRefund(5L, 9L, 0));
+        assertThat(keys.forOffSessionCharge(5L, 9L, 1)).isEqualTo(keys.forOffSessionCharge(5L, 9L, 1));
+        assertThat(keys.forCustomer(5L)).isEqualTo(keys.forCustomer(5L));
     }
 
-    @Nested
-    @DisplayName("Checkout Idempotency Key Tests")
-    class CheckoutIdempotencyKeyTests {
-
-        @Test
-        @DisplayName("Should generate same key for same inputs")
-        void shouldGenerateSameKeyForSameInputs() {
-            Long rentalId = 123L;
-            LocalDateTime timestamp = LocalDateTime.of(2024, 1, 15, 10, 30, 0);
-
-            String key1 = generator.generateForCheckout(rentalId, timestamp);
-            String key2 = generator.generateForCheckout(rentalId, timestamp);
-
-            assertThat(key1).isEqualTo(key2);
-        }
-
-        @Test
-        @DisplayName("Should generate different keys for different rental IDs")
-        void shouldGenerateDifferentKeysForDifferentRentalIds() {
-            LocalDateTime timestamp = LocalDateTime.of(2024, 1, 15, 10, 30, 0);
-
-            String key1 = generator.generateForCheckout(123L, timestamp);
-            String key2 = generator.generateForCheckout(456L, timestamp);
-
-            assertThat(key1).isNotEqualTo(key2);
-        }
-
-        @Test
-        @DisplayName("Should generate different keys for different timestamps")
-        void shouldGenerateDifferentKeysForDifferentTimestamps() {
-            Long rentalId = 123L;
-
-            String key1 = generator.generateForCheckout(rentalId, LocalDateTime.of(2024, 1, 15, 10, 30, 0));
-            String key2 = generator.generateForCheckout(rentalId, LocalDateTime.of(2024, 1, 15, 10, 30, 1));
-
-            assertThat(key1).isNotEqualTo(key2);
-        }
-
-        @Test
-        @DisplayName("Should generate non-null and non-empty key")
-        void shouldGenerateNonNullAndNonEmptyKey() {
-            String key = generator.generateForCheckout(123L, LocalDateTime.now());
-
-            assertThat(key).isNotNull();
-            assertThat(key).isNotEmpty();
-        }
-
-        @Test
-        @DisplayName("Should generate hex string of expected length")
-        void shouldGenerateHexStringOfExpectedLength() {
-            String key = generator.generateForCheckout(123L, LocalDateTime.now());
-
-            assertThat(key).hasSize(64); // SHA-256 produces 64 hex characters
-            assertThat(key).matches("^[0-9a-f]+$"); // Only hex characters
-        }
+    @Test
+    @DisplayName("embeds the rental id, payment id, operation and version")
+    void embedsInputs() {
+        assertThat(keys.forCapture(5L, 9L, 2)).isEqualTo("car-rental:rental-5:payment-9:capture:2");
+        assertThat(keys.forCustomer(5L)).isEqualTo("car-rental:rental-5:customer");
     }
 
-    @Nested
-    @DisplayName("Refund Idempotency Key Tests")
-    class RefundIdempotencyKeyTests {
-
-        @Test
-        @DisplayName("Should generate same key for same inputs")
-        void shouldGenerateSameKeyForSameInputs() {
-            Long paymentId = 789L;
-            BigDecimal amount = new BigDecimal("100.50");
-
-            String key1 = generator.generateForRefund(paymentId, amount);
-            String key2 = generator.generateForRefund(paymentId, amount);
-
-            assertThat(key1).isEqualTo(key2);
-        }
-
-        @Test
-        @DisplayName("Should generate different keys for different payment IDs")
-        void shouldGenerateDifferentKeysForDifferentPaymentIds() {
-            BigDecimal amount = new BigDecimal("100.50");
-
-            String key1 = generator.generateForRefund(789L, amount);
-            String key2 = generator.generateForRefund(999L, amount);
-
-            assertThat(key1).isNotEqualTo(key2);
-        }
-
-        @Test
-        @DisplayName("Should generate different keys for different amounts")
-        void shouldGenerateDifferentKeysForDifferentAmounts() {
-            Long paymentId = 789L;
-
-            String key1 = generator.generateForRefund(paymentId, new BigDecimal("100.50"));
-            String key2 = generator.generateForRefund(paymentId, new BigDecimal("200.75"));
-
-            assertThat(key1).isNotEqualTo(key2);
-        }
-
-        @Test
-        @DisplayName("Should generate non-null and non-empty key")
-        void shouldGenerateNonNullAndNonEmptyKey() {
-            String key = generator.generateForRefund(789L, new BigDecimal("100.50"));
-
-            assertThat(key).isNotNull();
-            assertThat(key).isNotEmpty();
-        }
-
-        @Test
-        @DisplayName("Should generate hex string of expected length")
-        void shouldGenerateHexStringOfExpectedLength() {
-            String key = generator.generateForRefund(789L, new BigDecimal("100.50"));
-
-            assertThat(key).hasSize(64);
-            assertThat(key).matches("^[0-9a-f]+$");
-        }
+    @Test
+    @DisplayName("differs per operation for the same payment and version")
+    void differsPerOperation() {
+        assertThat(keys.forIntent(5L, 9L, 1))
+                .isNotEqualTo(keys.forCapture(5L, 9L, 1))
+                .isNotEqualTo(keys.forCancel(5L, 9L, 1))
+                .isNotEqualTo(keys.forOffSessionCharge(5L, 9L, 1));
     }
 
-    @Nested
-    @DisplayName("Cross-Type Key Tests")
-    class CrossTypeKeyTests {
+    @Test
+    @DisplayName("differs per attempt so a new attempt is a new Stripe operation")
+    void differsPerAttempt() {
+        assertThat(keys.forIntent(5L, 9L, 1)).isNotEqualTo(keys.forIntent(5L, 9L, 2));
+        assertThat(keys.forRefund(5L, 9L, 0)).isNotEqualTo(keys.forRefund(5L, 9L, 1));
+    }
 
-        @Test
-        @DisplayName("Checkout and refund keys should be different even with similar inputs")
-        void checkoutAndRefundKeysShouldBeDifferent() {
-            Long id = 123L;
-            LocalDateTime timestamp = LocalDateTime.of(2024, 1, 15, 10, 30, 0);
-            BigDecimal amount = new BigDecimal("123");
+    @Test
+    @DisplayName("differs per rental and per payment")
+    void differsPerRentalAndPayment() {
+        assertThat(keys.forCapture(5L, 9L, 1)).isNotEqualTo(keys.forCapture(6L, 9L, 1));
+        assertThat(keys.forCapture(5L, 9L, 1)).isNotEqualTo(keys.forCapture(5L, 10L, 1));
+    }
 
-            String checkoutKey = generator.generateForCheckout(id, timestamp);
-            String refundKey = generator.generateForRefund(id, amount);
+    @Test
+    @DisplayName("contains no wall-clock value, so a retry cannot produce a new key")
+    void noClockInput() {
+        String first = keys.forIntent(5L, 9L, 1);
+        String later = keys.forIntent(5L, 9L, 1);
 
-            assertThat(checkoutKey).isNotEqualTo(refundKey);
-        }
+        assertThat(later).isEqualTo(first);
+        assertThat(first).doesNotContainPattern("\\d{4}-\\d{2}-\\d{2}");
     }
 }

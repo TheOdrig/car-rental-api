@@ -59,15 +59,4 @@ class PaymentBehaviourTest {
         assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
     }
 
-    @Test
-    @DisplayName("markCheckoutCompleted captures the payment with the Stripe payment intent")
-    void checkoutCompletedCapturesPayment() {
-        Payment payment = payment();
-
-        payment.markCheckoutCompleted("pi_123");
-
-        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CAPTURED);
-        assertThat(payment.getStripePaymentIntentId()).isEqualTo("pi_123");
-        assertThat(payment.getTransactionId()).isEqualTo("pi_123");
-    }
 }

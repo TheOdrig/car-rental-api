@@ -59,6 +59,13 @@ class RentalControllerIntegrationTest {
         private UserRepository userRepository;
 
         @Autowired
+        private com.akif.payment.api.PaymentService paymentService;
+
+        private void payRental(Long rentalId) {
+                paymentService.createOrGetIntentForRental(rentalId);
+        }
+
+        @Autowired
         private CarRepository carRepository;
 
         @Autowired
@@ -215,6 +222,7 @@ class RentalControllerIntegrationTest {
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.status").value("Confirmed"));
 
+                        payRental(rentalId);
                         mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
                                         .header("Authorization", adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)

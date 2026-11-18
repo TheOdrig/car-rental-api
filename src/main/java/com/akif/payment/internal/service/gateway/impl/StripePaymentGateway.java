@@ -1,28 +1,29 @@
 package com.akif.payment.internal.service.gateway.impl;
 
-import java.time.Clock;
-
-import com.akif.payment.internal.config.StripeConfig;
-import com.akif.shared.enums.CurrencyType;
-import com.akif.payment.api.PaymentFailedException;
-import com.akif.payment.api.CheckoutSessionResult;
-import com.akif.payment.internal.service.gateway.IdempotencyKeyGenerator;
-import com.akif.payment.internal.service.gateway.PaymentGateway;
 import com.akif.payment.api.PaymentResult;
+import com.akif.payment.internal.config.StripeConfig;
+import com.akif.payment.internal.exception.StripeIntegrationException;
+import com.akif.payment.internal.service.gateway.ChargeCommand;
+import com.akif.payment.internal.service.gateway.GatewayIntent;
+import com.akif.payment.internal.service.gateway.GatewayIntentStatus;
+import com.akif.payment.internal.service.gateway.IntentCommand;
+import com.akif.payment.internal.service.gateway.PaymentGateway;
+import com.akif.payment.internal.service.gateway.StripeAmounts;
+import com.akif.shared.enums.CurrencyType;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Customer;
+import com.stripe.model.PaymentIntent;
 import com.stripe.model.Refund;
-import com.stripe.model.checkout.Session;
+import com.stripe.net.RequestOptions;
+import com.stripe.param.CustomerCreateParams;
+import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.RefundCreateParams;
-import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -30,223 +31,169 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class StripePaymentGateway implements PaymentGateway {
 
-    private final Clock clock;
-
     private final StripeConfig stripeConfig;
-    private final IdempotencyKeyGenerator idempotencyKeyGenerator;
-
-    private static final int MAX_RETRY_ATTEMPTS = 3;
-    private static final long INITIAL_BACKOFF_MS = 1000;
 
     @Override
-    public CheckoutSessionResult createCheckoutSession(
-            Long rentalId,
-            BigDecimal amount,
-            CurrencyType currency,
-            String customerEmail,
-            String description,
-            String successUrl,
-            String cancelUrl
-    ) {
-        LocalDateTime operationTimestamp = LocalDateTime.now(clock);
-        
-        log.info("[AUDIT] Payment Operation: CREATE_CHECKOUT_SESSION | Rental ID: {} | Amount: {} {} | Customer Email: {} | Timestamp: {}",
-                rentalId, amount, currency, customerEmail, operationTimestamp);
-
-        String idempotencyKey = idempotencyKeyGenerator.generateForCheckout(
-                rentalId,
-                operationTimestamp
-        );
-
-        String effectiveSuccessUrl = (successUrl != null) ? successUrl : stripeConfig.getSuccessUrl() + "?session_id={CHECKOUT_SESSION_ID}";
-        String effectiveCancelUrl = (cancelUrl != null) ? cancelUrl : stripeConfig.getCancelUrl();
-        String effectiveDescription = (description != null) ? description : "Rental ID: " + rentalId;
-
-        return executeWithRetry(() -> {
-            long amountInCents = amount.multiply(BigDecimal.valueOf(100)).longValue();
-
-            Map<String, String> metadata = new HashMap<>();
-            metadata.put("rental_id", rentalId.toString());
-            metadata.put("amount", amount.toPlainString());
-            metadata.put("currency", currency.name());
-
-            SessionCreateParams params = SessionCreateParams.builder()
-                    .setMode(SessionCreateParams.Mode.PAYMENT)
-                    .setSuccessUrl(effectiveSuccessUrl)
-                    .setCancelUrl(effectiveCancelUrl)
-                    .setCustomerEmail(customerEmail)
-                    .addLineItem(
-                            SessionCreateParams.LineItem.builder()
-                                    .setPriceData(
-                                            SessionCreateParams.LineItem.PriceData.builder()
-                                                    .setCurrency(currency.name().toLowerCase())
-                                                    .setUnitAmount(amountInCents)
-                                                    .setProductData(
-                                                            SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                                                    .setName("Car Rental Payment")
-                                                                    .setDescription(effectiveDescription)
-                                                                    .build()
-                                                    )
-                                                    .build()
-                                    )
-                                    .setQuantity(1L)
-                                    .build()
-                    )
-                    .putAllMetadata(metadata)
-                    .build();
-
-            Session session = Session.create(params);
-
-            log.info("[AUDIT] Payment Operation: CREATE_CHECKOUT_SESSION | Status: SUCCESS | Rental ID: {} | Session ID: {} | Idempotency Key: {} | Timestamp: {}",
-                    rentalId, session.getId(), idempotencyKey, LocalDateTime.now(clock));
-
-            return new CheckoutSessionResult(session.getId(), session.getUrl(), idempotencyKey);
-
-        }, "createCheckoutSession");
-    }
-
-    @Override
-    public PaymentResult authorize(BigDecimal amount, CurrencyType currency, String customerId) {
-        LocalDateTime operationTimestamp = LocalDateTime.now(clock);
-        
-        log.info("[AUDIT] Payment Operation: AUTHORIZE | Amount: {} {} | Customer ID: {} | Timestamp: {}",
-                amount, currency, customerId, operationTimestamp);
-
-        log.warn("Direct authorize() called - Stripe Checkout handles authorization automatically");
-
-        String transactionId = "STRIPE-AUTH-" + clock.millis();
-        
-        log.info("[AUDIT] Payment Operation: AUTHORIZE | Status: SUCCESS | Transaction ID: {} | Timestamp: {}",
-                transactionId, LocalDateTime.now(clock));
-
-        return PaymentResult.success(transactionId, "Authorization handled by Stripe Checkout");
-    }
-
-    @Override
-    public PaymentResult capture(String transactionId, BigDecimal amount) {
-        LocalDateTime operationTimestamp = LocalDateTime.now(clock);
-        
-        log.info("[AUDIT] Payment Operation: CAPTURE | Transaction ID: {} | Amount: {} | Timestamp: {}",
-                transactionId, amount, operationTimestamp);
-
-        log.warn("Direct capture() called - Stripe Checkout auto-captures payments");
-
-        log.info("[AUDIT] Payment Operation: CAPTURE | Status: SUCCESS | Transaction ID: {} | Timestamp: {}",
-                transactionId, LocalDateTime.now(clock));
-
-        return PaymentResult.success(transactionId, "Payment captured automatically by Stripe Checkout");
-    }
-
-    @Override
-    public PaymentResult refund(String transactionId, BigDecimal amount) {
-        LocalDateTime operationTimestamp = LocalDateTime.now(clock);
-        
-        log.info("[AUDIT] Payment Operation: REFUND | Transaction ID: {} | Amount: {} | Timestamp: {}",
-                transactionId, amount, operationTimestamp);
-
-        return executeWithRetry(() -> {
-            try {
-                long amountInCents = amount.multiply(BigDecimal.valueOf(100)).longValue();
-
-                RefundCreateParams params = RefundCreateParams.builder()
-                        .setPaymentIntent(transactionId)
-                        .setAmount(amountInCents)
-                        .build();
-
-                Refund refund = Refund.create(params);
-
-                log.info("[AUDIT] Payment Operation: REFUND | Status: SUCCESS | Transaction ID: {} | Refund ID: {} | Amount: {} | Stripe Status: {} | Timestamp: {}",
-                        transactionId, refund.getId(), amount, refund.getStatus(), LocalDateTime.now(clock));
-
-                return PaymentResult.success(refund.getId(), "Refund processed successfully");
-
-            } catch (StripeException e) {
-                log.error("[AUDIT] Payment Operation: REFUND | Status: FAILED | Transaction ID: {} | Amount: {} | Stripe Error Code: {} | Error Message: {} | Timestamp: {}",
-                        transactionId, amount, e.getCode(), e.getMessage(), LocalDateTime.now(clock));
-                throw new PaymentFailedException(transactionId, e.getMessage());
+    public GatewayIntent createIntent(IntentCommand command, String idempotencyKey) {
+        long minor = StripeAmounts.toMinorUnits(command.amount(), command.currency());
+        log.info("[AUDIT] Stripe CREATE_INTENT | Rental: {} | Payment: {} | Amount: {} {} | Key: {}",
+                command.rentalId(), command.paymentId(), command.amount(), command.currency(), idempotencyKey);
+        try {
+            String customerId = command.customerId();
+            if (customerId == null) {
+                customerId = createCustomer(command);
             }
-        }, "refund");
-    }
 
-    public PaymentResult partialRefund(String transactionId, BigDecimal amount) {
-        LocalDateTime operationTimestamp = LocalDateTime.now(clock);
-        
-        log.info("[AUDIT] Payment Operation: PARTIAL_REFUND | Transaction ID: {} | Amount: {} | Timestamp: {}",
-                transactionId, amount, operationTimestamp);
-
-        return executeWithRetry(() -> {
-            try {
-                long amountInCents = amount.multiply(BigDecimal.valueOf(100)).longValue();
-
-                RefundCreateParams params = RefundCreateParams.builder()
-                        .setPaymentIntent(transactionId)
-                        .setAmount(amountInCents)
-                        .build();
-
-                Refund refund = Refund.create(params);
-
-                log.info("[AUDIT] Payment Operation: PARTIAL_REFUND | Status: SUCCESS | Transaction ID: {} | Refund ID: {} | Amount: {} | Stripe Status: {} | Timestamp: {}",
-                        transactionId, refund.getId(), amount, refund.getStatus(), LocalDateTime.now(clock));
-
-                return PaymentResult.success(refund.getId(), "Partial refund processed successfully");
-
-            } catch (StripeException e) {
-                log.error("[AUDIT] Payment Operation: PARTIAL_REFUND | Status: FAILED | Transaction ID: {} | Amount: {} | Stripe Error Code: {} | Error Message: {} | Timestamp: {}",
-                        transactionId, amount, e.getCode(), e.getMessage(), LocalDateTime.now(clock));
-                throw new PaymentFailedException(transactionId, e.getMessage());
+            PaymentIntentCreateParams.Builder params = PaymentIntentCreateParams.builder()
+                    .setAmount(minor)
+                    .setCurrency(StripeAmounts.code(command.currency()))
+                    .setCaptureMethod(PaymentIntentCreateParams.CaptureMethod.MANUAL)
+                    .setCustomer(customerId)
+                    .setSetupFutureUsage(PaymentIntentCreateParams.SetupFutureUsage.OFF_SESSION)
+                    .setAutomaticPaymentMethods(PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
+                            .setEnabled(true)
+                            .setAllowRedirects(PaymentIntentCreateParams.AutomaticPaymentMethods.AllowRedirects.NEVER)
+                            .build())
+                    .putMetadata("payment_id", String.valueOf(command.paymentId()))
+                    .putMetadata("rental_id", String.valueOf(command.rentalId()));
+            if (command.description() != null) {
+                params.setDescription(command.description());
             }
-        }, "partialRefund");
-    }
 
-    private <T> T executeWithRetry(StripeOperation<T> operation, String operationName) {
-        int attempt = 0;
-        long backoffMs = INITIAL_BACKOFF_MS;
-
-        while (true) {
-            try {
-                return operation.execute();
-            } catch (StripeException e) {
-                attempt++;
-
-                if (attempt >= MAX_RETRY_ATTEMPTS) {
-                    log.error("[AUDIT] Payment Operation: {} | Status: FAILED_AFTER_RETRIES | Attempts: {} | Stripe Error Code: {} | Error Message: {} | Timestamp: {}",
-                            operationName.toUpperCase(), MAX_RETRY_ATTEMPTS, e.getCode(), e.getMessage(), LocalDateTime.now(clock));
-                    throw new PaymentFailedException(
-                            String.format("Stripe operation '%s' failed after %d attempts: %s",
-                                    operationName, MAX_RETRY_ATTEMPTS, e.getMessage())
-                    );
-                }
-
-                if (isRetryableError(e)) {
-                    log.warn("[AUDIT] Payment Operation: {} | Status: RETRY | Attempt: {}/{} | Retry Delay: {}ms | Stripe Error Code: {} | Error Message: {} | Timestamp: {}",
-                            operationName.toUpperCase(), attempt, MAX_RETRY_ATTEMPTS, backoffMs, e.getCode(), e.getMessage(), LocalDateTime.now(clock));
-
-                    try {
-                        Thread.sleep(backoffMs);
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        throw new PaymentFailedException("Operation interrupted during retry: " + ie.getMessage());
-                    }
-
-                    backoffMs *= 2;
-                } else {
-                    log.error("[AUDIT] Payment Operation: {} | Status: FAILED_NON_RETRYABLE | Stripe Error Code: {} | Error Message: {} | Timestamp: {}",
-                            operationName.toUpperCase(), e.getCode(), e.getMessage(), LocalDateTime.now(clock));
-                    throw new PaymentFailedException(operationName + " failed: " + e.getMessage());
-                }
-            }
+            PaymentIntent intent = PaymentIntent.create(params.build(), options(idempotencyKey));
+            return toGatewayIntent(intent);
+        } catch (StripeException e) {
+            log.error("[AUDIT] Stripe CREATE_INTENT FAILED | Payment: {} | Code: {} | Request: {}",
+                    command.paymentId(), e.getCode(), e.getRequestId());
+            throw new StripeIntegrationException(e.getCode(), e.getUserMessage() != null ? e.getUserMessage() : "Stripe request failed", e);
         }
     }
 
-    private boolean isRetryableError(StripeException e) {
-
-        return e.getStatusCode() == null ||
-                e.getStatusCode() == 429 ||
-                e.getStatusCode() >= 500;
+    @Override
+    public GatewayIntent retrieveIntent(String intentId) {
+        try {
+            return toGatewayIntent(PaymentIntent.retrieve(intentId, options(null)));
+        } catch (StripeException e) {
+            log.error("[AUDIT] Stripe RETRIEVE_INTENT FAILED | Intent: {} | Code: {} | Request: {}",
+                    intentId, e.getCode(), e.getRequestId());
+            throw new StripeIntegrationException(e.getCode(), "Stripe request failed", e);
+        }
     }
 
-    @FunctionalInterface
-    private interface StripeOperation<T> {
-        T execute() throws StripeException;
+    @Override
+    public PaymentResult capture(String intentId, String idempotencyKey) {
+        log.info("[AUDIT] Stripe CAPTURE | Intent: {} | Key: {}", intentId, idempotencyKey);
+        try {
+            PaymentIntent intent = new PaymentIntent();
+            intent.setId(intentId);
+            PaymentIntent captured = intent.capture(options(idempotencyKey));
+            if (GatewayIntentStatus.fromStripe(captured.getStatus()) == GatewayIntentStatus.SUCCEEDED) {
+                return PaymentResult.success(captured.getId(), "Payment captured");
+            }
+            return PaymentResult.failure("Capture did not complete, status: " + captured.getStatus());
+        } catch (StripeException e) {
+            return failure("CAPTURE", intentId, e);
+        }
+    }
+
+    @Override
+    public PaymentResult cancel(String intentId, String idempotencyKey) {
+        log.info("[AUDIT] Stripe CANCEL | Intent: {} | Key: {}", intentId, idempotencyKey);
+        try {
+            PaymentIntent intent = new PaymentIntent();
+            intent.setId(intentId);
+            PaymentIntent canceled = intent.cancel(options(idempotencyKey));
+            return PaymentResult.success(canceled.getId(), "Payment intent cancelled");
+        } catch (StripeException e) {
+            return failure("CANCEL", intentId, e);
+        }
+    }
+
+    @Override
+    public PaymentResult refund(String intentId, BigDecimal amount, CurrencyType currency, String idempotencyKey) {
+        log.info("[AUDIT] Stripe REFUND | Intent: {} | Amount: {} {} | Key: {}", intentId, amount, currency, idempotencyKey);
+        try {
+            long minor = StripeAmounts.toMinorUnits(amount, currency);
+            RefundCreateParams params = RefundCreateParams.builder()
+                    .setPaymentIntent(intentId)
+                    .setAmount(minor)
+                    .build();
+            Refund refund = Refund.create(params, options(idempotencyKey));
+            return PaymentResult.success(refund.getId(), "Refund processed");
+        } catch (IllegalArgumentException e) {
+            return PaymentResult.failure(e.getMessage());
+        } catch (StripeException e) {
+            return failure("REFUND", intentId, e);
+        }
+    }
+
+    @Override
+    public PaymentResult chargeSavedMethod(ChargeCommand command, String idempotencyKey) {
+        log.info("[AUDIT] Stripe OFF_SESSION_CHARGE | Rental: {} | Payment: {} | Amount: {} {} | Key: {}",
+                command.rentalId(), command.paymentId(), command.amount(), command.currency(), idempotencyKey);
+        try {
+            long minor = StripeAmounts.toMinorUnits(command.amount(), command.currency());
+            PaymentIntentCreateParams.Builder params = PaymentIntentCreateParams.builder()
+                    .setAmount(minor)
+                    .setCurrency(StripeAmounts.code(command.currency()))
+                    .setCustomer(command.customerId())
+                    .setPaymentMethod(command.paymentMethodId())
+                    .setOffSession(true)
+                    .setConfirm(true)
+                    .setAutomaticPaymentMethods(PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
+                            .setEnabled(true)
+                            .setAllowRedirects(PaymentIntentCreateParams.AutomaticPaymentMethods.AllowRedirects.NEVER)
+                            .build())
+                    .putMetadata("payment_id", String.valueOf(command.paymentId()))
+                    .putMetadata("rental_id", String.valueOf(command.rentalId()));
+            if (command.description() != null) {
+                params.setDescription(command.description());
+            }
+            PaymentIntent intent = PaymentIntent.create(params.build(), options(idempotencyKey));
+            if (GatewayIntentStatus.fromStripe(intent.getStatus()) == GatewayIntentStatus.SUCCEEDED) {
+                return PaymentResult.success(intent.getId(), "Charge succeeded");
+            }
+            return PaymentResult.failure("Charge requires customer action, status: " + intent.getStatus());
+        } catch (IllegalArgumentException e) {
+            return PaymentResult.failure(e.getMessage());
+        } catch (StripeException e) {
+            return failure("OFF_SESSION_CHARGE", String.valueOf(command.paymentId()), e);
+        }
+    }
+
+    private String createCustomer(IntentCommand command) throws StripeException {
+        CustomerCreateParams.Builder params = CustomerCreateParams.builder()
+                .putMetadata("rental_id", String.valueOf(command.rentalId()));
+        if (command.customerEmail() != null) {
+            params.setEmail(command.customerEmail());
+        }
+        Customer customer = Customer.create(params.build(), options(command.customerIdempotencyKey()));
+        return customer.getId();
+    }
+
+    private RequestOptions options(String idempotencyKey) {
+        RequestOptions.RequestOptionsBuilder builder = stripeConfig.requestOptions();
+        if (idempotencyKey != null) {
+            builder.setIdempotencyKey(idempotencyKey);
+        }
+        return builder.build();
+    }
+
+    private GatewayIntent toGatewayIntent(PaymentIntent intent) {
+        return new GatewayIntent(
+                intent.getId(),
+                intent.getClientSecret(),
+                GatewayIntentStatus.fromStripe(intent.getStatus()),
+                intent.getPaymentMethod(),
+                intent.getCustomer(),
+                intent.getAmount() != null ? intent.getAmount() : 0L,
+                intent.getCurrency());
+    }
+
+    private PaymentResult failure(String operation, String reference, StripeException e) {
+        log.error("[AUDIT] Stripe {} FAILED | Ref: {} | Code: {} | Request: {}",
+                operation, reference, e.getCode(), e.getRequestId());
+        String reason = e.getUserMessage() != null ? e.getUserMessage() : "Stripe request failed";
+        return PaymentResult.failure(reason);
     }
 }

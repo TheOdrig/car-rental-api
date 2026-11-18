@@ -54,7 +54,7 @@ public class PenaltyPaymentServiceImpl implements PenaltyPaymentService {
         log.debug("Attempting to charge penalty payment: paymentId={}, userId={}", paymentId, userId);
 
         String customerId = userId.toString();
-        PaymentResult result = paymentService.chargePayment(paymentId, customerId);
+        PaymentResult result = paymentService.chargePayment(paymentId);
 
         if (result.success()) {
             log.info("Successfully charged penalty payment: ID={}, Transaction ID={}", 

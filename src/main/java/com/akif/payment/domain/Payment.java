@@ -1,8 +1,9 @@
 package com.akif.payment.domain;
 
-import com.akif.shared.enums.CurrencyType;
+import com.akif.payment.domain.enums.PaymentKind;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.shared.domain.BaseEntity;
+import com.akif.shared.enums.CurrencyType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -25,6 +26,14 @@ public class Payment extends BaseEntity {
 
     @Column(name = "rental_id", nullable = false)
     private Long rentalId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "kind", length = 20, nullable = false)
+    @Builder.Default
+    private PaymentKind kind = PaymentKind.RENTAL;
+
+    @Column(name = "reference_id")
+    private Long referenceId;
 
     @Column(name = "user_email", length = 255)
     private String userEmail;
@@ -59,8 +68,22 @@ public class Payment extends BaseEntity {
     @Column(name = "stripe_payment_intent_id", length = 255)
     private String stripePaymentIntentId;
 
+    @Column(name = "stripe_customer_id", length = 255)
+    private String stripeCustomerId;
+
+    @Column(name = "stripe_payment_method_id", length = 255)
+    private String stripePaymentMethodId;
+
     @Column(name = "idempotency_key", length = 255)
     private String idempotencyKey;
+
+    @Column(name = "intent_attempt", nullable = false)
+    @Builder.Default
+    private int intentAttempt = 1;
+
+    @Column(name = "refund_count", nullable = false)
+    @Builder.Default
+    private int refundCount = 0;
 
     @Column(name = "refunded_amount", precision = 12, scale = 2)
     private BigDecimal refundedAmount;
@@ -92,10 +115,97 @@ public class Payment extends BaseEntity {
         }
     }
 
-    public void markCheckoutCompleted(String paymentIntentId) {
-        this.status = PaymentStatus.CAPTURED;
-        this.stripePaymentIntentId = paymentIntentId;
-        this.transactionId = paymentIntentId;
+    public void attachIntent(String intentId, String key) {
+        this.stripePaymentIntentId = intentId;
+        this.transactionId = intentId;
+        this.idempotencyKey = key;
+    }
+
+    public void rememberCustomer(String customerId) {
+        if (customerId != null) {
+            this.stripeCustomerId = customerId;
+        }
+    }
+
+    public void rememberPaymentMethod(String paymentMethodId) {
+        if (paymentMethodId != null) {
+            this.stripePaymentMethodId = paymentMethodId;
+        }
+    }
+
+    public boolean authorize() {
+        if (status == PaymentStatus.PENDING || status == PaymentStatus.FAILED) {
+            this.status = PaymentStatus.AUTHORIZED;
+            this.failureReason = null;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean capture() {
+        if (status == PaymentStatus.PENDING || status == PaymentStatus.AUTHORIZED || status == PaymentStatus.FAILED) {
+            this.status = PaymentStatus.CAPTURED;
+            this.failureReason = null;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean cancel() {
+        if (status == PaymentStatus.PENDING || status == PaymentStatus.AUTHORIZED || status == PaymentStatus.FAILED) {
+            this.status = PaymentStatus.CANCELLED;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean fail(String reason) {
+        if (status == PaymentStatus.PENDING) {
+            markFailed(reason, null);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean reopen() {
+        if (status == PaymentStatus.FAILED) {
+            this.status = PaymentStatus.PENDING;
+            return true;
+        }
+        return false;
+    }
+
+    public void restart() {
+        this.status = PaymentStatus.PENDING;
+        this.failureReason = null;
+        nextAttempt();
+    }
+
+    public void nextAttempt() {
+        this.intentAttempt++;
+        this.stripePaymentIntentId = null;
+    }
+
+    public BigDecimal refundedTotal() {
+        return refundedAmount != null ? refundedAmount : BigDecimal.ZERO;
+    }
+
+    public BigDecimal refundableBalance() {
+        return amount.subtract(refundedTotal());
+    }
+
+    public void applyRefundTotal(BigDecimal total) {
+        if (total.compareTo(refundedTotal()) > 0) {
+            this.refundedAmount = total;
+        }
+        if (refundedTotal().compareTo(amount) >= 0 && status == PaymentStatus.CAPTURED) {
+            this.status = PaymentStatus.REFUNDED;
+        }
+    }
+
+    public void recordRefundIssued(BigDecimal previousTotal, BigDecimal refundAmount) {
+        applyRefundTotal(previousTotal.add(refundAmount));
+        this.refundCount++;
     }
 
     public void recordRefund(BigDecimal refundAmount) {
@@ -119,12 +229,10 @@ public class Payment extends BaseEntity {
         return "Payment{" +
                 "id=" + getId() +
                 ", rentalId=" + rentalId +
-                ", userEmail='" + userEmail + '\'' +
-                ", carLicensePlate='" + carLicensePlate + '\'' +
+                ", kind=" + kind +
                 ", amount=" + amount +
                 ", currency=" + currency +
                 ", status=" + status +
-                ", transactionId='" + transactionId + '\'' +
                 '}';
     }
 }

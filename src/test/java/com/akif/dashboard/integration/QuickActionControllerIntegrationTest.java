@@ -145,6 +145,14 @@ class QuickActionControllerIntegrationTest {
             Objects.requireNonNull(cacheManager.getCache(cacheName)).clear());
     }
 
+    @Autowired
+    private com.akif.payment.api.PaymentService paymentService;
+
+    private void payRental(Long rentalId) {
+        paymentService.getPaymentByRentalId(rentalId)
+                .ifPresent(payment -> paymentService.createOrGetIntentForRental(rentalId));
+    }
+
     private Rental createTestRental(RentalStatus status, CarStatusType carStatus) {
         testCar.setCarStatusType(carStatus);
         testCar = carRepository.save(testCar);
@@ -196,6 +204,7 @@ class QuickActionControllerIntegrationTest {
         void shouldReturn403WhenUserTriesToProcessPickup() throws Exception {
             Rental rental = createTestRental(RentalStatus.CONFIRMED, CarStatusType.RESERVED);
 
+            payRental(rental.getId());
             mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/pickup", rental.getId())
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
@@ -265,6 +274,7 @@ class QuickActionControllerIntegrationTest {
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk());
 
+            payRental(rental.getId());
             mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/pickup", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
@@ -290,6 +300,7 @@ class QuickActionControllerIntegrationTest {
         void shouldReturn400WhenRentalIsNotInConfirmedState() throws Exception {
             Rental rental = createTestRental(RentalStatus.REQUESTED, CarStatusType.AVAILABLE);
 
+            payRental(rental.getId());
             mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/pickup", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isBadRequest());
@@ -309,6 +320,7 @@ class QuickActionControllerIntegrationTest {
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk());
 
+            payRental(rental.getId());
             mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/pickup", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk());
@@ -358,6 +370,7 @@ class QuickActionControllerIntegrationTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.newStatus").value("CONFIRMED"));
 
+            payRental(rental.getId());
             mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/pickup", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())

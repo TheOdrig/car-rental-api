@@ -383,6 +383,7 @@ class DashboardE2ETest extends E2ETestBase {
                                         approveResult.getResponse().getContentAsString(), QuickActionResultDto.class);
                         assertThat(approveResultDto.success()).isTrue();
 
+                        payRental(rentalId);
                         MvcResult pickupResult = mockMvc
                                         .perform(post("/api/admin/quick-actions/rentals/{id}/pickup", rentalId)
                                                         .header("Authorization", "Bearer " + adminToken))

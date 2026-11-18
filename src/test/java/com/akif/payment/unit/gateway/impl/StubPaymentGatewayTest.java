@@ -1,147 +1,104 @@
 package com.akif.payment.unit.gateway.impl;
 
 import com.akif.payment.api.PaymentResult;
+import com.akif.payment.internal.service.gateway.ChargeCommand;
+import com.akif.payment.internal.service.gateway.GatewayIntent;
+import com.akif.payment.internal.service.gateway.GatewayIntentStatus;
+import com.akif.payment.internal.service.gateway.IntentCommand;
 import com.akif.payment.internal.service.gateway.impl.StubPaymentGateway;
 import com.akif.shared.enums.CurrencyType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("StubPaymentGateway Tests")
+@DisplayName("StubPaymentGateway")
 class StubPaymentGatewayTest {
 
-    private StubPaymentGateway stubPaymentGateway;
+    private StubPaymentGateway gateway;
 
     @BeforeEach
     void setUp() {
-        stubPaymentGateway = new StubPaymentGateway();
+        gateway = new StubPaymentGateway();
     }
 
-    @Nested
-    @DisplayName("Authorize Tests")
-    class AuthorizeTests {
-
-        @Test
-        @DisplayName("Should successfully authorize payment")
-        void shouldSuccessfullyAuthorizePayment() {
-            BigDecimal amount = new BigDecimal("1000.00");
-            CurrencyType currency = CurrencyType.TRY;
-            String customerId = "123";
-
-            PaymentResult result = stubPaymentGateway.authorize(amount, currency, customerId);
-
-            assertThat(result.success()).isTrue();
-            assertThat(result.transactionId()).isNotNull();
-            assertThat(result.transactionId()).startsWith("STUB-");
-            assertThat(result.message()).contains("authorized");
-        }
-
-        @Test
-        @DisplayName("Should generate unique transaction IDs")
-        void shouldGenerateUniqueTransactionIds() {
-            PaymentResult result1 = stubPaymentGateway.authorize(
-                    new BigDecimal("100"), CurrencyType.USD, "1");
-            PaymentResult result2 = stubPaymentGateway.authorize(
-                    new BigDecimal("200"), CurrencyType.EUR, "2");
-
-            assertThat(result1.transactionId()).isNotEqualTo(result2.transactionId());
-        }
-
-        @Test
-        @DisplayName("Should handle different currencies")
-        void shouldHandleDifferentCurrencies() {
-            PaymentResult resultTry = stubPaymentGateway.authorize(
-                    new BigDecimal("1000"), CurrencyType.TRY, "1");
-            PaymentResult resultUsd = stubPaymentGateway.authorize(
-                    new BigDecimal("100"), CurrencyType.USD, "2");
-
-            assertThat(resultTry.success()).isTrue();
-            assertThat(resultUsd.success()).isTrue();
-        }
-
-        @Test
-        @DisplayName("Should handle null customer ID")
-        void shouldHandleNullCustomerId() {
-            PaymentResult result = stubPaymentGateway.authorize(
-                    new BigDecimal("100"), CurrencyType.USD, null);
-
-            assertThat(result.success()).isTrue();
-        }
+    private IntentCommand command() {
+        return new IntentCommand(1L, 2L, new BigDecimal("50.00"), CurrencyType.USD, "a@b.c", null, "d", "ck");
     }
 
-    @Nested
-    @DisplayName("Capture Tests")
-    class CaptureTests {
+    @Test
+    @DisplayName("is visibly a stub: ids and secrets carry the stub prefix")
+    void idsAreVisiblyStubs() {
+        GatewayIntent intent = gateway.createIntent(command(), "key-1");
 
-        @Test
-        @DisplayName("Should successfully capture payment")
-        void shouldSuccessfullyCapturePayment() {
-            String transactionId = "STUB-ABC123DEF456";
-            BigDecimal amount = new BigDecimal("1000.00");
-
-            PaymentResult result = stubPaymentGateway.capture(transactionId, amount);
-
-            assertThat(result.success()).isTrue();
-            assertThat(result.transactionId()).isEqualTo(transactionId);
-            assertThat(result.message()).contains("captured");
-        }
-
-        @Test
-        @DisplayName("Should handle partial capture")
-        void shouldHandlePartialCapture() {
-            String transactionId = "STUB-ABC123DEF456";
-            BigDecimal authorizedAmount = new BigDecimal("1000.00");
-            BigDecimal captureAmount = new BigDecimal("500.00");
-
-            assertThat(captureAmount).isLessThan(authorizedAmount);
-
-            PaymentResult result = stubPaymentGateway.capture(transactionId, captureAmount);
-
-            assertThat(result.success()).isTrue();
-            assertThat(result.transactionId()).isEqualTo(transactionId);
-            assertThat(result.message()).contains("captured");
-        }
+        assertThat(intent.id()).startsWith("stub_pi_");
+        assertThat(intent.clientSecret()).startsWith("stub_secret_");
     }
 
-    @Nested
-    @DisplayName("Refund Tests")
-    class RefundTests {
-
-        @Test
-        @DisplayName("Should successfully refund payment")
-        void shouldSuccessfullyRefundPayment() {
-            String transactionId = "STUB-ABC123DEF456";
-            BigDecimal amount = new BigDecimal("1000.00");
-
-            PaymentResult result = stubPaymentGateway.refund(transactionId, amount);
-
-            assertThat(result.success()).isTrue();
-            assertThat(result.transactionId()).isNotNull();
-            assertThat(result.transactionId()).startsWith("STUB-");
-            assertThat(result.message()).contains("refunded");
-        }
-
-        @Test
-        @DisplayName("Should handle partial refund")
-        void shouldHandlePartialRefund() {
-            String transactionId = "STUB-ABC123DEF456";
-            BigDecimal capturedAmount = new BigDecimal("1000.00");
-            BigDecimal refundAmount = new BigDecimal("500.00");
-
-            assertThat(refundAmount).isLessThan(capturedAmount);
-
-            PaymentResult result = stubPaymentGateway.refund(transactionId, refundAmount);
-
-            assertThat(result.success()).isTrue();
-            assertThat(result.transactionId()).isNotNull();
-            assertThat(result.transactionId()).startsWith("STUB-");
-            assertThat(result.message()).contains("refunded");
-        }
+    @Test
+    @DisplayName("reports a new intent as already authorized")
+    void newIntentIsAuthorized() {
+        assertThat(gateway.createIntent(command(), "key-1").status()).isEqualTo(GatewayIntentStatus.REQUIRES_CAPTURE);
     }
 
+    @Test
+    @DisplayName("returns the same intent for the same idempotency key")
+    void sameKeySameIntent() {
+        GatewayIntent first = gateway.createIntent(command(), "key-1");
+        GatewayIntent second = gateway.createIntent(command(), "key-1");
+
+        assertThat(second.id()).isEqualTo(first.id());
+    }
+
+    @Test
+    @DisplayName("returns a different intent for a different idempotency key")
+    void differentKeyDifferentIntent() {
+        assertThat(gateway.createIntent(command(), "key-1").id())
+                .isNotEqualTo(gateway.createIntent(command(), "key-2").id());
+    }
+
+    @Test
+    @DisplayName("tracks capture and cancellation on retrieve")
+    void tracksState() {
+        GatewayIntent captured = gateway.createIntent(command(), "key-1");
+        GatewayIntent cancelled = gateway.createIntent(command(), "key-2");
+
+        gateway.capture(captured.id(), "c1");
+        gateway.cancel(cancelled.id(), "c2");
+
+        assertThat(gateway.retrieveIntent(captured.id()).status()).isEqualTo(GatewayIntentStatus.SUCCEEDED);
+        assertThat(gateway.retrieveIntent(cancelled.id()).status()).isEqualTo(GatewayIntentStatus.CANCELED);
+    }
+
+    @Test
+    @DisplayName("labels every result message as a stub")
+    void resultMessagesAreLabelled() {
+        PaymentResult capture = gateway.capture("stub_pi_x", "k");
+        PaymentResult refund = gateway.refund("stub_pi_x", BigDecimal.TEN, CurrencyType.USD, "k");
+
+        assertThat(capture.message()).contains("STUB");
+        assertThat(refund.message()).contains("STUB");
+    }
+
+    @Test
+    @DisplayName("derives refund ids deterministically from the idempotency key")
+    void refundIdsAreDeterministic() {
+        String first = gateway.refund("stub_pi_x", BigDecimal.TEN, CurrencyType.USD, "k").transactionId();
+        String second = gateway.refund("stub_pi_x", BigDecimal.TEN, CurrencyType.USD, "k").transactionId();
+
+        assertThat(first).isEqualTo(second).startsWith("stub_re_");
+    }
+
+    @Test
+    @DisplayName("charges a saved method successfully")
+    void chargesSavedMethod() {
+        PaymentResult result = gateway.chargeSavedMethod(
+                new ChargeCommand(1L, 2L, BigDecimal.TEN, CurrencyType.USD, "cus", "pm", "d"), "charge-key");
+
+        assertThat(result.success()).isTrue();
+        assertThat(result.transactionId()).startsWith("stub_pi_");
+    }
 }

@@ -214,7 +214,7 @@ class PenaltyWaiverServiceImplTest {
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
             when(penaltyWaiverRepository.save(any(PenaltyWaiver.class))).thenReturn(testWaiver);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
-            when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(testPaymentDto));
+            when(paymentService.getPenaltyPaymentByRentalId(1L)).thenReturn(Optional.of(testPaymentDto));
             when(paymentService.refundPayment(eq(1L), any(BigDecimal.class)))
                     .thenReturn(PaymentResult.success("refund_123", "Refund successful"));
 
@@ -226,7 +226,7 @@ class PenaltyWaiverServiceImplTest {
         @Test
         @DisplayName("Should update waiver with refund transaction ID")
         void shouldUpdateWaiverWithRefundTransactionId() {
-            when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(testPaymentDto));
+            when(paymentService.getPenaltyPaymentByRentalId(1L)).thenReturn(Optional.of(testPaymentDto));
             when(paymentService.refundPayment(eq(1L), any(BigDecimal.class)))
                     .thenReturn(PaymentResult.success("refund_456", "Refund successful"));
             when(penaltyWaiverRepository.save(any(PenaltyWaiver.class))).thenReturn(testWaiver);
@@ -250,7 +250,7 @@ class PenaltyWaiverServiceImplTest {
         @Test
         @DisplayName("Should handle refund failure gracefully")
         void shouldHandleRefundFailureGracefully() {
-            when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(testPaymentDto));
+            when(paymentService.getPenaltyPaymentByRentalId(1L)).thenReturn(Optional.of(testPaymentDto));
             when(paymentService.refundPayment(eq(1L), any(BigDecimal.class)))
                     .thenReturn(PaymentResult.failure("Refund failed"));
 

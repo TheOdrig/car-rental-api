@@ -1,6 +1,5 @@
 package com.akif.payment.internal.service.gateway;
 
-import com.akif.payment.api.CheckoutSessionResult;
 import com.akif.payment.api.PaymentResult;
 import com.akif.shared.enums.CurrencyType;
 
@@ -8,19 +7,15 @@ import java.math.BigDecimal;
 
 public interface PaymentGateway {
 
-    PaymentResult authorize(BigDecimal amount, CurrencyType currency, String customerId);
+    GatewayIntent createIntent(IntentCommand command, String idempotencyKey);
 
-    PaymentResult capture(String transactionId, BigDecimal amount);
+    GatewayIntent retrieveIntent(String intentId);
 
-    PaymentResult refund(String transactionId, BigDecimal amount);
+    PaymentResult capture(String intentId, String idempotencyKey);
 
-    CheckoutSessionResult createCheckoutSession(
-            Long rentalId,
-            BigDecimal amount,
-            CurrencyType currency,
-            String customerEmail,
-            String description,
-            String successUrl,
-            String cancelUrl
-    );
+    PaymentResult cancel(String intentId, String idempotencyKey);
+
+    PaymentResult refund(String intentId, BigDecimal amount, CurrencyType currency, String idempotencyKey);
+
+    PaymentResult chargeSavedMethod(ChargeCommand command, String idempotencyKey);
 }
