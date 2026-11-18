@@ -81,18 +81,18 @@ class PenaltyWaiverServiceImplTest {
                 .build();
 
         testPaymentDto = new PaymentDto(
-                1L,                           // id
-                testRental.getId(),           // rentalId
-                testRental.getUserEmail(),    // userEmail
-                testRental.getCarLicensePlate(), // carLicensePlate
-                new BigDecimal("200.00"),     // amount
-                CurrencyType.TRY,             // currency
-                PaymentStatus.CAPTURED,       // status
-                "PENALTY",                    // paymentMethod
-                "txn_123",                    // transactionId
-                null,                         // stripeSessionId
-                null,                         // stripePaymentIntentId
-                null                          // failureReason
+                1L,
+                testRental.getId(),
+                testRental.getUserEmail(),
+                testRental.getCarLicensePlate(),
+                new BigDecimal("200.00"),
+                CurrencyType.TRY,
+                PaymentStatus.CAPTURED,
+                "PENALTY",
+                "txn_123",
+                null,
+                null,
+                null
         );
 
         testWaiver = PenaltyWaiver.builder()
@@ -220,7 +220,44 @@ class PenaltyWaiverServiceImplTest {
 
             service.waivePenalty(1L, new BigDecimal("50.00"), "Refund reason", 100L);
 
-            verify(paymentService).refundPayment(eq(1L), eq(new BigDecimal("50.00")), eq("waiver-1:refund"));
+            verify(paymentService).refundPayment(eq(1L), eq(new BigDecimal("50.00")), eq("rental-1:waived-50.00:refund"));
+        }
+
+        @Test
+        @DisplayName("Should reuse the refund key when a retry follows a rolled-back outer transaction")
+        void shouldReuseRefundKeyAfterRolledBackAttempt() {
+            when(paymentService.getPenaltyPaymentByRentalId(1L)).thenReturn(Optional.of(testPaymentDto));
+            when(paymentService.refundPayment(eq(1L), any(BigDecimal.class), anyString()))
+                    .thenReturn(PaymentResult.success("refund_r", "Refund successful"));
+            when(penaltyWaiverRepository.findByRentalIdAndIsDeletedFalse(1L)).thenReturn(Collections.emptyList());
+            PenaltyWaiver firstAttempt = PenaltyWaiver.builder().id(7L).rental(testRental)
+                    .waivedAmount(new BigDecimal("50.00")).refundInitiated(false).build();
+            PenaltyWaiver retry = PenaltyWaiver.builder().id(8L).rental(testRental)
+                    .waivedAmount(new BigDecimal("50.00")).refundInitiated(false).build();
+
+            service.processRefundForWaiver(firstAttempt);
+            service.processRefundForWaiver(retry);
+
+            org.mockito.ArgumentCaptor<String> keys = org.mockito.ArgumentCaptor.forClass(String.class);
+            verify(paymentService, times(2)).refundPayment(eq(1L), eq(new BigDecimal("50.00")), keys.capture());
+            assertThat(keys.getAllValues()).containsOnly("rental-1:waived-50.00:refund");
+        }
+
+        @Test
+        @DisplayName("Should key a later waiver by the cumulative waived amount")
+        void shouldKeyLaterWaiverByCumulativeAmount() {
+            PenaltyWaiver earlier = PenaltyWaiver.builder().id(3L).rental(testRental)
+                    .waivedAmount(new BigDecimal("30.00")).refundInitiated(true).build();
+            PenaltyWaiver later = PenaltyWaiver.builder().id(9L).rental(testRental)
+                    .waivedAmount(new BigDecimal("20.00")).refundInitiated(false).build();
+            when(penaltyWaiverRepository.findByRentalIdAndIsDeletedFalse(1L)).thenReturn(List.of(earlier, later));
+            when(paymentService.getPenaltyPaymentByRentalId(1L)).thenReturn(Optional.of(testPaymentDto));
+            when(paymentService.refundPayment(eq(1L), any(BigDecimal.class), anyString()))
+                    .thenReturn(PaymentResult.success("refund_l", "Refund successful"));
+
+            service.processRefundForWaiver(later);
+
+            verify(paymentService).refundPayment(eq(1L), eq(new BigDecimal("20.00")), eq("rental-1:waived-50.00:refund"));
         }
 
         @Test

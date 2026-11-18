@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -142,7 +143,7 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
 
         try {
             PaymentResult refundResult = paymentService.refundPayment(
-                    payment.id(), waiver.getWaivedAmount(), "waiver-" + waiver.getId() + ":refund");
+                    payment.id(), waiver.getWaivedAmount(), refundOperationKey(waiver, rentalId));
 
             if (refundResult.success()) {
                 waiver.recordRefund(refundResult.transactionId());
@@ -161,6 +162,15 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
             log.error("Error processing refund for waiver: {}", waiver.getId(), e);
             throw new PenaltyWaiverException("Failed to process refund", e);
         }
+    }
+
+    private String refundOperationKey(PenaltyWaiver waiver, Long rentalId) {
+        BigDecimal earlier = penaltyWaiverRepository.findByRentalIdAndIsDeletedFalse(rentalId).stream()
+                .filter(w -> w.getId() != null && waiver.getId() != null && w.getId() < waiver.getId())
+                .map(PenaltyWaiver::getWaivedAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal cumulative = earlier.add(waiver.getWaivedAmount()).setScale(2, RoundingMode.HALF_UP);
+        return "rental-" + rentalId + ":waived-" + cumulative.toPlainString() + ":refund";
     }
 
     private void validateWaiverRequest(Long rentalId, BigDecimal waiverAmount, String reason, Long adminId) {
