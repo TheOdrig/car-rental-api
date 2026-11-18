@@ -336,7 +336,7 @@ class DamageHistoryControllerIntegrationTest {
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.totalDamages").exists())
-                    .andExpect(jsonPath("$.totalRepairCost").exists());
+                    .andExpect(jsonPath("$.byCurrency").isArray());
         }
 
         @Test

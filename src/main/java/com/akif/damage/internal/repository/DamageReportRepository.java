@@ -142,6 +142,21 @@ public interface DamageReportRepository extends JpaRepository<DamageReport, Long
                         @Param("endDate") LocalDate endDate);
 
         @Query("""
+                        SELECT d.currency, COUNT(d), COALESCE(SUM(d.repairCostEstimate), 0),
+                        COALESCE(SUM(d.customerLiability), 0), COUNT(d.repairCostEstimate)
+                        FROM DamageReport d WHERE
+                        d.isDeleted = false
+                        AND d.currency IS NOT NULL
+                        AND (CAST(:startDate AS java.time.LocalDate) IS NULL OR CAST(d.reportedAt AS date) >= :startDate)
+                        AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR CAST(d.reportedAt AS date) <= :endDate)
+                        GROUP BY d.currency
+                        ORDER BY d.currency
+                        """)
+        List<Object[]> totalsByCurrency(
+                        @Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate);
+
+        @Query("""
                         SELECT COUNT(d) FROM DamageReport d
                         WHERE d.isDeleted = false
                         AND d.status IN (com.akif.damage.domain.enums.DamageStatus.REPORTED, com.akif.damage.domain.enums.DamageStatus.UNDER_ASSESSMENT)

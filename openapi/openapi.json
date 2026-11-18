@@ -1208,6 +1208,28 @@
         },
         "type" : "object"
       },
+      "DamageCurrencyTotals" : {
+        "properties" : {
+          "assessedCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "averageRepairCost" : {
+            "type" : "number"
+          },
+          "currency" : {
+            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
+            "type" : "string"
+          },
+          "totalCustomerLiability" : {
+            "type" : "number"
+          },
+          "totalRepairCost" : {
+            "type" : "number"
+          }
+        },
+        "type" : "object"
+      },
       "DamageDisputeRequest" : {
         "properties" : {
           "comments" : {
@@ -1464,8 +1486,12 @@
       },
       "DamageStatisticsDto" : {
         "properties" : {
-          "averageRepairCost" : {
-            "type" : "number"
+          "byCurrency" : {
+            "description" : "Monetary totals grouped by the currency each report was assessed in; amounts of different currencies are never summed together. Reports not yet assessed carry no currency and are not listed.",
+            "items" : {
+              "$ref" : "#/components/schemas/DamageCurrencyTotals"
+            },
+            "type" : "array"
           },
           "disputedCount" : {
             "format" : "int32",
@@ -1487,9 +1513,6 @@
             "format" : "int32",
             "type" : "integer"
           },
-          "totalCustomerLiability" : {
-            "type" : "number"
-          },
           "totalDamages" : {
             "format" : "int32",
             "type" : "integer"
@@ -1497,9 +1520,6 @@
           "totalLossCount" : {
             "format" : "int32",
             "type" : "integer"
-          },
-          "totalRepairCost" : {
-            "type" : "number"
           }
         },
         "type" : "object"

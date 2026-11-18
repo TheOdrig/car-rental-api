@@ -5,7 +5,9 @@ import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.domain.enums.DamageStatus;
 import com.akif.damage.internal.service.damage.DamageHistoryService;
 import com.akif.damage.internal.dto.damage.request.DamageSearchFilterDto;
+import com.akif.damage.internal.dto.damage.response.DamageCurrencyTotals;
 import com.akif.damage.internal.dto.damage.response.DamageStatisticsDto;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.damage.internal.mapper.DamageMapper;
 import com.akif.damage.internal.repository.DamageReportRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +17,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -67,11 +72,23 @@ public class DamageHistoryServiceImpl implements DamageHistoryService {
                 moderateCount,
                 majorCount,
                 totalLossCount,
-                damageReportRepository.sumTotalRepairCost(startDate, endDate),
-                damageReportRepository.sumTotalCustomerLiability(startDate, endDate),
-                damageReportRepository.averageRepairCost(startDate, endDate),
+                totalsByCurrency(startDate, endDate),
                 disputedCount,
                 resolvedCount
         );
+    }
+
+    private List<DamageCurrencyTotals> totalsByCurrency(LocalDate startDate, LocalDate endDate) {
+        return damageReportRepository.totalsByCurrency(startDate, endDate).stream()
+                .map(row -> {
+                    BigDecimal repairCost = (BigDecimal) row[2];
+                    long estimated = (Long) row[4];
+                    BigDecimal average = estimated == 0
+                            ? BigDecimal.ZERO.setScale(2)
+                            : repairCost.divide(BigDecimal.valueOf(estimated), 2, RoundingMode.HALF_UP);
+                    return new DamageCurrencyTotals((CurrencyType) row[0], (Long) row[1], repairCost,
+                            (BigDecimal) row[3], average);
+                })
+                .toList();
     }
 }

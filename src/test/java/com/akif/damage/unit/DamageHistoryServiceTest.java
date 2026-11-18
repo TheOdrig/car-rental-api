@@ -6,7 +6,9 @@ import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.domain.enums.DamageStatus;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.dto.damage.request.DamageSearchFilterDto;
+import com.akif.damage.internal.dto.damage.response.DamageCurrencyTotals;
 import com.akif.damage.internal.dto.damage.response.DamageStatisticsDto;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.damage.internal.mapper.DamageMapper;
 import com.akif.damage.internal.repository.DamageReportRepository;
 import com.akif.damage.internal.service.damage.impl.DamageHistoryServiceImpl;
@@ -338,9 +340,9 @@ class DamageHistoryServiceTest {
             when(damageReportRepository.countBySeverity(DamageSeverity.TOTAL_LOSS, startDate, endDate)).thenReturn(1);
             when(damageReportRepository.countByStatus(DamageStatus.DISPUTED, startDate, endDate)).thenReturn(2);
             when(damageReportRepository.countByStatus(DamageStatus.RESOLVED, startDate, endDate)).thenReturn(5);
-            when(damageReportRepository.sumTotalRepairCost(startDate, endDate)).thenReturn(new BigDecimal("25000.00"));
-            when(damageReportRepository.sumTotalCustomerLiability(startDate, endDate)).thenReturn(new BigDecimal("15000.00"));
-            when(damageReportRepository.averageRepairCost(startDate, endDate)).thenReturn(new BigDecimal("2500.00"));
+            when(damageReportRepository.totalsByCurrency(startDate, endDate)).thenReturn(List.<Object[]>of(
+                    new Object[]{CurrencyType.EUR, 3L, new BigDecimal("1000.00"), new BigDecimal("600.00"), 2L},
+                    new Object[]{CurrencyType.TRY, 7L, new BigDecimal("24000.00"), new BigDecimal("14400.00"), 7L}));
 
             DamageStatisticsDto result = damageHistoryService.getDamageStatistics(startDate, endDate);
 
@@ -350,9 +352,9 @@ class DamageHistoryServiceTest {
             assertThat(result.moderateCount()).isEqualTo(3);
             assertThat(result.majorCount()).isEqualTo(2);
             assertThat(result.totalLossCount()).isEqualTo(1);
-            assertThat(result.totalRepairCost()).isEqualTo(new BigDecimal("25000.00"));
-            assertThat(result.totalCustomerLiability()).isEqualTo(new BigDecimal("15000.00"));
-            assertThat(result.averageRepairCost()).isEqualTo(new BigDecimal("2500.00"));
+            assertThat(result.byCurrency()).containsExactly(
+                    new DamageCurrencyTotals(CurrencyType.EUR, 3L, new BigDecimal("1000.00"), new BigDecimal("600.00"), new BigDecimal("500.00")),
+                    new DamageCurrencyTotals(CurrencyType.TRY, 7L, new BigDecimal("24000.00"), new BigDecimal("14400.00"), new BigDecimal("3428.57")));
             assertThat(result.disputedCount()).isEqualTo(2);
             assertThat(result.resolvedCount()).isEqualTo(5);
         }
@@ -366,14 +368,13 @@ class DamageHistoryServiceTest {
             when(damageReportRepository.countTotalDamages(startDate, endDate)).thenReturn(0);
             when(damageReportRepository.countBySeverity(any(), eq(startDate), eq(endDate))).thenReturn(0);
             when(damageReportRepository.countByStatus(any(), eq(startDate), eq(endDate))).thenReturn(0);
-            when(damageReportRepository.sumTotalRepairCost(startDate, endDate)).thenReturn(BigDecimal.ZERO);
-            when(damageReportRepository.sumTotalCustomerLiability(startDate, endDate)).thenReturn(BigDecimal.ZERO);
-            when(damageReportRepository.averageRepairCost(startDate, endDate)).thenReturn(BigDecimal.ZERO);
+            when(damageReportRepository.totalsByCurrency(startDate, endDate)).thenReturn(List.of());
 
             DamageStatisticsDto result = damageHistoryService.getDamageStatistics(startDate, endDate);
 
             assertThat(result).isNotNull();
             assertThat(result.totalDamages()).isZero();
+            assertThat(result.byCurrency()).isEmpty();
         }
     }
 }
