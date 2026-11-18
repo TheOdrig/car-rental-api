@@ -26,13 +26,13 @@ class FlywaySeedPolicyTest {
     @Test
     @DisplayName("dev profile adds the seed location and no other profile does")
     void seedLocationIsConfiguredOnlyForDevProfile() throws IOException {
-        assertThat(load("application-dev.properties").getProperty("spring.flyway.locations"))
+        assertThat(load("application-dev.properties").getProperty("spring.flyway.locations", ""))
                 .contains(SEED_LOCATION);
-        assertThat(load("application.properties").getProperty("spring.flyway.locations"))
+        assertThat(load("application.properties").getProperty("spring.flyway.locations", ""))
                 .doesNotContain("seed");
-        assertThat(load("application-production.properties").getProperty("spring.flyway.locations"))
+        assertThat(load("application-prod.properties").getProperty("spring.flyway.locations", ""))
                 .doesNotContain("seed");
-        assertThat(load("application-test.properties").getProperty("spring.flyway.locations"))
+        assertThat(load("application-test.properties").getProperty("spring.flyway.locations", ""))
                 .doesNotContain("seed");
     }
 

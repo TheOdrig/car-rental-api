@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/api/files")
-@Profile("!prod")
+@Profile({"dev", "test"})
 @Slf4j
 public class FileController {
 

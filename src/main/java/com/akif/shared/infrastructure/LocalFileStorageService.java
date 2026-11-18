@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@Profile("!prod")
+@Profile({"dev", "test"})
 @Slf4j
 public class LocalFileStorageService implements FileUploadService {
 
