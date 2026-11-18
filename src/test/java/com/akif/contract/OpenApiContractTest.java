@@ -195,6 +195,25 @@ class OpenApiContractTest {
                 "POST /api/v1/auth/logout 200", "POST /api/v1/exchange-rates/refresh 200");
     }
 
+    @Test
+    @DisplayName("no schema exposes validation helper booleans as properties")
+    void helperBooleansAreHidden() throws Exception {
+        JsonNode schemas = mapper.readTree(generate()).path("components").path("schemas");
+        List<String> helpers = List.of("endDateAfterStartDate", "withinMaxRentalLength", "withinMaxLeadTime",
+                "maxPriceGreaterThanMinPrice", "maxYearGreaterThanMinYear");
+        List<String> leaks = new ArrayList<>();
+        for (Map.Entry<String, JsonNode> schema : schemas.properties()) {
+            for (String property : helpers) {
+                if (!schema.getValue().path("properties").path(property).isMissingNode()) {
+                    leaks.add(schema.getKey() + "." + property);
+                }
+            }
+        }
+        assertThat(leaks).isEmpty();
+        assertThat(schemas.path("RentalRequest").path("properties").propertyNames())
+                .contains("carId", "startDate", "endDate", "notes");
+    }
+
     private String generate() throws Exception {
         String raw = mockMvc.perform(get("/v3/api-docs")).andReturn().getResponse().getContentAsString();
         JsonNode sorted = sort(mapper.readTree(raw));

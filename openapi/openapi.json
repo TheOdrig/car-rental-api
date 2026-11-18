@@ -245,9 +245,6 @@
             "format" : "date",
             "type" : "string"
           },
-          "endDateAfterStartDate" : {
-            "type" : "boolean"
-          },
           "fuelType" : {
             "type" : "string"
           },
@@ -255,16 +252,10 @@
             "exclusiveMinimum" : 0.0,
             "type" : "number"
           },
-          "maxPriceGreaterThanMinPrice" : {
-            "type" : "boolean"
-          },
           "maxProductionYear" : {
             "format" : "int32",
             "minimum" : 1900,
             "type" : "integer"
-          },
-          "maxYearGreaterThanMinYear" : {
-            "type" : "boolean"
           },
           "minPrice" : {
             "exclusiveMinimum" : 0.0,
@@ -2251,9 +2242,6 @@
             "format" : "date",
             "type" : "string"
           },
-          "endDateAfterStartDate" : {
-            "type" : "boolean"
-          },
           "startDate" : {
             "format" : "date",
             "type" : "string"
@@ -2455,9 +2443,6 @@
             "format" : "date",
             "type" : "string"
           },
-          "endDateAfterStartDate" : {
-            "type" : "boolean"
-          },
           "notes" : {
             "maxLength" : 1000,
             "minLength" : 0,
@@ -2466,12 +2451,6 @@
           "startDate" : {
             "format" : "date",
             "type" : "string"
-          },
-          "withinMaxLeadTime" : {
-            "type" : "boolean"
-          },
-          "withinMaxRentalLength" : {
-            "type" : "boolean"
           }
         },
         "required" : [ "carId", "endDate", "startDate" ],

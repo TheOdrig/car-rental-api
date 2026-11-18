@@ -1,6 +1,8 @@
 package com.akif.car.internal.dto.pricing;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.akif.shared.handler.ReportsAsField;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.FutureOrPresent;
@@ -26,6 +28,8 @@ public record PricingRequest(
     LocalDate endDate
 
 ) {
+    @JsonIgnore
+    @Schema(hidden = true)
     @ReportsAsField("endDate")
     @AssertTrue(message = "End date must be after start date")
     public boolean isEndDateAfterStartDate() {
