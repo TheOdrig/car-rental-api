@@ -80,6 +80,42 @@ class CorrelationIdFilterTest {
     }
 
     @Test
+    @DisplayName("Should replace a correlation ID longer than 64 characters")
+    void shouldReplaceOverlongCorrelationId() throws ServletException, IOException {
+        request.addHeader("X-Correlation-ID", "a".repeat(65));
+
+        correlationIdFilter.doFilterInternal(request, response, filterChain);
+
+        assertThat(response.getHeader("X-Correlation-ID")).hasSize(36).isNotEqualTo("a".repeat(65));
+    }
+
+    @Test
+    @DisplayName("Should accept a correlation ID of exactly 64 allowed characters")
+    void shouldAcceptMaximumLengthCorrelationId() throws ServletException, IOException {
+        String id = "Ab-".repeat(21) + "Z";
+        request.addHeader("X-Correlation-ID", id);
+
+        correlationIdFilter.doFilterInternal(request, response, filterChain);
+
+        assertThat(id).hasSize(64);
+        assertThat(response.getHeader("X-Correlation-ID")).isEqualTo(id);
+    }
+
+    @Test
+    @DisplayName("Should replace correlation IDs with characters outside [A-Za-z0-9-]")
+    void shouldReplaceCorrelationIdWithForbiddenCharacters() throws ServletException, IOException {
+        for (String unsafe : new String[] {"id with space", "id_underscore", "id\u00e9", "<script>", "a;b", "  ", "a.b"}) {
+            MockHttpServletRequest unsafeRequest = new MockHttpServletRequest();
+            MockHttpServletResponse unsafeResponse = new MockHttpServletResponse();
+            unsafeRequest.addHeader("X-Correlation-ID", unsafe);
+
+            correlationIdFilter.doFilterInternal(unsafeRequest, unsafeResponse, filterChain);
+
+            assertThat(unsafeResponse.getHeader("X-Correlation-ID")).hasSize(36).isNotEqualTo(unsafe);
+        }
+    }
+
+    @Test
     @DisplayName("Should add correlation ID to response header")
     void shouldAddCorrelationIdToResponseHeader() throws ServletException, IOException {
         correlationIdFilter.doFilterInternal(request, response, filterChain);

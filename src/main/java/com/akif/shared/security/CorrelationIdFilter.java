@@ -14,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Component
 @Slf4j
@@ -23,6 +24,7 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
     private static final String MDC_CORRELATION_ID_KEY = "correlationId";
     private static final String MDC_USER_ID_KEY = "userId";
     private static final String ANONYMOUS_USER = "anonymous";
+    private static final Pattern VALID_CORRELATION_ID = Pattern.compile("[A-Za-z0-9-]{1,64}");
 
     @Override
     protected void doFilterInternal(
@@ -53,7 +55,7 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
     private String extractOrGenerateCorrelationId(HttpServletRequest request) {
         String correlationId = request.getHeader(CORRELATION_ID_HEADER);
         
-        if (correlationId == null || correlationId.trim().isEmpty()) {
+        if (correlationId == null || !VALID_CORRELATION_ID.matcher(correlationId).matches()) {
             correlationId = generateCorrelationId();
             log.debug("Generated new correlation ID: {}", correlationId);
         } else {
