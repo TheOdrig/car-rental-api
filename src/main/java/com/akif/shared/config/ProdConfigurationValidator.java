@@ -18,6 +18,8 @@ public class ProdConfigurationValidator {
     static final int MIN_SECRET_BYTES = 32;
 
     private static final String TRUST_KEY = "security.rate-limit.trust-forwarded-headers";
+    private static final String CIDRS_KEY = "security.rate-limit.trusted-proxy-cidrs";
+    private static final String HEADER_KEY = "security.rate-limit.trusted-client-ip-header";
     private static final String HOPS_KEY = "security.rate-limit.trusted-proxy-hops";
 
     private static final List<String> REQUIRED_SECRETS = List.of(
@@ -119,6 +121,22 @@ public class ProdConfigurationValidator {
             problems.add(TRUST_KEY + " must be true or false");
         }
 
+        String header = lookup.get(HEADER_KEY);
+        boolean trustsProxy = "true".equalsIgnoreCase(trust == null ? "" : trust.trim()) || !isBlank(header);
+        if (trustsProxy) {
+            String cidrs = lookup.get(CIDRS_KEY);
+            if (isBlank(cidrs)) {
+                lookup.reportMissing(CIDRS_KEY, "set TRUSTED_PROXY_CIDRS when forwarded headers or a client IP header are trusted");
+            } else {
+                for (String cidr : cidrs.split(",")) {
+                    String trimmed = cidr.trim();
+                    if (trimmed.isEmpty() || !isCidr(trimmed)) {
+                        problems.add(CIDRS_KEY + " must list valid CIDR ranges, found: " + trimmed);
+                    }
+                }
+            }
+        }
+
         String hops = lookup.get(HOPS_KEY);
         if (isBlank(hops)) {
             lookup.reportMissing(HOPS_KEY, "set TRUSTED_PROXY_HOPS to the number of proxies in front of the app");
@@ -174,6 +192,18 @@ public class ProdConfigurationValidator {
 
     private static boolean isTestSecretKey(String key) {
         return key.startsWith("sk_test_") || key.startsWith("rk_test_");
+    }
+
+    private static boolean isCidr(String value) {
+        if (!value.matches("^[0-9a-fA-F:.]+/\\d{1,3}$")) {
+            return false;
+        }
+        try {
+            new org.springframework.security.web.util.matcher.IpAddressMatcher(value);
+            return true;
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     private static boolean isBlank(String value) {

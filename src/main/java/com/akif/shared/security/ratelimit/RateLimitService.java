@@ -2,6 +2,7 @@ package com.akif.shared.security.ratelimit;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.akif.shared.exception.RateLimitExceededException;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
 import io.github.bucket4j.TimeMeter;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.Duration;
+import java.util.Locale;
 
 @Service
 public class RateLimitService {
@@ -37,6 +39,16 @@ public class RateLimitService {
         }
         long retryAfter = Math.max(1L, (probe.getNanosToWaitForRefill() + 999_999_999L) / 1_000_000_000L);
         return new Decision(false, retryAfter);
+    }
+
+    public void enforce(RateLimitCategory category, String identity) {
+        if (!properties.isEnabled() || identity == null || identity.isBlank()) {
+            return;
+        }
+        Decision decision = tryConsume(category, identity.trim().toLowerCase(Locale.ROOT));
+        if (!decision.allowed()) {
+            throw new RateLimitExceededException(decision.retryAfterSeconds());
+        }
     }
 
     public void clear() {

@@ -8,6 +8,8 @@ import com.akif.auth.internal.dto.ResetPasswordRequest;
 import com.akif.auth.api.AuthResponse;
 import com.akif.auth.api.AuthService;
 import com.akif.auth.api.PasswordResetService;
+import com.akif.shared.security.ratelimit.RateLimitCategory;
+import com.akif.shared.security.ratelimit.RateLimitService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,6 +30,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
+    private final RateLimitService rateLimitService;
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user", description = "Create a new user account")
@@ -44,6 +47,8 @@ public class AuthController {
     @Operation(summary = "User login", description = "Authenticate user and return JWT tokens")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
         log.info("POST /api/v1/auth/login - User login attempt: {}", loginRequest.username());
+
+        rateLimitService.enforce(RateLimitCategory.LOGIN_USERNAME, loginRequest.username());
 
         AuthResponse response = authService.login(loginRequest);
 
@@ -73,6 +78,8 @@ public class AuthController {
     @Operation(summary = "Request password reset", description = "Send password reset email to the user")
     public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         log.info("POST /api/v1/auth/forgot-password - Password reset requested for email: {}", request.email());
+
+        rateLimitService.enforce(RateLimitCategory.PASSWORD_RESET_USERNAME, request.email());
 
         passwordResetService.requestPasswordReset(request.email());
 

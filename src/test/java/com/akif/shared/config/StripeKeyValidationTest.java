@@ -33,7 +33,8 @@ class StripeKeyValidationTest {
                 .withProperty("oauth2.github.client-id", "gh-id")
                 .withProperty("oauth2.github.client-secret", "gh-secret")
                 .withProperty("security.rate-limit.trust-forwarded-headers", "true")
-                .withProperty("security.rate-limit.trusted-proxy-hops", "1");
+                .withProperty("security.rate-limit.trusted-proxy-hops", "1")
+                .withProperty("security.rate-limit.trusted-proxy-cidrs", "172.16.0.0/12");
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.akif.shared.security.ratelimit;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.springframework.stereotype.Component;
 
 import java.net.InetAddress;
@@ -18,14 +19,20 @@ public class ClientIpResolver {
     private static final Pattern IPV4 = Pattern.compile("^(\\d{1,3})(\\.\\d{1,3}){3}$");
 
     private final RateLimitProperties properties;
+    private final List<IpAddressMatcher> trustedProxies;
 
     public ClientIpResolver(RateLimitProperties properties) {
         this.properties = properties;
+        this.trustedProxies = properties.getTrustedProxyCidrs().stream()
+                .map(String::trim)
+                .filter(cidr -> !cidr.isEmpty())
+                .map(IpAddressMatcher::new)
+                .toList();
     }
 
     public String resolve(HttpServletRequest request) {
         String remoteAddress = normalize(request.getRemoteAddr());
-        if (!properties.isTrustForwardedHeaders()) {
+        if (!isTrustedProxy(request.getRemoteAddr())) {
             return remoteAddress;
         }
 
@@ -37,6 +44,10 @@ public class ClientIpResolver {
             }
         }
 
+        if (!properties.isTrustForwardedHeaders()) {
+            return remoteAddress;
+        }
+
         List<String> entries = forwardedEntries(request);
         int index = entries.size() - Math.max(1, properties.getTrustedProxyHops());
         if (index < 0) {
@@ -45,6 +56,23 @@ public class ClientIpResolver {
 
         String candidate = entries.get(index);
         return isIpLiteral(candidate) ? normalize(candidate) : remoteAddress;
+    }
+
+    private boolean isTrustedProxy(String remoteAddress) {
+        if (remoteAddress == null || remoteAddress.isBlank()) {
+            return false;
+        }
+        String address = remoteAddress.trim();
+        for (IpAddressMatcher matcher : trustedProxies) {
+            try {
+                if (matcher.matches(address)) {
+                    return true;
+                }
+            } catch (IllegalArgumentException e) {
+                return false;
+            }
+        }
+        return false;
     }
 
     private static List<String> forwardedEntries(HttpServletRequest request) {

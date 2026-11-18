@@ -188,6 +188,60 @@ class RateLimitIntegrationTest {
                 .andReturn());
     }
 
+    private MockHttpServletRequestBuilder fromAddress(MockHttpServletRequestBuilder builder, String address) {
+        return builder.with(request -> {
+            request.setRemoteAddr(address);
+            return request;
+        });
+    }
+
+    @Test
+    @DisplayName("login is limited per username even when the client address changes")
+    void loginIsLimitedPerUsername() throws Exception {
+        String body = "{\"username\":\"Victim-User\",\"password\":\"wrong-password\"}";
+        for (int i = 0; i < 5; i++) {
+            mockMvc.perform(fromAddress(json("/api/v1/auth/login", body), "198.51.100." + i))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        MvcResult limited = mockMvc.perform(fromAddress(json("/api/v1/auth/login", body), "198.51.100.200"))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.code").value("RATE_LIMIT_EXCEEDED"))
+                .andReturn();
+        assertRateLimited(limited);
+
+        String other = "{\"username\":\"other-user\",\"password\":\"wrong-password\"}";
+        mockMvc.perform(fromAddress(json("/api/v1/auth/login", other), "198.51.100.201"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("the username bucket ignores case and surrounding whitespace")
+    void usernameBucketIsNormalised() throws Exception {
+        String[] spellings = {"victim-user", "VICTIM-USER", "victim-user", "Victim-User", "victim-user"};
+        for (int i = 0; i < spellings.length; i++) {
+            String body = "{\"username\":\"" + spellings[i] + "\",\"password\":\"wrong-password\"}";
+            mockMvc.perform(fromAddress(json("/api/v1/auth/login", body), "203.0.113." + i))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        String body = "{\"username\":\"victim-user\",\"password\":\"wrong-password\"}";
+        assertRateLimited(mockMvc.perform(fromAddress(json("/api/v1/auth/login", body), "203.0.113.99")).andReturn());
+    }
+
+    @Test
+    @DisplayName("forgot-password is limited per email even when the client address changes")
+    void forgotPasswordIsLimitedPerEmail() throws Exception {
+        String body = "{\"email\":\"target@example.com\"}";
+        for (int i = 0; i < 3; i++) {
+            mockMvc.perform(fromAddress(json("/api/v1/auth/forgot-password", body), "192.0.2." + i))
+                    .andExpect(status().isOk());
+        }
+
+        assertRateLimited(mockMvc.perform(fromAddress(json("/api/v1/auth/forgot-password", body), "192.0.2.100"))
+                .andReturn());
+    }
+
     @Test
     @DisplayName("a different socket address has its own bucket")
     void differentClientsAreIndependent() throws Exception {

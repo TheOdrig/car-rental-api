@@ -36,7 +36,8 @@ class ProdConfigurationValidatorTest {
                 .withProperty("oauth2.github.client-id", "gh-id")
                 .withProperty("oauth2.github.client-secret", "gh-secret")
                 .withProperty("security.rate-limit.trust-forwarded-headers", "true")
-                .withProperty("security.rate-limit.trusted-proxy-hops", "1");
+                .withProperty("security.rate-limit.trusted-proxy-hops", "1")
+                .withProperty("security.rate-limit.trusted-proxy-cidrs", "172.16.0.0/12,fd00::/8");
     }
 
     @Test
@@ -136,6 +137,52 @@ class ProdConfigurationValidatorTest {
         assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("security.rate-limit.trust-forwarded-headers is missing");
+    }
+
+    @Test
+    @DisplayName("requires trusted proxy CIDRs when forwarded headers are trusted")
+    void failsWhenCidrsMissingWithForwardedTrust() {
+        MockEnvironment environment = validEnvironment();
+        environment.withProperty("security.rate-limit.trusted-proxy-cidrs", "");
+
+        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("security.rate-limit.trusted-proxy-cidrs is missing");
+    }
+
+    @Test
+    @DisplayName("requires trusted proxy CIDRs when a trusted client IP header is configured")
+    void failsWhenCidrsMissingWithHeaderTrust() {
+        MockEnvironment environment = validEnvironment();
+        environment.withProperty("security.rate-limit.trust-forwarded-headers", "false");
+        environment.withProperty("security.rate-limit.trusted-client-ip-header", "X-Client-IP");
+        environment.withProperty("security.rate-limit.trusted-proxy-cidrs", "");
+
+        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("security.rate-limit.trusted-proxy-cidrs is missing");
+    }
+
+    @Test
+    @DisplayName("does not require CIDRs when no forwarded header is trusted")
+    void cidrsOptionalWithoutTrust() {
+        MockEnvironment environment = validEnvironment();
+        environment.withProperty("security.rate-limit.trust-forwarded-headers", "false");
+        environment.withProperty("security.rate-limit.trusted-proxy-cidrs", "");
+
+        assertThatCode(() -> new ProdConfigurationValidator(environment)).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("rejects malformed trusted proxy CIDRs")
+    void failsOnMalformedCidrs() {
+        MockEnvironment environment = validEnvironment();
+        environment.withProperty("security.rate-limit.trusted-proxy-cidrs", "10.0.0.0/8,proxy.example.com,10.0.0.1");
+
+        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("must list valid CIDR ranges, found: proxy.example.com")
+                .hasMessageContaining("found: 10.0.0.1");
     }
 
     @Test

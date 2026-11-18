@@ -4,7 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -16,6 +18,7 @@ public class RateLimitProperties {
     private boolean trustForwardedHeaders = false;
     private int trustedProxyHops = 1;
     private String trustedClientIpHeader = "";
+    private List<String> trustedProxyCidrs = new ArrayList<>();
     private int maxTrackedClients = 100_000;
     private Map<RateLimitCategory, Limit> limits = new EnumMap<>(RateLimitCategory.class);
 
@@ -33,6 +36,8 @@ public class RateLimitProperties {
             case OAUTH2_CALLBACK -> new Limit(20, 60);
             case RENTAL_REQUEST -> new Limit(10, 600);
             case PAYMENT_INTENT -> new Limit(10, 60);
+            case LOGIN_USERNAME -> new Limit(5, 300);
+            case PASSWORD_RESET_USERNAME -> new Limit(3, 900);
         };
     }
 
