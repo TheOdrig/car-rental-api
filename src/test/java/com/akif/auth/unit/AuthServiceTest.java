@@ -12,7 +12,7 @@ import com.akif.auth.internal.service.AuthServiceImpl;
 import com.akif.shared.enums.Role;
 import com.akif.shared.exception.InvalidTokenException;
 import com.akif.shared.exception.TokenExpiredException;
-import com.akif.shared.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -49,7 +49,7 @@ class AuthServiceTest {
     private AuthenticationManager authenticationManager;
 
     @Mock
-    private JwtTokenProvider tokenProvider;
+    private JwtTokenService tokenProvider;
 
     @Mock
     private UserMapper userMapper;
@@ -103,7 +103,7 @@ class AuthServiceTest {
             when(tokenProvider.generateAccessToken(any(Authentication.class), any(Long.class)))
                     .thenReturn("access.token");
             when(tokenProvider.generateRefreshToken(authentication)).thenReturn("refresh.token");
-            when(tokenProvider.getExpirationTime("access.token")).thenReturn(900000L);
+            when(tokenProvider.accessTokenTtl()).thenReturn(java.time.Duration.ofMillis(900000L));
 
             AuthResponse response = authService.register(registerRequest);
 
@@ -112,7 +112,7 @@ class AuthServiceTest {
             assertThat(response.accessToken()).isEqualTo("access.token");
             assertThat(response.refreshToken()).isEqualTo("refresh.token");
             assertThat(response.tokenType()).isEqualTo("Bearer");
-            assertThat(response.expiresIn()).isEqualTo(900000L);
+            assertThat(response.expiresIn()).isEqualTo(900L);
 
             verify(userRepository).existsByUsername("testuser");
             verify(userRepository).existsByEmail("test@example.com");
@@ -164,7 +164,7 @@ class AuthServiceTest {
             when(tokenProvider.generateAccessToken(any(Authentication.class), any(Long.class)))
                     .thenReturn("access.token");
             when(tokenProvider.generateRefreshToken(authentication)).thenReturn("refresh.token");
-            when(tokenProvider.getExpirationTime("access.token")).thenReturn(900000L);
+            when(tokenProvider.accessTokenTtl()).thenReturn(java.time.Duration.ofMillis(900000L));
 
             AuthResponse response = authService.login(loginRequest);
 
@@ -203,13 +203,12 @@ class AuthServiceTest {
         @Test
         @DisplayName("Should refresh token successfully")
         void shouldRefreshTokenSuccessfully() {
-            when(tokenProvider.validateToken("valid.refresh.token")).thenReturn(true);
-            when(tokenProvider.getUsernameFromToken("valid.refresh.token")).thenReturn("testuser");
+            when(tokenProvider.usernameFromRefreshToken("valid.refresh.token")).thenReturn("testuser");
             when(userRepository.findByUsername("testuser")).thenReturn(java.util.Optional.of(testUser));
             when(tokenProvider.generateAccessToken(any(Authentication.class), any(Long.class)))
                     .thenReturn("new.access.token");
             when(tokenProvider.generateRefreshToken(any(Authentication.class))).thenReturn("new.refresh.token");
-            when(tokenProvider.getExpirationTime("new.access.token")).thenReturn(900000L);
+            when(tokenProvider.accessTokenTtl()).thenReturn(java.time.Duration.ofMillis(900000L));
 
             AuthResponse response = authService.refreshToken(refreshTokenRequest);
 
@@ -219,8 +218,7 @@ class AuthServiceTest {
             assertThat(response.refreshToken()).isEqualTo("new.refresh.token");
             assertThat(response.tokenType()).isEqualTo("Bearer");
 
-            verify(tokenProvider).validateToken("valid.refresh.token");
-            verify(tokenProvider).getUsernameFromToken("valid.refresh.token");
+            verify(tokenProvider).usernameFromRefreshToken("valid.refresh.token");
 
             verify(userRepository, times(2)).findByUsername("testuser");
         }
@@ -229,13 +227,14 @@ class AuthServiceTest {
         @DisplayName("Should throw exception for invalid refresh token")
         void shouldThrowExceptionForInvalidRefreshToken() {
             RefreshTokenRequest invalidRefreshRequest = new RefreshTokenRequest("invalid.refresh.token");
-            when(tokenProvider.validateToken("invalid.refresh.token")).thenReturn(false);
+            when(tokenProvider.usernameFromRefreshToken("invalid.refresh.token"))
+                    .thenThrow(new InvalidTokenException("Invalid refresh token"));
 
             assertThatThrownBy(() -> authService.refreshToken(invalidRefreshRequest))
                     .isInstanceOf(InvalidTokenException.class)
                     .hasMessage("Invalid refresh token");
 
-            verify(tokenProvider).validateToken("invalid.refresh.token");
+            verify(tokenProvider).usernameFromRefreshToken("invalid.refresh.token");
             verify(userRepository, never()).findByUsername(anyString());
         }
 
@@ -243,31 +242,28 @@ class AuthServiceTest {
         @DisplayName("Should throw exception for expired refresh token")
         void shouldThrowExceptionForExpiredRefreshToken() {
             RefreshTokenRequest expiredRefreshRequest = new RefreshTokenRequest("expired.refresh.token");
-            when(tokenProvider.validateToken("expired.refresh.token")).thenReturn(true);
-            when(tokenProvider.isTokenExpired("expired.refresh.token")).thenReturn(true);
+            when(tokenProvider.usernameFromRefreshToken("expired.refresh.token"))
+                    .thenThrow(new TokenExpiredException("Refresh token has expired"));
 
             assertThatThrownBy(() -> authService.refreshToken(expiredRefreshRequest))
                     .isInstanceOf(TokenExpiredException.class)
                     .hasMessage("Refresh token has expired");
 
-            verify(tokenProvider).validateToken("expired.refresh.token");
-            verify(tokenProvider).isTokenExpired("expired.refresh.token");
+            verify(tokenProvider).usernameFromRefreshToken("expired.refresh.token");
             verify(userRepository, never()).findByUsername(anyString());
         }
 
         @Test
         @DisplayName("Should throw exception when user not found during refresh")
         void shouldThrowExceptionWhenUserNotFoundDuringRefresh() {
-            when(tokenProvider.validateToken("valid.refresh.token")).thenReturn(true);
-            when(tokenProvider.getUsernameFromToken("valid.refresh.token")).thenReturn("nonexistent");
+            when(tokenProvider.usernameFromRefreshToken("valid.refresh.token")).thenReturn("nonexistent");
             when(userRepository.findByUsername("nonexistent")).thenReturn(java.util.Optional.empty());
 
             assertThatThrownBy(() -> authService.refreshToken(refreshTokenRequest))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("User not found");
 
-            verify(tokenProvider).validateToken("valid.refresh.token");
-            verify(tokenProvider).getUsernameFromToken("valid.refresh.token");
+            verify(tokenProvider).usernameFromRefreshToken("valid.refresh.token");
             verify(userRepository).findByUsername("nonexistent");
         }
     }

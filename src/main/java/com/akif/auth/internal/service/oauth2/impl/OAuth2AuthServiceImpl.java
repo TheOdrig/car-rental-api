@@ -15,7 +15,7 @@ import com.akif.auth.domain.LinkedAccount;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.LinkedAccountRepository;
 import com.akif.auth.internal.repository.UserRepository;
-import com.akif.shared.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenService;
 import com.akif.auth.internal.service.oauth2.OAuth2AuthService;
 import com.akif.auth.internal.service.oauth2.OAuth2ProviderService;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
@@ -43,7 +44,8 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
     private final OAuth2StateService stateService;
     private final UserRepository userRepository;
     private final LinkedAccountRepository linkedAccountRepository;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenService jwtTokenService;
+    private final Clock clock;
     private final Map<String, OAuth2ProviderService> providerServices;
 
     public OAuth2AuthServiceImpl(
@@ -51,13 +53,15 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
             OAuth2StateService stateService,
             UserRepository userRepository,
             LinkedAccountRepository linkedAccountRepository,
-            JwtTokenProvider jwtTokenProvider,
+            JwtTokenService jwtTokenService,
+            Clock clock,
             List<OAuth2ProviderService> providerServiceList) {
         this.oAuth2Properties = oAuth2Properties;
         this.stateService = stateService;
         this.userRepository = userRepository;
         this.linkedAccountRepository = linkedAccountRepository;
-        this.jwtTokenProvider = jwtTokenProvider;
+        this.jwtTokenService = jwtTokenService;
+        this.clock = clock;
         this.providerServices = providerServiceList.stream()
                 .collect(Collectors.toMap(OAuth2ProviderService::getProviderName, Function.identity()));
     }
@@ -122,9 +126,9 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user.getUsername(),
                 null, authorities);
 
-        String accessToken = jwtTokenProvider.generateAccessToken(authentication, user.getId());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
-        long expiresIn = (jwtTokenProvider.getExpirationTime(accessToken) - System.currentTimeMillis()) / 1000;
+        String accessToken = jwtTokenService.generateAccessToken(authentication, user.getId());
+        String refreshToken = jwtTokenService.generateRefreshToken(authentication);
+        long expiresIn = jwtTokenService.accessTokenTtl().toSeconds();
 
         log.info("Generated JWT tokens for user: {}", user.getUsername());
 
@@ -303,6 +307,6 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
                 "Social account linked successfully",
                 provider,
                 email,
-                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                LocalDateTime.now(clock).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
     }
 }

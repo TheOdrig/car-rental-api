@@ -14,8 +14,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -23,8 +29,12 @@ import org.springframework.security.web.context.SecurityContextHolderFilter;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private static final List<String> TOKENLESS_PATHS = List.of("/api/auth/**", "/api/webhooks/**");
+
     private final CorrelationIdFilter correlationIdFilter;
+    private final JwtUserAuthenticationConverter jwtUserAuthenticationConverter;
+    private final JsonAuthenticationEntryPoint authenticationEntryPoint;
+    private final JsonAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -83,10 +93,26 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/alerts/**").hasRole("ADMIN")
 
                         .anyRequest().authenticated())
-                .addFilterBefore(correlationIdFilter, SecurityContextHolderFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .exceptionHandling(handling -> handling
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
+                .oauth2ResourceServer(resourceServer -> resourceServer
+                        .bearerTokenResolver(bearerTokenResolver())
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtUserAuthenticationConverter)))
+                .addFilterBefore(correlationIdFilter, SecurityContextHolderFilter.class);
 
         return http.build();
+    }
+
+    private BearerTokenResolver bearerTokenResolver() {
+        DefaultBearerTokenResolver resolver = new DefaultBearerTokenResolver();
+        List<RequestMatcher> tokenless = TOKENLESS_PATHS.stream()
+                .<RequestMatcher>map(PathPatternRequestMatcher.withDefaults()::matcher)
+                .toList();
+        OrRequestMatcher tokenlessMatcher = new OrRequestMatcher(tokenless);
+        return request -> tokenlessMatcher.matches(request) ? null : resolver.resolve(request);
     }
 
     @Bean

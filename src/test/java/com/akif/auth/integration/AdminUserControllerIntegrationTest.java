@@ -17,7 +17,7 @@ import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.shared.enums.Role;
-import com.akif.shared.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -72,7 +72,7 @@ class AdminUserControllerIntegrationTest {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private JwtTokenProvider tokenProvider;
+    private JwtTokenService tokenProvider;
 
     @Autowired
     private CacheManager cacheManager;
@@ -215,7 +215,7 @@ class AdminUserControllerIntegrationTest {
         @DisplayName("Should return 403 when no authentication provided")
         void shouldReturn403WhenNoAuthenticationProvided() throws Exception {
             mockMvc.perform(get("/api/admin/users/{id}", testCustomer.getId()))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test

@@ -141,7 +141,7 @@ class AvatarControllerIntegrationTest {
 
                         mockMvc.perform(multipart("/api/users/me/avatar")
                                         .file(avatarFile))
-                                        .andExpect(status().isForbidden());
+                                        .andExpect(status().isUnauthorized());
                 }
 
                 @Test
@@ -178,7 +178,7 @@ class AvatarControllerIntegrationTest {
                 @DisplayName("Should return 401 without JWT")
                 void shouldReturn401WithoutJwt() throws Exception {
                         mockMvc.perform(delete("/api/users/me/avatar"))
-                                        .andExpect(status().isForbidden());
+                                        .andExpect(status().isUnauthorized());
                 }
 
                 @Test

@@ -8,7 +8,7 @@ import com.akif.dashboard.domain.enums.AlertType;
 import com.akif.dashboard.domain.model.Alert;
 import com.akif.dashboard.internal.repository.AlertRepository;
 import com.akif.shared.enums.Role;
-import com.akif.shared.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -54,7 +54,7 @@ class AlertControllerIntegrationTest {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private JwtTokenProvider tokenProvider;
+    private JwtTokenService tokenProvider;
 
     private User testUser;
     private User adminUser;
@@ -136,7 +136,7 @@ class AlertControllerIntegrationTest {
         @DisplayName("Should return 403 when no authentication provided")
         void shouldReturn403WhenNoAuthenticationProvided() throws Exception {
             mockMvc.perform(get("/api/admin/alerts"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test

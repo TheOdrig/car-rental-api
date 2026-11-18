@@ -9,7 +9,7 @@ import com.akif.car.internal.repository.CarRepository;
 import com.akif.rental.api.RentalRequest;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.shared.enums.Role;
-import com.akif.shared.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenService;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -65,7 +65,7 @@ class RentalControllerIntegrationTest {
         private PasswordEncoder passwordEncoder;
 
         @Autowired
-        private JwtTokenProvider tokenProvider;
+        private JwtTokenService tokenProvider;
 
         private MockMvc mockMvc;
 
@@ -162,7 +162,7 @@ class RentalControllerIntegrationTest {
                         mockMvc.perform(post("/api/rentals/request")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
-                                        .andExpect(status().isForbidden());
+                                        .andExpect(status().isUnauthorized());
                 }
 
                 @Test

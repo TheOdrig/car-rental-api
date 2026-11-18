@@ -154,7 +154,7 @@ class PasswordControllerIntegrationTest {
                         mockMvc.perform(post("/api/users/me/password")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
-                                        .andExpect(status().isForbidden());
+                                        .andExpect(status().isUnauthorized());
                 }
 
                 @Test

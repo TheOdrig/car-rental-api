@@ -168,7 +168,7 @@ class OAuth2ControllerIntegrationTest {
                             .with(csrf())
                             .param("code", authCode)
                             .param("state", validState))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test

@@ -9,12 +9,10 @@ import com.akif.auth.domain.enums.AuthProvider;
 import com.akif.auth.internal.mapper.UserMapper;
 import com.akif.shared.enums.Role;
 import com.akif.auth.internal.exception.UserAlreadyExistsException;
-import com.akif.shared.exception.InvalidTokenException;
 import com.akif.auth.internal.exception.SocialLoginRequiredException;
-import com.akif.shared.exception.TokenExpiredException;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
-import com.akif.shared.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenService;
 import com.akif.auth.api.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider tokenProvider;
+    private final JwtTokenService tokenService;
     private final UserMapper userMapper;
 
     
@@ -140,15 +138,7 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
         log.info("Refreshing token");
 
-        if (!tokenProvider.validateToken(refreshTokenRequest.refreshToken())) {
-            throw new InvalidTokenException("Invalid refresh token");
-        }
-
-        if (tokenProvider.isTokenExpired(refreshTokenRequest.refreshToken())) {
-            throw new TokenExpiredException("Refresh token has expired");
-        }
-
-        String username = tokenProvider.getUsernameFromToken(refreshTokenRequest.refreshToken());
+        String username = tokenService.usernameFromRefreshToken(refreshTokenRequest.refreshToken());
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -165,9 +155,9 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String accessToken = tokenProvider.generateAccessToken(authentication, user.getId());
-        String refreshToken = tokenProvider.generateRefreshToken(authentication);
-        Long expiresIn = tokenProvider.getExpirationTime(accessToken);
+        String accessToken = tokenService.generateAccessToken(authentication, user.getId());
+        String refreshToken = tokenService.generateRefreshToken(authentication);
+        Long expiresIn = tokenService.accessTokenTtl().toSeconds();
 
         return AuthResponse.builder()
                 .accessToken(accessToken)

@@ -15,7 +15,7 @@ import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.shared.enums.Role;
-import com.akif.shared.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenService;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -73,7 +73,7 @@ class DamageAssessmentControllerIntegrationTest {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private JwtTokenProvider tokenProvider;
+    private JwtTokenService tokenProvider;
 
     private MockMvc mockMvc;
 

@@ -340,7 +340,7 @@ class PenaltyWaiverControllerIntegrationTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -355,7 +355,7 @@ class PenaltyWaiverControllerIntegrationTest {
     @DisplayName("GET /api/admin/rentals/{id}/penalty/history - Should deny access for unauthenticated")
     void shouldDenyAccessForUnauthenticatedHistory() throws Exception {
         mockMvc.perform(get("/api/admin/rentals/{id}/penalty/history", lateRental.getId()))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

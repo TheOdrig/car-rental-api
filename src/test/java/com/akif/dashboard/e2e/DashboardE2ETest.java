@@ -196,21 +196,21 @@ class DashboardE2ETest extends E2ETestBase {
                 @DisplayName("Should return 403 when no authentication provided for dashboard")
                 void shouldReturn403WhenNoAuthenticationProvidedForDashboard() throws Exception {
                         mockMvc.perform(get("/api/admin/dashboard/summary"))
-                                        .andExpect(status().isForbidden());
+                                        .andExpect(status().isUnauthorized());
                 }
 
                 @Test
                 @DisplayName("Should return 403 when no authentication provided for alerts")
                 void shouldReturn403WhenNoAuthenticationProvidedForAlerts() throws Exception {
                         mockMvc.perform(get("/api/admin/alerts"))
-                                        .andExpect(status().isForbidden());
+                                        .andExpect(status().isUnauthorized());
                 }
 
                 @Test
                 @DisplayName("Should return 403 when no authentication provided for quick actions")
                 void shouldReturn403WhenNoAuthenticationProvidedForQuickActions() throws Exception {
                         mockMvc.perform(post("/api/admin/quick-actions/rentals/1/approve"))
-                                        .andExpect(status().isForbidden());
+                                        .andExpect(status().isUnauthorized());
                 }
 
                 @Test

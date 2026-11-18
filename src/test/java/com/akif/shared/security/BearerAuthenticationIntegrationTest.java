@@ -1,0 +1,126 @@
+package com.akif.shared.security;
+
+import com.akif.CarRentalApplication;
+import com.akif.auth.domain.User;
+import com.akif.auth.internal.repository.UserRepository;
+import com.akif.shared.enums.Role;
+import com.akif.testsupport.TestcontainersConfiguration;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Set;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest(classes = CarRentalApplication.class)
+@Import(TestcontainersConfiguration.class)
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@DisplayName("Bearer token authentication")
+class BearerAuthenticationIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtTokenService tokenService;
+
+    private User user;
+
+    @BeforeEach
+    void setUp() {
+        userRepository.deleteAll();
+        user = userRepository.save(User.builder()
+                .username("bearer-user")
+                .email("bearer@example.com")
+                .password(passwordEncoder.encode("password123"))
+                .roles(Set.of(Role.USER))
+                .enabled(true)
+                .build());
+    }
+
+    private UsernamePasswordAuthenticationToken principal(String... roles) {
+        return new UsernamePasswordAuthenticationToken("bearer-user", null,
+                java.util.Arrays.stream(roles).map(SimpleGrantedAuthority::new).toList());
+    }
+
+    @Test
+    @DisplayName("an access token authenticates a protected endpoint")
+    void accessTokenAuthenticates() throws Exception {
+        String token = tokenService.generateAccessToken(principal("ROLE_USER"), user.getId());
+
+        mockMvc.perform(get("/api/users/me/profile").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("bearer-user"));
+    }
+
+    @Test
+    @DisplayName("a refresh token is rejected as an access token")
+    void refreshTokenRejectedAsAccessToken() throws Exception {
+        String refreshToken = tokenService.generateRefreshToken(principal("ROLE_USER"));
+
+        mockMvc.perform(get("/api/users/me/profile").header("Authorization", "Bearer " + refreshToken))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().exists("WWW-Authenticate"))
+                .andExpect(jsonPath("$.errorCode").value("AUTHENTICATION_FAILED"));
+    }
+
+    @Test
+    @DisplayName("roles in the token map to authorities")
+    void rolesMapToAuthorities() throws Exception {
+        String userToken = tokenService.generateAccessToken(principal("ROLE_USER"), user.getId());
+        String adminToken = tokenService.generateAccessToken(principal("ROLE_USER", "ROLE_ADMIN"), user.getId());
+
+        mockMvc.perform(get("/api/admin/dashboard/summary").header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.errorCode").value("ACCESS_DENIED"));
+        mockMvc.perform(get("/api/admin/dashboard/summary").header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("a missing token yields a uniform 401 body")
+    void missingTokenYields401() throws Exception {
+        mockMvc.perform(get("/api/users/me/profile"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.errorCode").value("AUTHENTICATION_FAILED"))
+                .andExpect(jsonPath("$.path").value("/api/users/me/profile"));
+    }
+
+    @Test
+    @DisplayName("a malformed token is rejected even on a public endpoint")
+    void malformedTokenRejectedOnPublicEndpoint() throws Exception {
+        mockMvc.perform(get("/api/cars").header("Authorization", "Bearer not.a.jwt"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("a stale token is ignored on the login endpoint")
+    void staleTokenIgnoredOnAuthEndpoints() throws Exception {
+        mockMvc.perform(post("/api/auth/login")
+                        .header("Authorization", "Bearer not.a.jwt")
+                        .contentType("application/json")
+                        .content("{\"username\":\"bearer-user\",\"password\":\"password123\"}"))
+                .andExpect(status().isOk());
+    }
+}

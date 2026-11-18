@@ -52,7 +52,7 @@ public class SecurityConfigTest {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private JwtTokenProvider jwtTokenProvider;
+    private JwtTokenService jwtTokenService;
 
     private MockMvc mockMvc;
     private User testUser;
@@ -102,7 +102,7 @@ public class SecurityConfigTest {
 
         testCar = carRepository.save(testCar);
 
-        userToken = jwtTokenProvider.generateAccessToken(
+        userToken = jwtTokenService.generateAccessToken(
                 new UsernamePasswordAuthenticationToken(
                         testUser.getUsername(), null, testUser.getRoles().stream()
                                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
@@ -110,7 +110,7 @@ public class SecurityConfigTest {
                 ), testUser.getId()
         );
 
-        adminToken = jwtTokenProvider.generateAccessToken(
+        adminToken = jwtTokenService.generateAccessToken(
                 new UsernamePasswordAuthenticationToken(
                         adminUser.getUsername(), null, adminUser.getRoles().stream()
                                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
@@ -160,7 +160,7 @@ public class SecurityConfigTest {
         @DisplayName("Should deny access to protected endpoint without JWT token")
         void shouldDenyAccessWithoutToken() throws Exception {
             mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -168,7 +168,7 @@ public class SecurityConfigTest {
         void shouldDenyAccessWithInvalidToken() throws Exception {
             mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve")
                             .header("Authorization", "Bearer invalid.token.here"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -176,7 +176,7 @@ public class SecurityConfigTest {
         void shouldDenyAccessWithMalformedHeader() throws Exception {
             mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve")
                             .header("Authorization", "InvalidFormat token"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -184,7 +184,7 @@ public class SecurityConfigTest {
         void shouldDenyAccessWithEmptyBearerToken() throws Exception {
             mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve")
                             .header("Authorization", "Bearer "))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -192,7 +192,7 @@ public class SecurityConfigTest {
         void shouldDenyAccessWithEmptyAuthHeader() throws Exception {
             mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve")
                             .header("Authorization", ""))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -265,7 +265,7 @@ public class SecurityConfigTest {
         @DisplayName("Should return 403 for missing JWT on protected endpoint")
         void shouldReturn403ForMissingJWT() throws Exception {
             mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test

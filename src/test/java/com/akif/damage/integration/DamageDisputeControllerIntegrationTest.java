@@ -21,7 +21,7 @@ import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.shared.enums.Role;
 import jakarta.persistence.EntityManager;
-import com.akif.shared.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenService;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -85,7 +85,7 @@ class DamageDisputeControllerIntegrationTest {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private JwtTokenProvider tokenProvider;
+    private JwtTokenService tokenProvider;
 
     private MockMvc mockMvc;
 
@@ -254,7 +254,7 @@ class DamageDisputeControllerIntegrationTest {
             mockMvc.perform(post("/api/damages/{id}/dispute", damageId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test

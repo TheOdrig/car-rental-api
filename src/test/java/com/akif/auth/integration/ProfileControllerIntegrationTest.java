@@ -116,7 +116,7 @@ class ProfileControllerIntegrationTest {
         @DisplayName("Should return 401 without JWT")
         void shouldReturn401WithoutJwt() throws Exception {
             mockMvc.perform(get("/api/users/me/profile"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -124,7 +124,7 @@ class ProfileControllerIntegrationTest {
         void shouldReturn401WithInvalidJwt() throws Exception {
             mockMvc.perform(get("/api/users/me/profile")
                     .header("Authorization", "Bearer invalid-token"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
     }
 
@@ -182,7 +182,7 @@ class ProfileControllerIntegrationTest {
             mockMvc.perform(put("/api/users/me/profile")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
     }
 }

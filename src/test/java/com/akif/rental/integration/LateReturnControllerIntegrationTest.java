@@ -260,7 +260,7 @@ class LateReturnControllerIntegrationTest {
     @DisplayName("GET /api/admin/late-returns - Should deny access for unauthenticated")
     void shouldDenyAccessForUnauthenticated() throws Exception {
         mockMvc.perform(get("/api/admin/late-returns"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -275,6 +275,6 @@ class LateReturnControllerIntegrationTest {
     @DisplayName("GET /api/admin/late-returns/statistics - Should deny access for unauthenticated")
     void shouldDenyAccessForUnauthenticatedStatistics() throws Exception {
         mockMvc.perform(get("/api/admin/late-returns/statistics"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 }

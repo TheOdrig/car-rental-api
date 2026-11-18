@@ -200,7 +200,7 @@ class CurrencyControllerIntegrationTest {
         void shouldReturn403WhenNotAuthenticated() throws Exception {
             mockMvc.perform(post("/api/exchange-rates/refresh")
                             .with(csrf()))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
     }
 }

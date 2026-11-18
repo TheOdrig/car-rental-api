@@ -5,7 +5,7 @@ import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalRequest;
 import com.akif.rental.internal.scheduler.ReminderScheduler;
 import com.akif.shared.enums.Role;
-import com.akif.shared.security.JwtTokenProvider;
+import com.akif.shared.security.JwtTokenService;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,7 @@ public abstract class E2ETestBase {
     protected ObjectMapper objectMapper;
     
     @Autowired
-    protected JwtTokenProvider tokenProvider;
+    protected JwtTokenService tokenProvider;
     
     @Autowired
     protected TestEventCaptor eventCaptor;
