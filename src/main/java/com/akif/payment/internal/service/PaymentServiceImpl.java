@@ -36,7 +36,6 @@ class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
 
-
     @Override
     public PaymentResult authorize(BigDecimal amount, CurrencyType currency, String customerId) {
         log.info("Authorizing payment: amount={}, currency={}, customerId={}", amount, currency, customerId);
@@ -70,7 +69,6 @@ class PaymentServiceImpl implements PaymentService {
                 request.cancelUrl()
         );
     }
-
 
     @Override
     @Transactional
@@ -116,13 +114,7 @@ class PaymentServiceImpl implements PaymentService {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("Payment not found: " + paymentId));
         
-        payment.updateStatus(status);
-        if (transactionId != null) {
-            payment.setTransactionId(transactionId);
-        }
-        if (failureReason != null) {
-            payment.setFailureReason(failureReason);
-        }
+        payment.applyStatus(status, transactionId, failureReason);
         
         Payment savedPayment = paymentRepository.save(payment);
         log.info("Updated payment status: ID={}, Status={}", paymentId, status);
@@ -147,9 +139,7 @@ class PaymentServiceImpl implements PaymentService {
 
             if (!authorizeResult.success()) {
                 log.warn("Failed to authorize payment: ID={}, Reason: {}", paymentId, authorizeResult.message());
-                payment.updateStatus(PaymentStatus.FAILED);
-                payment.setFailureReason(authorizeResult.message());
-                payment.setGatewayResponse(authorizeResult.message());
+                payment.markFailed(authorizeResult.message(), authorizeResult.message());
                 paymentRepository.save(payment);
                 return authorizeResult;
             }
@@ -160,15 +150,11 @@ class PaymentServiceImpl implements PaymentService {
             );
 
             if (captureResult.success()) {
-                payment.updateStatus(PaymentStatus.CAPTURED);
-                payment.setTransactionId(captureResult.transactionId());
-                payment.setGatewayResponse(captureResult.message());
+                payment.markCaptured(captureResult.transactionId(), captureResult.message());
                 paymentRepository.save(payment);
                 log.info("Successfully charged payment: ID={}, Transaction ID={}", paymentId, captureResult.transactionId());
             } else {
-                payment.updateStatus(PaymentStatus.FAILED);
-                payment.setFailureReason(captureResult.message());
-                payment.setGatewayResponse(captureResult.message());
+                payment.markFailed(captureResult.message(), captureResult.message());
                 paymentRepository.save(payment);
                 log.warn("Failed to capture payment: ID={}, Reason: {}", paymentId, captureResult.message());
             }
@@ -177,8 +163,7 @@ class PaymentServiceImpl implements PaymentService {
             
         } catch (Exception e) {
             log.error("Exception while charging payment: ID={}, Error: {}", paymentId, e.getMessage(), e);
-            payment.updateStatus(PaymentStatus.FAILED);
-            payment.setFailureReason(e.getMessage());
+            payment.markFailed(e.getMessage(), null);
             paymentRepository.save(payment);
             return PaymentResult.failure("Payment gateway error: " + e.getMessage());
         }
@@ -206,15 +191,8 @@ class PaymentServiceImpl implements PaymentService {
             PaymentResult refundResult = paymentGateway.refund(payment.getTransactionId(), refundAmount);
             
             if (refundResult.success()) {
-                BigDecimal currentRefunded = payment.getRefundedAmount() != null 
-                        ? payment.getRefundedAmount() 
-                        : BigDecimal.ZERO;
-                payment.setRefundedAmount(currentRefunded.add(refundAmount));
+                payment.recordRefund(refundAmount);
 
-                if (payment.getRefundedAmount().compareTo(payment.getAmount()) >= 0) {
-                    payment.updateStatus(PaymentStatus.REFUNDED);
-                }
-                
                 paymentRepository.save(payment);
                 log.info("Successfully processed refund for payment: ID={}, amount={}, transaction={}", 
                         paymentId, refundAmount, refundResult.transactionId());
@@ -236,22 +214,14 @@ class PaymentServiceImpl implements PaymentService {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("Payment not found: " + paymentId));
 
-        BigDecimal currentRefunded = payment.getRefundedAmount() != null 
-                ? payment.getRefundedAmount() 
-                : BigDecimal.ZERO;
-        payment.setRefundedAmount(currentRefunded.add(refundAmount));
+        payment.recordRefund(refundAmount);
 
-        if (payment.getRefundedAmount().compareTo(payment.getAmount()) >= 0) {
-            payment.updateStatus(PaymentStatus.REFUNDED);
-        }
-        
         Payment savedPayment = paymentRepository.save(payment);
         log.info("Added refunded amount to payment: ID={}, refundAmount={}, totalRefunded={}", 
                 paymentId, refundAmount, savedPayment.getRefundedAmount());
         
         return paymentMapper.toDto(savedPayment);
     }
-
 
     @Override
     public BigDecimal sumCapturedPaymentsBetween(LocalDateTime start, LocalDateTime end) {

@@ -3,6 +3,7 @@ package com.akif.rental.domain.model;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.rental.domain.enums.LateReturnStatus;
 import com.akif.rental.api.RentalStatus;
+import com.akif.shared.exception.InvalidStatusTransitionException;
 import com.akif.shared.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,7 +23,6 @@ import java.time.LocalDateTime;
         @Index(name = "idx_rentals_user_email", columnList = "user_email")
 })
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
@@ -124,8 +124,70 @@ public class Rental extends BaseEntity {
     @Builder.Default
     private Integer damageReportsCount = 0;
 
-    public void updateStatus(RentalStatus newStatus) {
-        this.status = newStatus;
+    public void confirm(String notes) {
+        requireTransition(status.canConfirm(), RentalStatus.CONFIRMED);
+        this.status = RentalStatus.CONFIRMED;
+        this.approvalNotes = notes;
+    }
+
+    public void pickUp(String notes) {
+        requireTransition(status.canPickup(), RentalStatus.IN_USE);
+        this.status = RentalStatus.IN_USE;
+        this.pickupNotes = notes;
+    }
+
+    public void markReturned(LocalDateTime returnedAt, String notes) {
+        requireTransition(status.canReturn(), RentalStatus.RETURNED);
+        this.status = RentalStatus.RETURNED;
+        this.actualReturnTime = returnedAt;
+        this.returnNotes = notes;
+    }
+
+    public void cancel(String reason) {
+        requireTransition(status.canCancel(), RentalStatus.CANCELLED);
+        this.status = RentalStatus.CANCELLED;
+        this.cancellationReason = reason;
+    }
+
+    public void markPickupReminderSent() {
+        this.pickupReminderSent = true;
+    }
+
+    public void markReturnReminderSent() {
+        this.returnReminderSent = true;
+    }
+
+    public void flagLate(LateReturnStatus newStatus, LocalDateTime detectedAt, int hoursLate) {
+        this.lateReturnStatus = newStatus;
+        if (this.lateDetectedAt == null && newStatus != LateReturnStatus.ON_TIME) {
+            this.lateDetectedAt = detectedAt;
+        }
+        this.lateHours = hoursLate;
+    }
+
+    public void assessPenalty(BigDecimal amount, int hoursLate) {
+        this.penaltyAmount = amount;
+        this.lateHours = hoursLate;
+    }
+
+    public void recordPenaltyPayment(boolean paid) {
+        this.penaltyPaid = paid;
+    }
+
+    public void reducePenaltyTo(BigDecimal remainingPenalty) {
+        this.penaltyAmount = remainingPenalty;
+    }
+
+    public void registerDamageReport() {
+        this.hasDamageReports = true;
+        this.damageReportsCount = (damageReportsCount != null ? damageReportsCount : 0) + 1;
+    }
+
+    private void requireTransition(boolean allowed, RentalStatus target) {
+        if (!allowed) {
+            throw new InvalidStatusTransitionException(
+                    "Cannot move rental from " + status.name() + " to " + target.name());
+        }
     }
 
     public boolean isInProgress() {

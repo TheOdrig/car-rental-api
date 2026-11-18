@@ -335,7 +335,7 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should successfully process pickup and capture payment")
         void shouldSuccessfullyProcessPickupAndCapturePayment() {
-            testRental.updateStatus(RentalStatus.CONFIRMED);
+            testRental.confirm(null);
             PaymentDto paymentDto = createTestPaymentDto();
             PaymentResult captureResult = new PaymentResult(true, "TXN-123", "Captured");
 
@@ -356,7 +356,8 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should successfully process return")
         void shouldSuccessfullyProcessReturn() {
-            testRental.updateStatus(RentalStatus.IN_USE);
+            testRental.confirm(null);
+            testRental.pickUp(null);
 
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
             when(carService.releaseCar(1L)).thenReturn(testCar);

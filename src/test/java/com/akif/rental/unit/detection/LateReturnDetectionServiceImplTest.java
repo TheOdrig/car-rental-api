@@ -1,6 +1,7 @@
 package com.akif.rental.unit.detection;
 
 import com.akif.auth.domain.User;
+import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.car.domain.Car;
 import com.akif.rental.domain.enums.LateReturnStatus;
 import com.akif.rental.api.RentalStatus;
@@ -466,7 +467,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should throw exception when end date is null")
         void shouldThrowExceptionWhenEndDateIsNull() {
-            testRental.setEndDate(null);
+            ReflectionTestUtils.setField(testRental, "endDate", null);
             LocalDateTime currentTime = LocalDateTime.now();
 
             assertThatThrownBy(() -> service.calculateLateStatus(testRental, currentTime))
@@ -487,9 +488,9 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should set late detected timestamp on first late detection")
         void shouldSetLateDetectedTimestampOnFirstLateDetection() {
-            testRental.setEndDate(LocalDate.now().minusDays(3));
-            testRental.setLateDetectedAt(null);
-            testRental.setLateReturnStatus(LateReturnStatus.ON_TIME);
+            ReflectionTestUtils.setField(testRental, "endDate", LocalDate.now().minusDays(3));
+            ReflectionTestUtils.setField(testRental, "lateDetectedAt", null);
+            ReflectionTestUtils.setField(testRental, "lateReturnStatus", LateReturnStatus.ON_TIME);
 
             Page<Rental> page = new PageImpl<>(Collections.singletonList(testRental));
             when(rentalRepository.findOverdueRentals(any(LocalDate.class), any(Pageable.class)))
@@ -517,8 +518,8 @@ class LateReturnDetectionServiceImplTest {
         @DisplayName("Should not update late detected timestamp if already set")
         void shouldNotUpdateLateDetectedTimestampIfAlreadySet() {
             LocalDateTime originalDetectionTime = LocalDateTime.now().minusHours(5);
-            testRental.setLateDetectedAt(originalDetectionTime);
-            testRental.setLateReturnStatus(LateReturnStatus.LATE);
+            ReflectionTestUtils.setField(testRental, "lateDetectedAt", originalDetectionTime);
+            ReflectionTestUtils.setField(testRental, "lateReturnStatus", LateReturnStatus.LATE);
 
             Page<Rental> page = new PageImpl<>(Collections.singletonList(testRental));
             when(rentalRepository.findOverdueRentals(any(LocalDate.class), any(Pageable.class)))

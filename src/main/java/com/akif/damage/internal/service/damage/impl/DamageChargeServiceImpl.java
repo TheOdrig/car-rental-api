@@ -3,7 +3,6 @@ package com.akif.damage.internal.service.damage.impl;
 import java.time.Clock;
 
 import com.akif.damage.api.DamageChargedEvent;
-import com.akif.damage.domain.enums.DamageStatus;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.service.damage.DamageChargeService;
 import com.akif.damage.internal.repository.DamageReportRepository;
@@ -52,7 +51,7 @@ public class DamageChargeServiceImpl implements DamageChargeService {
         log.info("Creating damage charge: damageId={}, amount={}, userId={}", 
                 damageReport.getId(), damageReport.getCustomerLiability(), rental.userId());
 
-        damageReport.setPaymentStatus("PENDING");
+        damageReport.markPaymentPending();
         damageReportRepository.save(damageReport);
 
         return null;
@@ -83,9 +82,7 @@ public class DamageChargeServiceImpl implements DamageChargeService {
         );
 
         if (result.success()) {
-            damageReport.updateStatus(DamageStatus.CHARGED);
-            damageReport.setPaymentStatus("CAPTURED");
-            damageReport.setTransactionId(result.transactionId());
+            damageReport.markCharged(result.transactionId());
             damageReportRepository.save(damageReport);
 
             eventPublisher.publishEvent(new DamageChargedEvent(
@@ -109,14 +106,14 @@ public class DamageChargeServiceImpl implements DamageChargeService {
     @Transactional
     public void handleFailedDamageCharge(Object damagePayment) {
         if (damagePayment instanceof DamageReport damageReport) {
-            damageReport.setPaymentStatus("FAILED");
+            damageReport.markPaymentFailed();
             damageReportRepository.save(damageReport);
             log.warn("Damage charge failed: damageId={}, admin notification required", damageReport.getId());
         } else if (damagePayment instanceof Long damageId) {
             DamageReport damageReport = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
                     .orElse(null);
             if (damageReport != null) {
-                damageReport.setPaymentStatus("FAILED");
+                damageReport.markPaymentFailed();
                 damageReportRepository.save(damageReport);
                 log.warn("Damage charge failed: damageId={}, admin notification required", damageId);
             }
@@ -124,7 +121,7 @@ public class DamageChargeServiceImpl implements DamageChargeService {
     }
 
     private void handleFailedDamageCharge(DamageReport damageReport) {
-        damageReport.setPaymentStatus("FAILED");
+        damageReport.markPaymentFailed();
         damageReportRepository.save(damageReport);
         log.warn("Damage charge failed: damageId={}, admin notification required", damageReport.getId());
     }

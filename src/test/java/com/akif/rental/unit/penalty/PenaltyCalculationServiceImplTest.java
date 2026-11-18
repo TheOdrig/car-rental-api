@@ -1,6 +1,7 @@
 package com.akif.rental.unit.penalty;
 
 import com.akif.car.domain.Car;
+import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.rental.domain.enums.LateReturnStatus;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.config.PenaltyConfig;
@@ -310,7 +311,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should handle different daily rates correctly")
         void shouldHandleDifferentDailyRatesCorrectly() {
-            testRental.setDailyPrice(new BigDecimal("1000.00"));
+            ReflectionTestUtils.setField(testRental, "dailyPrice", new BigDecimal("1000.00"));
             LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(2);
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);

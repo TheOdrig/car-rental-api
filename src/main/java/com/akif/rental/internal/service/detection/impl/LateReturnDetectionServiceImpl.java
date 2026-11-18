@@ -66,14 +66,8 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
                         LateReturnStatus newStatus = calculateLateStatus(rental, currentTime);
 
                         if (oldStatus != newStatus) {
-                            rental.setLateReturnStatus(newStatus);
-
-                            if (rental.getLateDetectedAt() == null && newStatus != LateReturnStatus.ON_TIME) {
-                                rental.setLateDetectedAt(currentTime);
-                            }
-
                             long lateHours = calculateLateHours(rental, currentTime);
-                            rental.setLateHours((int) lateHours);
+                            rental.flagLate(newStatus, currentTime, (int) lateHours);
                             
                             rentalRepository.save(rental);
                             totalUpdated++;

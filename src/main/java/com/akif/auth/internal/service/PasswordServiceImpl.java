@@ -36,7 +36,7 @@ public class PasswordServiceImpl implements PasswordService {
             throw new InvalidPasswordException("New password must be different from current password");
         }
 
-        user.setPassword(hashPassword(newPassword));
+        user.changePassword(hashPassword(newPassword));
         userRepository.save(user);
 
         log.info("Password changed successfully for user: {}", username);

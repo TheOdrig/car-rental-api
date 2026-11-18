@@ -176,7 +176,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
         linkedAccountRepository.save(linkedAccount);
 
         if (user.getAuthProvider() == AuthProvider.LOCAL) {
-            user.setAuthProvider(AuthProvider.MIXED);
+            user.linkSocialLogin();
             userRepository.save(user);
         }
     }
@@ -290,7 +290,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
         linkedAccountRepository.save(linkedAccount);
 
         if (user.getAuthProvider() == AuthProvider.LOCAL) {
-            user.setAuthProvider(AuthProvider.MIXED);
+            user.linkSocialLogin();
             userRepository.save(user);
         }
 

@@ -83,7 +83,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         var user = userRepository.findByEmail(resetToken.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + resetToken.getEmail()));
 
-        user.setPassword(passwordService.hashPassword(newPassword));
+        user.changePassword(passwordService.hashPassword(newPassword));
         userRepository.save(user);
 
         resetToken.markAsUsed();

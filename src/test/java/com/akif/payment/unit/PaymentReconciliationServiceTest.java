@@ -1,6 +1,7 @@
 package com.akif.payment.unit;
 
 import com.akif.payment.api.PaymentStatus;
+import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.payment.domain.Payment;
 import com.akif.payment.domain.enums.DiscrepancyType;
 import com.akif.payment.internal.dto.Discrepancy;
@@ -226,9 +227,9 @@ class PaymentReconciliationServiceTest {
     private Payment createPayment(Long id, String paymentIntentId, BigDecimal amount, PaymentStatus status) {
         Payment payment = new Payment();
         payment.setId(id);
-        payment.setStripePaymentIntentId(paymentIntentId);
-        payment.setAmount(amount);
-        payment.setStatus(status);
+        ReflectionTestUtils.setField(payment, "stripePaymentIntentId", paymentIntentId);
+        ReflectionTestUtils.setField(payment, "amount", amount);
+        ReflectionTestUtils.setField(payment, "status", status);
         return payment;
     }
 }

@@ -71,7 +71,7 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
 
         PenaltyWaiver savedWaiver = penaltyWaiverRepository.save(waiver);
 
-        rental.setPenaltyAmount(remainingPenalty);
+        rental.reducePenaltyTo(remainingPenalty);
         rentalRepository.save(rental);
 
         if (Boolean.TRUE.equals(rental.getPenaltyPaid())) {
@@ -144,8 +144,7 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
             PaymentResult refundResult = paymentService.refundPayment(payment.id(), waiver.getWaivedAmount());
 
             if (refundResult.success()) {
-                waiver.setRefundInitiated(true);
-                waiver.setRefundTransactionId(refundResult.transactionId());
+                waiver.recordRefund(refundResult.transactionId());
                 penaltyWaiverRepository.save(waiver);
 
                 log.info("Successfully processed refund for waiver: {}, amount: {}, transaction: {}",

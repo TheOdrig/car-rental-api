@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
@@ -18,7 +17,6 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_penalty_waiver_admin", columnList = "admin_id")
         })
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
@@ -51,6 +49,11 @@ public class PenaltyWaiver extends BaseEntity {
 
     @Column(name = "refund_transaction_id")
     private String refundTransactionId;
+
+    public void recordRefund(String transactionId) {
+        this.refundInitiated = true;
+        this.refundTransactionId = transactionId;
+    }
 
     @Override
     public String toString() {

@@ -3,7 +3,6 @@ package com.akif.payment.internal.webhook;
 import java.time.Clock;
 
 import com.akif.payment.internal.config.StripeConfig;
-import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.domain.enums.WebhookEventStatus;
 import com.akif.payment.internal.exception.WebhookSignatureException;
 import com.akif.payment.domain.Payment;
@@ -98,8 +97,7 @@ public class StripeWebhookHandler {
                     log.warn("Unhandled event type: {}", eventType);
             }
 
-            webhookEvent.setStatus(WebhookEventStatus.PROCESSED);
-            webhookEvent.setProcessedAt(LocalDateTime.now(clock));
+            webhookEvent.markProcessed(LocalDateTime.now(clock));
             webhookEventRepository.save(webhookEvent);
 
             log.info("[AUDIT] Webhook Event: PROCESSING_COMPLETED | Event ID: {} | Event Type: {} | Processing Result: SUCCESS | Timestamp: {}",
@@ -108,8 +106,7 @@ public class StripeWebhookHandler {
         } catch (Exception e) {
             log.error("[AUDIT] Webhook Event: PROCESSING_FAILED | Event ID: {} | Event Type: {} | Processing Result: FAILED | Error: {} | Timestamp: {}",
                     eventId, eventType, e.getMessage(), LocalDateTime.now(clock));
-            webhookEvent.setStatus(WebhookEventStatus.FAILED);
-            webhookEvent.setErrorMessage(e.getMessage());
+            webhookEvent.markFailed(e.getMessage());
             webhookEventRepository.save(webhookEvent);
             throw e;
         }
@@ -126,9 +123,7 @@ public class StripeWebhookHandler {
         Long paymentId = payment.getId();
         Long rentalId = payment.getRentalId();
         
-        payment.setStatus(PaymentStatus.CAPTURED);
-        payment.setStripePaymentIntentId(paymentIntentId);
-        payment.setTransactionId(paymentIntentId);
+        payment.markCheckoutCompleted(paymentIntentId);
         
         paymentRepository.save(payment);
         
@@ -146,8 +141,7 @@ public class StripeWebhookHandler {
         Long paymentId = payment.getId();
         Long rentalId = payment.getRentalId();
         
-        payment.setStatus(PaymentStatus.FAILED);
-        payment.setFailureReason("Checkout session expired");
+        payment.markFailed("Checkout session expired", null);
         
         paymentRepository.save(payment);
         
@@ -165,15 +159,13 @@ public class StripeWebhookHandler {
         Long paymentId = payment.getId();
         Long rentalId = payment.getRentalId();
         
-        payment.setStatus(PaymentStatus.FAILED);
-
         String failureReason = "Payment failed";
         String stripeErrorCode = null;
         if (paymentIntent.getLastPaymentError() != null) {
             failureReason = paymentIntent.getLastPaymentError().getMessage();
             stripeErrorCode = paymentIntent.getLastPaymentError().getCode();
         }
-        payment.setFailureReason(failureReason);
+        payment.markFailed(failureReason, null);
         
         paymentRepository.save(payment);
         
@@ -193,7 +185,7 @@ public class StripeWebhookHandler {
 
                 if (status == WebhookEventStatus.PROCESSED) {
                     WebhookEvent event = existingEvent.get();
-                    event.setStatus(WebhookEventStatus.DUPLICATE);
+                    event.markDuplicate();
                     webhookEventRepository.save(event);
                 }
                 

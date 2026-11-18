@@ -1,6 +1,7 @@
 package com.akif.payment.webhook;
 
 import com.akif.payment.api.PaymentStatus;
+import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.payment.domain.Payment;
 import com.akif.payment.domain.WebhookEvent;
 import com.akif.payment.domain.enums.WebhookEventStatus;
@@ -60,10 +61,10 @@ class StripeWebhookHandlerTest {
     void setUp() {
         testPayment = new Payment();
         testPayment.setId(456L);
-        testPayment.setRentalId(TEST_RENTAL_ID);
-        testPayment.setAmount(new BigDecimal("100.00"));
-        testPayment.setStatus(PaymentStatus.PENDING);
-        testPayment.setStripeSessionId(TEST_SESSION_ID);
+        ReflectionTestUtils.setField(testPayment, "rentalId", TEST_RENTAL_ID);
+        ReflectionTestUtils.setField(testPayment, "amount", new BigDecimal("100.00"));
+        ReflectionTestUtils.setField(testPayment, "status", PaymentStatus.PENDING);
+        ReflectionTestUtils.setField(testPayment, "stripeSessionId", TEST_SESSION_ID);
     }
 
     @Nested
@@ -221,7 +222,7 @@ class StripeWebhookHandlerTest {
         @Test
         @DisplayName("Should update payment status to FAILED without error details")
         void shouldUpdatePaymentStatusToFailedWithoutErrorDetails() {
-            testPayment.setStripePaymentIntentId(TEST_PAYMENT_INTENT_ID);
+            ReflectionTestUtils.setField(testPayment, "stripePaymentIntentId", TEST_PAYMENT_INTENT_ID);
 
             PaymentIntent paymentIntent = mock(PaymentIntent.class);
             when(paymentIntent.getId()).thenReturn(TEST_PAYMENT_INTENT_ID);

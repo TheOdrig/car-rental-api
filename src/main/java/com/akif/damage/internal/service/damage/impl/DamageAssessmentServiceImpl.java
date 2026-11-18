@@ -67,16 +67,8 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
                 deductible
         );
 
-        damageReport.setSeverity(severity);
-        damageReport.setCategory(request.category());
-        damageReport.setRepairCostEstimate(request.repairCostEstimate());
-        damageReport.setCustomerLiability(customerLiability);
-        damageReport.setInsuranceCoverage(hasInsurance);
-        damageReport.setInsuranceDeductible(deductible);
-        damageReport.setAssessmentNotes(request.assessmentNotes());
-        damageReport.setAssessedBy(user.id());
-        damageReport.setAssessedAt(LocalDateTime.now(clock));
-        damageReport.updateStatus(DamageStatus.ASSESSED);
+        damageReport.assess(severity, request.category(), request.repairCostEstimate(), customerLiability,
+                hasInsurance, deductible, request.assessmentNotes(), user.id(), LocalDateTime.now(clock));
 
         damageReport = damageReportRepository.save(damageReport);
 
@@ -126,15 +118,8 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
                 deductible
         );
 
-        damageReport.setSeverity(severity);
-        damageReport.setCategory(request.category());
-        damageReport.setRepairCostEstimate(request.repairCostEstimate());
-        damageReport.setCustomerLiability(customerLiability);
-        damageReport.setInsuranceCoverage(hasInsurance);
-        damageReport.setInsuranceDeductible(deductible);
-        damageReport.setAssessmentNotes(request.assessmentNotes());
-        damageReport.setAssessedBy(user.id());
-        damageReport.setAssessedAt(LocalDateTime.now(clock));
+        damageReport.reviseAssessment(severity, request.category(), request.repairCostEstimate(), customerLiability,
+                hasInsurance, deductible, request.assessmentNotes(), user.id(), LocalDateTime.now(clock));
 
         damageReport = damageReportRepository.save(damageReport);
 

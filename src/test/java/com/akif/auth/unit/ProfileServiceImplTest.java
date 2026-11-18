@@ -127,7 +127,7 @@ class ProfileServiceImplTest {
         @Test
         @DisplayName("Should clear phone when empty string provided")
         void shouldClearPhoneWhenEmptyStringProvided() {
-            testUser.setPhone("+1234567890");
+            testUser.updateProfile(testUser.getFirstName(), testUser.getLastName(), "+1234567890");
             ProfileUpdateRequest request = new ProfileUpdateRequest("John", "Doe", "");
 
             when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
@@ -170,7 +170,7 @@ class ProfileServiceImplTest {
         @Test
         @DisplayName("Should remove avatar successfully")
         void shouldRemoveAvatarSuccessfully() {
-            testUser.setAvatarUrl("avatars/user1_old.jpg");
+            testUser.changeAvatar("avatars/user1_old.jpg");
             when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
             when(userRepository.save(any(User.class))).thenReturn(testUser);
 

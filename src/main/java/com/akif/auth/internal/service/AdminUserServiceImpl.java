@@ -182,11 +182,7 @@ public class AdminUserServiceImpl implements AdminUserService {
             throw new IllegalStateException("User is already banned");
         }
 
-        user.setIsBanned(true);
-        user.setBannedAt(LocalDateTime.now(clock));
-        user.setBannedBy(adminId);
-        user.setBanReason(reason);
-        user.setEnabled(false);
+        user.ban(reason, adminId, LocalDateTime.now(clock));
 
         userRepository.save(user);
         log.info("User {} has been banned by admin {}", userId, adminId);
@@ -205,9 +201,7 @@ public class AdminUserServiceImpl implements AdminUserService {
             throw new IllegalStateException("User is not banned");
         }
 
-        user.setIsBanned(false);
-        user.setUnbannedAt(LocalDateTime.now(clock));
-        user.setEnabled(true);
+        user.unban(LocalDateTime.now(clock));
 
         userRepository.save(user);
         log.info("User {} has been unbanned by admin {}", userId, adminId);

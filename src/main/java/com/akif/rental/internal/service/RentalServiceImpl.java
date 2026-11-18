@@ -223,8 +223,7 @@ public class RentalServiceImpl implements RentalService {
                 authResult.transactionId(),
                 null);
 
-        rental.updateStatus(RentalStatus.CONFIRMED);
-        rental.setApprovalNotes(notes);
+        rental.confirm(notes);
 
         carService.reserveCar(rental.getCarId());
 
@@ -285,8 +284,7 @@ public class RentalServiceImpl implements RentalService {
                 captureResult.transactionId(),
                 null);
 
-        rental.updateStatus(RentalStatus.IN_USE);
-        rental.setPickupNotes(pickupNotes);
+        rental.pickUp(pickupNotes);
         Rental updatedRental = rentalRepository.save(rental);
         RentalResponse result = rentalMapper.toDto(updatedRental);
 
@@ -320,7 +318,6 @@ public class RentalServiceImpl implements RentalService {
         }
 
         LocalDateTime actualReturnTime = LocalDateTime.now(clock);
-        rental.setActualReturnTime(actualReturnTime);
 
         if (rental.getLateReturnStatus() != null &&
                 rental.getLateReturnStatus() != LateReturnStatus.ON_TIME) {
@@ -329,8 +326,7 @@ public class RentalServiceImpl implements RentalService {
             processPenaltyForLateReturn(rental, actualReturnTime);
         }
 
-        rental.updateStatus(RentalStatus.RETURNED);
-        rental.setReturnNotes(returnNotes);
+        rental.markReturned(actualReturnTime, returnNotes);
 
         carService.releaseCar(rental.getCarId());
 
@@ -368,8 +364,7 @@ public class RentalServiceImpl implements RentalService {
             refundInfo = refundPartialPayment(rental);
         }
 
-        rental.updateStatus(RentalStatus.CANCELLED);
-        rental.setCancellationReason(reason);
+        rental.cancel(reason);
 
         CarResponse car = carService.getCarById(rental.getCarId());
         if (car.getCarStatusType() == CarStatusType.RESERVED) {
@@ -544,14 +539,13 @@ public class RentalServiceImpl implements RentalService {
                     penaltyResult.lateHours(),
                     penaltyResult.lateDays());
 
-            rental.setPenaltyAmount(penaltyResult.penaltyAmount());
-            rental.setLateHours(penaltyResult.lateHours());
+            rental.assessPenalty(penaltyResult.penaltyAmount(), penaltyResult.lateHours());
 
             if (penaltyResult.penaltyAmount() == null ||
                     penaltyResult.penaltyAmount().compareTo(BigDecimal.ZERO) <= 0) {
                 log.info("No penalty to charge for rental {} (within grace period or no late hours)",
                         rental.getId());
-                rental.setPenaltyPaid(false);
+                rental.recordPenaltyPayment(false);
                 return;
             }
 
@@ -562,10 +556,10 @@ public class RentalServiceImpl implements RentalService {
                     penaltyPaymentDto.id(), rental.getUserId());
 
             if (chargeResult.success()) {
-                rental.setPenaltyPaid(true);
+                rental.recordPenaltyPayment(true);
                 log.info("Successfully charged penalty for rental: {}", rental.getId());
             } else {
-                rental.setPenaltyPaid(false);
+                rental.recordPenaltyPayment(false);
                 penaltyPaymentService.handleFailedPenaltyPayment(
                         penaltyPaymentDto.id(),
                         rental.getId(),
@@ -580,7 +574,7 @@ public class RentalServiceImpl implements RentalService {
         } catch (Exception e) {
             log.error("Error processing penalty for rental {}: {}",
                     rental.getId(), e.getMessage(), e);
-            rental.setPenaltyPaid(false);
+            rental.recordPenaltyPayment(false);
         }
     }
 
@@ -635,10 +629,7 @@ public class RentalServiceImpl implements RentalService {
         log.debug("Incrementing damage report count for rental: {}", rentalId);
 
         Rental rental = findRentalById(rentalId);
-        rental.setHasDamageReports(true);
-
-        Integer currentCount = rental.getDamageReportsCount();
-        rental.setDamageReportsCount((currentCount != null ? currentCount : 0) + 1);
+        rental.registerDamageReport();
 
         rentalRepository.save(rental);
         log.info("Incremented damage report count for rental: {} (new count: {})",

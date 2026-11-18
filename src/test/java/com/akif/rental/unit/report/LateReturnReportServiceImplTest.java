@@ -1,6 +1,7 @@
 package com.akif.rental.unit.report;
 
 import com.akif.rental.domain.enums.LateReturnStatus;
+import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.dto.report.LateReturnFilterDto;
 import com.akif.rental.internal.dto.report.LateReturnReportDto;
@@ -358,7 +359,7 @@ class LateReturnReportServiceImplTest {
         @Test
         @DisplayName("Should calculate late days from late hours")
         void shouldCalculateLateDaysFromLateHours() {
-            testRental2.setLateHours(72); // 3 days
+            ReflectionTestUtils.setField(testRental2, "lateHours", 72); // 3 days
             LateReturnFilterDto filter = LateReturnFilterDto.builder()
                     .startDate(LocalDate.now().minusDays(10))
                     .endDate(LocalDate.now())

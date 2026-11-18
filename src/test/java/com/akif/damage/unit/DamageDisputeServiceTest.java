@@ -1,6 +1,7 @@
 package com.akif.damage.unit;
 
 import com.akif.auth.api.AuthService;
+import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.auth.api.UserDto;
 import com.akif.damage.api.DamageDisputedEvent;
 import com.akif.damage.api.DamageResolvedEvent;
@@ -204,7 +205,7 @@ class DamageDisputeServiceTest {
         @Test
         @DisplayName("Should throw exception when damage cannot be disputed")
         void shouldThrowExceptionWhenDamageCannotBeDisputed() {
-            testDamageReport.setStatus(DamageStatus.REPORTED);
+            ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.REPORTED);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(authService.getUserByUsername("customer")).thenReturn(testUser);
@@ -251,7 +252,7 @@ class DamageDisputeServiceTest {
 
         @BeforeEach
         void setupDisputedStatus() {
-            testDamageReport.setStatus(DamageStatus.DISPUTED);
+            ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.DISPUTED);
         }
 
         @Test
@@ -299,7 +300,7 @@ class DamageDisputeServiceTest {
         @Test
         @DisplayName("Should throw exception when damage is not in DISPUTED status")
         void shouldThrowExceptionWhenDamageIsNotInDisputedStatus() {
-            testDamageReport.setStatus(DamageStatus.CHARGED);
+            ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.CHARGED);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(authService.getUserByUsername("admin")).thenReturn(testAdmin);
@@ -352,7 +353,7 @@ class DamageDisputeServiceTest {
 
         @BeforeEach
         void setupDisputedStatus() {
-            testDamageReport.setStatus(DamageStatus.DISPUTED);
+            ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.DISPUTED);
         }
 
         @Test
@@ -369,7 +370,7 @@ class DamageDisputeServiceTest {
         @Test
         @DisplayName("Should skip refund when no transaction ID")
         void shouldSkipRefundWhenNoTransactionId() {
-            testDamageReport.setTransactionId(null);
+            ReflectionTestUtils.setField(testDamageReport, "transactionId", null);
 
             damageDisputeService.processRefundForAdjustment(testDamageReport, new BigDecimal("250.00"));
 

@@ -1,6 +1,7 @@
 package com.akif.payment.unit.gateway.impl;
 
 import com.akif.payment.api.PaymentResult;
+import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.domain.Payment;
 import com.akif.payment.internal.config.StripeConfig;
@@ -53,10 +54,10 @@ class StripePaymentGatewayTest {
 
         testPayment = new Payment();
         testPayment.setId(456L);
-        testPayment.setRentalId(testRental.getId());
-        testPayment.setAmount(new BigDecimal("100.00"));
-        testPayment.setCurrency(CurrencyType.USD);
-        testPayment.setStatus(PaymentStatus.PENDING);
+        ReflectionTestUtils.setField(testPayment, "rentalId", testRental.getId());
+        ReflectionTestUtils.setField(testPayment, "amount", new BigDecimal("100.00"));
+        ReflectionTestUtils.setField(testPayment, "currency", CurrencyType.USD);
+        ReflectionTestUtils.setField(testPayment, "status", PaymentStatus.PENDING);
     }
 
     @Nested

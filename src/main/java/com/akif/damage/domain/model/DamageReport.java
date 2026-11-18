@@ -23,7 +23,6 @@ import java.util.List;
                 @Index(name = "idx_damage_reports_reported_at", columnList = "reported_at")
         })
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
@@ -142,8 +141,58 @@ public class DamageReport extends BaseEntity {
     @Builder.Default
     private List<DamagePhoto> photos = new ArrayList<>();
 
-    public void updateStatus(DamageStatus newStatus) {
-        this.status = newStatus;
+    public void assess(DamageSeverity severity, DamageCategory category, BigDecimal repairCost,
+                       BigDecimal liability, boolean insured, BigDecimal deductible, String notes,
+                       Long assessorId, LocalDateTime assessedTime) {
+        reviseAssessment(severity, category, repairCost, liability, insured, deductible, notes, assessorId,
+                assessedTime);
+        this.status = DamageStatus.ASSESSED;
+    }
+
+    public void reviseAssessment(DamageSeverity severity, DamageCategory category, BigDecimal repairCost,
+                                 BigDecimal liability, boolean insured, BigDecimal deductible, String notes,
+                                 Long assessorId, LocalDateTime assessedTime) {
+        this.severity = severity;
+        this.category = category;
+        this.repairCostEstimate = repairCost;
+        this.customerLiability = liability;
+        this.insuranceCoverage = insured;
+        this.insuranceDeductible = deductible;
+        this.assessmentNotes = notes;
+        this.assessedBy = assessorId;
+        this.assessedAt = assessedTime;
+    }
+
+    public void dispute(String reason, String comments, Long customerId, LocalDateTime disputedTime) {
+        this.disputeReason = reason;
+        this.disputeComments = comments;
+        this.disputedBy = customerId;
+        this.disputedAt = disputedTime;
+        this.status = DamageStatus.DISPUTED;
+    }
+
+    public void resolveDispute(BigDecimal adjustedLiability, BigDecimal adjustedRepairCost, String notes,
+                               Long resolverId, LocalDateTime resolvedTime) {
+        this.customerLiability = adjustedLiability;
+        this.repairCostEstimate = adjustedRepairCost;
+        this.resolutionNotes = notes;
+        this.resolvedBy = resolverId;
+        this.resolvedAt = resolvedTime;
+        this.status = DamageStatus.RESOLVED;
+    }
+
+    public void markPaymentPending() {
+        this.paymentStatus = "PENDING";
+    }
+
+    public void markCharged(String chargeTransactionId) {
+        this.status = DamageStatus.CHARGED;
+        this.paymentStatus = "CAPTURED";
+        this.transactionId = chargeTransactionId;
+    }
+
+    public void markPaymentFailed() {
+        this.paymentStatus = "FAILED";
     }
 
     public boolean canBeAssessed() {

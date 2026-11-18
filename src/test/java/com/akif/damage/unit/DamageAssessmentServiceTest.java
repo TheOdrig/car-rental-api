@@ -1,6 +1,7 @@
 package com.akif.damage.unit;
 
 import com.akif.auth.api.AuthService;
+import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.auth.api.UserDto;
 import com.akif.car.api.CarResponse;
 import com.akif.car.api.CarService;
@@ -197,7 +198,7 @@ class DamageAssessmentServiceTest {
         @Test
         @DisplayName("Should throw exception when damage cannot be assessed")
         void shouldThrowExceptionWhenDamageCannotBeAssessed() {
-            testDamageReport.setStatus(DamageStatus.CHARGED);
+            ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.CHARGED);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(authService.getUserByUsername("admin")).thenReturn(testUser);
@@ -253,7 +254,7 @@ class DamageAssessmentServiceTest {
         @Test
         @DisplayName("Should update assessment successfully when status is UNDER_ASSESSMENT")
         void shouldUpdateAssessmentSuccessfullyWhenStatusIsUnderAssessment() {
-            testDamageReport.setStatus(DamageStatus.UNDER_ASSESSMENT);
+            ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.UNDER_ASSESSMENT);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(authService.getUserByUsername("admin")).thenReturn(testUser);
@@ -269,7 +270,7 @@ class DamageAssessmentServiceTest {
         @Test
         @DisplayName("Should throw exception when updating already charged damage")
         void shouldThrowExceptionWhenUpdatingAlreadyChargedDamage() {
-            testDamageReport.setStatus(DamageStatus.CHARGED);
+            ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.CHARGED);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
 

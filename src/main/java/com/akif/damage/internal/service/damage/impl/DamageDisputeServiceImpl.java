@@ -63,11 +63,7 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
             throw DamageDisputeException.notOwner();
         }
 
-        damageReport.setDisputeReason(request.reason());
-        damageReport.setDisputeComments(request.comments());
-        damageReport.setDisputedBy(user.id());
-        damageReport.setDisputedAt(LocalDateTime.now(clock));
-        damageReport.updateStatus(DamageStatus.DISPUTED);
+        damageReport.dispute(request.reason(), request.comments(), user.id(), LocalDateTime.now(clock));
         damageReport = damageReportRepository.save(damageReport);
 
         eventPublisher.publishEvent(new DamageDisputedEvent(
@@ -103,12 +99,8 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
             processRefundForAdjustment(damageReport, adjustedLiability);
         }
 
-        damageReport.setCustomerLiability(adjustedLiability);
-        damageReport.setRepairCostEstimate(resolution.adjustedRepairCost());
-        damageReport.setResolutionNotes(resolution.resolutionNotes());
-        damageReport.setResolvedBy(user.id());
-        damageReport.setResolvedAt(LocalDateTime.now(clock));
-        damageReport.updateStatus(DamageStatus.RESOLVED);
+        damageReport.resolveDispute(adjustedLiability, resolution.adjustedRepairCost(), resolution.resolutionNotes(),
+                user.id(), LocalDateTime.now(clock));
         damageReport = damageReportRepository.save(damageReport);
 
         eventPublisher.publishEvent(new DamageResolvedEvent(

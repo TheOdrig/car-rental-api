@@ -51,7 +51,7 @@ public class ReminderScheduler {
                 for (Rental rental : rentalsPage.getContent()) {
                     try {
                         publishPickupReminderEvent(rental);
-                        rental.setPickupReminderSent(true);
+                        rental.markPickupReminderSent();
                         rentalRepository.save(rental);
                         log.info("Pickup reminder sent for rental ID: {}", rental.getId());
                     } catch (Exception e) {
@@ -91,7 +91,7 @@ public class ReminderScheduler {
                 for (Rental rental : rentalsPage.getContent()) {
                     try {
                         publishReturnReminderEvent(rental);
-                        rental.setReturnReminderSent(true);
+                        rental.markReturnReminderSent();
                         rentalRepository.save(rental);
                         log.info("Return reminder sent for rental ID: {}", rental.getId());
                     } catch (Exception e) {

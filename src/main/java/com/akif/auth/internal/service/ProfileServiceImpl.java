@@ -52,14 +52,7 @@ public class ProfileServiceImpl implements ProfileService {
 
         User user = findUserByUsername(username);
 
-        user.setFirstName(request.firstName());
-        user.setLastName(request.lastName());
-
-        if (request.phone() != null && !request.phone().isBlank()) {
-            user.setPhone(request.phone());
-        } else {
-            user.setPhone(null);
-        }
+        user.updateProfile(request.firstName(), request.lastName(), request.phone());
 
         User savedUser = userRepository.save(user);
         log.info("Profile updated successfully for user: {}", username);
@@ -89,7 +82,7 @@ public class ProfileServiceImpl implements ProfileService {
         log.info("Updating avatar for user: {}", username);
 
         User user = findUserByUsername(username);
-        user.setAvatarUrl(avatarKey);
+        user.changeAvatar(avatarKey);
         userRepository.save(user);
 
         log.info("Avatar updated successfully for user: {}", username);
@@ -101,7 +94,7 @@ public class ProfileServiceImpl implements ProfileService {
         log.info("Removing avatar for user: {}", username);
 
         User user = findUserByUsername(username);
-        user.setAvatarUrl(null);
+        user.removeAvatar();
         userRepository.save(user);
 
         log.info("Avatar removed successfully for user: {}", username);

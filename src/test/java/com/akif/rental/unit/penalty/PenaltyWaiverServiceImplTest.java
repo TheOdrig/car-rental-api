@@ -1,6 +1,7 @@
 package com.akif.rental.unit.penalty;
 
 import com.akif.payment.api.PaymentDto;
+import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.payment.api.PaymentResult;
 import com.akif.payment.api.PaymentService;
 import com.akif.payment.api.PaymentStatus;
@@ -149,7 +150,7 @@ class PenaltyWaiverServiceImplTest {
         @Test
         @DisplayName("Should throw exception when rental has no penalty for full waiver")
         void shouldThrowExceptionWhenRentalHasNoPenaltyForFullWaiver() {
-            testRental.setPenaltyAmount(BigDecimal.ZERO);
+            ReflectionTestUtils.setField(testRental, "penaltyAmount", BigDecimal.ZERO);
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
 
             assertThatThrownBy(() -> service.waiveFullPenalty(1L, "Reason", 100L))
@@ -209,7 +210,7 @@ class PenaltyWaiverServiceImplTest {
         @Test
         @DisplayName("Should initiate refund when penalty is already paid")
         void shouldInitiateRefundWhenPenaltyIsAlreadyPaid() {
-            testRental.setPenaltyPaid(true);
+            ReflectionTestUtils.setField(testRental, "penaltyPaid", true);
             when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
             when(penaltyWaiverRepository.save(any(PenaltyWaiver.class))).thenReturn(testWaiver);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
@@ -239,7 +240,7 @@ class PenaltyWaiverServiceImplTest {
         @Test
         @DisplayName("Should not process refund if already initiated")
         void shouldNotProcessRefundIfAlreadyInitiated() {
-            testWaiver.setRefundInitiated(true);
+            ReflectionTestUtils.setField(testWaiver, "refundInitiated", true);
 
             service.processRefundForWaiver(testWaiver);
 

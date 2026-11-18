@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_webhook_created", columnList = "create_time")
         })
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
@@ -41,6 +40,20 @@ public class WebhookEvent extends BaseEntity {
 
     @Column(name = "error_message", length = 1000)
     private String errorMessage;
+
+    public void markProcessed(LocalDateTime processedTime) {
+        this.status = WebhookEventStatus.PROCESSED;
+        this.processedAt = processedTime;
+    }
+
+    public void markDuplicate() {
+        this.status = WebhookEventStatus.DUPLICATE;
+    }
+
+    public void markFailed(String error) {
+        this.status = WebhookEventStatus.FAILED;
+        this.errorMessage = error;
+    }
 
     @Override
     public String toString() {

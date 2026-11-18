@@ -1,6 +1,7 @@
 package com.akif.damage.e2e;
 
 import com.akif.CarRentalApplication;
+import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.car.domain.Car;
@@ -178,7 +179,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                         DamageReport damageReport = damageReportRepository.findById(damageId).orElseThrow();
                         assertThat(damageReport.getStatus()).isEqualTo(DamageStatus.ASSESSED);
 
-                        damageReport.updateStatus(DamageStatus.CHARGED);
+                        ReflectionTestUtils.setField(damageReport, "status", DamageStatus.CHARGED);
                         damageReportRepository.saveAndFlush(damageReport);
 
                         eventCaptor.clear();
@@ -491,7 +492,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .andExpect(status().isOk());
 
                         DamageReport damageReport = damageReportRepository.findById(damageId).orElseThrow();
-                        damageReport.updateStatus(DamageStatus.CHARGED);
+                        ReflectionTestUtils.setField(damageReport, "status", DamageStatus.CHARGED);
                         damageReportRepository.saveAndFlush(damageReport);
 
                         DamageDisputeRequest disputeRequest = new DamageDisputeRequest(

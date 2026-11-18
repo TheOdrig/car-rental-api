@@ -16,7 +16,6 @@ import java.util.Set;
 @Entity
 @Table(name = "users")
 @Getter
-@Setter
 @ToString(exclude = "linkedAccounts")
 @NoArgsConstructor
 @AllArgsConstructor
@@ -82,6 +81,42 @@ public class User extends BaseEntity {
 
     @Column(name = "unbanned_at")
     private LocalDateTime unbannedAt;
+
+    public void ban(String reason, Long adminId, LocalDateTime bannedAtTime) {
+        this.isBanned = true;
+        this.bannedAt = bannedAtTime;
+        this.bannedBy = adminId;
+        this.banReason = reason;
+        this.enabled = false;
+    }
+
+    public void unban(LocalDateTime unbannedAtTime) {
+        this.isBanned = false;
+        this.unbannedAt = unbannedAtTime;
+        this.enabled = true;
+    }
+
+    public void changePassword(String hashedPassword) {
+        this.password = hashedPassword;
+    }
+
+    public void updateProfile(String newFirstName, String newLastName, String newPhone) {
+        this.firstName = newFirstName;
+        this.lastName = newLastName;
+        this.phone = newPhone != null && !newPhone.isBlank() ? newPhone : null;
+    }
+
+    public void changeAvatar(String avatarKey) {
+        this.avatarUrl = avatarKey;
+    }
+
+    public void removeAvatar() {
+        this.avatarUrl = null;
+    }
+
+    public void linkSocialLogin() {
+        this.authProvider = AuthProvider.MIXED;
+    }
 
     @Override
     public final boolean equals(Object o) {

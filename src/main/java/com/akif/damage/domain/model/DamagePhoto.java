@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_damage_photos_report", columnList = "damage_report_id")
         })
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder

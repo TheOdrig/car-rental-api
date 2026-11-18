@@ -15,7 +15,6 @@ import java.util.Objects;
                 name = "uq_linked_account_provider_id",
                 columnNames = {"provider", "provider_id"}))
 @Getter
-@Setter
 @ToString(exclude = "user")
 @NoArgsConstructor
 @AllArgsConstructor

@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
         @Index(name = "idx_password_reset_tokens_expiry", columnList = "expiry_date")
 })
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

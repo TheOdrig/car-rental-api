@@ -93,7 +93,6 @@ class ReminderSchedulerIntegrationTest {
         void shouldSendPickupReminderForTomorrowRentals() {
             LocalDate tomorrow = LocalDate.now().plusDays(1);
             Rental rental = createRental(tomorrow, tomorrow.plusDays(4), RentalStatus.CONFIRMED);
-            rental.setPickupReminderSent(false);
             rental = rentalRepository.save(rental);
 
             reminderScheduler.sendPickupReminders();
@@ -107,7 +106,6 @@ class ReminderSchedulerIntegrationTest {
         void shouldNotSendPickupReminderForTodayRentals() {
             LocalDate today = LocalDate.now();
             Rental rental = createRental(today, today.plusDays(4), RentalStatus.CONFIRMED);
-            rental.setPickupReminderSent(false);
             rental = rentalRepository.save(rental);
 
             reminderScheduler.sendPickupReminders();
@@ -121,11 +119,9 @@ class ReminderSchedulerIntegrationTest {
         void shouldNotSendPickupReminderForNonConfirmedRentals() {
             LocalDate tomorrow = LocalDate.now().plusDays(1);
             Rental requestedRental = createRental(tomorrow, tomorrow.plusDays(4), RentalStatus.REQUESTED);
-            requestedRental.setPickupReminderSent(false);
             requestedRental = rentalRepository.save(requestedRental);
 
             Rental inUseRental = createRental(tomorrow, tomorrow.plusDays(4), RentalStatus.IN_USE);
-            inUseRental.setPickupReminderSent(false);
             inUseRental = rentalRepository.save(inUseRental);
 
             reminderScheduler.sendPickupReminders();
@@ -142,7 +138,7 @@ class ReminderSchedulerIntegrationTest {
         void shouldNotSendDuplicatePickupReminders() {
             LocalDate tomorrow = LocalDate.now().plusDays(1);
             Rental rental = createRental(tomorrow, tomorrow.plusDays(4), RentalStatus.CONFIRMED);
-            rental.setPickupReminderSent(true); // Already sent
+            rental.markPickupReminderSent();
             rental = rentalRepository.save(rental);
 
             reminderScheduler.sendPickupReminders();
@@ -157,11 +153,9 @@ class ReminderSchedulerIntegrationTest {
             LocalDate tomorrow = LocalDate.now().plusDays(1);
             
             Rental rental1 = createRental(tomorrow, tomorrow.plusDays(4), RentalStatus.CONFIRMED);
-            rental1.setPickupReminderSent(false);
             rental1 = rentalRepository.save(rental1);
 
             Rental rental2 = createRental(tomorrow, tomorrow.plusDays(3), RentalStatus.CONFIRMED);
-            rental2.setPickupReminderSent(false);
             rental2 = rentalRepository.save(rental2);
 
             reminderScheduler.sendPickupReminders();
@@ -183,7 +177,6 @@ class ReminderSchedulerIntegrationTest {
         void shouldSendReturnReminderForTodayReturns() {
             LocalDate today = LocalDate.now();
             Rental rental = createRental(today.minusDays(4), today, RentalStatus.IN_USE);
-            rental.setReturnReminderSent(false);
             rental = rentalRepository.save(rental);
 
             reminderScheduler.sendReturnReminders();
@@ -197,7 +190,6 @@ class ReminderSchedulerIntegrationTest {
         void shouldNotSendReturnReminderForTomorrowReturns() {
             LocalDate tomorrow = LocalDate.now().plusDays(1);
             Rental rental = createRental(tomorrow.minusDays(4), tomorrow, RentalStatus.IN_USE);
-            rental.setReturnReminderSent(false);
             rental = rentalRepository.save(rental);
 
             reminderScheduler.sendReturnReminders();
@@ -211,11 +203,9 @@ class ReminderSchedulerIntegrationTest {
         void shouldNotSendReturnReminderForNonInUseRentals() {
             LocalDate today = LocalDate.now();
             Rental confirmedRental = createRental(today.minusDays(4), today, RentalStatus.CONFIRMED);
-            confirmedRental.setReturnReminderSent(false);
             confirmedRental = rentalRepository.save(confirmedRental);
 
             Rental returnedRental = createRental(today.minusDays(4), today, RentalStatus.RETURNED);
-            returnedRental.setReturnReminderSent(false);
             returnedRental = rentalRepository.save(returnedRental);
 
             reminderScheduler.sendReturnReminders();
@@ -232,7 +222,7 @@ class ReminderSchedulerIntegrationTest {
         void shouldNotSendDuplicateReturnReminders() {
             LocalDate today = LocalDate.now();
             Rental rental = createRental(today.minusDays(4), today, RentalStatus.IN_USE);
-            rental.setReturnReminderSent(true); // Already sent
+            rental.markReturnReminderSent();
             rental = rentalRepository.save(rental);
 
             reminderScheduler.sendReturnReminders();
@@ -247,11 +237,9 @@ class ReminderSchedulerIntegrationTest {
             LocalDate today = LocalDate.now();
             
             Rental rental1 = createRental(today.minusDays(4), today, RentalStatus.IN_USE);
-            rental1.setReturnReminderSent(false);
             rental1 = rentalRepository.save(rental1);
 
             Rental rental2 = createRental(today.minusDays(3), today, RentalStatus.IN_USE);
-            rental2.setReturnReminderSent(false);
             rental2 = rentalRepository.save(rental2);
 
             reminderScheduler.sendReturnReminders();

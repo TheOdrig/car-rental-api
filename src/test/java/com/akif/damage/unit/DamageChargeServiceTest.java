@@ -1,6 +1,7 @@
 package com.akif.damage.unit;
 
 import com.akif.damage.api.DamageChargedEvent;
+import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.damage.domain.enums.DamageCategory;
 import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.domain.enums.DamageStatus;
@@ -109,7 +110,7 @@ class DamageChargeServiceTest {
         @Test
         @DisplayName("Should throw exception for report with invalid status")
         void shouldThrowExceptionForInvalidStatus() {
-            testDamageReport.updateStatus(DamageStatus.REPORTED);
+            ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.REPORTED);
 
             assertThatThrownBy(() -> damageChargeService.createDamageCharge(testDamageReport))
                     .isInstanceOf(DamageAssessmentException.class);
@@ -121,7 +122,7 @@ class DamageChargeServiceTest {
         @Test
         @DisplayName("Should throw exception for null customer liability")
         void shouldThrowExceptionForNullCustomerLiability() {
-            testDamageReport.setCustomerLiability(null);
+            ReflectionTestUtils.setField(testDamageReport, "customerLiability", null);
 
             assertThatThrownBy(() -> damageChargeService.createDamageCharge(testDamageReport))
                     .isInstanceOf(DamageAssessmentException.class)
@@ -131,7 +132,7 @@ class DamageChargeServiceTest {
         @Test
         @DisplayName("Should throw exception for zero customer liability")
         void shouldThrowExceptionForZeroCustomerLiability() {
-            testDamageReport.setCustomerLiability(BigDecimal.ZERO);
+            ReflectionTestUtils.setField(testDamageReport, "customerLiability", BigDecimal.ZERO);
 
             assertThatThrownBy(() -> damageChargeService.createDamageCharge(testDamageReport))
                     .isInstanceOf(DamageAssessmentException.class)

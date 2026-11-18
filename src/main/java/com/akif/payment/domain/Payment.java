@@ -18,7 +18,6 @@ import java.math.BigDecimal;
                 @Index(name = "idx_payments_stripe_intent", columnList = "stripe_payment_intent_id")
         })
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
@@ -69,9 +68,42 @@ public class Payment extends BaseEntity {
     @Column(name = "failure_reason", length = 500)
     private String failureReason;
 
-
-    public void updateStatus(PaymentStatus newStatus) {
+    public void applyStatus(PaymentStatus newStatus, String newTransactionId, String newFailureReason) {
         this.status = newStatus;
+        if (newTransactionId != null) {
+            this.transactionId = newTransactionId;
+        }
+        if (newFailureReason != null) {
+            this.failureReason = newFailureReason;
+        }
+    }
+
+    public void markCaptured(String captureTransactionId, String gatewayMessage) {
+        this.status = PaymentStatus.CAPTURED;
+        this.transactionId = captureTransactionId;
+        this.gatewayResponse = gatewayMessage;
+    }
+
+    public void markFailed(String reason, String gatewayMessage) {
+        this.status = PaymentStatus.FAILED;
+        this.failureReason = reason;
+        if (gatewayMessage != null) {
+            this.gatewayResponse = gatewayMessage;
+        }
+    }
+
+    public void markCheckoutCompleted(String paymentIntentId) {
+        this.status = PaymentStatus.CAPTURED;
+        this.stripePaymentIntentId = paymentIntentId;
+        this.transactionId = paymentIntentId;
+    }
+
+    public void recordRefund(BigDecimal refundAmount) {
+        BigDecimal alreadyRefunded = refundedAmount != null ? refundedAmount : BigDecimal.ZERO;
+        this.refundedAmount = alreadyRefunded.add(refundAmount);
+        if (this.refundedAmount.compareTo(amount) >= 0) {
+            this.status = PaymentStatus.REFUNDED;
+        }
     }
 
     public boolean isSuccessful() {

@@ -1,6 +1,7 @@
 package com.akif.damage.integration;
 
 import com.akif.CarRentalApplication;
+import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.car.domain.Car;
@@ -208,7 +209,7 @@ class DamageDisputeControllerIntegrationTest {
 
     private void chargeDamageReport(Long damageId) {
         var report = damageReportRepository.findById(damageId).orElseThrow();
-        report.updateStatus(DamageStatus.CHARGED);
+        ReflectionTestUtils.setField(report, "status", DamageStatus.CHARGED);
         damageReportRepository.save(report);
         entityManager.flush();
         entityManager.clear();

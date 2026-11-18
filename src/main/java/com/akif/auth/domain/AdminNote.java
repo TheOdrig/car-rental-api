@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
         @Index(name = "idx_admin_notes_created", columnList = "created_at")
 })
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
