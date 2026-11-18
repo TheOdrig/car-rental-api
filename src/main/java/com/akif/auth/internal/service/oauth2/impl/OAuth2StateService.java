@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.time.Instant;
+import java.time.Clock;
 import java.util.Base64;
 
 @Service
@@ -25,14 +25,16 @@ public class OAuth2StateService {
 
     private final OAuth2Properties oAuth2Properties;
     private final SecureRandom secureRandom;
+    private final Clock clock;
 
-    public OAuth2StateService(OAuth2Properties oAuth2Properties) {
+    public OAuth2StateService(OAuth2Properties oAuth2Properties, Clock clock) {
         this.oAuth2Properties = oAuth2Properties;
+        this.clock = clock;
         this.secureRandom = new SecureRandom();
     }
 
     public String generateState() {
-        long timestamp = Instant.now().getEpochSecond();
+        long timestamp = clock.instant().getEpochSecond();
         String random = generateRandomString();
         String data = timestamp + DELIMITER + random;
         String signature = sign(data);
@@ -72,7 +74,7 @@ public class OAuth2StateService {
             }
 
             long stateTimestamp = Long.parseLong(timestamp);
-            long currentTimestamp = Instant.now().getEpochSecond();
+            long currentTimestamp = clock.instant().getEpochSecond();
             long expirationSeconds = oAuth2Properties.getState().getExpirationMinutes() * 60L;
 
             if (currentTimestamp - stateTimestamp > expirationSeconds) {

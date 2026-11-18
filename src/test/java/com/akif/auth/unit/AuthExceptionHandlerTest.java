@@ -10,12 +10,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("AuthExceptionHandler Unit Tests")
 class AuthExceptionHandlerTest {
 
-    private final AuthExceptionHandler handler = new AuthExceptionHandler();
+    private final AuthExceptionHandler handler = new AuthExceptionHandler(
+            Clock.fixed(Instant.parse("2026-01-01T00:00:00Z"), ZoneOffset.UTC));
 
     @Test
     @DisplayName("Should return OAuth2ErrorResponse for OAuth2AuthenticationException")

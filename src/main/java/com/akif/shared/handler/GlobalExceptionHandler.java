@@ -1,6 +1,7 @@
 package com.akif.shared.handler;
 
 import com.akif.shared.exception.BaseException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
@@ -28,7 +30,10 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+        private final Clock clock;
 
         private static final String ERROR_CODE_AUTHENTICATION_FAILED = "AUTHENTICATION_FAILED";
         private static final String ERROR_CODE_ACCESS_DENIED = "ACCESS_DENIED";
@@ -161,7 +166,7 @@ public class GlobalExceptionHandler {
                 ErrorResponseDto errorResponse = ErrorResponseDto.builder()
                                 .errorCode(errorCode)
                                 .message(message)
-                                .timestamp(LocalDateTime.now())
+                                .timestamp(LocalDateTime.now(clock))
                                 .status(status.value())
                                 .path(extractPath(request))
                                 .traceId(generateTraceId())
