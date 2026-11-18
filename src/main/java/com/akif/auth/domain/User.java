@@ -64,6 +64,10 @@ public class User extends BaseEntity {
     @Column(name = "enabled", nullable = false)
     private Boolean enabled = true;
 
+    @Column(name = "email_verified", nullable = false)
+    @Builder.Default
+    private Boolean emailVerified = false;
+
     @Column(name = "is_banned", nullable = false)
     @Builder.Default
     private Boolean isBanned = false;
@@ -79,6 +83,10 @@ public class User extends BaseEntity {
 
     @Column(name = "unbanned_at")
     private LocalDateTime unbannedAt;
+
+    public boolean hasVerifiedEmail() {
+        return Boolean.TRUE.equals(emailVerified);
+    }
 
     public boolean isUsable() {
         return Boolean.TRUE.equals(enabled) && !Boolean.TRUE.equals(isBanned) && !isDeleted();

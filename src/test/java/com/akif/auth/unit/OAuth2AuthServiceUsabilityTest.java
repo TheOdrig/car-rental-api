@@ -3,6 +3,7 @@ package com.akif.auth.unit;
 import com.akif.auth.api.AuthResponse;
 import com.akif.auth.domain.LinkedAccount;
 import com.akif.auth.domain.User;
+import com.akif.auth.domain.enums.OAuth2ErrorType;
 import com.akif.auth.domain.enums.OAuth2Provider;
 import com.akif.auth.internal.config.OAuth2Properties;
 import com.akif.auth.internal.dto.oauth2.OAuth2TokenResponse;
@@ -20,10 +21,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
+import org.springframework.http.HttpStatus;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -79,7 +83,8 @@ class OAuth2AuthServiceUsabilityTest {
     }
 
     private User user() {
-        User user = User.builder().username("member").email(EMAIL).enabled(true).roles(Set.of(Role.USER)).build();
+        User user = User.builder().username("member").email(EMAIL).enabled(true).emailVerified(true)
+                .roles(Set.of(Role.USER)).build();
         user.setId(5L);
         return user;
     }
@@ -148,5 +153,57 @@ class OAuth2AuthServiceUsabilityTest {
 
         assertThat(response.accessToken()).isEqualTo("access");
         assertThat(response.refreshToken()).isEqualTo("refresh");
+    }
+
+    @Test
+    @DisplayName("a local account with an unverified email is not auto-linked by a provider email")
+    void unverifiedLocalAccountNotAutoLinked() {
+        User unverified = User.builder().username("member").email(EMAIL).enabled(true)
+                .roles(Set.of(Role.USER)).build();
+        unverified.setId(5L);
+        when(linkedAccountRepository.findByProviderAndProviderId(OAuth2Provider.GOOGLE, "g-1"))
+                .thenReturn(Optional.empty());
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(unverified));
+
+        assertThatThrownBy(() -> service.processOAuth2Callback("google", "code", "state"))
+                .isInstanceOfSatisfying(OAuth2AuthenticationException.class, ex -> {
+                    assertThat(ex.getErrorType()).isEqualTo(OAuth2ErrorType.LOCAL_ACCOUNT_UNVERIFIED);
+                    assertThat(ex.getErrorCode()).isEqualTo("local_account_unverified");
+                    assertThat(ex.getHttpStatus()).isEqualTo(HttpStatus.CONFLICT);
+                });
+        verify(linkedAccountRepository, never()).save(any());
+        verify(jwtTokenService, never()).generateAccessToken(any(), any());
+    }
+
+    @Test
+    @DisplayName("a local account with a verified email is auto-linked")
+    void verifiedLocalAccountAutoLinked() {
+        when(linkedAccountRepository.findByProviderAndProviderId(OAuth2Provider.GOOGLE, "g-1"))
+                .thenReturn(Optional.empty());
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user()));
+
+        AuthResponse response = service.processOAuth2Callback("google", "code", "state");
+
+        assertThat(response.accessToken()).isEqualTo("access");
+        verify(linkedAccountRepository).save(any(LinkedAccount.class));
+    }
+
+    @Test
+    @DisplayName("an account created by a provider sign-in is marked email-verified")
+    void providerCreatedAccountIsVerified() {
+        when(linkedAccountRepository.findByProviderAndProviderId(OAuth2Provider.GOOGLE, "g-1"))
+                .thenReturn(Optional.empty());
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User saved = invocation.getArgument(0);
+            saved.setId(9L);
+            return saved;
+        });
+
+        service.processOAuth2Callback("google", "code", "state");
+
+        ArgumentCaptor<User> created = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(created.capture());
+        assertThat(created.getValue().hasVerifiedEmail()).isTrue();
     }
 }

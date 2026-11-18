@@ -162,6 +162,10 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
         if (existingUser.isPresent()) {
 
             User user = requireUsable(existingUser.get(), userInfo.provider());
+            if (!user.hasVerifiedEmail()) {
+                log.warn("Rejected OAuth2 auto-link for account {} whose email is not verified", user.getId());
+                throw new OAuth2AuthenticationException(OAuth2ErrorType.LOCAL_ACCOUNT_UNVERIFIED, userInfo.provider());
+            }
             linkSocialAccountToUser(user, userInfo, oAuth2Provider);
             log.info("Linked {} account to existing user: {}", userInfo.provider(), user.getUsername());
             return user;
@@ -218,6 +222,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
                 .authProvider(authProvider)
                 .roles(roles)
                 .enabled(true)
+                .emailVerified(true)
                 .isDeleted(false)
                 .build();
 

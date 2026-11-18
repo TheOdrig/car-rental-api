@@ -43,7 +43,7 @@ public class OAuth2AuthenticationException extends BaseException {
                 HttpStatus.SERVICE_UNAVAILABLE;
             case EMAIL_REQUIRED, INVALID_STATE -> 
                 HttpStatus.BAD_REQUEST;
-            case ACCOUNT_ALREADY_LINKED -> 
+            case ACCOUNT_ALREADY_LINKED, LOCAL_ACCOUNT_UNVERIFIED -> 
                 HttpStatus.CONFLICT;
         };
     }
