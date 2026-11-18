@@ -159,12 +159,31 @@ class RefreshTokenIntegrationTest {
                 .andExpect(status().isOk());
     }
 
+    private void ageRotation(String rawToken) throws Exception {
+        jdbcTemplate.update("UPDATE car_rental.refresh_tokens SET revoked_at = revoked_at - INTERVAL '2 days' "
+                + "WHERE token_hash = ?", sha256(rawToken));
+    }
+
     @Test
-    @DisplayName("reuse of a rotated token revokes the whole family")
+    @DisplayName("reuse of a rotated token inside the grace window is rejected without revoking the family")
+    void reuseInsideGraceWindowKeepsFamily() throws Exception {
+        String first = login().get("refreshToken").asText();
+        String second = objectMapper.readTree(refresh(first).getResponse().getContentAsString())
+                .get("refreshToken").asText();
+
+        MvcResult reuse = refresh(first);
+
+        assertThat(reuse.getResponse().getStatus()).isEqualTo(401);
+        assertThat(refresh(second).getResponse().getStatus()).isEqualTo(200);
+    }
+
+    @Test
+    @DisplayName("reuse of a rotated token outside the grace window revokes the whole family")
     void reuseRevokesFamily() throws Exception {
         String first = login().get("refreshToken").asText();
         String second = objectMapper.readTree(refresh(first).getResponse().getContentAsString())
                 .get("refreshToken").asText();
+        ageRotation(first);
 
         MvcResult reuse = refresh(first);
         assertThat(reuse.getResponse().getStatus()).isEqualTo(401);
@@ -183,6 +202,7 @@ class RefreshTokenIntegrationTest {
         String sessionB = login().get("refreshToken").asText();
 
         refresh(sessionA);
+        ageRotation(sessionA);
         assertThat(refresh(sessionA).getResponse().getStatus()).isEqualTo(401);
 
         assertThat(refresh(sessionB).getResponse().getStatus()).isEqualTo(200);
@@ -272,13 +292,19 @@ class RefreshTokenIntegrationTest {
         String raw = login().get("refreshToken").asText();
         ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
-            Callable<Integer> call = () -> refresh(raw).getResponse().getStatus();
-            Future<Integer> a = executor.submit(call);
-            Future<Integer> b = executor.submit(call);
+            Callable<MvcResult> call = () -> refresh(raw);
+            Future<MvcResult> a = executor.submit(call);
+            Future<MvcResult> b = executor.submit(call);
 
-            List<Integer> statuses = List.of(a.get(), b.get());
+            List<MvcResult> results = List.of(a.get(), b.get());
+            List<Integer> statuses = results.stream().map(result -> result.getResponse().getStatus()).toList();
 
             assertThat(statuses).containsExactlyInAnyOrder(200, 401);
+            MvcResult winner = results.stream().filter(result -> result.getResponse().getStatus() == 200)
+                    .findFirst().orElseThrow();
+            String winnerToken = objectMapper.readTree(winner.getResponse().getContentAsString())
+                    .get("refreshToken").asText();
+            assertThat(refresh(winnerToken).getResponse().getStatus()).isEqualTo(200);
         } finally {
             executor.shutdownNow();
         }

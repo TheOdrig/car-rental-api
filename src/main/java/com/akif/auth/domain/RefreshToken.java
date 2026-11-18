@@ -59,6 +59,10 @@ public class RefreshToken {
         return revokedAt != null;
     }
 
+    public boolean wasRotatedWithin(java.time.Duration window, LocalDateTime now) {
+        return revokedAt != null && replacedById != null && !now.isAfter(revokedAt.plus(window));
+    }
+
     public boolean isExpiredAt(LocalDateTime now) {
         return !now.isBefore(expiresAt);
     }

@@ -6,6 +6,7 @@ import com.akif.shared.exception.InvalidTokenException;
 import com.akif.shared.exception.TokenExpiredException;
 import com.akif.shared.security.JwtProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +26,15 @@ public class RefreshTokenService {
     private final RefreshTokenRepository repository;
     private final JwtProperties jwtProperties;
     private final Clock clock;
+    private final Duration reuseGracePeriod;
     private final SecureRandom secureRandom = new SecureRandom();
 
-    public RefreshTokenService(RefreshTokenRepository repository, JwtProperties jwtProperties, Clock clock) {
+    public RefreshTokenService(RefreshTokenRepository repository, JwtProperties jwtProperties, Clock clock,
+                               @Value("${jwt.refresh-reuse-grace-seconds:10}") long reuseGraceSeconds) {
         this.repository = repository;
         this.jwtProperties = jwtProperties;
         this.clock = clock;
+        this.reuseGracePeriod = Duration.ofSeconds(Math.max(0, reuseGraceSeconds));
     }
 
     public record Rotation(Long userId, String refreshToken) {
@@ -51,6 +55,11 @@ public class RefreshTokenService {
                 .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
 
         if (current.isRevoked()) {
+            if (current.wasRotatedWithin(reuseGracePeriod, now)) {
+                log.info("Refresh token for user {} was already rotated moments ago; rejecting without revoking family",
+                        current.getUserId());
+                throw new InvalidTokenException("Invalid refresh token");
+            }
             int revoked = repository.revokeFamily(current.getFamilyId(), now);
             log.warn("Refresh token reuse detected for user {}; revoked {} active token(s) in family {}",
                     current.getUserId(), revoked, current.getFamilyId());
