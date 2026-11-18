@@ -17,8 +17,8 @@ import java.sql.Statement;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@DisplayName("Car fleet status migration")
-class CarFleetStatusMigrationTest {
+@DisplayName("Car and index migrations")
+class CarMigrationsTest {
 
     private static final String INSERT_CAR = "INSERT INTO car_rental.car (create_time, update_time, is_deleted, "
             + "version, license_plate, brand, model, production_year, price, currency_type, damage_price, "
@@ -55,6 +55,18 @@ class CarFleetStatusMigrationTest {
         assertThatThrownBy(() -> flyway(url).load().migrate())
                 .isInstanceOf(FlywayException.class)
                 .hasMessageContaining("damage_price");
+    }
+
+    @Test
+    @DisplayName("the hot path indexes are created and partial on live rows")
+    void createsHotPathIndexes() throws SQLException {
+        String url = createDatabase("hot_path_indexes");
+
+        flyway(url).load().migrate();
+
+        assertThat(count(url, "SELECT COUNT(*) FROM pg_indexes WHERE schemaname = 'car_rental' AND indexname IN "
+                + "('idx_payments_create_time', 'idx_rentals_user_create_time', 'idx_rentals_blocking_dates')"))
+                .isEqualTo(3);
     }
 
     private static FluentConfiguration flyway(String url) {
