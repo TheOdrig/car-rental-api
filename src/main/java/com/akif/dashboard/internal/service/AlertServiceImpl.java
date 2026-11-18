@@ -2,11 +2,10 @@ package com.akif.dashboard.internal.service;
 
 import java.time.Clock;
 
-import com.akif.car.api.CarService;
-import com.akif.car.api.CarStatusType;
 import com.akif.damage.api.DamageService;
 import com.akif.dashboard.api.AlertService;
 import com.akif.dashboard.api.dto.AlertDto;
+import com.akif.dashboard.api.dto.FleetStatusDto;
 import com.akif.dashboard.domain.enums.AlertSeverity;
 import com.akif.dashboard.domain.enums.AlertType;
 import com.akif.dashboard.domain.model.Alert;
@@ -46,7 +45,7 @@ public class AlertServiceImpl implements AlertService {
     private final AlertRepository alertRepository;
     private final DashboardMapper dashboardMapper;
     private final RentalService rentalService;
-    private final CarService carService;
+    private final DashboardQueryService dashboardQueryService;
     private final DamageService damageService;
     private final PaymentService paymentService;
 
@@ -121,8 +120,9 @@ public class AlertServiceImpl implements AlertService {
     private void generateLowAvailabilityAlert() {
         log.debug("Checking for low availability alert (<20%)");
 
-        int totalCars = carService.countTotalActiveCars();
-        int availableCars = carService.countByStatus(CarStatusType.AVAILABLE);
+        FleetStatusDto fleet = dashboardQueryService.fetchFleetStatus();
+        int totalCars = fleet.totalCars();
+        int availableCars = fleet.availableCars();
 
         if (totalCars == 0) {
             log.warn("No active cars in the system, skipping low availability check");

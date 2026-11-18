@@ -31,6 +31,9 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     long countByCarStatusTypeAndIsDeletedFalse(CarStatusType carStatusType);
 
+    @org.springframework.data.jpa.repository.Query("SELECT c.id, c.carStatusType FROM Car c WHERE c.isDeleted = false")
+    java.util.List<Object[]> findActiveCarStatusRows();
+
     Page<Car> findByBrandIgnoreCaseAndIsDeletedFalse(String brand, Pageable pageable);
 
     Page<Car> findByBrandIgnoreCaseAndModelIgnoreCaseAndIsDeletedFalse(String brand, String model,

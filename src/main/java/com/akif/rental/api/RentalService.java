@@ -39,6 +39,10 @@ public interface RentalService extends UserRentalStatisticsProvider {
 
     int countOverdueRentals();
 
+    java.util.Set<Long> findCarIdsInUse();
+
+    java.util.Set<Long> findCarIdsReservedOn(LocalDate date);
+
     Page<RentalResponse> findPendingApprovals(Pageable pageable);
 
     Page<RentalResponse> findTodaysPickups(Pageable pageable);

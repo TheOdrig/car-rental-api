@@ -674,6 +674,16 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
+    public java.util.Set<Long> findCarIdsInUse() {
+        return new java.util.HashSet<>(rentalRepository.findCarIdsInUse());
+    }
+
+    @Override
+    public java.util.Set<Long> findCarIdsReservedOn(LocalDate date) {
+        return new java.util.HashSet<>(rentalRepository.findCarIdsReservedOn(date));
+    }
+
+    @Override
     public int countTodaysPickups() {
         return rentalRepository.countTodaysPickups(LocalDate.now(clock));
     }

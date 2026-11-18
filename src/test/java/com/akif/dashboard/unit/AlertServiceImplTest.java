@@ -1,8 +1,10 @@
 package com.akif.dashboard.unit;
 
-import com.akif.car.api.CarService;
-import com.akif.car.api.CarSummaryResponse;
 import com.akif.car.api.CarStatusType;
+import com.akif.dashboard.api.dto.FleetStatusDto;
+import com.akif.dashboard.internal.service.DashboardQueryService;
+import java.math.BigDecimal;
+import com.akif.car.api.CarSummaryResponse;
 import com.akif.damage.api.DamageService;
 import com.akif.dashboard.api.dto.AlertDto;
 import com.akif.dashboard.domain.enums.AlertSeverity;
@@ -59,7 +61,7 @@ class AlertServiceImplTest {
     private RentalService rentalService;
 
     @Mock
-    private CarService carService;
+    private DashboardQueryService dashboardQueryService;
 
     @Mock
     private DamageService damageService;
@@ -75,6 +77,10 @@ class AlertServiceImplTest {
 
     @Captor
     private ArgumentCaptor<Alert> alertCaptor;
+
+    private static FleetStatusDto fleet(int available) {
+        return new FleetStatusDto(100, available, 0, 0, 0, 0, 0, BigDecimal.ZERO, LocalDateTime.now());
+    }
 
     private Alert testAlert;
     private AlertDto testAlertDto;
@@ -121,8 +127,7 @@ class AlertServiceImplTest {
                     AlertType.LATE_RETURN, 1L)).thenReturn(false);
             when(alertRepository.save(any(Alert.class))).thenReturn(testAlert);
 
-            when(carService.countTotalActiveCars()).thenReturn(100);
-            when(carService.countByStatus(CarStatusType.AVAILABLE)).thenReturn(50);
+            when(dashboardQueryService.fetchFleetStatus()).thenReturn(fleet(50));
 
             when(damageService.countUnresolvedDisputesOlderThan(7)).thenReturn(0);
             when(paymentService.countFailedPayments()).thenReturn(0);
@@ -147,8 +152,7 @@ class AlertServiceImplTest {
             when(alertRepository.existsByTypeAndReferenceIdAndAcknowledgedFalse(
                     AlertType.LATE_RETURN, 1L)).thenReturn(true);
 
-            when(carService.countTotalActiveCars()).thenReturn(100);
-            when(carService.countByStatus(CarStatusType.AVAILABLE)).thenReturn(50);
+            when(dashboardQueryService.fetchFleetStatus()).thenReturn(fleet(50));
             when(damageService.countUnresolvedDisputesOlderThan(7)).thenReturn(0);
             when(paymentService.countFailedPayments()).thenReturn(0);
 
@@ -163,8 +167,7 @@ class AlertServiceImplTest {
             when(rentalService.findOverdueRentals(any(Pageable.class)))
                     .thenReturn(new PageImpl<>(Collections.emptyList()));
 
-            when(carService.countTotalActiveCars()).thenReturn(100);
-            when(carService.countByStatus(CarStatusType.AVAILABLE)).thenReturn(15);
+            when(dashboardQueryService.fetchFleetStatus()).thenReturn(fleet(15));
             when(alertRepository.existsByTypeAndReferenceIdAndAcknowledgedFalse(
                     AlertType.LOW_AVAILABILITY, 0L)).thenReturn(false);
             when(alertRepository.save(any(Alert.class))).thenReturn(testAlert);
@@ -187,8 +190,7 @@ class AlertServiceImplTest {
             when(rentalService.findOverdueRentals(any(Pageable.class)))
                     .thenReturn(new PageImpl<>(Collections.emptyList()));
 
-            when(carService.countTotalActiveCars()).thenReturn(100);
-            when(carService.countByStatus(CarStatusType.AVAILABLE)).thenReturn(25);
+            when(dashboardQueryService.fetchFleetStatus()).thenReturn(fleet(25));
 
             when(damageService.countUnresolvedDisputesOlderThan(7)).thenReturn(0);
             when(paymentService.countFailedPayments()).thenReturn(0);
@@ -204,8 +206,7 @@ class AlertServiceImplTest {
             when(rentalService.findOverdueRentals(any(Pageable.class)))
                     .thenReturn(new PageImpl<>(Collections.emptyList()));
 
-            when(carService.countTotalActiveCars()).thenReturn(100);
-            when(carService.countByStatus(CarStatusType.AVAILABLE)).thenReturn(50);
+            when(dashboardQueryService.fetchFleetStatus()).thenReturn(fleet(50));
 
             when(damageService.countUnresolvedDisputesOlderThan(7)).thenReturn(3);
             when(alertRepository.existsByTypeAndReferenceIdAndAcknowledgedFalse(

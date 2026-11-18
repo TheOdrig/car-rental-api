@@ -212,6 +212,14 @@ public class CarQueryService {
         return (int) carRepository.countByIsDeletedFalse();
     }
 
+    public java.util.Map<Long, CarStatusType> findActiveCarStatuses() {
+        java.util.Map<Long, CarStatusType> statuses = new java.util.HashMap<>();
+        for (Object[] row : carRepository.findActiveCarStatusRows()) {
+            statuses.put((Long) row[0], (CarStatusType) row[1]);
+        }
+        return statuses;
+    }
+
     private String lowerCaseOrNull(String value) {
         return value != null ? value.trim().toLowerCase() : null;
     }

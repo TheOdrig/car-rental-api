@@ -151,6 +151,11 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
+    public java.util.Map<Long, CarStatusType> findActiveCarStatuses() {
+        return queryService.findActiveCarStatuses();
+    }
+
+    @Override
     public CarResponse reserveCar(Long id) {
         return statusService.reserveCar(id);
     }

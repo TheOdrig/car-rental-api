@@ -84,6 +84,8 @@ public interface CarService {
 
     int countTotalActiveCars();
 
+    java.util.Map<Long, CarStatusType> findActiveCarStatuses();
+
     FilterOptionsResponse getFilterOptions();
 }
 

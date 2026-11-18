@@ -158,6 +158,17 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
         int countByStatusAndIsDeletedFalse(RentalStatus status);
 
+        @Query("SELECT DISTINCT r.carId FROM Rental r " +
+                        "WHERE r.status = com.akif.rental.api.RentalStatus.IN_USE " +
+                        "AND r.isDeleted = false")
+        List<Long> findCarIdsInUse();
+
+        @Query("SELECT DISTINCT r.carId FROM Rental r " +
+                        "WHERE r.status = com.akif.rental.api.RentalStatus.CONFIRMED " +
+                        "AND r.startDate <= :date AND r.endDate >= :date " +
+                        "AND r.isDeleted = false")
+        List<Long> findCarIdsReservedOn(@Param("date") LocalDate date);
+
         @Query("""
                         SELECT COUNT(r) FROM Rental r
                         WHERE r.status = com.akif.rental.api.RentalStatus.CONFIRMED

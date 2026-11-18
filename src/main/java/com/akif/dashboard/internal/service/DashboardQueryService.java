@@ -29,6 +29,8 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -64,14 +66,35 @@ public class DashboardQueryService {
     public FleetStatusDto fetchFleetStatus() {
         log.debug("Fetching fleet status data");
 
-        int totalCars = carService.countTotalActiveCars();
-        int rentedCars = rentalService.countByStatus(RentalStatus.IN_USE);
-        int reservedCars = rentalService.countByStatus(RentalStatus.CONFIRMED);
-        int availableCars = Math.max(0, carService.countByStatus(CarStatusType.AVAILABLE) - rentedCars);
-        int maintenanceCars = carService.countByStatus(CarStatusType.MAINTENANCE);
-        int inspectionCars = carService.countByStatus(CarStatusType.INSPECTION);
-        int damagedCars = carService.countByStatus(CarStatusType.DAMAGED);
+        Map<Long, CarStatusType> fleet = carService.findActiveCarStatuses();
+        Set<Long> inUse = rentalService.findCarIdsInUse();
+        Set<Long> reserved = rentalService.findCarIdsReservedOn(LocalDate.now(clock));
 
+        int rentedCars = 0;
+        int reservedCars = 0;
+        int availableCars = 0;
+        int maintenanceCars = 0;
+        int inspectionCars = 0;
+        int damagedCars = 0;
+
+        for (Map.Entry<Long, CarStatusType> car : fleet.entrySet()) {
+            CarStatusType status = car.getValue();
+            if (status == CarStatusType.MAINTENANCE) {
+                maintenanceCars++;
+            } else if (status == CarStatusType.INSPECTION) {
+                inspectionCars++;
+            } else if (status == CarStatusType.DAMAGED) {
+                damagedCars++;
+            } else if (status == CarStatusType.RENTED || inUse.contains(car.getKey())) {
+                rentedCars++;
+            } else if (status == CarStatusType.RESERVED || reserved.contains(car.getKey())) {
+                reservedCars++;
+            } else {
+                availableCars++;
+            }
+        }
+
+        int totalCars = fleet.size();
         BigDecimal occupancyRate = calculateOccupancyRate(rentedCars + reservedCars, totalCars);
 
         return new FleetStatusDto(
