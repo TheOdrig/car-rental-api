@@ -149,7 +149,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findWithRolesById(rotation.userId())
                 .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
 
-        if (!user.getEnabled() || user.isDeleted()) {
+        if (!user.isUsable()) {
             refreshTokenService.revokeAllForUser(user.getId());
             throw new InvalidTokenException("Invalid refresh token");
         }

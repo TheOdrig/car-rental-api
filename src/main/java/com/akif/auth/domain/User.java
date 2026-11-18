@@ -64,10 +64,6 @@ public class User extends BaseEntity {
     @Column(name = "enabled", nullable = false)
     private Boolean enabled = true;
 
-    @Column(name = "is_deleted", nullable = false)
-    @Builder.Default
-    private Boolean isDeleted = false;
-
     @Column(name = "is_banned", nullable = false)
     @Builder.Default
     private Boolean isBanned = false;
@@ -83,6 +79,10 @@ public class User extends BaseEntity {
 
     @Column(name = "unbanned_at")
     private LocalDateTime unbannedAt;
+
+    public boolean isUsable() {
+        return Boolean.TRUE.equals(enabled) && !Boolean.TRUE.equals(isBanned) && !isDeleted();
+    }
 
     public void ban(String reason, Long adminId, LocalDateTime bannedAtTime) {
         this.isBanned = true;

@@ -81,4 +81,25 @@ class UserBehaviourTest {
 
         assertThat(user.getPassword()).isEqualTo("hash-2");
     }
+
+    @Test
+    @DisplayName("an enabled, unbanned, undeleted user is usable")
+    void activeUserIsUsable() {
+        assertThat(activeUser().isUsable()).isTrue();
+    }
+
+    @Test
+    @DisplayName("a banned, disabled or soft-deleted user is not usable")
+    void blockedUsersAreNotUsable() {
+        User banned = activeUser();
+        banned.ban("fraud", 7L, now);
+        User disabled = User.builder().username("d").email("d@example.com").enabled(false).build();
+        User deleted = activeUser();
+        deleted.softDelete();
+
+        assertThat(banned.isUsable()).isFalse();
+        assertThat(disabled.isUsable()).isFalse();
+        assertThat(deleted.isUsable()).isFalse();
+        assertThat(deleted.isDeleted()).isTrue();
+    }
 }

@@ -152,7 +152,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
                 .findByProviderAndProviderId(oAuth2Provider, userInfo.providerId());
 
         if (existingLinkedAccount.isPresent()) {
-            User user = existingLinkedAccount.get().getUser();
+            User user = requireUsable(existingLinkedAccount.get().getUser(), userInfo.provider());
             log.debug("Found existing user via linked account: {}", user.getUsername());
             return user;
         }
@@ -161,7 +161,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
 
         if (existingUser.isPresent()) {
 
-            User user = existingUser.get();
+            User user = requireUsable(existingUser.get(), userInfo.provider());
             linkSocialAccountToUser(user, userInfo, oAuth2Provider);
             log.info("Linked {} account to existing user: {}", userInfo.provider(), user.getUsername());
             return user;
@@ -170,6 +170,14 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
         User newUser = createNewUserFromOAuth2(userInfo, oAuth2Provider);
         log.info("Created new user from {} login: {}", userInfo.provider(), newUser.getUsername());
         return newUser;
+    }
+
+    private User requireUsable(User user, String provider) {
+        if (!user.isUsable()) {
+            log.warn("Rejected OAuth2 sign-in for unusable account {}", user.getId());
+            throw new OAuth2AuthenticationException(OAuth2ErrorType.AUTHENTICATION_FAILED, provider);
+        }
+        return user;
     }
 
     private void linkSocialAccountToUser(User user, OAuth2UserInfo userInfo, OAuth2Provider provider) {
@@ -286,6 +294,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new OAuth2AuthenticationException(OAuth2ErrorType.AUTHENTICATION_FAILED, provider));
+        requireUsable(user, provider);
 
         LinkedAccount linkedAccount = LinkedAccount.builder()
                 .user(user)
