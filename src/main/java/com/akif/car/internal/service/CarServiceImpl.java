@@ -2,6 +2,7 @@ package com.akif.car.internal.service;
 
 import com.akif.car.api.CarDto;
 import com.akif.car.api.CarResponse;
+import com.akif.shared.web.PageResponse;
 import com.akif.car.api.CarService;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.api.FilterOptionsResponse;
@@ -9,7 +10,6 @@ import com.akif.car.internal.dto.pricing.CarPriceUpdateRequest;
 import com.akif.car.internal.dto.request.CarRequest;
 import com.akif.car.internal.dto.request.CarSearchRequest;
 import com.akif.car.internal.dto.request.CarStatusUpdateRequest;
-import com.akif.car.internal.dto.response.CarListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -84,7 +84,7 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
-    public CarListResponse searchCars(CarSearchRequest searchRequest) {
+    public PageResponse<CarResponse> searchCars(CarSearchRequest searchRequest) {
         return queryService.searchCars(searchRequest);
     }
 

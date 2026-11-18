@@ -4,7 +4,6 @@ import com.akif.car.api.CarResponse;
 import com.akif.car.api.FilterOptionsResponse;
 import com.akif.car.internal.dto.request.CarRequest;
 import com.akif.car.internal.dto.request.CarSearchRequest;
-import com.akif.car.internal.dto.response.CarListResponse;
 import com.akif.currency.api.ConversionResult;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.car.api.CarService;
@@ -77,15 +76,14 @@ public class CarController {
     @GetMapping("/search")
     @Operation(summary = "Search cars", description = "Search cars with various filters and pagination")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Cars found successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarListResponse.class))),
+            @ApiResponse(responseCode = "200", description = "Cars found successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid search parameters")
     })
-    public ResponseEntity<CarListResponse> searchCars(
-            @Parameter(description = "Search filters") @Valid @ModelAttribute CarSearchRequest searchRequest) {
+    public ResponseEntity<PageResponse<CarResponse>> searchCars(
+            @Valid @ParameterObject CarSearchRequest searchRequest) {
         log.debug("GET /api/v1/cars/search - Searching cars with criteria: {}", searchRequest);
-        CarListResponse response = carService.searchCars(searchRequest);
-        log.info("Successfully found {} cars", response.numberOfElements());
+        PageResponse<CarResponse> response = carService.searchCars(searchRequest);
+        log.info("Successfully found {} cars", response.totalElements());
         return ResponseEntity.ok(response);
     }
 

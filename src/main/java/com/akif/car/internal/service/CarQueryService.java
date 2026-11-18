@@ -5,7 +5,7 @@ import com.akif.car.api.CarResponse;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.domain.Car;
 import com.akif.car.internal.dto.request.CarSearchRequest;
-import com.akif.car.internal.dto.response.CarListResponse;
+import com.akif.shared.web.PageResponse;
 import com.akif.car.internal.mapper.CarMapper;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.shared.config.CacheConfig;
@@ -15,6 +15,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -64,11 +66,42 @@ public class CarQueryService {
         return result;
     }
 
+    private static final Map<String, String> SEARCH_SORT_COLUMNS = Map.of(
+            "id", "id",
+            "licensePlate", "license_plate",
+            "brand", "brand",
+            "model", "model",
+            "productionYear", "production_year",
+            "price", "price",
+            "createTime", "create_time",
+            "rating", "rating");
+
+    private static Sort searchSort(CarSearchRequest request) {
+        String requested = request.getSortBy();
+        if (requested == null) {
+            return Sort.by(new Sort.Order(Sort.Direction.DESC, "create_time").nullsLast(),
+                    new Sort.Order(Sort.Direction.DESC, "id"));
+        }
+        String column = SEARCH_SORT_COLUMNS.get(requested);
+        if (column == null) {
+            throw new IllegalArgumentException("Invalid sort field: " + requested);
+        }
+        Sort.Direction direction = "desc".equalsIgnoreCase(request.getSortDirection())
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort.Order primary = new Sort.Order(direction, column).nullsLast();
+        if ("id".equals(column)) {
+            return Sort.by(primary);
+        }
+        return Sort.by(primary, new Sort.Order(direction, "id"));
+    }
+
     @Cacheable(value = CacheConfig.CARS_CACHE, key = "'search:' + #searchRequest.toString()")
-    public CarListResponse searchCars(CarSearchRequest searchRequest) {
+    public PageResponse<CarResponse> searchCars(CarSearchRequest searchRequest) {
         log.debug("Searching cars with criteria: {}", searchRequest);
 
-        Pageable pageable = PageRequest.of(searchRequest.getPage(), searchRequest.getSize());
+        int pageNumber = searchRequest.getPage() != null ? searchRequest.getPage() : 0;
+        int pageSize = searchRequest.getSize() != null ? searchRequest.getSize() : 20;
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, searchSort(searchRequest));
 
         String searchTerm = searchRequest.getSearchTerm() != null
                 ? "%" + searchRequest.getSearchTerm().trim().toLowerCase() + "%"
@@ -98,24 +131,10 @@ public class CarQueryService {
                 carStatusType,
                 pageable);
 
-        List<CarResponse> carDtos = cars.getContent().stream()
-                .map(carMapper::toDto)
-                .collect(Collectors.toList());
-
-        CarListResponse result = new CarListResponse(
-                carDtos,
-                cars.getTotalElements(),
-                cars.getTotalPages(),
-                cars.getNumber(),
-                cars.getSize(),
-                cars.isFirst(),
-                cars.isLast(),
-                cars.hasNext(),
-                cars.hasPrevious(),
-                cars.getNumberOfElements());
+        PageResponse<CarResponse> result = PageResponse.of(cars.map(carMapper::toDto));
 
         log.info("Successfully found {} cars matching search criteria. Page {}/{}",
-                result.numberOfElements(), result.currentPage() + 1, result.totalPages());
+                result.totalElements(), result.page() + 1, result.totalPages());
         return result;
     }
 

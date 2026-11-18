@@ -1,11 +1,11 @@
 package com.akif.car.api;
 
-import com.akif.car.internal.dto.response.CarListResponse;
 import com.akif.car.internal.dto.request.CarRequest;
 import com.akif.car.internal.dto.pricing.CarPriceUpdateRequest;
 import com.akif.car.internal.dto.request.CarSearchRequest;
 import com.akif.car.internal.dto.request.CarStatusUpdateRequest;
 import com.akif.car.api.CarStatusType;
+import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -33,7 +33,7 @@ public interface CarService {
 
     CarResponse restoreCar(Long id);
 
-    CarListResponse searchCars(CarSearchRequest searchRequest);
+    PageResponse<CarResponse> searchCars(CarSearchRequest searchRequest);
     Page<CarResponse> getAllCars(Pageable pageable);
 
     Page<CarResponse> getCarsByStatus(String status, Pageable pageable);

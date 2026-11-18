@@ -468,49 +468,6 @@
         },
         "type" : "object"
       },
-      "CarListResponse" : {
-        "properties" : {
-          "cars" : {
-            "items" : {
-              "$ref" : "#/components/schemas/CarResponse"
-            },
-            "type" : "array"
-          },
-          "currentPage" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "hasNext" : {
-            "type" : "boolean"
-          },
-          "hasPrevious" : {
-            "type" : "boolean"
-          },
-          "isFirst" : {
-            "type" : "boolean"
-          },
-          "isLast" : {
-            "type" : "boolean"
-          },
-          "numberOfElements" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "pageSize" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "totalElements" : {
-            "format" : "int64",
-            "type" : "integer"
-          },
-          "totalPages" : {
-            "format" : "int32",
-            "type" : "integer"
-          }
-        },
-        "type" : "object"
-      },
       "CarPriceUpdateRequest" : {
         "description" : "Price update data",
         "properties" : {
@@ -7696,12 +7653,259 @@
         "description" : "Search cars with various filters and pagination",
         "operationId" : "searchCars",
         "parameters" : [ {
-          "description" : "Search filters",
           "in" : "query",
-          "name" : "searchRequest",
-          "required" : true,
+          "name" : "searchTerm",
+          "required" : false,
           "schema" : {
-            "$ref" : "#/components/schemas/CarSearchRequest"
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "brand",
+          "required" : false,
+          "schema" : {
+            "maxLength" : 50,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "model",
+          "required" : false,
+          "schema" : {
+            "maxLength" : 50,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "minProductionYear",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "minimum" : 1900,
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "maxProductionYear",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "maximum" : 2030,
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "minPrice",
+          "required" : false,
+          "schema" : {
+            "minimum" : 0.0,
+            "type" : "number"
+          }
+        }, {
+          "in" : "query",
+          "name" : "maxPrice",
+          "required" : false,
+          "schema" : {
+            "maximum" : 9.9999999999E8,
+            "type" : "number"
+          }
+        }, {
+          "in" : "query",
+          "name" : "currencyType",
+          "required" : false,
+          "schema" : {
+            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "carStatusType",
+          "required" : false,
+          "schema" : {
+            "enum" : [ "Available", "Rented", "Maintenance", "Reserved", "Damaged", "Inspection" ],
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "engineType",
+          "required" : false,
+          "schema" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fuelType",
+          "required" : false,
+          "schema" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "transmissionType",
+          "required" : false,
+          "schema" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "bodyType",
+          "required" : false,
+          "schema" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "color",
+          "required" : false,
+          "schema" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "minKilometer",
+          "required" : false,
+          "schema" : {
+            "format" : "int64",
+            "minimum" : 0,
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "maxKilometer",
+          "required" : false,
+          "schema" : {
+            "format" : "int64",
+            "maximum" : 999999,
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "minDoors",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "minimum" : 2,
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "maxDoors",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "maximum" : 6,
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "minSeats",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "minimum" : 1,
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "maxSeats",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "maximum" : 9,
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "minRating",
+          "required" : false,
+          "schema" : {
+            "minimum" : 1.0,
+            "type" : "number"
+          }
+        }, {
+          "in" : "query",
+          "name" : "maxRating",
+          "required" : false,
+          "schema" : {
+            "maximum" : 5.0,
+            "type" : "number"
+          }
+        }, {
+          "in" : "query",
+          "name" : "isNew",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasDamage",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "in" : "query",
+          "name" : "needsService",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasExpiredDocuments",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "in" : "query",
+          "name" : "sortBy",
+          "required" : false,
+          "schema" : {
+            "pattern" : "^(id|licensePlate|brand|model|productionYear|price|createTime|rating)$",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "sortDirection",
+          "required" : false,
+          "schema" : {
+            "pattern" : "^(asc|desc)$",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "minimum" : 0,
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "maximum" : 100,
+            "minimum" : 1,
+            "type" : "integer"
           }
         } ],
         "responses" : {
@@ -7709,7 +7913,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/CarListResponse"
+                  "$ref" : "#/components/schemas/PageResponseCarResponse"
                 }
               }
             },
@@ -7758,7 +7962,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/CarListResponse"
+                  "$ref" : "#/components/schemas/PageResponseCarResponse"
                 }
               }
             },

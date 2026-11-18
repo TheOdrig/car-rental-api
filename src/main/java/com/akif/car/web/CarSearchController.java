@@ -2,7 +2,6 @@ package com.akif.car.web;
 
 import com.akif.car.api.CarResponse;
 import com.akif.car.internal.dto.request.CarSearchRequest;
-import com.akif.car.internal.dto.response.CarListResponse;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.api.CarService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,14 +36,13 @@ public class CarSearchController {
     @PostMapping
     @Operation(summary = "Search cars", description = "Search cars with various criteria")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Search completed successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarListResponse.class))),
+            @ApiResponse(responseCode = "200", description = "Search completed successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid search criteria")
     })
-    public ResponseEntity<CarListResponse> searchCars(
+    public ResponseEntity<PageResponse<CarResponse>> searchCars(
             @Parameter(description = "Search criteria", required = true) @Valid @RequestBody CarSearchRequest searchRequest) {
         log.debug("POST /api/v1/cars/search - Searching cars with criteria: {}", searchRequest);
-        CarListResponse result = carService.searchCars(searchRequest);
+        PageResponse<CarResponse> result = carService.searchCars(searchRequest);
         log.info("Search completed: found {} cars", result.totalElements());
         return ResponseEntity.ok(result);
     }

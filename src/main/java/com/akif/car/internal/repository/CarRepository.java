@@ -77,8 +77,7 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             +
             "(CAST(:carStatusType AS VARCHAR) IS NULL OR c.car_status_type = CAST(:carStatusType AS VARCHAR)) AND "
             +
-            "c.is_deleted = false " +
-            "ORDER BY c.create_time DESC", countQuery = "SELECT COUNT(*) FROM car_rental.car c WHERE " +
+            "c.is_deleted = false", countQuery = "SELECT COUNT(*) FROM car_rental.car c WHERE " +
             "(CAST(:searchTerm AS VARCHAR) IS NULL OR " +
             "LOWER(c.license_plate) LIKE CAST(:searchTerm AS VARCHAR) OR " +
             "LOWER(c.brand) LIKE CAST(:searchTerm AS VARCHAR) OR " +
