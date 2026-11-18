@@ -6,6 +6,7 @@ import com.akif.payment.api.PaymentCapturedEvent;
 import com.akif.rental.api.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -18,6 +19,9 @@ import java.time.format.DateTimeFormatter;
 public class EmailTemplateService implements IEmailTemplateService {
 
     private final SpringTemplateEngine templateEngine;
+
+    @Value("${app.password-reset.base-url:http://localhost:3000}")
+    private String baseUrl;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
@@ -268,6 +272,7 @@ public class EmailTemplateService implements IEmailTemplateService {
         context.setVariable("payBy", event.payBy().format(DATE_FORMATTER));
         context.setVariable("amount", event.amount());
         context.setVariable("currency", event.currency().name());
+        context.setVariable("payUrl", baseUrl + "/rentals/" + event.rentalId() + "/pay");
 
         return templateEngine.process("email/payment/payment-retry", context);
     }

@@ -31,6 +31,7 @@
                                 to keep your reservation. Amount:
                                 <strong><span th:text="${amount}">0.00</span> <span th:text="${currency}">USD</span></strong>.
                             </p>
+                            <div th:replace="~{email/shared/button :: primaryButton('Pay now', ${payUrl})}"></div>
                             <p style="margin: 0; font-size: 14px; color: #6b7280;">
                                 Reservations without a completed payment are cancelled automatically on the pickup date.
                             </p>
