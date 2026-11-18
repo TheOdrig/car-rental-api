@@ -7,12 +7,13 @@ import com.akif.shared.enums.CurrencyType;
 import com.akif.starter.CarGalleryProjectApplication;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import com.akif.testsupport.TestcontainersConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -22,6 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(classes = CarGalleryProjectApplication.class)
+@Import(TestcontainersConfiguration.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @DisplayName("CarSearchController Integration Tests")
@@ -121,7 +123,6 @@ class CarSearchControllerIntegrationTest {
     }
 
     @Test
-    @Disabled("Native query uses PostgreSQL-specific 'gallery' schema which is not available in H2 test database")
     @DisplayName("Should search cars by multiple criteria")
     void shouldSearchByMultipleCriteria() throws Exception {
         mockMvc.perform(get("/api/cars/search/criteria")
