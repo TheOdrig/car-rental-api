@@ -21,6 +21,7 @@ import com.akif.payment.api.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -144,8 +145,10 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
             log.info("Refund processed successfully: damageId={}, refundAmount={}, transactionId={}", 
                     damageReport.getId(), refundAmount, refundResult.transactionId());
         } else {
-            log.error("Refund failed for damage report: {}. Reason: {}", 
+            log.error("Refund failed for damage report: {}. Reason: {}",
                     damageReport.getId(), refundResult.message());
+            throw new DamageDisputeException(
+                    "Dispute refund failed: " + refundResult.message(), HttpStatus.BAD_GATEWAY);
         }
     }
 

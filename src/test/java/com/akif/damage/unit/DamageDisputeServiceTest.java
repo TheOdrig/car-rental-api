@@ -312,6 +312,25 @@ class DamageDisputeServiceTest {
         }
 
         @Test
+        @DisplayName("Should fail the resolution and publish nothing when the refund fails")
+        void shouldFailResolutionWhenRefundFails() {
+            when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
+            when(authService.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(paymentService.refund(anyString(), any(BigDecimal.class), anyString()))
+                    .thenReturn(PaymentResult.failure("card network down"));
+
+            assertThatThrownBy(() -> damageDisputeService.resolveDispute(1L, testResolutionDto, "admin"))
+                    .isInstanceOfSatisfying(DamageDisputeException.class, ex -> {
+                        assertThat(ex.getHttpStatus()).isEqualTo(org.springframework.http.HttpStatus.BAD_GATEWAY);
+                        assertThat(ex.getMessage()).contains("card network down");
+                    });
+
+            verify(damageReportRepository, never()).save(any(DamageReport.class));
+            verify(eventPublisher, never()).publishEvent(any(Object.class));
+            assertThat(testDamageReport.getStatus()).isEqualTo(DamageStatus.DISPUTED);
+        }
+
+        @Test
         @DisplayName("Should not refund when adjusted liability equals original")
         void shouldNotRefundWhenAdjustedLiabilityEqualsOriginal() {
             DamageDisputeResolutionDto noRefundResolution = new DamageDisputeResolutionDto(
