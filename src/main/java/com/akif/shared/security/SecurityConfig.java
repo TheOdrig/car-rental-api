@@ -21,6 +21,8 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 
+import org.springframework.web.cors.CorsConfigurationSource;
+
 import java.util.List;
 
 @Configuration
@@ -37,8 +39,10 @@ public class SecurityConfig {
     private final JsonAccessDeniedHandler accessDeniedHandler;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource)
+            throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
