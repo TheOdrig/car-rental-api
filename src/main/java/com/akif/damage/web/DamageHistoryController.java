@@ -16,7 +16,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -44,14 +46,14 @@ public class DamageHistoryController {
             @ApiResponse(responseCode = "200", description = "History retrieved"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Page<DamageReportDto>> getVehicleDamageHistory(
+    public ResponseEntity<PageResponse<DamageReportDto>> getVehicleDamageHistory(
             @Parameter(description = "Car ID", required = true)
             @PathVariable Long carId,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
 
         log.info("GET /api/v1/admin/damages/vehicle/{}", carId);
         Page<DamageReportDto> damages = damageHistoryService.getDamagesByVehicle(carId, pageable);
-        return ResponseEntity.ok(damages);
+        return ResponseEntity.ok(PageResponse.of(damages));
     }
 
     @GetMapping("/api/v1/admin/damages/customer/{userId}")
@@ -61,14 +63,14 @@ public class DamageHistoryController {
             @ApiResponse(responseCode = "200", description = "History retrieved"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Page<DamageReportDto>> getCustomerDamageHistory(
+    public ResponseEntity<PageResponse<DamageReportDto>> getCustomerDamageHistory(
             @Parameter(description = "User ID", required = true)
             @PathVariable Long userId,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
 
         log.info("GET /api/v1/admin/damages/customer/{}", userId);
         Page<DamageReportDto> damages = damageHistoryService.getDamagesByCustomer(userId, pageable);
-        return ResponseEntity.ok(damages);
+        return ResponseEntity.ok(PageResponse.of(damages));
     }
 
     @GetMapping("/api/v1/damages/me")
@@ -77,8 +79,8 @@ public class DamageHistoryController {
             @ApiResponse(responseCode = "200", description = "History retrieved"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    public ResponseEntity<Page<DamageReportDto>> getMyDamageHistory(
-            @PageableDefault(size = 20) Pageable pageable,
+    public ResponseEntity<PageResponse<DamageReportDto>> getMyDamageHistory(
+            @PageableDefault(size = 20) @ParameterObject Pageable pageable,
             Authentication authentication) {
 
         String username = authentication.getName();
@@ -87,7 +89,7 @@ public class DamageHistoryController {
         UserDto user = authService.getUserByUsername(username);
         
         Page<DamageReportDto> damages = damageHistoryService.getDamagesByCustomer(user.id(), pageable);
-        return ResponseEntity.ok(damages);
+        return ResponseEntity.ok(PageResponse.of(damages));
     }
 
     @GetMapping("/api/v1/admin/damages/search")
@@ -97,7 +99,7 @@ public class DamageHistoryController {
             @ApiResponse(responseCode = "200", description = "Search results"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Page<DamageReportDto>> searchDamages(
+    public ResponseEntity<PageResponse<DamageReportDto>> searchDamages(
             @Parameter(description = "Start date")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @Parameter(description = "End date")
@@ -110,14 +112,14 @@ public class DamageHistoryController {
             @RequestParam(required = false) DamageStatus status,
             @Parameter(description = "Car ID filter")
             @RequestParam(required = false) Long carId,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
 
         log.info("GET /api/v1/admin/damages/search");
         DamageSearchFilterDto filter = new DamageSearchFilterDto(
                 startDate, endDate, severity, category, status, carId
         );
         Page<DamageReportDto> damages = damageHistoryService.searchDamages(filter, pageable);
-        return ResponseEntity.ok(damages);
+        return ResponseEntity.ok(PageResponse.of(damages));
     }
 
     @GetMapping("/api/v1/admin/damages/statistics")

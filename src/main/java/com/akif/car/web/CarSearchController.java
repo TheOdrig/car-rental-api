@@ -15,7 +15,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -50,76 +52,71 @@ public class CarSearchController {
     @GetMapping(value = "/status/{status}")
     @Operation(summary = "Get cars by status", description = "Retrieve cars by their status")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Cars retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "200", description = "Cars retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid status or pagination parameters")
     })
-    public ResponseEntity<Page<CarResponse>> getCarsByStatus(
+    public ResponseEntity<PageResponse<CarResponse>> getCarsByStatus(
             @Parameter(description = "Car status", required = true) @PathVariable String status,
-            @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable) {
+            @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
         Page<CarResponse> cars = carService.getCarsByStatus(status, pageable);
-        return ResponseEntity.ok(cars);
+        return ResponseEntity.ok(PageResponse.of(cars));
     }
 
     @GetMapping(value = "/brand/{brand}")
     @Operation(summary = "Get cars by brand", description = "Retrieve cars by their brand")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Cars retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "200", description = "Cars retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid brand or pagination parameters")
     })
-    public ResponseEntity<Page<CarResponse>> getCarsByBrand(
+    public ResponseEntity<PageResponse<CarResponse>> getCarsByBrand(
             @Parameter(description = "Car brand", required = true) @PathVariable String brand,
-            @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable) {
+            @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
         Page<CarResponse> cars = carService.getCarsByBrand(brand, pageable);
-        return ResponseEntity.ok(cars);
+        return ResponseEntity.ok(PageResponse.of(cars));
     }
 
     @GetMapping(value = "/price-range")
     @Operation(summary = "Get cars by price range", description = "Retrieve cars within a price range")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Cars retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "200", description = "Cars retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid price range or pagination parameters")
     })
-    public ResponseEntity<Page<CarResponse>> getCarsByPriceRange(
+    public ResponseEntity<PageResponse<CarResponse>> getCarsByPriceRange(
             @Parameter(description = "Minimum price", required = true) @RequestParam BigDecimal minPrice,
             @Parameter(description = "Maximum price", required = true) @RequestParam BigDecimal maxPrice,
-            @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable) {
+            @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
         Page<CarResponse> cars = carService.getCarsByPriceRange(minPrice, maxPrice, pageable);
-        return ResponseEntity.ok(cars);
+        return ResponseEntity.ok(PageResponse.of(cars));
     }
 
     @GetMapping(value = "/new")
     @Operation(summary = "Get new cars", description = "Retrieve new cars (less than 1 year old)")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "New cars retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "200", description = "New cars retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters")
     })
-    public ResponseEntity<Page<CarResponse>> getNewCars(
-            @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable) {
+    public ResponseEntity<PageResponse<CarResponse>> getNewCars(
+            @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
         Page<CarResponse> cars = carService.getNewCars(pageable);
-        return ResponseEntity.ok(cars);
+        return ResponseEntity.ok(PageResponse.of(cars));
     }
 
     @GetMapping(value = "/criteria")
     @Operation(summary = "Search cars by criteria", description = "Search cars with multiple criteria")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Search completed successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "200", description = "Search completed successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid search criteria")
     })
-    public ResponseEntity<Page<CarResponse>> searchCarsByCriteria(
+    public ResponseEntity<PageResponse<CarResponse>> searchCarsByCriteria(
             @Parameter(description = "Search term") @RequestParam(required = false) String searchTerm,
             @Parameter(description = "Brand") @RequestParam(required = false) String brand,
             @Parameter(description = "Model") @RequestParam(required = false) String model,
             @Parameter(description = "Minimum price") @RequestParam(required = false) BigDecimal minPrice,
             @Parameter(description = "Maximum price") @RequestParam(required = false) BigDecimal maxPrice,
             @Parameter(description = "Status") @RequestParam(required = false) CarStatusType status,
-            @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable) {
+            @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
         Page<CarResponse> cars = carService.searchCarsByCriteria(searchTerm, brand, model, minPrice, maxPrice, status, pageable);
-        return ResponseEntity.ok(cars);
+        return ResponseEntity.ok(PageResponse.of(cars));
     }
 
 }

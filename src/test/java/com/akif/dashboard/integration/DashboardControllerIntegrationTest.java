@@ -356,7 +356,7 @@ class DashboardControllerIntegrationTest {
                             .param("size", "10"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray())
-                    .andExpect(jsonPath("$.pageable").exists())
+                    .andExpect(jsonPath("$.page").exists())
                     .andExpect(jsonPath("$.totalElements").exists());
         }
 

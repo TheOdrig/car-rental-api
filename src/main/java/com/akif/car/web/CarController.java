@@ -19,7 +19,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -190,12 +192,11 @@ public class CarController {
     @GetMapping
     @Operation(summary = "Get all cars", description = "Retrieve all cars with pagination and optional currency conversion")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Cars retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "200", description = "Cars retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters or currency")
     })
-    public ResponseEntity<Page<CarResponse>> getAllCars(
-            @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable,
+    public ResponseEntity<PageResponse<CarResponse>> getAllCars(
+            @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
         log.debug("GET /api/v1/cars - Getting all cars with page: {}, size: {}, currency: {}", pageable.getPageNumber(), pageable.getPageSize(), currency);
         Page<CarResponse> cars = carService.getAllCars(pageable);
@@ -203,7 +204,7 @@ public class CarController {
             cars.forEach(car -> applyPriceConversion(car, currency));
         }
         log.info("Successfully retrieved {} cars", cars.getTotalElements());
-        return ResponseEntity.ok(cars);
+        return ResponseEntity.ok(PageResponse.of(cars));
     }
 
     @GetMapping(value = "/active")
@@ -212,13 +213,12 @@ public class CarController {
                        "Supported sort fields: price, brand, model, productionYear, rating, createTime. " +
                        "Example: ?sort=price,asc or ?sort=createTime,desc")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Active cars retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "200", description = "Active cars retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters, sort field, or currency")
     })
-    public ResponseEntity<Page<CarResponse>> getAllActiveCars(
+    public ResponseEntity<PageResponse<CarResponse>> getAllActiveCars(
             @Parameter(description = "Pagination and sorting. Use ?sort=field,direction (e.g., ?sort=price,asc)") 
-            @PageableDefault(size = 20, sort = "createTime", direction = Sort.Direction.DESC) Pageable pageable,
+            @PageableDefault(size = 20, sort = "createTime", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
         log.debug("GET /api/v1/cars/active - Getting active cars with page: {}, size: {}, sort: {}", 
                  pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
@@ -227,7 +227,7 @@ public class CarController {
             cars.forEach(car -> applyPriceConversion(car, currency));
         }
         log.info("Successfully retrieved {} active cars", cars.getTotalElements());
-        return ResponseEntity.ok(cars);
+        return ResponseEntity.ok(PageResponse.of(cars));
     }
 
     private void applyPriceConversion(CarResponse car, CurrencyType targetCurrency) {

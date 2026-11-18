@@ -11,7 +11,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -44,17 +46,17 @@ public class AdminRentalHistoryController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
             @ApiResponse(responseCode = "404", description = "Car not found")
     })
-    public ResponseEntity<Page<RentalResponse>> getCarRentals(
+    public ResponseEntity<PageResponse<RentalResponse>> getCarRentals(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id,
             @Parameter(description = "Filter by rental status") @RequestParam(required = false) RentalStatus status,
-            @PageableDefault(size = 10, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable,
+            @PageableDefault(size = 10, sort = "startDate", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable,
             @AuthenticationPrincipal UserDetails adminUser) {
 
         log.info("GET /api/v1/admin/cars/{}/rentals - Admin: {}, Status: {}", id, adminUser.getUsername(), status);
 
         Page<RentalResponse> rentals = rentalService.getCarRentals(id, status, pageable);
 
-        return ResponseEntity.ok(rentals);
+        return ResponseEntity.ok(PageResponse.of(rentals));
     }
 
     @GetMapping("/users/{id}/rentals")
@@ -65,10 +67,10 @@ public class AdminRentalHistoryController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<Page<RentalResponse>> getUserRentals(
+    public ResponseEntity<PageResponse<RentalResponse>> getUserRentals(
             @Parameter(description = "User ID", required = true) @PathVariable Long id,
             @Parameter(description = "Filter by rental status") @RequestParam(required = false) RentalStatus status,
-            @PageableDefault(size = 10, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable,
+            @PageableDefault(size = 10, sort = "startDate", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable,
             @AuthenticationPrincipal UserDetails adminUser) {
 
         log.info("GET /api/v1/admin/users/{}/rentals - Admin: {}, Status: {}", id, adminUser.getUsername(),
@@ -78,6 +80,6 @@ public class AdminRentalHistoryController {
 
         Page<RentalResponse> rentals = rentalService.getUserRentals(id, status, pageable);
 
-        return ResponseEntity.ok(rentals);
+        return ResponseEntity.ok(PageResponse.of(rentals));
     }
 }

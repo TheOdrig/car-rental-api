@@ -12,7 +12,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -66,11 +68,11 @@ public class AdminUserController {
             @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required"),
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
-    public ResponseEntity<Page<AdminUserListItem>> getAllUsers(
+    public ResponseEntity<PageResponse<AdminUserListItem>> getAllUsers(
             @Parameter(description = "Filter by role (ADMIN, USER)") @RequestParam(required = false) String role,
             @Parameter(description = "Filter by status (ACTIVE, BANNED)") @RequestParam(required = false) String status,
             @Parameter(description = "Search by name or email") @RequestParam(required = false) String search,
-            @PageableDefault(size = 20, sort = "createTime", direction = Sort.Direction.DESC) Pageable pageable,
+            @PageableDefault(size = 20, sort = "createTime", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable,
             @AuthenticationPrincipal UserDetails adminUser) {
 
         log.info("GET /api/v1/admin/users - Admin: {}, Role: {}, Status: {}, Search: {}",
@@ -78,7 +80,7 @@ public class AdminUserController {
 
         Page<AdminUserListItem> users = adminUserService.getAllUsers(role, status, search, pageable);
 
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(PageResponse.of(users));
     }
 
     @GetMapping("/{id}")

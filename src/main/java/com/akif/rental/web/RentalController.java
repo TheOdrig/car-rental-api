@@ -22,7 +22,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -46,9 +48,9 @@ public class RentalController {
         @Operation(summary = "Request a rental", description = "Create a new rental request")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "201", description = "Rental request created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RentalResponse.class))),
-                        @ApiResponse(responseCode = "400", description = "Invalid rental data"),
+                        @ApiResponse(responseCode = "400", description = "Invalid rental data or car not rentable (CAR_NOT_AVAILABLE)"),
                         @ApiResponse(responseCode = "404", description = "Car not found"),
-                        @ApiResponse(responseCode = "409", description = "Date overlap or car not available")
+                        @ApiResponse(responseCode = "409", description = "Dates overlap an existing rental (CAR_DATES_UNAVAILABLE)")
         })
         public ResponseEntity<RentalResponse> requestRental(
                         @Parameter(description = "Rental request data", required = true) @Valid @RequestBody RentalRequest request,
@@ -195,8 +197,8 @@ public class RentalController {
                         @ApiResponse(responseCode = "200", description = "Rentals retrieved successfully", content = @Content(mediaType = "application/json")),
                         @ApiResponse(responseCode = "401", description = "Unauthorized")
         })
-        public ResponseEntity<Page<RentalResponse>> getMyRentals(
-                        @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable,
+        public ResponseEntity<PageResponse<RentalResponse>> getMyRentals(
+                        @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable,
                         @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency,
                         Authentication authentication) {
 
@@ -209,7 +211,7 @@ public class RentalController {
                 }
 
                 log.info("Retrieved {} rentals for user: {}", rentals.getTotalElements(), username);
-                return ResponseEntity.ok(rentals);
+                return ResponseEntity.ok(PageResponse.of(rentals));
         }
 
         @GetMapping("/admin")
@@ -218,8 +220,8 @@ public class RentalController {
                         @ApiResponse(responseCode = "200", description = "Rentals retrieved successfully", content = @Content(mediaType = "application/json")),
                         @ApiResponse(responseCode = "403", description = "Access denied")
         })
-        public ResponseEntity<Page<RentalResponse>> getAllRentals(
-                        @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable,
+        public ResponseEntity<PageResponse<RentalResponse>> getAllRentals(
+                        @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable,
                         @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
 
                 log.debug("GET /api/v1/rentals/admin with currency: {}", currency);
@@ -230,7 +232,7 @@ public class RentalController {
                 }
 
                 log.info("Retrieved {} rentals", rentals.getTotalElements());
-                return ResponseEntity.ok(rentals);
+                return ResponseEntity.ok(PageResponse.of(rentals));
         }
 
         @GetMapping("/{id}")

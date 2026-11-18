@@ -13,7 +13,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -110,12 +112,12 @@ public class DashboardController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
-    public ResponseEntity<Page<PendingItemDto>> getPendingApprovals(
-            @PageableDefault(size = 10, sort = "createTime") Pageable pageable) {
+    public ResponseEntity<PageResponse<PendingItemDto>> getPendingApprovals(
+            @PageableDefault(size = 10, sort = "createTime") @ParameterObject Pageable pageable) {
         log.info("GET /api/v1/admin/dashboard/pending/approvals - page: {}, size: {}", 
                 pageable.getPageNumber(), pageable.getPageSize());
         Page<PendingItemDto> approvals = dashboardService.getPendingApprovals(pageable);
-        return ResponseEntity.ok(approvals);
+        return ResponseEntity.ok(PageResponse.of(approvals));
     }
 
     @GetMapping("/pending/pickups")
@@ -125,12 +127,12 @@ public class DashboardController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
-    public ResponseEntity<Page<PendingItemDto>> getTodaysPickups(
-            @PageableDefault(size = 10, sort = "startDate") Pageable pageable) {
+    public ResponseEntity<PageResponse<PendingItemDto>> getTodaysPickups(
+            @PageableDefault(size = 10, sort = "startDate") @ParameterObject Pageable pageable) {
         log.info("GET /api/v1/admin/dashboard/pending/pickups - page: {}, size: {}", 
                 pageable.getPageNumber(), pageable.getPageSize());
         Page<PendingItemDto> pickups = dashboardService.getTodaysPickups(pageable);
-        return ResponseEntity.ok(pickups);
+        return ResponseEntity.ok(PageResponse.of(pickups));
     }
 
     @GetMapping("/pending/returns")
@@ -140,12 +142,12 @@ public class DashboardController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
-    public ResponseEntity<Page<PendingItemDto>> getTodaysReturns(
-            @PageableDefault(size = 10, sort = "endDate") Pageable pageable) {
+    public ResponseEntity<PageResponse<PendingItemDto>> getTodaysReturns(
+            @PageableDefault(size = 10, sort = "endDate") @ParameterObject Pageable pageable) {
         log.info("GET /api/v1/admin/dashboard/pending/returns - page: {}, size: {}", 
                 pageable.getPageNumber(), pageable.getPageSize());
         Page<PendingItemDto> returns = dashboardService.getTodaysReturns(pageable);
-        return ResponseEntity.ok(returns);
+        return ResponseEntity.ok(PageResponse.of(returns));
     }
 
     @GetMapping("/pending/overdue")
@@ -155,11 +157,11 @@ public class DashboardController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
-    public ResponseEntity<Page<PendingItemDto>> getOverdueRentals(
-            @PageableDefault(size = 10, sort = "endDate") Pageable pageable) {
+    public ResponseEntity<PageResponse<PendingItemDto>> getOverdueRentals(
+            @PageableDefault(size = 10, sort = "endDate") @ParameterObject Pageable pageable) {
         log.info("GET /api/v1/admin/dashboard/pending/overdue - page: {}, size: {}", 
                 pageable.getPageNumber(), pageable.getPageSize());
         Page<PendingItemDto> overdue = dashboardService.getOverdueRentals(pageable);
-        return ResponseEntity.ok(overdue);
+        return ResponseEntity.ok(PageResponse.of(overdue));
     }
 }
