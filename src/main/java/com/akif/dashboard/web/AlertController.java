@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/alerts")
+@RequestMapping("/api/v1/admin/alerts")
 @RequiredArgsConstructor
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
@@ -43,7 +43,7 @@ public class AlertController {
             @Parameter(description = "Filter by alert type")
             @RequestParam(required = false) AlertType type) {
         
-        log.info("GET /api/admin/alerts - type: {}", type);
+        log.info("GET /api/v1/admin/alerts - type: {}", type);
         
         List<AlertDto> alerts;
         if (type != null) {
@@ -69,7 +69,7 @@ public class AlertController {
             Authentication authentication) {
         
         String adminUsername = authentication.getName();
-        log.info("POST /api/admin/alerts/{}/acknowledge - admin: {}", id, adminUsername);
+        log.info("POST /api/v1/admin/alerts/{}/acknowledge - admin: {}", id, adminUsername);
         
         AlertDto acknowledgedAlert = alertService.acknowledgeAlert(id, adminUsername);
         return ResponseEntity.ok(acknowledgedAlert);

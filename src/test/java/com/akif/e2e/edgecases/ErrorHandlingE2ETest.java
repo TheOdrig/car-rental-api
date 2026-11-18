@@ -64,7 +64,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             Long nonExistentCarId = 999999L;
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(nonExistentCarId);
 
-            mockMvc.perform(post("/api/rentals/request")
+            mockMvc.perform(post("/api/v1/rentals/request")
                             .header("Authorization", "Bearer " + userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(rentalRequest)))
@@ -91,7 +91,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
 
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(maintenanceCar.getId());
 
-            mockMvc.perform(post("/api/rentals/request")
+            mockMvc.perform(post("/api/v1/rentals/request")
                             .header("Authorization", "Bearer " + userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(rentalRequest)))
@@ -113,7 +113,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
 
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(reservedCar.getId());
 
-            mockMvc.perform(post("/api/rentals/request")
+            mockMvc.perform(post("/api/v1/rentals/request")
                             .header("Authorization", "Bearer " + userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(rentalRequest)))
@@ -147,7 +147,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             PickupRequest pickupRequest = new PickupRequest(null);
 
             payRental(rentalId);
-            mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(pickupRequest)))
@@ -173,7 +173,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
@@ -199,11 +199,11 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
 
-            mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
@@ -228,14 +228,14 @@ class ErrorHandlingE2ETest extends E2ETestBase {
 
             Long rentalId = createAndGetRentalId(TestDataBuilder.createRentalRequest(testCar.getId()), userToken);
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
 
             Rental rental = rentalRepository.findById(rentalId)
                     .orElseThrow(() -> new AssertionError("Rental not found: " + rentalId));
             assertThat(rental.getStatus()).isEqualTo(RentalStatus.CONFIRMED);
-            mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.errorCode").value("PAYMENT_NOT_AUTHORIZED"));

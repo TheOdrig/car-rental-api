@@ -71,14 +71,14 @@ class AccountStatusIntegrationTest {
     }
 
     private MvcResult login() throws Exception {
-        return mockMvc.perform(post("/api/auth/login")
+        return mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"status-user\",\"password\":\"password123\"}"))
                 .andReturn();
     }
 
     private MvcResult refresh(String token) throws Exception {
-        return mockMvc.perform(post("/api/auth/refresh")
+        return mockMvc.perform(post("/api/v1/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"" + token + "\"}"))
                 .andReturn();

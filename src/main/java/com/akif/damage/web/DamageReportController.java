@@ -30,7 +30,7 @@ public class DamageReportController {
 
     private final DamageReportService damageReportService;
 
-    @PostMapping("/api/admin/damages")
+    @PostMapping("/api/v1/admin/damages")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create damage report", description = "Create a new damage report for a rental (admin only)")
     @ApiResponses(value = {
@@ -46,12 +46,12 @@ public class DamageReportController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("POST /api/admin/damages - rentalId: {}, user: {}", rentalId, username);
+        log.info("POST /api/v1/admin/damages - rentalId: {}, user: {}", rentalId, username);
         DamageReportResponse response = damageReportService.createDamageReport(rentalId, request, username);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/api/admin/damages/{id}")
+    @GetMapping("/api/v1/admin/damages/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get damage report", description = "Get damage report by ID (admin only)")
     @ApiResponses(value = {
@@ -63,12 +63,12 @@ public class DamageReportController {
             @Parameter(description = "Damage ID", required = true)
             @PathVariable Long id) {
 
-        log.info("GET /api/admin/damages/{}", id);
+        log.info("GET /api/v1/admin/damages/{}", id);
         DamageReportResponse response = damageReportService.getDamageReport(id);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping(value = "/api/admin/damages/{id}/photos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/api/v1/admin/damages/{id}/photos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Upload photos", description = "Upload damage photos (admin only)")
     @ApiResponses(value = {
@@ -85,12 +85,12 @@ public class DamageReportController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("POST /api/admin/damages/{}/photos - count: {}, user: {}", id, photos.size(), username);
+        log.info("POST /api/v1/admin/damages/{}/photos - count: {}, user: {}", id, photos.size(), username);
         List<DamagePhotoDto> uploadedPhotos = damageReportService.uploadDamagePhotos(id, photos, username);
         return ResponseEntity.status(HttpStatus.CREATED).body(uploadedPhotos);
     }
 
-    @DeleteMapping("/api/admin/damages/{id}/photos/{photoId}")
+    @DeleteMapping("/api/v1/admin/damages/{id}/photos/{photoId}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Delete photo", description = "Delete a damage photo (admin only)")
     @ApiResponses(value = {
@@ -104,12 +104,12 @@ public class DamageReportController {
             @Parameter(description = "Photo ID", required = true)
             @PathVariable Long photoId) {
 
-        log.info("DELETE /api/admin/damages/{}/photos/{}", id, photoId);
+        log.info("DELETE /api/v1/admin/damages/{}/photos/{}", id, photoId);
         damageReportService.deleteDamagePhoto(id, photoId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/api/damages/photos/{photoId}/url")
+    @GetMapping("/api/v1/damages/photos/{photoId}/url")
     @Operation(summary = "Get photo URL", description = "Get secure URL for a damage photo")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "URL generated"),
@@ -121,7 +121,7 @@ public class DamageReportController {
             @PathVariable Long photoId,
             Authentication authentication) {
 
-        log.debug("GET /api/damages/photos/{}/url", photoId);
+        log.debug("GET /api/v1/damages/photos/{}/url", photoId);
         String url = damageReportService.getPhotoUrl(photoId, authentication.getName());
         return ResponseEntity.ok(url);
     }

@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ClientIpResolverTest {
 
     private MockHttpServletRequest request(String remote, String forwardedFor) {
-        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/auth/login");
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/auth/login");
         request.setRemoteAddr(remote);
         if (forwardedFor != null) {
             request.addHeader("X-Forwarded-For", forwardedFor);

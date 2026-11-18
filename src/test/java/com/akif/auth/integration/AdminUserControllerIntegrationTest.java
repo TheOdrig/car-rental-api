@@ -206,7 +206,7 @@ class AdminUserControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when customer tries to access admin user detail")
         void shouldReturn403WhenCustomerTriesToAccessAdminUserDetail() throws Exception {
-            mockMvc.perform(get("/api/admin/users/{id}", testCustomer.getId())
+            mockMvc.perform(get("/api/v1/admin/users/{id}", testCustomer.getId())
                     .header("Authorization", customerToken))
                     .andExpect(status().isForbidden());
         }
@@ -214,14 +214,14 @@ class AdminUserControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when no authentication provided")
         void shouldReturn403WhenNoAuthenticationProvided() throws Exception {
-            mockMvc.perform(get("/api/admin/users/{id}", testCustomer.getId()))
+            mockMvc.perform(get("/api/v1/admin/users/{id}", testCustomer.getId()))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("Should return 200 when admin accesses user detail")
         void shouldReturn200WhenAdminAccessesUserDetail() throws Exception {
-            mockMvc.perform(get("/api/admin/users/{id}", testCustomer.getId())
+            mockMvc.perform(get("/api/v1/admin/users/{id}", testCustomer.getId())
                     .header("Authorization", adminToken))
                     .andExpect(status().isOk());
         }
@@ -234,7 +234,7 @@ class AdminUserControllerIntegrationTest {
         @Test
         @DisplayName("Should return complete user details with all fields")
         void shouldReturnCompleteUserDetailsWithAllFields() throws Exception {
-            mockMvc.perform(get("/api/admin/users/{id}", testCustomer.getId())
+            mockMvc.perform(get("/api/v1/admin/users/{id}", testCustomer.getId())
                     .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(testCustomer.getId()))
@@ -250,7 +250,7 @@ class AdminUserControllerIntegrationTest {
         @Test
         @DisplayName("Should return 404 when user does not exist")
         void shouldReturn404WhenUserDoesNotExist() throws Exception {
-            mockMvc.perform(get("/api/admin/users/{id}", 999999L)
+            mockMvc.perform(get("/api/v1/admin/users/{id}", 999999L)
                     .header("Authorization", adminToken))
                     .andExpect(status().isNotFound());
         }
@@ -258,7 +258,7 @@ class AdminUserControllerIntegrationTest {
         @Test
         @DisplayName("Should return verification info in response")
         void shouldReturnVerificationInfoInResponse() throws Exception {
-            mockMvc.perform(get("/api/admin/users/{id}", testCustomer.getId())
+            mockMvc.perform(get("/api/v1/admin/users/{id}", testCustomer.getId())
                     .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.verification.emailVerified").value(true))
@@ -268,7 +268,7 @@ class AdminUserControllerIntegrationTest {
         @Test
         @DisplayName("Should return account status as ACTIVE for enabled user")
         void shouldReturnAccountStatusAsActiveForEnabledUser() throws Exception {
-            mockMvc.perform(get("/api/admin/users/{id}", testCustomer.getId())
+            mockMvc.perform(get("/api/v1/admin/users/{id}", testCustomer.getId())
                     .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.accountStatus.status").value("ACTIVE"));
@@ -282,7 +282,7 @@ class AdminUserControllerIntegrationTest {
         @Test
         @DisplayName("Should return zero statistics for user with no rentals")
         void shouldReturnZeroStatisticsForUserWithNoRentals() throws Exception {
-            mockMvc.perform(get("/api/admin/users/{id}", testCustomer.getId())
+            mockMvc.perform(get("/api/v1/admin/users/{id}", testCustomer.getId())
                     .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.statistics.totalRentals").value(0))
@@ -299,7 +299,7 @@ class AdminUserControllerIntegrationTest {
             createTestRental(testCustomer, RentalStatus.RETURNED, true);
             createTestRental(testCustomer, RentalStatus.CANCELLED, false);
 
-            mockMvc.perform(get("/api/admin/users/{id}", testCustomer.getId())
+            mockMvc.perform(get("/api/v1/admin/users/{id}", testCustomer.getId())
                     .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.statistics.totalRentals").value(3))
@@ -315,7 +315,7 @@ class AdminUserControllerIntegrationTest {
             createTestDamageReport(testCustomer, rental);
             createTestDamageReport(testCustomer, rental);
 
-            mockMvc.perform(get("/api/admin/users/{id}", testCustomer.getId())
+            mockMvc.perform(get("/api/v1/admin/users/{id}", testCustomer.getId())
                     .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.statistics.totalDamageReports").value(2))

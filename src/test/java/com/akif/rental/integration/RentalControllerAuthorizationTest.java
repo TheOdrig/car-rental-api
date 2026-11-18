@@ -135,22 +135,22 @@ class RentalControllerAuthorizationTest {
     class AdminOperationsAllowed {
 
         @Test
-        @DisplayName("POST /api/rentals/{id}/confirm - Admin should be allowed")
+        @DisplayName("POST /api/v1/rentals/{id}/confirm - Admin should be allowed")
         void adminShouldConfirmRental() throws Exception {
             Long rentalId = createRentalRequest();
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("Confirmed"));
         }
 
         @Test
-        @DisplayName("POST /api/rentals/{id}/pickup - Admin should be allowed")
+        @DisplayName("POST /api/v1/rentals/{id}/pickup - Admin should be allowed")
         void adminShouldPickupRental() throws Exception {
             Long rentalId = createAndConfirmRental();
 
-            mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"notes\": \"Car picked up\"}"))
@@ -159,11 +159,11 @@ class RentalControllerAuthorizationTest {
         }
 
         @Test
-        @DisplayName("POST /api/rentals/{id}/return - Admin should be allowed")
+        @DisplayName("POST /api/v1/rentals/{id}/return - Admin should be allowed")
         void adminShouldReturnRental() throws Exception {
             Long rentalId = createConfirmAndPickupRental();
 
-            mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                             .header("Authorization", adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"notes\": \"Car returned\"}"))
@@ -177,21 +177,21 @@ class RentalControllerAuthorizationTest {
     class AdminOperationsDenied {
 
         @Test
-        @DisplayName("POST /api/rentals/{id}/confirm - User should be denied (403)")
+        @DisplayName("POST /api/v1/rentals/{id}/confirm - User should be denied (403)")
         void userShouldBeDeniedConfirmRental() throws Exception {
             Long rentalId = createRentalRequest();
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }
 
         @Test
-        @DisplayName("POST /api/rentals/{id}/pickup - User should be denied (403)")
+        @DisplayName("POST /api/v1/rentals/{id}/pickup - User should be denied (403)")
         void userShouldBeDeniedPickupRental() throws Exception {
             Long rentalId = createAndConfirmRental();
 
-            mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"notes\": \"Car picked up\"}"))
@@ -199,11 +199,11 @@ class RentalControllerAuthorizationTest {
         }
 
         @Test
-        @DisplayName("POST /api/rentals/{id}/return - User should be denied (403)")
+        @DisplayName("POST /api/v1/rentals/{id}/return - User should be denied (403)")
         void userShouldBeDeniedReturnRental() throws Exception {
             Long rentalId = createConfirmAndPickupRental();
 
-            mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                             .header("Authorization", userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"notes\": \"Car returned\"}"))
@@ -216,7 +216,7 @@ class RentalControllerAuthorizationTest {
     class UserOperationsAllowed {
 
         @Test
-        @DisplayName("POST /api/rentals/request - User should be allowed")
+        @DisplayName("POST /api/v1/rentals/request - User should be allowed")
         void userShouldRequestRental() throws Exception {
             RentalRequest request = new RentalRequest(
                     testCar.getId(),
@@ -225,7 +225,7 @@ class RentalControllerAuthorizationTest {
                     "Test rental"
             );
 
-            mockMvc.perform(post("/api/rentals/request")
+            mockMvc.perform(post("/api/v1/rentals/request")
                             .header("Authorization", userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -233,20 +233,20 @@ class RentalControllerAuthorizationTest {
         }
 
         @Test
-        @DisplayName("GET /api/rentals/me - User should be allowed")
+        @DisplayName("GET /api/v1/rentals/me - User should be allowed")
         void userShouldGetOwnRentals() throws Exception {
-            mockMvc.perform(get("/api/rentals/me")
+            mockMvc.perform(get("/api/v1/rentals/me")
                             .header("Authorization", userToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray());
         }
 
         @Test
-        @DisplayName("POST /api/rentals/{id}/cancel - User should be allowed to cancel own rental")
+        @DisplayName("POST /api/v1/rentals/{id}/cancel - User should be allowed to cancel own rental")
         void userShouldCancelOwnRental() throws Exception {
             Long rentalId = createRentalRequest();
 
-            mockMvc.perform(post("/api/rentals/{id}/cancel", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                             .header("Authorization", userToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("Cancelled"));
@@ -261,7 +261,7 @@ class RentalControllerAuthorizationTest {
                 null
         );
 
-        String response = mockMvc.perform(post("/api/rentals/request")
+        String response = mockMvc.perform(post("/api/v1/rentals/request")
                         .header("Authorization", userToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -276,7 +276,7 @@ class RentalControllerAuthorizationTest {
     private Long createAndConfirmRental() throws Exception {
         Long rentalId = createRentalRequest();
 
-        mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+        mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                         .header("Authorization", adminToken))
                 .andExpect(status().isOk());
 
@@ -288,7 +288,7 @@ class RentalControllerAuthorizationTest {
     private Long createConfirmAndPickupRental() throws Exception {
         Long rentalId = createAndConfirmRental();
 
-        mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+        mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                         .header("Authorization", adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"notes\": \"Car picked up\"}"))

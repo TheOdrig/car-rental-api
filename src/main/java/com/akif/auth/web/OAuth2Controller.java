@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/oauth2")
+@RequestMapping("/api/v1/oauth2")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "OAuth2", description = "OAuth2 Social Login endpoints")

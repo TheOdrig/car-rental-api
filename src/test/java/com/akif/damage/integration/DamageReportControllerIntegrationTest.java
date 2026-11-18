@@ -171,7 +171,7 @@ class DamageReportControllerIntegrationTest {
                     DamageCategory.SCRATCH
             );
 
-            mockMvc.perform(post("/api/admin/damages")
+            mockMvc.perform(post("/api/v1/admin/damages")
                             .header("Authorization", adminToken)
                             .param("rentalId", testRental.getId().toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -192,7 +192,7 @@ class DamageReportControllerIntegrationTest {
                     DamageCategory.SCRATCH
             );
 
-            mockMvc.perform(post("/api/admin/damages")
+            mockMvc.perform(post("/api/v1/admin/damages")
                             .header("Authorization", userToken)
                             .param("rentalId", testRental.getId().toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -210,7 +210,7 @@ class DamageReportControllerIntegrationTest {
                     DamageCategory.SCRATCH
             );
 
-            mockMvc.perform(post("/api/admin/damages")
+            mockMvc.perform(post("/api/v1/admin/damages")
                             .param("rentalId", testRental.getId().toString())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -227,7 +227,7 @@ class DamageReportControllerIntegrationTest {
                     DamageCategory.SCRATCH
             );
 
-            mockMvc.perform(post("/api/admin/damages")
+            mockMvc.perform(post("/api/v1/admin/damages")
                             .header("Authorization", adminToken)
                             .param("rentalId", "99999")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -250,7 +250,7 @@ class DamageReportControllerIntegrationTest {
                     DamageCategory.GLASS_DAMAGE
             );
 
-            String createResponse = mockMvc.perform(post("/api/admin/damages")
+            String createResponse = mockMvc.perform(post("/api/v1/admin/damages")
                             .header("Authorization", adminToken)
                             .param("rentalId", testRental.getId().toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -262,7 +262,7 @@ class DamageReportControllerIntegrationTest {
 
             Long damageId = objectMapper.readTree(createResponse).get("id").asLong();
 
-            mockMvc.perform(get("/api/admin/damages/{id}", damageId)
+            mockMvc.perform(get("/api/v1/admin/damages/{id}", damageId)
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(damageId))
@@ -273,7 +273,7 @@ class DamageReportControllerIntegrationTest {
         @Test
         @DisplayName("Should return 404 when damage report not found")
         void shouldReturn404WhenDamageReportNotFound() throws Exception {
-            mockMvc.perform(get("/api/admin/damages/{id}", 99999)
+            mockMvc.perform(get("/api/v1/admin/damages/{id}", 99999)
                             .header("Authorization", adminToken))
                     .andExpect(status().isNotFound());
         }
@@ -293,7 +293,7 @@ class DamageReportControllerIntegrationTest {
                     DamageCategory.DENT
             );
 
-            String createResponse = mockMvc.perform(post("/api/admin/damages")
+            String createResponse = mockMvc.perform(post("/api/v1/admin/damages")
                             .header("Authorization", adminToken)
                             .param("rentalId", testRental.getId().toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -312,7 +312,7 @@ class DamageReportControllerIntegrationTest {
                     "test image content".getBytes()
             );
 
-            mockMvc.perform(multipart("/api/admin/damages/{id}/photos", damageId)
+            mockMvc.perform(multipart("/api/v1/admin/damages/{id}/photos", damageId)
                             .file(photo)
                             .header("Authorization", adminToken))
                     .andExpect(status().isCreated())
@@ -335,7 +335,7 @@ class DamageReportControllerIntegrationTest {
                     DamageCategory.MECHANICAL_DAMAGE
             );
 
-            String createResponse = mockMvc.perform(post("/api/admin/damages")
+            String createResponse = mockMvc.perform(post("/api/v1/admin/damages")
                             .header("Authorization", adminToken)
                             .param("rentalId", testRental.getId().toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -359,7 +359,7 @@ class DamageReportControllerIntegrationTest {
                 }
                 """;
 
-            mockMvc.perform(post("/api/admin/damages/{id}/assess", damageId)
+            mockMvc.perform(post("/api/v1/admin/damages/{id}/assess", damageId)
                             .header("Authorization", adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(assessmentRequest))

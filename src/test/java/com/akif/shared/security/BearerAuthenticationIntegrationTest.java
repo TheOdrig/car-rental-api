@@ -77,7 +77,7 @@ class BearerAuthenticationIntegrationTest {
     void accessTokenAuthenticates() throws Exception {
         String token = tokenService.generateAccessToken(principal("ROLE_USER"), user.getId());
 
-        mockMvc.perform(get("/api/users/me/profile").header("Authorization", "Bearer " + token))
+        mockMvc.perform(get("/api/v1/users/me/profile").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("bearer-user"));
     }
@@ -97,7 +97,7 @@ class BearerAuthenticationIntegrationTest {
                                 .build()))
                 .getTokenValue();
 
-        mockMvc.perform(get("/api/users/me/profile").header("Authorization", "Bearer " + refreshToken))
+        mockMvc.perform(get("/api/v1/users/me/profile").header("Authorization", "Bearer " + refreshToken))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().exists("WWW-Authenticate"))
                 .andExpect(jsonPath("$.errorCode").value("AUTHENTICATION_FAILED"));
@@ -109,10 +109,10 @@ class BearerAuthenticationIntegrationTest {
         String userToken = tokenService.generateAccessToken(principal("ROLE_USER"), user.getId());
         String adminToken = tokenService.generateAccessToken(principal("ROLE_USER", "ROLE_ADMIN"), user.getId());
 
-        mockMvc.perform(get("/api/admin/dashboard/summary").header("Authorization", "Bearer " + userToken))
+        mockMvc.perform(get("/api/v1/admin/dashboard/summary").header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.errorCode").value("ACCESS_DENIED"));
-        mockMvc.perform(get("/api/admin/dashboard/summary").header("Authorization", "Bearer " + adminToken))
+        mockMvc.perform(get("/api/v1/admin/dashboard/summary").header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk());
     }
 
@@ -121,30 +121,30 @@ class BearerAuthenticationIntegrationTest {
     void adminPathsRequireAdminRole() throws Exception {
         String userToken = tokenService.generateAccessToken(principal("ROLE_USER"), user.getId());
 
-        mockMvc.perform(get("/api/admin/not-mapped-anywhere").header("Authorization", "Bearer " + userToken))
+        mockMvc.perform(get("/api/v1/admin/not-mapped-anywhere").header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @DisplayName("a missing token yields a uniform 401 body")
     void missingTokenYields401() throws Exception {
-        mockMvc.perform(get("/api/users/me/profile"))
+        mockMvc.perform(get("/api/v1/users/me/profile"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.errorCode").value("AUTHENTICATION_FAILED"))
-                .andExpect(jsonPath("$.path").value("/api/users/me/profile"));
+                .andExpect(jsonPath("$.path").value("/api/v1/users/me/profile"));
     }
 
     @Test
     @DisplayName("a malformed token is rejected even on a public endpoint")
     void malformedTokenRejectedOnPublicEndpoint() throws Exception {
-        mockMvc.perform(get("/api/cars").header("Authorization", "Bearer not.a.jwt"))
+        mockMvc.perform(get("/api/v1/cars").header("Authorization", "Bearer not.a.jwt"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     @DisplayName("a stale token is ignored on the login endpoint")
     void staleTokenIgnoredOnAuthEndpoints() throws Exception {
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .header("Authorization", "Bearer not.a.jwt")
                         .contentType("application/json")
                         .content("{\"username\":\"bearer-user\",\"password\":\"password123\"}"))

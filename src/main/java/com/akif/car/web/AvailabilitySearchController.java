@@ -27,7 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/cars")
+@RequestMapping("/api/v1/cars")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Availability Search", description = "Car availability search and calendar operations")
@@ -50,7 +50,7 @@ public class AvailabilitySearchController {
     public ResponseEntity<AvailabilitySearchResponse> searchAvailableCars(
             @Parameter(description = "Availability search criteria with date range and filters", required = true)
             @Valid @RequestBody AvailabilitySearchRequest request) {
-        log.debug("POST /api/cars/availability/search - Searching available cars for dates: {} to {}", 
+        log.debug("POST /api/v1/cars/availability/search - Searching available cars for dates: {} to {}", 
                  request.getStartDate(), request.getEndDate());
         
         AvailabilitySearchResponse result = carAvailabilityService.searchAvailableCars(request);
@@ -81,7 +81,7 @@ public class AvailabilitySearchController {
             ? YearMonth.parse(month, DateTimeFormatter.ofPattern("yyyy-MM"))
             : YearMonth.now(clock);
         
-        log.debug("GET /api/cars/{}/availability/calendar - Getting calendar for month: {}", id, targetMonth);
+        log.debug("GET /api/v1/cars/{}/availability/calendar - Getting calendar for month: {}", id, targetMonth);
         
         CarAvailabilityCalendarDto calendar = carAvailabilityService.getCarAvailabilityCalendar(id, targetMonth);
         
@@ -119,7 +119,7 @@ public class AvailabilitySearchController {
 
         int effectiveLimit = Math.min(limit, 10);
         
-        log.debug("GET /api/cars/{}/similar - Finding similar cars for dates: {} to {}, limit: {}", 
+        log.debug("GET /api/v1/cars/{}/similar - Finding similar cars for dates: {} to {}, limit: {}", 
                  id, start, end, effectiveLimit);
         
         List<SimilarCarDto> similarCars = similarCarService.findSimilarAvailableCars(id, start, end, effectiveLimit);

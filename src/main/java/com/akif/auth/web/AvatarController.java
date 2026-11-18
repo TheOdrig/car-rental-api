@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/users/me")
+@RequestMapping("/api/v1/users/me")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Avatar Management", description = "User avatar management APIs")
@@ -31,7 +31,7 @@ public class AvatarController {
     public ResponseEntity<AvatarUploadResponse> uploadAvatar(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam("avatar") MultipartFile file) {
-        log.info("POST /api/users/me/avatar - Uploading avatar for user: {}", userDetails.getUsername());
+        log.info("POST /api/v1/users/me/avatar - Uploading avatar for user: {}", userDetails.getUsername());
 
         String avatarKey = avatarStorageService.storeAvatar(userDetails.getUsername(), file);
 
@@ -47,7 +47,7 @@ public class AvatarController {
     @Operation(summary = "Delete avatar", description = "Delete the current user's avatar image")
     public ResponseEntity<AvatarUploadResponse> deleteAvatar(
             @AuthenticationPrincipal UserDetails userDetails) {
-        log.info("DELETE /api/users/me/avatar - Deleting avatar for user: {}", userDetails.getUsername());
+        log.info("DELETE /api/v1/users/me/avatar - Deleting avatar for user: {}", userDetails.getUsername());
 
         var profile = profileService.getProfile(userDetails.getUsername());
 

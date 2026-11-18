@@ -68,7 +68,7 @@ class CurrencyConversionE2ETest extends E2ETestBase {
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            String responseJson = mockMvc.perform(get("/api/rentals/{id}", rentalId)
+            String responseJson = mockMvc.perform(get("/api/v1/rentals/{id}", rentalId)
                     .header("Authorization", "Bearer " + userToken)
                     .param("currency", "USD")
                     .contentType(MediaType.APPLICATION_JSON))
@@ -110,7 +110,7 @@ class CurrencyConversionE2ETest extends E2ETestBase {
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            String responseJson = mockMvc.perform(get("/api/rentals/{id}", rentalId)
+            String responseJson = mockMvc.perform(get("/api/v1/rentals/{id}", rentalId)
                     .header("Authorization", "Bearer " + userToken)
                     .param("currency", "EUR")
                     .contentType(MediaType.APPLICATION_JSON))
@@ -152,7 +152,7 @@ class CurrencyConversionE2ETest extends E2ETestBase {
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            String responseJson = mockMvc.perform(get("/api/rentals/{id}", rentalId)
+            String responseJson = mockMvc.perform(get("/api/v1/rentals/{id}", rentalId)
                     .header("Authorization", "Bearer " + userToken)
                     .param("currency", "TRY")
                     .contentType(MediaType.APPLICATION_JSON))
@@ -187,7 +187,7 @@ class CurrencyConversionE2ETest extends E2ETestBase {
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            String responseJson = mockMvc.perform(get("/api/rentals/{id}", rentalId)
+            String responseJson = mockMvc.perform(get("/api/v1/rentals/{id}", rentalId)
                     .header("Authorization", "Bearer " + userToken)
                     .param("currency", "USD")
                     .contentType(MediaType.APPLICATION_JSON))
@@ -224,7 +224,7 @@ class CurrencyConversionE2ETest extends E2ETestBase {
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            String responseJson = mockMvc.perform(get("/api/rentals/{id}", rentalId)
+            String responseJson = mockMvc.perform(get("/api/v1/rentals/{id}", rentalId)
                     .header("Authorization", "Bearer " + userToken)
                     .param("currency", "GBP")
                     .contentType(MediaType.APPLICATION_JSON))
@@ -261,7 +261,7 @@ class CurrencyConversionE2ETest extends E2ETestBase {
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            mockMvc.perform(get("/api/rentals/{id}", rentalId)
+            mockMvc.perform(get("/api/v1/rentals/{id}", rentalId)
                     .header("Authorization", "Bearer " + userToken)
                     .param("currency", "USD")
                     .contentType(MediaType.APPLICATION_JSON))
@@ -270,7 +270,7 @@ class CurrencyConversionE2ETest extends E2ETestBase {
                     .andExpect(jsonPath("$.convertedTotalPrice").exists())
                     .andExpect(jsonPath("$.exchangeRate").exists());
 
-            mockMvc.perform(get("/api/rentals/{id}", rentalId)
+            mockMvc.perform(get("/api/v1/rentals/{id}", rentalId)
                     .header("Authorization", "Bearer " + userToken)
                     .param("currency", "EUR")
                     .contentType(MediaType.APPLICATION_JSON))
@@ -279,7 +279,7 @@ class CurrencyConversionE2ETest extends E2ETestBase {
                     .andExpect(jsonPath("$.convertedTotalPrice").exists())
                     .andExpect(jsonPath("$.exchangeRate").exists());
 
-            mockMvc.perform(get("/api/rentals/{id}", rentalId)
+            mockMvc.perform(get("/api/v1/rentals/{id}", rentalId)
                     .header("Authorization", "Bearer " + userToken)
                     .param("currency", "GBP")
                     .contentType(MediaType.APPLICATION_JSON))
@@ -288,7 +288,7 @@ class CurrencyConversionE2ETest extends E2ETestBase {
                     .andExpect(jsonPath("$.convertedTotalPrice").exists())
                     .andExpect(jsonPath("$.exchangeRate").exists());
 
-            mockMvc.perform(get("/api/rentals/{id}", rentalId)
+            mockMvc.perform(get("/api/v1/rentals/{id}", rentalId)
                     .header("Authorization", "Bearer " + userToken)
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())

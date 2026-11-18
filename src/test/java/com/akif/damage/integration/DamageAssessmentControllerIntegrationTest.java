@@ -165,7 +165,7 @@ class DamageAssessmentControllerIntegrationTest {
                 DamageCategory.DENT
         );
 
-        String response = mockMvc.perform(post("/api/admin/damages")
+        String response = mockMvc.perform(post("/api/v1/admin/damages")
                         .header("Authorization", adminToken)
                         .param("rentalId", testRental.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -196,7 +196,7 @@ class DamageAssessmentControllerIntegrationTest {
                     "Moderate dent requires professional repair"
             );
 
-            mockMvc.perform(post("/api/admin/damages/{id}/assess", damageId)
+            mockMvc.perform(post("/api/v1/admin/damages/{id}/assess", damageId)
                             .header("Authorization", adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -219,7 +219,7 @@ class DamageAssessmentControllerIntegrationTest {
                     "Test notes"
             );
 
-            mockMvc.perform(post("/api/admin/damages/{id}/assess", damageId)
+            mockMvc.perform(post("/api/v1/admin/damages/{id}/assess", damageId)
                             .header("Authorization", userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -240,7 +240,7 @@ class DamageAssessmentControllerIntegrationTest {
                     "No insurance coverage"
             );
 
-            mockMvc.perform(post("/api/admin/damages/{id}/assess", damageId)
+            mockMvc.perform(post("/api/v1/admin/damages/{id}/assess", damageId)
                             .header("Authorization", adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -260,7 +260,7 @@ class DamageAssessmentControllerIntegrationTest {
                     "Test"
             );
 
-            mockMvc.perform(post("/api/admin/damages/{id}/assess", 99999)
+            mockMvc.perform(post("/api/v1/admin/damages/{id}/assess", 99999)
                             .header("Authorization", adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -286,7 +286,7 @@ class DamageAssessmentControllerIntegrationTest {
                     "Initial assessment"
             );
 
-            mockMvc.perform(post("/api/admin/damages/{id}/assess", damageId)
+            mockMvc.perform(post("/api/v1/admin/damages/{id}/assess", damageId)
                             .header("Authorization", adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(initialRequest)))
@@ -301,7 +301,7 @@ class DamageAssessmentControllerIntegrationTest {
                     "Updated assessment with insurance"
             );
 
-            mockMvc.perform(put("/api/admin/damages/{id}/assess", damageId)
+            mockMvc.perform(put("/api/v1/admin/damages/{id}/assess", damageId)
                             .header("Authorization", adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(updateRequest)))

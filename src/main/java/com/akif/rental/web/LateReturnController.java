@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 
 @RestController
-@RequestMapping("/api/admin/late-returns")
+@RequestMapping("/api/v1/admin/late-returns")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Late Return Management", description = "Admin operations for managing and reporting late returns")
@@ -56,7 +56,7 @@ public class LateReturnController {
             @Parameter(description = "Pagination information")
             @PageableDefault(size = 20) Pageable pageable) {
 
-        log.debug("GET /api/admin/late-returns - startDate: {}, endDate: {}, status: {}, sortBy: {}, sortDirection: {}",
+        log.debug("GET /api/v1/admin/late-returns - startDate: {}, endDate: {}, status: {}, sortBy: {}, sortDirection: {}",
                 startDate, endDate, status, sortBy, sortDirection);
 
         LateReturnFilterDto filter = LateReturnFilterDto.builder()
@@ -89,7 +89,7 @@ public class LateReturnController {
             @Parameter(description = "End date for statistics (yyyy-MM-dd)")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
-        log.debug("GET /api/admin/late-returns/statistics - startDate: {}, endDate: {}", startDate, endDate);
+        log.debug("GET /api/v1/admin/late-returns/statistics - startDate: {}, endDate: {}", startDate, endDate);
 
         LateReturnStatisticsDto statistics = lateReturnReportService.getStatistics(startDate, endDate);
 

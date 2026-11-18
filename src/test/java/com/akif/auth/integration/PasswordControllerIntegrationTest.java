@@ -83,7 +83,7 @@ class PasswordControllerIntegrationTest {
         private String getTokenForUser(String username, String password) throws Exception {
                 LoginRequest loginRequest = new LoginRequest(username, password);
 
-                MvcResult result = mockMvc.perform(post("/api/auth/login")
+                MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(loginRequest)))
                                 .andExpect(status().isOk())
@@ -95,7 +95,7 @@ class PasswordControllerIntegrationTest {
         }
 
         @Nested
-        @DisplayName("POST /api/users/me/password")
+        @DisplayName("POST /api/v1/users/me/password")
         class ChangePassword {
 
                 @Test
@@ -103,7 +103,7 @@ class PasswordControllerIntegrationTest {
                 void shouldChangePasswordSuccessfully() throws Exception {
                         PasswordChangeRequest request = new PasswordChangeRequest("password123", "newPassword456");
 
-                        mockMvc.perform(post("/api/users/me/password")
+                        mockMvc.perform(post("/api/v1/users/me/password")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
@@ -115,7 +115,7 @@ class PasswordControllerIntegrationTest {
                 void shouldReturn400WhenCurrentPasswordIsIncorrect() throws Exception {
                         PasswordChangeRequest request = new PasswordChangeRequest("wrongPassword", "newPassword456");
 
-                        mockMvc.perform(post("/api/users/me/password")
+                        mockMvc.perform(post("/api/v1/users/me/password")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
@@ -127,7 +127,7 @@ class PasswordControllerIntegrationTest {
                 void shouldReturn400WhenNewPasswordIsSameAsCurrent() throws Exception {
                         PasswordChangeRequest request = new PasswordChangeRequest("password123", "password123");
 
-                        mockMvc.perform(post("/api/users/me/password")
+                        mockMvc.perform(post("/api/v1/users/me/password")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
@@ -139,7 +139,7 @@ class PasswordControllerIntegrationTest {
                 void shouldReturn400WhenNewPasswordIsTooShort() throws Exception {
                         PasswordChangeRequest request = new PasswordChangeRequest("password123", "short");
 
-                        mockMvc.perform(post("/api/users/me/password")
+                        mockMvc.perform(post("/api/v1/users/me/password")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
@@ -151,7 +151,7 @@ class PasswordControllerIntegrationTest {
                 void shouldReturn401WithoutJwt() throws Exception {
                         PasswordChangeRequest request = new PasswordChangeRequest("password123", "newPassword456");
 
-                        mockMvc.perform(post("/api/users/me/password")
+                        mockMvc.perform(post("/api/v1/users/me/password")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isUnauthorized());
@@ -162,14 +162,14 @@ class PasswordControllerIntegrationTest {
                 void shouldAllowLoginWithNewPasswordAfterChange() throws Exception {
                         PasswordChangeRequest request = new PasswordChangeRequest("password123", "newPassword456");
 
-                        mockMvc.perform(post("/api/users/me/password")
+                        mockMvc.perform(post("/api/v1/users/me/password")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isOk());
 
                         LoginRequest loginRequest = new LoginRequest("testuser", "newPassword456");
-                        mockMvc.perform(post("/api/auth/login")
+                        mockMvc.perform(post("/api/v1/auth/login")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(loginRequest)))
                                         .andExpect(status().isOk())

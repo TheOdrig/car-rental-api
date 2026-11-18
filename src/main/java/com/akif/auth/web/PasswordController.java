@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/users/me")
+@RequestMapping("/api/v1/users/me")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Password Management", description = "User password management APIs")
@@ -30,7 +30,7 @@ public class PasswordController {
     public ResponseEntity<Map<String, String>> changePassword(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody PasswordChangeRequest request) {
-        log.info("POST /api/users/me/password - Changing password for user: {}", userDetails.getUsername());
+        log.info("POST /api/v1/users/me/password - Changing password for user: {}", userDetails.getUsername());
 
         passwordService.changePassword(
                 userDetails.getUsername(),

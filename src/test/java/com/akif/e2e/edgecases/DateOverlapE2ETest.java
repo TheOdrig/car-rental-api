@@ -59,7 +59,7 @@ class DateOverlapE2ETest extends E2ETestBase {
 
             Long firstRentalId = createAndGetRentalId(firstRentalRequest, userToken);
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", firstRentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", firstRentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
 
@@ -68,7 +68,7 @@ class DateOverlapE2ETest extends E2ETestBase {
             RentalRequest overlappingRentalRequest = TestDataBuilder.createRentalRequest(
                     testCar.getId(), overlappingStart, overlappingEnd);
 
-            mockMvc.perform(post("/api/rentals/request")
+            mockMvc.perform(post("/api/v1/rentals/request")
                             .header("Authorization", "Bearer " + userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(overlappingRentalRequest)))
@@ -102,18 +102,18 @@ class DateOverlapE2ETest extends E2ETestBase {
 
             Long firstRentalId = createAndGetRentalId(firstRentalRequest, userToken);
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", firstRentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", firstRentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
 
-            mockMvc.perform(post("/api/rentals/{id}/cancel", firstRentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/cancel", firstRentalId)
                             .header("Authorization", "Bearer " + userToken))
                     .andExpect(status().isOk());
 
             RentalRequest secondRentalRequest = TestDataBuilder.createRentalRequest(
                     testCar.getId(), startDate, endDate);
 
-            mockMvc.perform(post("/api/rentals/request")
+            mockMvc.perform(post("/api/v1/rentals/request")
                             .header("Authorization", "Bearer " + userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(secondRentalRequest)))
@@ -152,14 +152,14 @@ class DateOverlapE2ETest extends E2ETestBase {
                     testCar.getId(), startDate, endDate);
             Long firstRentalId = createAndGetRentalId(rentalRequest, userToken1);
 
-            mockMvc.perform(post("/api/rentals/request")
+            mockMvc.perform(post("/api/v1/rentals/request")
                             .header("Authorization", "Bearer " + userToken2)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(rentalRequest)))
                     .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.errorCode").value("CAR_NOT_AVAILABLE"));
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", firstRentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", firstRentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("Confirmed"));

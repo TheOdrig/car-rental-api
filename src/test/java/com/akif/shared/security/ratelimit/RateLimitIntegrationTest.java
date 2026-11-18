@@ -71,15 +71,15 @@ class RateLimitIntegrationTest {
     void loginIsLimited() throws Exception {
         String body = "{\"username\":\"nobody\",\"password\":\"wrong-password\"}";
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(json("/api/auth/login", body)).andExpect(status().isUnauthorized());
+            mockMvc.perform(json("/api/v1/auth/login", body)).andExpect(status().isUnauthorized());
         }
 
-        MvcResult limited = mockMvc.perform(json("/api/auth/login", body))
+        MvcResult limited = mockMvc.perform(json("/api/v1/auth/login", body))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(header().exists("Retry-After"))
                 .andExpect(jsonPath("$.errorCode").value("RATE_LIMIT_EXCEEDED"))
                 .andExpect(jsonPath("$.status").value(429))
-                .andExpect(jsonPath("$.path").value("/api/auth/login"))
+                .andExpect(jsonPath("$.path").value("/api/v1/auth/login"))
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.traceId").exists())
@@ -92,16 +92,16 @@ class RateLimitIntegrationTest {
     @DisplayName("percent-encoded and trailing-slash paths share the login bucket")
     void encodedLoginPathsAreLimited() throws Exception {
         String body = "{\"username\":\"nobody\",\"password\":\"wrong-password\"}";
-        String[] variants = {"/api/auth/l%6Fgin", "/api/auth/%6Cogin", "/api/auth/log%69n"};
+        String[] variants = {"/api/v1/auth/l%6Fgin", "/api/v1/auth/%6Cogin", "/api/v1/auth/log%69n"};
         for (String variant : variants) {
             mockMvc.perform(post(URI.create(variant)).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isUnauthorized());
         }
 
-        assertRateLimited(mockMvc.perform(json("/api/auth/login", body)).andReturn());
-        assertRateLimited(mockMvc.perform(post(URI.create("/api/auth/l%6Fgin"))
+        assertRateLimited(mockMvc.perform(json("/api/v1/auth/login", body)).andReturn());
+        assertRateLimited(mockMvc.perform(post(URI.create("/api/v1/auth/l%6Fgin"))
                 .contentType(MediaType.APPLICATION_JSON).content(body)).andReturn());
-        assertRateLimited(mockMvc.perform(json("/api/auth/login/", body)).andReturn());
+        assertRateLimited(mockMvc.perform(json("/api/v1/auth/login/", body)).andReturn());
     }
 
     @Test
@@ -109,11 +109,11 @@ class RateLimitIntegrationTest {
     void encodedRefreshPathIsLimited() throws Exception {
         String body = "{\"refreshToken\":\"unknown\"}";
         for (int i = 0; i < 2; i++) {
-            mockMvc.perform(post(URI.create("/api/auth/refre%73h")).contentType(MediaType.APPLICATION_JSON)
+            mockMvc.perform(post(URI.create("/api/v1/auth/refre%73h")).contentType(MediaType.APPLICATION_JSON)
                     .content(body)).andExpect(status().isUnauthorized());
         }
 
-        assertRateLimited(mockMvc.perform(post(URI.create("/api/auth/refre%73h"))
+        assertRateLimited(mockMvc.perform(post(URI.create("/api/v1/auth/refre%73h"))
                 .contentType(MediaType.APPLICATION_JSON).content(body)).andReturn());
     }
 
@@ -122,10 +122,10 @@ class RateLimitIntegrationTest {
     void registerIsLimited() throws Exception {
         String body = "{\"username\":\"x\",\"email\":\"bad\",\"password\":\"short\"}";
         for (int i = 0; i < 2; i++) {
-            mockMvc.perform(json("/api/auth/register", body)).andExpect(status().isBadRequest());
+            mockMvc.perform(json("/api/v1/auth/register", body)).andExpect(status().isBadRequest());
         }
 
-        assertRateLimited(mockMvc.perform(json("/api/auth/register", body)).andReturn());
+        assertRateLimited(mockMvc.perform(json("/api/v1/auth/register", body)).andReturn());
     }
 
     @Test
@@ -133,10 +133,10 @@ class RateLimitIntegrationTest {
     void refreshIsLimited() throws Exception {
         String body = "{\"refreshToken\":\"unknown\"}";
         for (int i = 0; i < 2; i++) {
-            mockMvc.perform(json("/api/auth/refresh", body)).andExpect(status().isUnauthorized());
+            mockMvc.perform(json("/api/v1/auth/refresh", body)).andExpect(status().isUnauthorized());
         }
 
-        assertRateLimited(mockMvc.perform(json("/api/auth/refresh", body)).andReturn());
+        assertRateLimited(mockMvc.perform(json("/api/v1/auth/refresh", body)).andReturn());
     }
 
     @Test
@@ -144,10 +144,10 @@ class RateLimitIntegrationTest {
     void passwordResetIsLimited() throws Exception {
         String body = "{\"email\":\"someone@example.com\"}";
         for (int i = 0; i < 2; i++) {
-            mockMvc.perform(json("/api/auth/forgot-password", body)).andExpect(status().isOk());
+            mockMvc.perform(json("/api/v1/auth/forgot-password", body)).andExpect(status().isOk());
         }
 
-        assertRateLimited(mockMvc.perform(json("/api/auth/forgot-password", body)).andReturn());
+        assertRateLimited(mockMvc.perform(json("/api/v1/auth/forgot-password", body)).andReturn());
     }
 
     @Test
@@ -155,23 +155,23 @@ class RateLimitIntegrationTest {
     void rentalRequestsAreLimited() throws Exception {
         String body = "{\"carId\":1}";
         for (int i = 0; i < 2; i++) {
-            MvcResult result = mockMvc.perform(json("/api/rentals/request", body)).andReturn();
+            MvcResult result = mockMvc.perform(json("/api/v1/rentals/request", body)).andReturn();
             assertThat(result.getResponse().getStatus()).isNotEqualTo(429);
         }
 
-        assertRateLimited(mockMvc.perform(json("/api/rentals/request", body)).andReturn());
+        assertRateLimited(mockMvc.perform(json("/api/v1/rentals/request", body)).andReturn());
     }
 
     @Test
     @DisplayName("the OAuth2 callback is limited")
     void oauth2CallbackIsLimited() throws Exception {
         for (int i = 0; i < 2; i++) {
-            MvcResult result = mockMvc.perform(get("/api/oauth2/callback/google")
+            MvcResult result = mockMvc.perform(get("/api/v1/oauth2/callback/google")
                     .param("code", "c").param("state", "invalid")).andReturn();
             assertThat(result.getResponse().getStatus()).isNotEqualTo(429);
         }
 
-        assertRateLimited(mockMvc.perform(get("/api/oauth2/callback/google")
+        assertRateLimited(mockMvc.perform(get("/api/v1/oauth2/callback/google")
                 .param("code", "c").param("state", "invalid")).andReturn());
     }
 
@@ -180,11 +180,11 @@ class RateLimitIntegrationTest {
     void forwardedHeadersIgnoredByDefault() throws Exception {
         String body = "{\"username\":\"nobody\",\"password\":\"wrong-password\"}";
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(json("/api/auth/login", body).header("X-Forwarded-For", "198.51.100." + i))
+            mockMvc.perform(json("/api/v1/auth/login", body).header("X-Forwarded-For", "198.51.100." + i))
                     .andExpect(status().isUnauthorized());
         }
 
-        assertRateLimited(mockMvc.perform(json("/api/auth/login", body).header("X-Forwarded-For", "198.51.100.99"))
+        assertRateLimited(mockMvc.perform(json("/api/v1/auth/login", body).header("X-Forwarded-For", "198.51.100.99"))
                 .andReturn());
     }
 
@@ -193,11 +193,11 @@ class RateLimitIntegrationTest {
     void differentClientsAreIndependent() throws Exception {
         String body = "{\"username\":\"nobody\",\"password\":\"wrong-password\"}";
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(json("/api/auth/login", body)).andExpect(status().isUnauthorized());
+            mockMvc.perform(json("/api/v1/auth/login", body)).andExpect(status().isUnauthorized());
         }
-        assertRateLimited(mockMvc.perform(json("/api/auth/login", body)).andReturn());
+        assertRateLimited(mockMvc.perform(json("/api/v1/auth/login", body)).andReturn());
 
-        mockMvc.perform(json("/api/auth/login", body).with(request -> {
+        mockMvc.perform(json("/api/v1/auth/login", body).with(request -> {
                     request.setRemoteAddr("203.0.113.50");
                     return request;
                 }))
@@ -208,7 +208,7 @@ class RateLimitIntegrationTest {
     @DisplayName("unthrottled endpoints are never limited")
     void otherEndpointsUnaffected() throws Exception {
         for (int i = 0; i < 10; i++) {
-            mockMvc.perform(get("/api/cars")).andExpect(status().isOk());
+            mockMvc.perform(get("/api/v1/cars")).andExpect(status().isOk());
         }
     }
 }

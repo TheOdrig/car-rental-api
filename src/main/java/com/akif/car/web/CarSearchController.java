@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 
 @RestController
-@RequestMapping("/api/cars/search")
+@RequestMapping("/api/v1/cars/search")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Car Search", description = "Search and filtering operations for cars")
@@ -41,7 +41,7 @@ public class CarSearchController {
     })
     public ResponseEntity<CarListResponse> searchCars(
             @Parameter(description = "Search criteria", required = true) @Valid @RequestBody CarSearchRequest searchRequest) {
-        log.debug("POST /api/cars/search - Searching cars with criteria: {}", searchRequest);
+        log.debug("POST /api/v1/cars/search - Searching cars with criteria: {}", searchRequest);
         CarListResponse result = carService.searchCars(searchRequest);
         log.info("Search completed: found {} cars", result.totalElements());
         return ResponseEntity.ok(result);

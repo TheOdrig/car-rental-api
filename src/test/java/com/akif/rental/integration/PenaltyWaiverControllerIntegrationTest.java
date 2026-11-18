@@ -154,7 +154,7 @@ class PenaltyWaiverControllerIntegrationTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
-    @DisplayName("POST /api/admin/rentals/{id}/penalty/waive - Should waive full penalty")
+    @DisplayName("POST /api/v1/admin/rentals/{id}/penalty/waive - Should waive full penalty")
     void shouldWaiveFullPenalty() throws Exception {
         PenaltyWaiverRequest request = new PenaltyWaiverRequest(
                 null,
@@ -162,7 +162,7 @@ class PenaltyWaiverControllerIntegrationTest {
                 true
         );
 
-        mockMvc.perform(post("/api/admin/rentals/{id}/penalty/waive", lateRental.getId())
+        mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", lateRental.getId())
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -179,7 +179,7 @@ class PenaltyWaiverControllerIntegrationTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
-    @DisplayName("POST /api/admin/rentals/{id}/penalty/waive - Should waive partial penalty")
+    @DisplayName("POST /api/v1/admin/rentals/{id}/penalty/waive - Should waive partial penalty")
     void shouldWaivePartialPenalty() throws Exception {
         PenaltyWaiverRequest request = new PenaltyWaiverRequest(
                 new BigDecimal("500"),
@@ -187,7 +187,7 @@ class PenaltyWaiverControllerIntegrationTest {
                 false
         );
 
-        mockMvc.perform(post("/api/admin/rentals/{id}/penalty/waive", lateRental.getId())
+        mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", lateRental.getId())
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -203,7 +203,7 @@ class PenaltyWaiverControllerIntegrationTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
-    @DisplayName("POST /api/admin/rentals/{id}/penalty/waive - Should reject invalid waiver amount")
+    @DisplayName("POST /api/v1/admin/rentals/{id}/penalty/waive - Should reject invalid waiver amount")
     void shouldRejectInvalidWaiverAmount() throws Exception {
         PenaltyWaiverRequest request = new PenaltyWaiverRequest(
                 new BigDecimal("-100"),
@@ -211,7 +211,7 @@ class PenaltyWaiverControllerIntegrationTest {
                 false
         );
 
-        mockMvc.perform(post("/api/admin/rentals/{id}/penalty/waive", lateRental.getId())
+        mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", lateRental.getId())
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -220,7 +220,7 @@ class PenaltyWaiverControllerIntegrationTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
-    @DisplayName("POST /api/admin/rentals/{id}/penalty/waive - Should reject short reason")
+    @DisplayName("POST /api/v1/admin/rentals/{id}/penalty/waive - Should reject short reason")
     void shouldRejectShortReason() throws Exception {
         PenaltyWaiverRequest request = new PenaltyWaiverRequest(
                 null,
@@ -228,7 +228,7 @@ class PenaltyWaiverControllerIntegrationTest {
                 true
         );
 
-        mockMvc.perform(post("/api/admin/rentals/{id}/penalty/waive", lateRental.getId())
+        mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", lateRental.getId())
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -237,7 +237,7 @@ class PenaltyWaiverControllerIntegrationTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
-    @DisplayName("GET /api/admin/rentals/{id}/penalty/history - Should return penalty history")
+    @DisplayName("GET /api/v1/admin/rentals/{id}/penalty/history - Should return penalty history")
     void shouldReturnPenaltyHistory() throws Exception {
         PenaltyWaiver waiver = PenaltyWaiver.builder()
                 .rental(lateRental)
@@ -251,7 +251,7 @@ class PenaltyWaiverControllerIntegrationTest {
                 .build();
         penaltyWaiverRepository.save(waiver);
 
-        mockMvc.perform(get("/api/admin/rentals/{id}/penalty/history", lateRental.getId()))
+        mockMvc.perform(get("/api/v1/admin/rentals/{id}/penalty/history", lateRental.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray())
@@ -266,9 +266,9 @@ class PenaltyWaiverControllerIntegrationTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
-    @DisplayName("GET /api/admin/rentals/{id}/penalty/history - Should return empty list for no waivers")
+    @DisplayName("GET /api/v1/admin/rentals/{id}/penalty/history - Should return empty list for no waivers")
     void shouldReturnEmptyListForNoWaivers() throws Exception {
-        mockMvc.perform(get("/api/admin/rentals/{id}/penalty/history", lateRental.getId()))
+        mockMvc.perform(get("/api/v1/admin/rentals/{id}/penalty/history", lateRental.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray())
@@ -277,7 +277,7 @@ class PenaltyWaiverControllerIntegrationTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
-    @DisplayName("GET /api/admin/rentals/{id}/penalty/history - Should return multiple waivers")
+    @DisplayName("GET /api/v1/admin/rentals/{id}/penalty/history - Should return multiple waivers")
     void shouldReturnMultipleWaivers() throws Exception {
         PenaltyWaiver waiver1 = PenaltyWaiver.builder()
                 .rental(lateRental)
@@ -303,7 +303,7 @@ class PenaltyWaiverControllerIntegrationTest {
                 .build();
         penaltyWaiverRepository.save(waiver2);
 
-        mockMvc.perform(get("/api/admin/rentals/{id}/penalty/history", lateRental.getId()))
+        mockMvc.perform(get("/api/v1/admin/rentals/{id}/penalty/history", lateRental.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray())
@@ -312,7 +312,7 @@ class PenaltyWaiverControllerIntegrationTest {
 
     @Test
     @WithMockUser(username = "test@example.com", roles = "USER")
-    @DisplayName("POST /api/admin/rentals/{id}/penalty/waive - Should deny access for non-admin")
+    @DisplayName("POST /api/v1/admin/rentals/{id}/penalty/waive - Should deny access for non-admin")
     void shouldDenyAccessForNonAdminWaive() throws Exception {
         PenaltyWaiverRequest request = new PenaltyWaiverRequest(
                 null,
@@ -320,7 +320,7 @@ class PenaltyWaiverControllerIntegrationTest {
                 true
         );
 
-        mockMvc.perform(post("/api/admin/rentals/{id}/penalty/waive", lateRental.getId())
+        mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", lateRental.getId())
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -328,7 +328,7 @@ class PenaltyWaiverControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST /api/admin/rentals/{id}/penalty/waive - Should deny access for unauthenticated")
+    @DisplayName("POST /api/v1/admin/rentals/{id}/penalty/waive - Should deny access for unauthenticated")
     void shouldDenyAccessForUnauthenticatedWaive() throws Exception {
         PenaltyWaiverRequest request = new PenaltyWaiverRequest(
                 null,
@@ -336,7 +336,7 @@ class PenaltyWaiverControllerIntegrationTest {
                 true
         );
 
-        mockMvc.perform(post("/api/admin/rentals/{id}/penalty/waive", lateRental.getId())
+        mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", lateRental.getId())
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -345,22 +345,22 @@ class PenaltyWaiverControllerIntegrationTest {
 
     @Test
     @WithMockUser(username = "test@example.com", roles = "USER")
-    @DisplayName("GET /api/admin/rentals/{id}/penalty/history - Should deny access for non-admin")
+    @DisplayName("GET /api/v1/admin/rentals/{id}/penalty/history - Should deny access for non-admin")
     void shouldDenyAccessForNonAdminHistory() throws Exception {
-        mockMvc.perform(get("/api/admin/rentals/{id}/penalty/history", lateRental.getId()))
+        mockMvc.perform(get("/api/v1/admin/rentals/{id}/penalty/history", lateRental.getId()))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    @DisplayName("GET /api/admin/rentals/{id}/penalty/history - Should deny access for unauthenticated")
+    @DisplayName("GET /api/v1/admin/rentals/{id}/penalty/history - Should deny access for unauthenticated")
     void shouldDenyAccessForUnauthenticatedHistory() throws Exception {
-        mockMvc.perform(get("/api/admin/rentals/{id}/penalty/history", lateRental.getId()))
+        mockMvc.perform(get("/api/v1/admin/rentals/{id}/penalty/history", lateRental.getId()))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
-    @DisplayName("POST /api/admin/rentals/{id}/penalty/waive - Should return 404 for non-existent rental")
+    @DisplayName("POST /api/v1/admin/rentals/{id}/penalty/waive - Should return 404 for non-existent rental")
     void shouldReturn404ForNonExistentRental() throws Exception {
         PenaltyWaiverRequest request = new PenaltyWaiverRequest(
                 null,
@@ -368,7 +368,7 @@ class PenaltyWaiverControllerIntegrationTest {
                 true
         );
 
-        mockMvc.perform(post("/api/admin/rentals/{id}/penalty/waive", 99999L)
+        mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", 99999L)
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

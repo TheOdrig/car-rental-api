@@ -19,7 +19,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 @RestController
-@RequestMapping("/api/webhooks")
+@RequestMapping("/api/v1/webhooks")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Webhooks", description = "Stripe webhook endpoints")

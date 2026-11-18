@@ -101,7 +101,7 @@ class BookingIntegrityIntegrationTest {
     }
 
     private MvcResult book(String bearer, Long carId, LocalDate from, LocalDate to) throws Exception {
-        return mockMvc.perform(post("/api/rentals/request")
+        return mockMvc.perform(post("/api/v1/rentals/request")
                         .header("Authorization", bearer)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new RentalRequest(carId, from, to, "booking"))))
@@ -272,7 +272,7 @@ class BookingIntegrityIntegrationTest {
         MvcResult created = book(ownerToken, car.getId(), start, end);
         long rentalId = objectMapper.readTree(created.getResponse().getContentAsString()).get("id").asLong();
 
-        mockMvc.perform(post("/api/rentals/{id}/cancel", rentalId)
+        mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                         .header("Authorization", ownerToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"reason\":\"no longer needed\"}"))

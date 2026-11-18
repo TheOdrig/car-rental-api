@@ -126,14 +126,14 @@ public class SecurityConfigTest {
         @Test
         @DisplayName("Should allow access to public endpoints without JWT token")
         void shouldAllowAccessToPublicEndpointsWithoutJWT() throws Exception {
-            mockMvc.perform(get("/api/cars"))
+            mockMvc.perform(get("/api/v1/cars"))
                     .andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("Should allow access to car details without JWT token")
         void shouldAllowAccessToCarDetailsWithoutJWT() throws Exception {
-            mockMvc.perform(get("/api/cars/" + testCar.getId()))
+            mockMvc.perform(get("/api/v1/cars/" + testCar.getId()))
                     .andExpect(status().isOk());
         }
 
@@ -159,14 +159,14 @@ public class SecurityConfigTest {
         @Test
         @DisplayName("Should deny access to protected endpoint without JWT token")
         void shouldDenyAccessWithoutToken() throws Exception {
-            mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve"))
+            mockMvc.perform(get("/api/v1/cars/business/" + testCar.getId() + "/can-reserve"))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("Should deny access with invalid JWT token")
         void shouldDenyAccessWithInvalidToken() throws Exception {
-            mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve")
+            mockMvc.perform(get("/api/v1/cars/business/" + testCar.getId() + "/can-reserve")
                             .header("Authorization", "Bearer invalid.token.here"))
                     .andExpect(status().isUnauthorized());
         }
@@ -174,7 +174,7 @@ public class SecurityConfigTest {
         @Test
         @DisplayName("Should deny access with malformed Authorization header")
         void shouldDenyAccessWithMalformedHeader() throws Exception {
-            mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve")
+            mockMvc.perform(get("/api/v1/cars/business/" + testCar.getId() + "/can-reserve")
                             .header("Authorization", "InvalidFormat token"))
                     .andExpect(status().isUnauthorized());
         }
@@ -182,7 +182,7 @@ public class SecurityConfigTest {
         @Test
         @DisplayName("Should deny access with empty Bearer token")
         void shouldDenyAccessWithEmptyBearerToken() throws Exception {
-            mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve")
+            mockMvc.perform(get("/api/v1/cars/business/" + testCar.getId() + "/can-reserve")
                             .header("Authorization", "Bearer "))
                     .andExpect(status().isUnauthorized());
         }
@@ -190,7 +190,7 @@ public class SecurityConfigTest {
         @Test
         @DisplayName("Should deny access with empty Authorization header")
         void shouldDenyAccessWithEmptyAuthHeader() throws Exception {
-            mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve")
+            mockMvc.perform(get("/api/v1/cars/business/" + testCar.getId() + "/can-reserve")
                             .header("Authorization", ""))
                     .andExpect(status().isUnauthorized());
         }
@@ -198,7 +198,7 @@ public class SecurityConfigTest {
         @Test
         @DisplayName("Should allow access to protected endpoint with valid JWT token")
         void shouldAllowAccessWithValidToken() throws Exception {
-            mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve")
+            mockMvc.perform(get("/api/v1/cars/business/" + testCar.getId() + "/can-reserve")
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
         }
@@ -211,7 +211,7 @@ public class SecurityConfigTest {
         @Test
         @DisplayName("Should allow USER role to access public endpoints with JWT")
         void shouldAllowUserRoleToAccessPublicEndpoints() throws Exception {
-            mockMvc.perform(get("/api/cars")
+            mockMvc.perform(get("/api/v1/cars")
                             .header("Authorization", "Bearer " + userToken))
                     .andExpect(status().isOk());
         }
@@ -219,7 +219,7 @@ public class SecurityConfigTest {
         @Test
         @DisplayName("Should deny USER role access to ADMIN-only business endpoints")
         void shouldDenyUserRoleAccessToAdminEndpoints() throws Exception {
-            mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve")
+            mockMvc.perform(get("/api/v1/cars/business/" + testCar.getId() + "/can-reserve")
                             .header("Authorization", "Bearer " + userToken))
                     .andExpect(status().isForbidden());
         }
@@ -227,7 +227,7 @@ public class SecurityConfigTest {
         @Test
         @DisplayName("Should allow ADMIN role to access business endpoints")
         void shouldAllowAdminRoleToAccessBusinessEndpoints() throws Exception {
-            mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve")
+            mockMvc.perform(get("/api/v1/cars/business/" + testCar.getId() + "/can-reserve")
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
         }
@@ -235,7 +235,7 @@ public class SecurityConfigTest {
         @Test
         @DisplayName("Should allow ADMIN role to access car listing with JWT")
         void shouldAllowAdminRoleToAccessCarListing() throws Exception {
-            mockMvc.perform(get("/api/cars")
+            mockMvc.perform(get("/api/v1/cars")
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
         }
@@ -243,7 +243,7 @@ public class SecurityConfigTest {
         @Test
         @DisplayName("Should deny USER role to delete cars")
         void shouldDenyUserRoleToDeleteCars() throws Exception {
-            mockMvc.perform(delete("/api/cars/" + testCar.getId())
+            mockMvc.perform(delete("/api/v1/cars/" + testCar.getId())
                             .header("Authorization", "Bearer " + userToken))
                     .andExpect(status().isForbidden());
         }
@@ -251,7 +251,7 @@ public class SecurityConfigTest {
         @Test
         @DisplayName("Should allow ADMIN role to delete cars")
         void shouldAllowAdminRoleToDeleteCars() throws Exception {
-            mockMvc.perform(delete("/api/cars/" + testCar.getId())
+            mockMvc.perform(delete("/api/v1/cars/" + testCar.getId())
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isNoContent());
         }
@@ -264,14 +264,14 @@ public class SecurityConfigTest {
         @Test
         @DisplayName("Should return 403 for missing JWT on protected endpoint")
         void shouldReturn403ForMissingJWT() throws Exception {
-            mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve"))
+            mockMvc.perform(get("/api/v1/cars/business/" + testCar.getId() + "/can-reserve"))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("Should return 403 for insufficient role with valid JWT")
         void shouldReturn403ForInsufficientRole() throws Exception {
-            mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve")
+            mockMvc.perform(get("/api/v1/cars/business/" + testCar.getId() + "/can-reserve")
                             .header("Authorization", "Bearer " + userToken))
                     .andExpect(status().isForbidden());
         }
@@ -279,7 +279,7 @@ public class SecurityConfigTest {
         @Test
         @DisplayName("Should return 200 for sufficient role with valid JWT")
         void shouldReturn200ForSufficientRole() throws Exception {
-            mockMvc.perform(get("/api/cars/business/" + testCar.getId() + "/can-reserve")
+            mockMvc.perform(get("/api/v1/cars/business/" + testCar.getId() + "/can-reserve")
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
         }

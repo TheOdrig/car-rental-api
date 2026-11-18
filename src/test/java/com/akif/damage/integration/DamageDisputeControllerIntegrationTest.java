@@ -177,7 +177,7 @@ class DamageDisputeControllerIntegrationTest {
                 DamageCategory.DENT
         );
 
-        String reportResponse = mockMvc.perform(post("/api/admin/damages")
+        String reportResponse = mockMvc.perform(post("/api/v1/admin/damages")
                         .header("Authorization", adminToken)
                         .param("rentalId", testRental.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -198,7 +198,7 @@ class DamageDisputeControllerIntegrationTest {
                 "Assessment for dispute test"
         );
 
-        mockMvc.perform(post("/api/admin/damages/{id}/assess", damageId)
+        mockMvc.perform(post("/api/v1/admin/damages/{id}/assess", damageId)
                         .header("Authorization", adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(assessRequest)))
@@ -230,7 +230,7 @@ class DamageDisputeControllerIntegrationTest {
                     "The damage was pre-existing when I picked up the car"
             );
 
-            mockMvc.perform(post("/api/damages/{id}/dispute", damageId)
+            mockMvc.perform(post("/api/v1/damages/{id}/dispute", damageId)
                             .header("Authorization", userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -251,7 +251,7 @@ class DamageDisputeControllerIntegrationTest {
                     "Comments"
             );
 
-            mockMvc.perform(post("/api/damages/{id}/dispute", damageId)
+            mockMvc.perform(post("/api/v1/damages/{id}/dispute", damageId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isUnauthorized());
@@ -265,7 +265,7 @@ class DamageDisputeControllerIntegrationTest {
                     "Comments"
             );
 
-            mockMvc.perform(post("/api/damages/{id}/dispute", 99999)
+            mockMvc.perform(post("/api/v1/damages/{id}/dispute", 99999)
                             .header("Authorization", userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -288,7 +288,7 @@ class DamageDisputeControllerIntegrationTest {
                     "I want reconsideration"
             );
 
-            mockMvc.perform(post("/api/damages/{id}/dispute", damageId)
+            mockMvc.perform(post("/api/v1/damages/{id}/dispute", damageId)
                             .header("Authorization", userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(disputeRequest)))
@@ -300,7 +300,7 @@ class DamageDisputeControllerIntegrationTest {
                     "After review, liability adjusted to 50%"
             );
 
-            mockMvc.perform(post("/api/admin/damages/{id}/resolve", damageId)
+            mockMvc.perform(post("/api/v1/admin/damages/{id}/resolve", damageId)
                             .header("Authorization", adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(resolution)))
@@ -321,7 +321,7 @@ class DamageDisputeControllerIntegrationTest {
                     "No valid evidence"
             );
 
-            mockMvc.perform(post("/api/damages/{id}/dispute", damageId)
+            mockMvc.perform(post("/api/v1/damages/{id}/dispute", damageId)
                             .header("Authorization", userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(disputeRequest)))
@@ -333,7 +333,7 @@ class DamageDisputeControllerIntegrationTest {
                     "Dispute rejected - damage clearly occurred during rental period"
             );
 
-            mockMvc.perform(post("/api/admin/damages/{id}/resolve", damageId)
+            mockMvc.perform(post("/api/v1/admin/damages/{id}/resolve", damageId)
                             .header("Authorization", adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(resolution)))
@@ -352,7 +352,7 @@ class DamageDisputeControllerIntegrationTest {
                     "Comments"
             );
 
-            mockMvc.perform(post("/api/damages/{id}/dispute", damageId)
+            mockMvc.perform(post("/api/v1/damages/{id}/dispute", damageId)
                             .header("Authorization", userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(disputeRequest)))
@@ -364,7 +364,7 @@ class DamageDisputeControllerIntegrationTest {
                     "User trying to resolve"
             );
 
-            mockMvc.perform(post("/api/admin/damages/{id}/resolve", damageId)
+            mockMvc.perform(post("/api/v1/admin/damages/{id}/resolve", damageId)
                             .header("Authorization", userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(resolution)))
@@ -386,7 +386,7 @@ class DamageDisputeControllerIntegrationTest {
                     DamageCategory.TIRE_DAMAGE
             );
 
-            String reportResponse = mockMvc.perform(post("/api/admin/damages")
+            String reportResponse = mockMvc.perform(post("/api/v1/admin/damages")
                             .header("Authorization", adminToken)
                             .param("rentalId", testRental.getId().toString())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -408,7 +408,7 @@ class DamageDisputeControllerIntegrationTest {
                     "Tire replacement needed"
             );
 
-            mockMvc.perform(post("/api/admin/damages/{id}/assess", damageId)
+            mockMvc.perform(post("/api/v1/admin/damages/{id}/assess", damageId)
                             .header("Authorization", adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(assessRequest)))
@@ -421,7 +421,7 @@ class DamageDisputeControllerIntegrationTest {
                     "I have photos from pickup showing worn tire"
             );
 
-            mockMvc.perform(post("/api/damages/{id}/dispute", damageId)
+            mockMvc.perform(post("/api/v1/damages/{id}/dispute", damageId)
                             .header("Authorization", userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(disputeRequest)))
@@ -434,7 +434,7 @@ class DamageDisputeControllerIntegrationTest {
                     "50% reduction due to pre-existing wear"
             );
 
-            mockMvc.perform(post("/api/admin/damages/{id}/resolve", damageId)
+            mockMvc.perform(post("/api/v1/admin/damages/{id}/resolve", damageId)
                             .header("Authorization", adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(resolution)))

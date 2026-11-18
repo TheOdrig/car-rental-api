@@ -158,7 +158,7 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
         eventCaptor.clear();
         ReturnRequest returnRequest = new ReturnRequest("Late return");
 
-        mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+        mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(returnRequest)))
@@ -260,7 +260,7 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
 
         ReturnRequest returnRequest = new ReturnRequest("Late return");
 
-        mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+        mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(returnRequest)))
@@ -293,7 +293,7 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
 
         ReturnRequest returnRequest = new ReturnRequest("Late return");
 
-        mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+        mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(returnRequest)))
@@ -311,7 +311,7 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
                 null
         );
 
-        mockMvc.perform(post("/api/admin/rentals/{id}/penalty/waive", rentalId)
+        mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", rentalId)
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(waiverRequest)))
@@ -349,7 +349,7 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
 
         ReturnRequest returnRequest = new ReturnRequest("Late return");
 
-        mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+        mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(returnRequest)))
@@ -366,13 +366,13 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
                 null
         );
 
-        mockMvc.perform(post("/api/admin/rentals/{id}/penalty/waive", rentalId)
+        mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", rentalId)
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(waiverRequest)))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/admin/rentals/{id}/penalty/history", rentalId)
+        mockMvc.perform(get("/api/v1/admin/rentals/{id}/penalty/history", rentalId)
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())

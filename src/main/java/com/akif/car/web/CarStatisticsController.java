@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/cars/statistics")
+@RequestMapping("/api/v1/cars/statistics")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Car Statistics", description = "Statistics and analytics for cars")
@@ -108,7 +108,7 @@ public class CarStatisticsController {
     })
     public ResponseEntity<Map<String, Object>> validateCarData(
             @Parameter(description = "Car data to validate", required = true) @Valid @RequestBody CarRequest carRequest) {
-        log.info("POST /api/cars/statistics/validate");
+        log.info("POST /api/v1/cars/statistics/validate");
 
         List<String> errors = carService.validateCarData(carRequest);
         boolean isValid = errors.isEmpty();

@@ -152,9 +152,9 @@ class LateReturnControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("GET /api/admin/late-returns - Should return late returns report")
+    @DisplayName("GET /api/v1/admin/late-returns - Should return late returns report")
     void shouldReturnLateReturnsReport() throws Exception {
-        mockMvc.perform(get("/api/admin/late-returns")
+        mockMvc.perform(get("/api/v1/admin/late-returns")
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
@@ -170,12 +170,12 @@ class LateReturnControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("GET /api/admin/late-returns - Should filter by date range")
+    @DisplayName("GET /api/v1/admin/late-returns - Should filter by date range")
     void shouldFilterByDateRange() throws Exception {
         LocalDate startDate = LocalDate.now().minusDays(6);
         LocalDate endDate = LocalDate.now().minusDays(1);
 
-        mockMvc.perform(get("/api/admin/late-returns")
+        mockMvc.perform(get("/api/v1/admin/late-returns")
                         .param("startDate", startDate.toString())
                         .param("endDate", endDate.toString())
                         .param("page", "0")
@@ -188,9 +188,9 @@ class LateReturnControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("GET /api/admin/late-returns - Should filter by status")
+    @DisplayName("GET /api/v1/admin/late-returns - Should filter by status")
     void shouldFilterByStatus() throws Exception {
-        mockMvc.perform(get("/api/admin/late-returns")
+        mockMvc.perform(get("/api/v1/admin/late-returns")
                         .param("status", "SEVERELY_LATE")
                         .param("page", "0")
                         .param("size", "10"))
@@ -202,9 +202,9 @@ class LateReturnControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("GET /api/admin/late-returns - Should sort by penalty amount")
+    @DisplayName("GET /api/v1/admin/late-returns - Should sort by penalty amount")
     void shouldSortByPenaltyAmount() throws Exception {
-        mockMvc.perform(get("/api/admin/late-returns")
+        mockMvc.perform(get("/api/v1/admin/late-returns")
                         .param("sortBy", "penaltyAmount")
                         .param("sortDirection", "DESC")
                         .param("page", "0")
@@ -218,9 +218,9 @@ class LateReturnControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("GET /api/admin/late-returns/statistics - Should return statistics")
+    @DisplayName("GET /api/v1/admin/late-returns/statistics - Should return statistics")
     void shouldReturnStatistics() throws Exception {
-        mockMvc.perform(get("/api/admin/late-returns/statistics"))
+        mockMvc.perform(get("/api/v1/admin/late-returns/statistics"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.totalLateReturns").value(2))
@@ -234,12 +234,12 @@ class LateReturnControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("GET /api/admin/late-returns/statistics - Should filter statistics by date range")
+    @DisplayName("GET /api/v1/admin/late-returns/statistics - Should filter statistics by date range")
     void shouldFilterStatisticsByDateRange() throws Exception {
         LocalDate startDate = LocalDate.now().minusDays(6);
         LocalDate endDate = LocalDate.now().minusDays(1);
 
-        mockMvc.perform(get("/api/admin/late-returns/statistics")
+        mockMvc.perform(get("/api/v1/admin/late-returns/statistics")
                         .param("startDate", startDate.toString())
                         .param("endDate", endDate.toString()))
                 .andExpect(status().isOk())
@@ -250,31 +250,31 @@ class LateReturnControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    @DisplayName("GET /api/admin/late-returns - Should deny access for non-admin")
+    @DisplayName("GET /api/v1/admin/late-returns - Should deny access for non-admin")
     void shouldDenyAccessForNonAdmin() throws Exception {
-        mockMvc.perform(get("/api/admin/late-returns"))
+        mockMvc.perform(get("/api/v1/admin/late-returns"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    @DisplayName("GET /api/admin/late-returns - Should deny access for unauthenticated")
+    @DisplayName("GET /api/v1/admin/late-returns - Should deny access for unauthenticated")
     void shouldDenyAccessForUnauthenticated() throws Exception {
-        mockMvc.perform(get("/api/admin/late-returns"))
+        mockMvc.perform(get("/api/v1/admin/late-returns"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     @WithMockUser(roles = "USER")
-    @DisplayName("GET /api/admin/late-returns/statistics - Should deny access for non-admin")
+    @DisplayName("GET /api/v1/admin/late-returns/statistics - Should deny access for non-admin")
     void shouldDenyAccessForNonAdminStatistics() throws Exception {
-        mockMvc.perform(get("/api/admin/late-returns/statistics"))
+        mockMvc.perform(get("/api/v1/admin/late-returns/statistics"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    @DisplayName("GET /api/admin/late-returns/statistics - Should deny access for unauthenticated")
+    @DisplayName("GET /api/v1/admin/late-returns/statistics - Should deny access for unauthenticated")
     void shouldDenyAccessForUnauthenticatedStatistics() throws Exception {
-        mockMvc.perform(get("/api/admin/late-returns/statistics"))
+        mockMvc.perform(get("/api/v1/admin/late-returns/statistics"))
                 .andExpect(status().isUnauthorized());
     }
 }

@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/users")
+@RequestMapping("/api/v1/admin/users")
 @RequiredArgsConstructor
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
@@ -52,7 +52,7 @@ public class AdminUserController {
     public ResponseEntity<UserStatsResponse> getStats(
             @AuthenticationPrincipal UserDetails adminUser) {
 
-        log.info("GET /api/admin/users/stats - Admin: {}", adminUser.getUsername());
+        log.info("GET /api/v1/admin/users/stats - Admin: {}", adminUser.getUsername());
 
         UserStatsResponse stats = adminUserService.getStats();
 
@@ -73,7 +73,7 @@ public class AdminUserController {
             @PageableDefault(size = 20, sort = "createTime", direction = Sort.Direction.DESC) Pageable pageable,
             @AuthenticationPrincipal UserDetails adminUser) {
 
-        log.info("GET /api/admin/users - Admin: {}, Role: {}, Status: {}, Search: {}",
+        log.info("GET /api/v1/admin/users - Admin: {}, Role: {}, Status: {}, Search: {}",
                 adminUser.getUsername(), role, status, search);
 
         Page<AdminUserListItem> users = adminUserService.getAllUsers(role, status, search, pageable);
@@ -93,7 +93,7 @@ public class AdminUserController {
             @Parameter(description = "User ID", required = true) @PathVariable Long id,
             @AuthenticationPrincipal UserDetails adminUser) {
 
-        log.info("GET /api/admin/users/{} - Admin: {}", id, adminUser.getUsername());
+        log.info("GET /api/v1/admin/users/{} - Admin: {}", id, adminUser.getUsername());
 
         AdminUserDetailResponse userDetail = adminUserService.getUserDetailForAdmin(id);
 
@@ -114,7 +114,7 @@ public class AdminUserController {
             @Valid @RequestBody BanUserRequest request,
             @AuthenticationPrincipal UserDetails adminUser) {
 
-        log.info("POST /api/admin/users/{}/ban - Admin: {}", id, adminUser.getUsername());
+        log.info("POST /api/v1/admin/users/{}/ban - Admin: {}", id, adminUser.getUsername());
 
         UserDto admin = authService.getUserByUsername(adminUser.getUsername());
         adminUserService.banUser(id, request.reason(), admin.id());
@@ -136,7 +136,7 @@ public class AdminUserController {
             @Valid @RequestBody(required = false) UnbanUserRequest request,
             @AuthenticationPrincipal UserDetails adminUser) {
 
-        log.info("POST /api/admin/users/{}/unban - Admin: {}", id, adminUser.getUsername());
+        log.info("POST /api/v1/admin/users/{}/unban - Admin: {}", id, adminUser.getUsername());
 
         UserDto admin = authService.getUserByUsername(adminUser.getUsername());
         String note = request != null ? request.note() : null;
@@ -159,7 +159,7 @@ public class AdminUserController {
             @Valid @RequestBody AddNoteRequest request,
             @AuthenticationPrincipal UserDetails adminUser) {
 
-        log.info("POST /api/admin/users/{}/notes - Admin: {}", id, adminUser.getUsername());
+        log.info("POST /api/v1/admin/users/{}/notes - Admin: {}", id, adminUser.getUsername());
 
         UserDto admin = authService.getUserByUsername(adminUser.getUsername());
         AdminNoteDto note = adminUserService.addAdminNote(id, request.text(), admin.id(),
@@ -180,7 +180,7 @@ public class AdminUserController {
             @Parameter(description = "User ID", required = true) @PathVariable Long id,
             @AuthenticationPrincipal UserDetails adminUser) {
 
-        log.info("GET /api/admin/users/{}/notes - Admin: {}", id, adminUser.getUsername());
+        log.info("GET /api/v1/admin/users/{}/notes - Admin: {}", id, adminUser.getUsername());
 
         List<AdminNoteDto> notes = adminUserService.getAdminNotes(id);
 

@@ -32,7 +32,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/rentals")
+@RequestMapping("/api/v1/rentals")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Rental Management", description = "Operations for managing car rentals")
@@ -55,7 +55,7 @@ public class RentalController {
                         Authentication authentication) {
 
                 String username = authentication.getName();
-                log.info("POST /api/rentals/request - User: {}", username);
+                log.info("POST /api/v1/rentals/request - User: {}", username);
 
                 RentalResponse rental = rentalService.requestRental(request, username);
 
@@ -77,7 +77,7 @@ public class RentalController {
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
                         @RequestBody(required = false) ApproveRequest request) {
 
-                log.info("POST /api/rentals/{}/confirm", id);
+                log.info("POST /api/v1/rentals/{}/confirm", id);
 
                 String notes = (request != null) ? request.notes() : null;
                 RentalResponse rental = rentalService.confirmRental(id, notes);
@@ -99,7 +99,7 @@ public class RentalController {
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
                         @Parameter(description = "Pickup notes") @RequestBody(required = false) PickupRequest request) {
 
-                log.info("POST /api/rentals/{}/pickup", id);
+                log.info("POST /api/v1/rentals/{}/pickup", id);
 
                 String notes = (request != null) ? request.notes() : null;
                 RentalResponse rental = rentalService.pickupRental(id, notes);
@@ -121,7 +121,7 @@ public class RentalController {
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
                         @Parameter(description = "Return notes") @RequestBody(required = false) ReturnRequest request) {
 
-                log.info("POST /api/rentals/{}/return", id);
+                log.info("POST /api/v1/rentals/{}/return", id);
 
                 String notes = (request != null) ? request.notes() : null;
                 RentalResponse rental = rentalService.returnRental(id, notes);
@@ -144,7 +144,7 @@ public class RentalController {
                         Authentication authentication) {
 
                 String username = authentication.getName();
-                log.info("POST /api/rentals/{}/cancel - User: {}", id, username);
+                log.info("POST /api/v1/rentals/{}/cancel - User: {}", id, username);
 
                 String reason = (request != null) ? request.reason() : "Cancelled by user";
                 RentalResponse rental = rentalService.cancelRental(id, username, reason);
@@ -168,7 +168,7 @@ public class RentalController {
                         Authentication authentication) {
 
                 String username = authentication.getName();
-                log.info("POST /api/rentals/{}/payment-intent - User: {}", id, username);
+                log.info("POST /api/v1/rentals/{}/payment-intent - User: {}", id, username);
                 return ResponseEntity.ok(rentalService.createPaymentIntent(id, username));
         }
 
@@ -184,7 +184,7 @@ public class RentalController {
                         Authentication authentication) {
 
                 String username = authentication.getName();
-                log.debug("GET /api/rentals/{}/payment - User: {}", id, username);
+                log.debug("GET /api/v1/rentals/{}/payment - User: {}", id, username);
                 return ResponseEntity.ok(rentalService.getRentalPayment(id, username));
         }
 
@@ -201,7 +201,7 @@ public class RentalController {
                         Authentication authentication) {
 
                 String username = authentication.getName();
-                log.debug("GET /api/rentals/me - User: {}, currency: {}", username, currency);
+                log.debug("GET /api/v1/rentals/me - User: {}, currency: {}", username, currency);
 
                 Page<RentalResponse> rentals = rentalService.getMyRentals(username, pageable);
                 if (currency != null) {
@@ -222,7 +222,7 @@ public class RentalController {
                         @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable,
                         @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
 
-                log.debug("GET /api/rentals/admin with currency: {}", currency);
+                log.debug("GET /api/v1/rentals/admin with currency: {}", currency);
 
                 Page<RentalResponse> rentals = rentalService.getAllRentals(pageable);
                 if (currency != null) {
@@ -246,7 +246,7 @@ public class RentalController {
                         Authentication authentication) {
 
                 String username = authentication.getName();
-                log.debug("GET /api/rentals/{} - User: {}, currency: {}", id, username, currency);
+                log.debug("GET /api/v1/rentals/{} - User: {}, currency: {}", id, username, currency);
 
                 RentalResponse rental = rentalService.getRentalById(id, username);
                 rental = applyPriceConversion(rental, currency);

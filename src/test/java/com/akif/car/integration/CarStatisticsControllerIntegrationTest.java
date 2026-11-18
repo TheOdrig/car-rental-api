@@ -64,7 +64,7 @@ class CarStatisticsControllerIntegrationTest {
     @Test
     @DisplayName("Should get car statistics")
     void shouldGetCarStatistics() throws Exception {
-        mockMvc.perform(get("/api/cars/statistics"))
+        mockMvc.perform(get("/api/v1/cars/statistics"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalCars").value(4))
                 .andExpect(jsonPath("$.activeCars").value(4))
@@ -76,7 +76,7 @@ class CarStatisticsControllerIntegrationTest {
     @Test
     @DisplayName("Should get cars count by status")
     void shouldGetCarsCountByStatus() throws Exception {
-        mockMvc.perform(get("/api/cars/statistics/status-counts"))
+        mockMvc.perform(get("/api/v1/cars/statistics/status-counts"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.AVAILABLE").value(2))
                 .andExpect(jsonPath("$.MAINTENANCE").value(1))
@@ -86,7 +86,7 @@ class CarStatisticsControllerIntegrationTest {
     @Test
     @DisplayName("Should get cars count by brand")
     void shouldGetCarsCountByBrand() throws Exception {
-        mockMvc.perform(get("/api/cars/statistics/brand-counts"))
+        mockMvc.perform(get("/api/v1/cars/statistics/brand-counts"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.Toyota").value(2))
                 .andExpect(jsonPath("$.Honda").value(1))
@@ -96,7 +96,7 @@ class CarStatisticsControllerIntegrationTest {
     @Test
     @DisplayName("Should get average prices by brand")
     void shouldGetAveragePricesByBrand() throws Exception {
-        mockMvc.perform(get("/api/cars/statistics/average-prices"))
+        mockMvc.perform(get("/api/v1/cars/statistics/average-prices"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.Toyota").exists())
                 .andExpect(jsonPath("$.Honda").exists())
@@ -106,7 +106,7 @@ class CarStatisticsControllerIntegrationTest {
     @Test
     @DisplayName("Should get total car count")
     void shouldGetTotalCarCount() throws Exception {
-        mockMvc.perform(get("/api/cars/statistics/count"))
+        mockMvc.perform(get("/api/v1/cars/statistics/count"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(4));
     }

@@ -148,7 +148,7 @@ class RentalControllerIntegrationTest {
                                         LocalDate.now().plusDays(5),
                                         "Test rental request");
 
-                        mockMvc.perform(post("/api/rentals/request")
+                        mockMvc.perform(post("/api/v1/rentals/request")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
@@ -166,7 +166,7 @@ class RentalControllerIntegrationTest {
                                         LocalDate.now().plusDays(5),
                                         null);
 
-                        mockMvc.perform(post("/api/rentals/request")
+                        mockMvc.perform(post("/api/v1/rentals/request")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isUnauthorized());
@@ -184,7 +184,7 @@ class RentalControllerIntegrationTest {
                                         LocalDate.now().plusDays(5),
                                         null);
 
-                        mockMvc.perform(post("/api/rentals/request")
+                        mockMvc.perform(post("/api/v1/rentals/request")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
@@ -205,7 +205,7 @@ class RentalControllerIntegrationTest {
                                         LocalDate.now().plusDays(5),
                                         null);
 
-                        String rentalResponse = mockMvc.perform(post("/api/rentals/request")
+                        String rentalResponse = mockMvc.perform(post("/api/v1/rentals/request")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
@@ -217,20 +217,20 @@ class RentalControllerIntegrationTest {
 
                         Long rentalId = objectMapper.readTree(rentalResponse).get("id").asLong();
 
-                        mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                                         .header("Authorization", adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.status").value("Confirmed"));
 
                         payRental(rentalId);
-                        mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                                         .header("Authorization", adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{\"notes\": \"Car picked up\"}"))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.status").value("In Use"));
 
-                        mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                                         .header("Authorization", adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{\"notes\": \"Car returned\"}"))
@@ -247,7 +247,7 @@ class RentalControllerIntegrationTest {
                                         LocalDate.now().plusDays(5),
                                         null);
 
-                        String rentalResponse = mockMvc.perform(post("/api/rentals/request")
+                        String rentalResponse = mockMvc.perform(post("/api/v1/rentals/request")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
@@ -258,7 +258,7 @@ class RentalControllerIntegrationTest {
 
                         Long rentalId = objectMapper.readTree(rentalResponse).get("id").asLong();
 
-                        mockMvc.perform(post("/api/rentals/{id}/cancel", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                                         .header("Authorization", userToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.status").value("Cancelled"));
@@ -273,7 +273,7 @@ class RentalControllerIntegrationTest {
                                         LocalDate.now().plusDays(5),
                                         null);
 
-                        String rentalResponse = mockMvc.perform(post("/api/rentals/request")
+                        String rentalResponse = mockMvc.perform(post("/api/v1/rentals/request")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
@@ -284,11 +284,11 @@ class RentalControllerIntegrationTest {
 
                         Long rentalId = objectMapper.readTree(rentalResponse).get("id").asLong();
 
-                        mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                                         .header("Authorization", adminToken))
                                         .andExpect(status().isOk());
 
-                        mockMvc.perform(post("/api/rentals/{id}/cancel", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                                         .header("Authorization", userToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.status").value("Cancelled"));
@@ -302,7 +302,7 @@ class RentalControllerIntegrationTest {
                 @Test
                 @DisplayName("Should return user's rentals")
                 void shouldReturnUsersRentals() throws Exception {
-                        mockMvc.perform(get("/api/rentals/me")
+                        mockMvc.perform(get("/api/v1/rentals/me")
                                         .header("Authorization", userToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.content").isArray());
@@ -322,7 +322,7 @@ class RentalControllerIntegrationTest {
                                         LocalDate.now().plusDays(5),
                                         null);
 
-                        String rentalResponse = mockMvc.perform(post("/api/rentals/request")
+                        String rentalResponse = mockMvc.perform(post("/api/v1/rentals/request")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
@@ -333,7 +333,7 @@ class RentalControllerIntegrationTest {
 
                         Long rentalId = objectMapper.readTree(rentalResponse).get("id").asLong();
 
-                        mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                                         .header("Authorization", userToken))
                                         .andExpect(status().isForbidden());
                 }
@@ -352,7 +352,7 @@ class RentalControllerIntegrationTest {
                                         LocalDate.now().plusDays(5),
                                         null);
 
-                        String rentalResponse = mockMvc.perform(post("/api/rentals/request")
+                        String rentalResponse = mockMvc.perform(post("/api/v1/rentals/request")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request1)))
@@ -363,7 +363,7 @@ class RentalControllerIntegrationTest {
 
                         Long rentalId = objectMapper.readTree(rentalResponse).get("id").asLong();
 
-                        mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                                         .header("Authorization", adminToken))
                                         .andExpect(status().isOk());
 
@@ -373,7 +373,7 @@ class RentalControllerIntegrationTest {
                                         LocalDate.now().plusDays(7),
                                         null);
 
-                        mockMvc.perform(post("/api/rentals/request")
+                        mockMvc.perform(post("/api/v1/rentals/request")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request2)))
@@ -390,7 +390,7 @@ class RentalControllerIntegrationTest {
                                         LocalDate.now().plusDays(5),
                                         null);
 
-                        mockMvc.perform(post("/api/rentals/request")
+                        mockMvc.perform(post("/api/v1/rentals/request")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request1)))
@@ -402,7 +402,7 @@ class RentalControllerIntegrationTest {
                                         LocalDate.now().plusDays(7),
                                         null);
 
-                        mockMvc.perform(post("/api/rentals/request")
+                        mockMvc.perform(post("/api/v1/rentals/request")
                                         .header("Authorization", userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request2)))

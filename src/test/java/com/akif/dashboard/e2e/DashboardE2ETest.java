@@ -158,7 +158,7 @@ class DashboardE2ETest extends E2ETestBase {
                                 .severity(severity)
                                 .title(type.name() + " Alert")
                                 .message("Test alert for " + type.name())
-                                .actionUrl("/api/rentals/" + referenceId)
+                                .actionUrl("/api/v1/rentals/" + referenceId)
                                 .referenceId(referenceId)
                                 .acknowledged(false)
                                 .build();
@@ -172,7 +172,7 @@ class DashboardE2ETest extends E2ETestBase {
                 @Test
                 @DisplayName("Should return 403 when USER attempts to access dashboard summary")
                 void shouldReturn403WhenUserAttemptsToAccessDashboardSummary() throws Exception {
-                        mockMvc.perform(get("/api/admin/dashboard/summary")
+                        mockMvc.perform(get("/api/v1/admin/dashboard/summary")
                                         .header("Authorization", "Bearer " + userToken))
                                         .andExpect(status().isForbidden());
                 }
@@ -180,7 +180,7 @@ class DashboardE2ETest extends E2ETestBase {
                 @Test
                 @DisplayName("Should return 403 when USER attempts to access alerts")
                 void shouldReturn403WhenUserAttemptsToAccessAlerts() throws Exception {
-                        mockMvc.perform(get("/api/admin/alerts")
+                        mockMvc.perform(get("/api/v1/admin/alerts")
                                         .header("Authorization", "Bearer " + userToken))
                                         .andExpect(status().isForbidden());
                 }
@@ -191,7 +191,7 @@ class DashboardE2ETest extends E2ETestBase {
                         Rental rental = createRentalDirectly(RentalStatus.REQUESTED,
                                         LocalDate.now().plusDays(1), LocalDate.now().plusDays(5));
 
-                        mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/approve", rental.getId())
+                        mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/approve", rental.getId())
                                         .header("Authorization", "Bearer " + userToken))
                                         .andExpect(status().isForbidden());
                 }
@@ -199,28 +199,28 @@ class DashboardE2ETest extends E2ETestBase {
                 @Test
                 @DisplayName("Should return 403 when no authentication provided for dashboard")
                 void shouldReturn403WhenNoAuthenticationProvidedForDashboard() throws Exception {
-                        mockMvc.perform(get("/api/admin/dashboard/summary"))
+                        mockMvc.perform(get("/api/v1/admin/dashboard/summary"))
                                         .andExpect(status().isUnauthorized());
                 }
 
                 @Test
                 @DisplayName("Should return 403 when no authentication provided for alerts")
                 void shouldReturn403WhenNoAuthenticationProvidedForAlerts() throws Exception {
-                        mockMvc.perform(get("/api/admin/alerts"))
+                        mockMvc.perform(get("/api/v1/admin/alerts"))
                                         .andExpect(status().isUnauthorized());
                 }
 
                 @Test
                 @DisplayName("Should return 403 when no authentication provided for quick actions")
                 void shouldReturn403WhenNoAuthenticationProvidedForQuickActions() throws Exception {
-                        mockMvc.perform(post("/api/admin/quick-actions/rentals/1/approve"))
+                        mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/1/approve"))
                                         .andExpect(status().isUnauthorized());
                 }
 
                 @Test
                 @DisplayName("Should return 200 when ADMIN accesses dashboard summary")
                 void shouldReturn200WhenAdminAccessesDashboardSummary() throws Exception {
-                        mockMvc.perform(get("/api/admin/dashboard/summary")
+                        mockMvc.perform(get("/api/v1/admin/dashboard/summary")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk());
                 }
@@ -228,7 +228,7 @@ class DashboardE2ETest extends E2ETestBase {
                 @Test
                 @DisplayName("Should return 200 when ADMIN accesses alerts")
                 void shouldReturn200WhenAdminAccessesAlerts() throws Exception {
-                        mockMvc.perform(get("/api/admin/alerts")
+                        mockMvc.perform(get("/api/v1/admin/alerts")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk());
                 }
@@ -236,7 +236,7 @@ class DashboardE2ETest extends E2ETestBase {
                 @Test
                 @DisplayName("Should return 200 when ADMIN accesses fleet status")
                 void shouldReturn200WhenAdminAccessesFleetStatus() throws Exception {
-                        mockMvc.perform(get("/api/admin/dashboard/fleet")
+                        mockMvc.perform(get("/api/v1/admin/dashboard/fleet")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk());
                 }
@@ -244,7 +244,7 @@ class DashboardE2ETest extends E2ETestBase {
                 @Test
                 @DisplayName("Should return 200 when ADMIN accesses revenue analytics")
                 void shouldReturn200WhenAdminAccessesRevenueAnalytics() throws Exception {
-                        mockMvc.perform(get("/api/admin/dashboard/revenue")
+                        mockMvc.perform(get("/api/v1/admin/dashboard/revenue")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk());
                 }
@@ -321,7 +321,7 @@ class DashboardE2ETest extends E2ETestBase {
 
                         clearCaches();
 
-                        mockMvc.perform(get("/api/admin/dashboard/summary")
+                        mockMvc.perform(get("/api/v1/admin/dashboard/summary")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.pendingApprovals").value(2))
@@ -337,7 +337,7 @@ class DashboardE2ETest extends E2ETestBase {
                         createRentalDirectly(RentalStatus.REQUESTED, LocalDate.now().plusDays(1),
                                         LocalDate.now().plusDays(5));
 
-                        mockMvc.perform(get("/api/admin/dashboard/pending/approvals")
+                        mockMvc.perform(get("/api/v1/admin/dashboard/pending/approvals")
                                         .header("Authorization", "Bearer " + adminToken)
                                         .param("page", "0")
                                         .param("size", "10"))
@@ -359,7 +359,7 @@ class DashboardE2ETest extends E2ETestBase {
                 void shouldCompleteFullQuickActionFlow() throws Exception {
                         RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
 
-                        MvcResult createResult = mockMvc.perform(post("/api/rentals/request")
+                        MvcResult createResult = mockMvc.perform(post("/api/v1/rentals/request")
                                         .header("Authorization", "Bearer " + userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(rentalRequest)))
@@ -371,7 +371,7 @@ class DashboardE2ETest extends E2ETestBase {
                         Long rentalId = createdRental.id();
 
                         MvcResult approveResult = mockMvc
-                                        .perform(post("/api/admin/quick-actions/rentals/{id}/approve", rentalId)
+                                        .perform(post("/api/v1/admin/quick-actions/rentals/{id}/approve", rentalId)
                                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.success").value(true))
@@ -385,7 +385,7 @@ class DashboardE2ETest extends E2ETestBase {
 
                         payRental(rentalId);
                         MvcResult pickupResult = mockMvc
-                                        .perform(post("/api/admin/quick-actions/rentals/{id}/pickup", rentalId)
+                                        .perform(post("/api/v1/admin/quick-actions/rentals/{id}/pickup", rentalId)
                                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.success").value(true))
@@ -397,7 +397,7 @@ class DashboardE2ETest extends E2ETestBase {
                         assertThat(pickupResultDto.success()).isTrue();
 
                         MvcResult returnResult = mockMvc
-                                        .perform(post("/api/admin/quick-actions/rentals/{id}/return", rentalId)
+                                        .perform(post("/api/v1/admin/quick-actions/rentals/{id}/return", rentalId)
                                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.success").value(true))
@@ -408,7 +408,7 @@ class DashboardE2ETest extends E2ETestBase {
                                         returnResult.getResponse().getContentAsString(), QuickActionResultDto.class);
                         assertThat(returnResultDto.success()).isTrue();
 
-                        mockMvc.perform(get("/api/rentals/{id}", rentalId)
+                        mockMvc.perform(get("/api/v1/rentals/{id}", rentalId)
                                         .header("Authorization", "Bearer " + userToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.getDisplayName()));
@@ -420,7 +420,7 @@ class DashboardE2ETest extends E2ETestBase {
                         Rental confirmedRental = createRentalDirectly(RentalStatus.CONFIRMED,
                                         LocalDate.now().plusDays(1), LocalDate.now().plusDays(5));
 
-                        mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/approve", confirmedRental.getId())
+                        mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/approve", confirmedRental.getId())
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().is4xxClientError());
                 }
@@ -428,7 +428,7 @@ class DashboardE2ETest extends E2ETestBase {
                 @Test
                 @DisplayName("Should return 404 for non-existent rental")
                 void shouldReturn404ForNonExistentRental() throws Exception {
-                        mockMvc.perform(post("/api/admin/quick-actions/rentals/999999/approve")
+                        mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/999999/approve")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isNotFound());
                 }
@@ -445,7 +445,7 @@ class DashboardE2ETest extends E2ETestBase {
                         createAlertDirectly(AlertType.LOW_AVAILABILITY, AlertSeverity.WARNING, 2L);
                         createAlertDirectly(AlertType.FAILED_PAYMENT, AlertSeverity.HIGH, 3L);
 
-                        mockMvc.perform(get("/api/admin/alerts")
+                        mockMvc.perform(get("/api/v1/admin/alerts")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$").isArray())
@@ -460,7 +460,7 @@ class DashboardE2ETest extends E2ETestBase {
                         createAlertDirectly(AlertType.FAILED_PAYMENT, AlertSeverity.HIGH, 2L);
                         createAlertDirectly(AlertType.LOW_AVAILABILITY, AlertSeverity.WARNING, 3L);
 
-                        mockMvc.perform(get("/api/admin/alerts")
+                        mockMvc.perform(get("/api/v1/admin/alerts")
                                         .header("Authorization", "Bearer " + adminToken)
                                         .param("type", AlertType.LATE_RETURN.name()))
                                         .andExpect(status().isOk())
@@ -474,14 +474,14 @@ class DashboardE2ETest extends E2ETestBase {
                 void shouldAcknowledgeAlertSuccessfully() throws Exception {
                         Alert alert = createAlertDirectly(AlertType.LATE_RETURN, AlertSeverity.CRITICAL, 1L);
 
-                        mockMvc.perform(post("/api/admin/alerts/{id}/acknowledge", alert.getId())
+                        mockMvc.perform(post("/api/v1/admin/alerts/{id}/acknowledge", alert.getId())
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.acknowledged").value(true))
                                         .andExpect(jsonPath("$.acknowledgedBy").value(adminUser.getUsername()))
                                         .andExpect(jsonPath("$.acknowledgedAt").exists());
 
-                        mockMvc.perform(get("/api/admin/alerts")
+                        mockMvc.perform(get("/api/v1/admin/alerts")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.length()").value(0));
@@ -490,7 +490,7 @@ class DashboardE2ETest extends E2ETestBase {
                 @Test
                 @DisplayName("Should return 404 for non-existent alert")
                 void shouldReturn404ForNonExistentAlert() throws Exception {
-                        mockMvc.perform(post("/api/admin/alerts/999999/acknowledge")
+                        mockMvc.perform(post("/api/v1/admin/alerts/999999/acknowledge")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isNotFound());
                 }
@@ -529,7 +529,7 @@ class DashboardE2ETest extends E2ETestBase {
 
                         clearCaches();
 
-                        mockMvc.perform(get("/api/admin/dashboard/fleet")
+                        mockMvc.perform(get("/api/v1/admin/dashboard/fleet")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.totalCars").value(3))
@@ -574,7 +574,7 @@ class DashboardE2ETest extends E2ETestBase {
 
                         clearCaches();
 
-                        mockMvc.perform(get("/api/admin/dashboard/revenue")
+                        mockMvc.perform(get("/api/v1/admin/dashboard/revenue")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.dailyRevenue").isArray())
@@ -588,7 +588,7 @@ class DashboardE2ETest extends E2ETestBase {
                         LocalDate startDate = LocalDate.now().minusDays(30);
                         LocalDate endDate = LocalDate.now();
 
-                        mockMvc.perform(get("/api/admin/dashboard/metrics")
+                        mockMvc.perform(get("/api/v1/admin/dashboard/metrics")
                                         .header("Authorization", "Bearer " + adminToken)
                                         .param("startDate", startDate.toString())
                                         .param("endDate", endDate.toString()))
@@ -609,13 +609,13 @@ class DashboardE2ETest extends E2ETestBase {
                 @Test
                 @DisplayName("Should refresh summary after rental state change")
                 void shouldRefreshSummaryAfterRentalStateChange() throws Exception {
-                        mockMvc.perform(get("/api/admin/dashboard/summary")
+                        mockMvc.perform(get("/api/v1/admin/dashboard/summary")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.pendingApprovals").value(0));
 
                         RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
-                        mockMvc.perform(post("/api/rentals/request")
+                        mockMvc.perform(post("/api/v1/rentals/request")
                                         .header("Authorization", "Bearer " + userToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(rentalRequest)))
@@ -623,7 +623,7 @@ class DashboardE2ETest extends E2ETestBase {
 
                         clearCaches();
 
-                        mockMvc.perform(get("/api/admin/dashboard/summary")
+                        mockMvc.perform(get("/api/v1/admin/dashboard/summary")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.pendingApprovals").value(1));
@@ -632,7 +632,7 @@ class DashboardE2ETest extends E2ETestBase {
                 @Test
                 @DisplayName("Should refresh fleet status after car status change")
                 void shouldRefreshFleetStatusAfterCarStatusChange() throws Exception {
-                        mockMvc.perform(get("/api/admin/dashboard/fleet")
+                        mockMvc.perform(get("/api/v1/admin/dashboard/fleet")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.availableCars").value(1));
@@ -641,7 +641,7 @@ class DashboardE2ETest extends E2ETestBase {
 
                         clearCaches();
 
-                        mockMvc.perform(get("/api/admin/dashboard/fleet")
+                        mockMvc.perform(get("/api/v1/admin/dashboard/fleet")
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.availableCars").value(2));

@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
@@ -50,7 +50,7 @@ public class AdminRentalHistoryController {
             @PageableDefault(size = 10, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable,
             @AuthenticationPrincipal UserDetails adminUser) {
 
-        log.info("GET /api/admin/cars/{}/rentals - Admin: {}, Status: {}", id, adminUser.getUsername(), status);
+        log.info("GET /api/v1/admin/cars/{}/rentals - Admin: {}, Status: {}", id, adminUser.getUsername(), status);
 
         Page<RentalResponse> rentals = rentalService.getCarRentals(id, status, pageable);
 
@@ -71,7 +71,7 @@ public class AdminRentalHistoryController {
             @PageableDefault(size = 10, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable,
             @AuthenticationPrincipal UserDetails adminUser) {
 
-        log.info("GET /api/admin/users/{}/rentals - Admin: {}, Status: {}", id, adminUser.getUsername(),
+        log.info("GET /api/v1/admin/users/{}/rentals - Admin: {}, Status: {}", id, adminUser.getUsername(),
                 status);
 
         adminUserService.getUserDetailForAdmin(id);

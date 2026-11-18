@@ -66,7 +66,7 @@ class RentalLifecycleE2ETest extends E2ETestBase {
 
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
 
-            String responseJson = mockMvc.perform(post("/api/rentals/request")
+            String responseJson = mockMvc.perform(post("/api/v1/rentals/request")
                             .header("Authorization", "Bearer " + userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(rentalRequest)))
@@ -81,7 +81,7 @@ class RentalLifecycleE2ETest extends E2ETestBase {
             Long rentalId = rentalResponse.id();
             assertThat(rentalId).isNotNull();
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(rentalId))
@@ -95,7 +95,7 @@ class RentalLifecycleE2ETest extends E2ETestBase {
             payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
             assertThat(payment.getStatus()).isEqualTo(PaymentStatus.AUTHORIZED);
-            mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
@@ -107,7 +107,7 @@ class RentalLifecycleE2ETest extends E2ETestBase {
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
             assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CAPTURED);
 
-            mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
@@ -146,7 +146,7 @@ class RentalLifecycleE2ETest extends E2ETestBase {
 
             eventCaptor.clear();
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
 
@@ -182,14 +182,14 @@ class RentalLifecycleE2ETest extends E2ETestBase {
 
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
 
             eventCaptor.clear();
 
             payRental(rentalId);
-            mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))

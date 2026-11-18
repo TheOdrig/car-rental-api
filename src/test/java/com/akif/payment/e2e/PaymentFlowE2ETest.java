@@ -82,7 +82,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
         car = carRepository.save(TestDataBuilder.createAvailableCar());
 
         Long rentalId = createAndGetRentalId(TestDataBuilder.createRentalRequest(car.getId()), customerToken);
-        mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+        mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk());
         return rentalId;
@@ -93,7 +93,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
     }
 
     private void pickup(Long rentalId) throws Exception {
-        mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+        mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
@@ -120,7 +120,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
     }
 
     @Nested
-    @DisplayName("POST /api/rentals/{id}/payment-intent")
+    @DisplayName("POST /api/v1/rentals/{id}/payment-intent")
     class PaymentIntentEndpoint {
 
         @Test
@@ -129,7 +129,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
             Long rentalId = confirmedRentalId();
             Rental rental = rentalRepository.findById(rentalId).orElseThrow();
 
-            mockMvc.perform(post("/api/rentals/{id}/payment-intent", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
                             .header("Authorization", "Bearer " + customerToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.rentalId").value(rentalId))
@@ -149,7 +149,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
             Long rentalId = confirmedRentalId();
             Rental rental = rentalRepository.findById(rentalId).orElseThrow();
 
-            mockMvc.perform(post("/api/rentals/{id}/payment-intent", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
                             .header("Authorization", "Bearer " + customerToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"amount\":0.01,\"currency\":\"JPY\"}"))
@@ -163,10 +163,10 @@ class PaymentFlowE2ETest extends E2ETestBase {
         void idempotent() throws Exception {
             Long rentalId = confirmedRentalId();
 
-            String first = mockMvc.perform(post("/api/rentals/{id}/payment-intent", rentalId)
+            String first = mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
                             .header("Authorization", "Bearer " + customerToken))
                     .andReturn().getResponse().getContentAsString();
-            String second = mockMvc.perform(post("/api/rentals/{id}/payment-intent", rentalId)
+            String second = mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
                             .header("Authorization", "Bearer " + customerToken))
                     .andExpect(status().isOk())
                     .andReturn().getResponse().getContentAsString();
@@ -181,7 +181,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
         void otherCustomerForbidden() throws Exception {
             Long rentalId = confirmedRentalId();
 
-            mockMvc.perform(post("/api/rentals/{id}/payment-intent", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
                             .header("Authorization", "Bearer " + otherToken))
                     .andExpect(status().isForbidden());
 
@@ -193,7 +193,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
         void adminOnlyForbidden() throws Exception {
             Long rentalId = confirmedRentalId();
 
-            mockMvc.perform(post("/api/rentals/{id}/payment-intent", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isForbidden());
         }
@@ -203,7 +203,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
         void unauthenticated() throws Exception {
             Long rentalId = confirmedRentalId();
 
-            mockMvc.perform(post("/api/rentals/{id}/payment-intent", rentalId))
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId))
                     .andExpect(status().isUnauthorized());
         }
 
@@ -215,7 +215,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
             car = carRepository.save(TestDataBuilder.createAvailableCar());
             Long rentalId = createAndGetRentalId(TestDataBuilder.createRentalRequest(car.getId()), customerToken);
 
-            mockMvc.perform(post("/api/rentals/{id}/payment-intent", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
                             .header("Authorization", "Bearer " + customerToken))
                     .andExpect(status().isBadRequest());
         }
@@ -225,7 +225,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
         void unknownRental() throws Exception {
             confirmedRentalId();
 
-            mockMvc.perform(post("/api/rentals/{id}/payment-intent", 987654L)
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", 987654L)
                             .header("Authorization", "Bearer " + customerToken))
                     .andExpect(status().isNotFound());
         }
@@ -237,14 +237,14 @@ class PaymentFlowE2ETest extends E2ETestBase {
             payRental(rentalId);
             pickup(rentalId);
 
-            mockMvc.perform(post("/api/rentals/{id}/payment-intent", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
                             .header("Authorization", "Bearer " + customerToken))
                     .andExpect(status().isBadRequest());
         }
     }
 
     @Nested
-    @DisplayName("GET /api/rentals/{id}/payment")
+    @DisplayName("GET /api/v1/rentals/{id}/payment")
     class PaymentStatusEndpoint {
 
         @Test
@@ -253,15 +253,15 @@ class PaymentFlowE2ETest extends E2ETestBase {
             Long rentalId = confirmedRentalId();
             payRental(rentalId);
 
-            mockMvc.perform(get("/api/rentals/{id}/payment", rentalId)
+            mockMvc.perform(get("/api/v1/rentals/{id}/payment", rentalId)
                             .header("Authorization", "Bearer " + customerToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("AUTHORIZED"))
                     .andExpect(jsonPath("$.rentalId").value(rentalId));
-            mockMvc.perform(get("/api/rentals/{id}/payment", rentalId)
+            mockMvc.perform(get("/api/v1/rentals/{id}/payment", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
-            mockMvc.perform(get("/api/rentals/{id}/payment", rentalId)
+            mockMvc.perform(get("/api/v1/rentals/{id}/payment", rentalId)
                             .header("Authorization", "Bearer " + otherToken))
                     .andExpect(status().isForbidden());
         }
@@ -274,7 +274,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
             car = carRepository.save(TestDataBuilder.createAvailableCar());
             Long rentalId = createAndGetRentalId(TestDataBuilder.createRentalRequest(car.getId()), customerToken);
 
-            mockMvc.perform(get("/api/rentals/{id}/payment", rentalId)
+            mockMvc.perform(get("/api/v1/rentals/{id}/payment", rentalId)
                             .header("Authorization", "Bearer " + customerToken))
                     .andExpect(status().isNotFound());
         }
@@ -302,7 +302,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
         void pickupRequiresPayment() throws Exception {
             Long rentalId = confirmedRentalId();
 
-            mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
@@ -335,7 +335,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
             doReturn(PaymentResult.failure("network"), PaymentResult.success("x", "ok"))
                     .when(paymentGateway).capture(anyString(), anyString());
 
-            mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
@@ -526,7 +526,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
         Long rentalId = confirmedRentalId();
         payRental(rentalId);
 
-        mockMvc.perform(post("/api/rentals/{id}/cancel", rentalId)
+        mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                         .header("Authorization", "Bearer " + customerToken))
                 .andExpect(status().isOk());
 
@@ -550,7 +550,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
             rentalProperties.setPaymentWindowDays(0);
             try {
                 java.time.LocalDate opensOn = rental.getStartDate();
-                mockMvc.perform(post("/api/rentals/{id}/payment-intent", rentalId)
+                mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
                                 .header("Authorization", "Bearer " + customerToken))
                         .andExpect(status().isConflict())
                         .andExpect(jsonPath("$.errorCode").value("PAYMENT_WINDOW_NOT_OPEN"))
@@ -569,7 +569,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
             int original = rentalProperties.getPaymentWindowDays();
             rentalProperties.setPaymentWindowDays(5);
             try {
-                mockMvc.perform(post("/api/rentals/{id}/payment-intent", rentalId)
+                mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
                                 .header("Authorization", "Bearer " + customerToken))
                         .andExpect(status().isOk());
             } finally {
@@ -582,7 +582,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
         void pickupWithoutAuthorizedPayment() throws Exception {
             Long rentalId = confirmedRentalId();
 
-            mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
@@ -597,7 +597,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
             paymentRepository.delete(rentalPayment(rentalId));
             paymentRepository.flush();
 
-            mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
@@ -618,7 +618,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
                     null, null, 0L, "usd")).when(paymentGateway).retrieveIntent("stub_pi_throttle");
 
             for (int i = 0; i < 4; i++) {
-                mockMvc.perform(get("/api/rentals/{id}/payment", rentalId)
+                mockMvc.perform(get("/api/v1/rentals/{id}/payment", rentalId)
                                 .header("Authorization", "Bearer " + customerToken))
                         .andExpect(status().isOk());
             }

@@ -73,7 +73,7 @@ class AuthControllerIntegrationTest {
         RegisterRequest registerRequest = new RegisterRequest("testuser", "test@example.com", "password123",
                 "Test", "User");
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isCreated())
@@ -88,7 +88,7 @@ class AuthControllerIntegrationTest {
     void shouldLoginWithValidCredentials() throws Exception {
         LoginRequest loginRequest = new LoginRequest("admin", "admin123");
 
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
@@ -103,7 +103,7 @@ class AuthControllerIntegrationTest {
     void shouldReturn401ForInvalidCredentials() throws Exception {
         LoginRequest loginRequest = new LoginRequest("admin", "wrongpassword");
 
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized());
@@ -114,7 +114,7 @@ class AuthControllerIntegrationTest {
     void shouldAccessProtectedEndpointWithValidJWT() throws Exception {
         LoginRequest loginRequest = new LoginRequest("admin", "admin123");
 
-        MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
+        MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
@@ -123,7 +123,7 @@ class AuthControllerIntegrationTest {
         String responseContent = loginResult.getResponse().getContentAsString();
         AuthResponse authResponse = objectMapper.readValue(responseContent, AuthResponse.class);
 
-        mockMvc.perform(get("/api/cars")
+        mockMvc.perform(get("/api/v1/cars")
                         .header("Authorization", "Bearer " + authResponse.accessToken()))
                 .andExpect(status().isOk());
     }
@@ -131,14 +131,14 @@ class AuthControllerIntegrationTest {
     @Test
     @DisplayName("Should allow public access to car listing without JWT")
     void shouldAllowPublicAccessToCarListingWithoutJWT() throws Exception {
-        mockMvc.perform(get("/api/cars"))
+        mockMvc.perform(get("/api/v1/cars"))
                 .andExpect(status().isOk());
     }
 
     @Test
     @DisplayName("Should allow public access to car listing with invalid JWT")
     void shouldAllowPublicAccessToCarListingWithInvalidJWT() throws Exception {
-        mockMvc.perform(get("/api/cars")
+        mockMvc.perform(get("/api/v1/cars")
                         .header("Authorization", "Bearer invalid-token"))
                 .andExpect(status().isOk());
     }

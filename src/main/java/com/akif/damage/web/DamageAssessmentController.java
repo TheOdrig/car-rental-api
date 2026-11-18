@@ -24,7 +24,7 @@ public class DamageAssessmentController {
 
     private final DamageAssessmentService damageAssessmentService;
 
-    @PostMapping("/api/admin/damages/{id}/assess")
+    @PostMapping("/api/v1/admin/damages/{id}/assess")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Assess damage", description = "Assess damage and calculate customer liability (admin only)")
     @ApiResponses(value = {
@@ -40,12 +40,12 @@ public class DamageAssessmentController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("POST /api/admin/damages/{}/assess - user: {}", id, username);
+        log.info("POST /api/v1/admin/damages/{}/assess - user: {}", id, username);
         DamageAssessmentResponse response = damageAssessmentService.assessDamage(id, request, username);
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/api/admin/damages/{id}/assess")
+    @PutMapping("/api/v1/admin/damages/{id}/assess")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update assessment", description = "Update damage assessment (admin only, before charge)")
     @ApiResponses(value = {
@@ -61,7 +61,7 @@ public class DamageAssessmentController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("PUT /api/admin/damages/{}/assess - user: {}", id, username);
+        log.info("PUT /api/v1/admin/damages/{}/assess - user: {}", id, username);
         DamageAssessmentResponse response = damageAssessmentService.updateAssessment(id, request, username);
         return ResponseEntity.ok(response);
     }

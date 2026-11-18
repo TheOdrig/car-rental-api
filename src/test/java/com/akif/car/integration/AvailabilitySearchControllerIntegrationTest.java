@@ -179,7 +179,7 @@ class AvailabilitySearchControllerIntegrationTest {
                     .endDate(LocalDate.now().plusDays(4))
                     .build();
 
-            mockMvc.perform(post("/api/cars/availability/search")
+            mockMvc.perform(post("/api/v1/cars/availability/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
@@ -199,7 +199,7 @@ class AvailabilitySearchControllerIntegrationTest {
                     .endDate(LocalDate.now().plusDays(4))
                     .build();
 
-            String response = mockMvc.perform(post("/api/cars/availability/search")
+            String response = mockMvc.perform(post("/api/v1/cars/availability/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
@@ -218,7 +218,7 @@ class AvailabilitySearchControllerIntegrationTest {
                     .endDate(LocalDate.now().plusDays(9))
                     .build();
 
-            String response = mockMvc.perform(post("/api/cars/availability/search")
+            String response = mockMvc.perform(post("/api/v1/cars/availability/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
@@ -240,7 +240,7 @@ class AvailabilitySearchControllerIntegrationTest {
                     .maxPrice(new BigDecimal("600.00"))
                     .build();
 
-            mockMvc.perform(post("/api/cars/availability/search")
+            mockMvc.perform(post("/api/v1/cars/availability/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
@@ -256,7 +256,7 @@ class AvailabilitySearchControllerIntegrationTest {
                     .endDate(LocalDate.now().plusDays(4))
                     .build();
 
-            mockMvc.perform(post("/api/cars/availability/search")
+            mockMvc.perform(post("/api/v1/cars/availability/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
@@ -275,7 +275,7 @@ class AvailabilitySearchControllerIntegrationTest {
                     .size(10)
                     .build();
 
-            mockMvc.perform(post("/api/cars/availability/search")
+            mockMvc.perform(post("/api/v1/cars/availability/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
@@ -297,7 +297,7 @@ class AvailabilitySearchControllerIntegrationTest {
                     .endDate(LocalDate.now().plusDays(5))
                     .build();
 
-            mockMvc.perform(post("/api/cars/availability/search")
+            mockMvc.perform(post("/api/v1/cars/availability/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest());
@@ -311,7 +311,7 @@ class AvailabilitySearchControllerIntegrationTest {
                     .endDate(LocalDate.now().plusDays(5))
                     .build();
 
-            mockMvc.perform(post("/api/cars/availability/search")
+            mockMvc.perform(post("/api/v1/cars/availability/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest());
@@ -323,7 +323,7 @@ class AvailabilitySearchControllerIntegrationTest {
             AvailabilitySearchRequest request = AvailabilitySearchRequest.builder()
                     .build();
 
-            mockMvc.perform(post("/api/cars/availability/search")
+            mockMvc.perform(post("/api/v1/cars/availability/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest());
@@ -337,7 +337,7 @@ class AvailabilitySearchControllerIntegrationTest {
         @Test
         @DisplayName("Should return calendar for current month - Requirement 3.1")
         void shouldReturnCalendarForCurrentMonth() throws Exception {
-            mockMvc.perform(get("/api/cars/{id}/availability/calendar", availableCar.getId()))
+            mockMvc.perform(get("/api/v1/cars/{id}/availability/calendar", availableCar.getId()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.carId").value(availableCar.getId()))
                     .andExpect(jsonPath("$.month").exists())
@@ -352,7 +352,7 @@ class AvailabilitySearchControllerIntegrationTest {
             YearMonth nextMonth = YearMonth.now().plusMonths(1);
             String monthParam = nextMonth.toString();
 
-            mockMvc.perform(get("/api/cars/{id}/availability/calendar", availableCar.getId())
+            mockMvc.perform(get("/api/v1/cars/{id}/availability/calendar", availableCar.getId())
                             .param("month", monthParam))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.month").value(monthParam))
@@ -362,7 +362,7 @@ class AvailabilitySearchControllerIntegrationTest {
         @Test
         @DisplayName("Should mark blocked car as unavailable - Requirement 3.1")
         void shouldMarkBlockedCarAsUnavailable() throws Exception {
-            mockMvc.perform(get("/api/cars/{id}/availability/calendar", maintenanceCar.getId()))
+            mockMvc.perform(get("/api/v1/cars/{id}/availability/calendar", maintenanceCar.getId()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.carBlocked").value(true))
                     .andExpect(jsonPath("$.blockReason").exists());
@@ -371,14 +371,14 @@ class AvailabilitySearchControllerIntegrationTest {
         @Test
         @DisplayName("Should return 404 for non-existent car - Requirement 3.1")
         void shouldReturn404ForNonExistentCar() throws Exception {
-            mockMvc.perform(get("/api/cars/{id}/availability/calendar", 99999L))
+            mockMvc.perform(get("/api/v1/cars/{id}/availability/calendar", 99999L))
                     .andExpect(status().isNotFound());
         }
 
         @Test
         @DisplayName("Should reject invalid month format - Requirement 3.1")
         void shouldRejectInvalidMonthFormat() throws Exception {
-            mockMvc.perform(get("/api/cars/{id}/availability/calendar", availableCar.getId())
+            mockMvc.perform(get("/api/v1/cars/{id}/availability/calendar", availableCar.getId())
                             .param("month", "invalid-month"))
                     .andExpect(status().isBadRequest());
         }
@@ -412,7 +412,7 @@ class AvailabilitySearchControllerIntegrationTest {
                     .build();
             carRepository.save(similarCar);
 
-            mockMvc.perform(get("/api/cars/{id}/similar", availableCar.getId())
+            mockMvc.perform(get("/api/v1/cars/{id}/similar", availableCar.getId())
                             .param("startDate", LocalDate.now().plusDays(1).toString())
                             .param("endDate", LocalDate.now().plusDays(4).toString()))
                     .andExpect(status().isOk())
@@ -446,7 +446,7 @@ class AvailabilitySearchControllerIntegrationTest {
                     .build();
             carRepository.save(differentCar);
 
-            mockMvc.perform(get("/api/cars/{id}/similar", differentCar.getId())
+            mockMvc.perform(get("/api/v1/cars/{id}/similar", differentCar.getId())
                             .param("startDate", LocalDate.now().plusDays(1).toString())
                             .param("endDate", LocalDate.now().plusDays(4).toString()))
                     .andExpect(status().isOk())
@@ -456,7 +456,7 @@ class AvailabilitySearchControllerIntegrationTest {
         @Test
         @DisplayName("Should respect limit parameter - Requirement 2.1")
         void shouldRespectLimitParameter() throws Exception {
-            mockMvc.perform(get("/api/cars/{id}/similar", availableCar.getId())
+            mockMvc.perform(get("/api/v1/cars/{id}/similar", availableCar.getId())
                             .param("startDate", LocalDate.now().plusDays(1).toString())
                             .param("endDate", LocalDate.now().plusDays(4).toString())
                             .param("limit", "3"))
@@ -468,7 +468,7 @@ class AvailabilitySearchControllerIntegrationTest {
         @Test
         @DisplayName("Should return 404 for non-existent car - Requirement 2.1")
         void shouldReturn404ForNonExistentCarInSimilar() throws Exception {
-            mockMvc.perform(get("/api/cars/{id}/similar", 99999L)
+            mockMvc.perform(get("/api/v1/cars/{id}/similar", 99999L)
                             .param("startDate", LocalDate.now().plusDays(1).toString())
                             .param("endDate", LocalDate.now().plusDays(4).toString()))
                     .andExpect(status().isNotFound());
@@ -477,7 +477,7 @@ class AvailabilitySearchControllerIntegrationTest {
         @Test
         @DisplayName("Should reject invalid date parameters - Requirement 2.1")
         void shouldRejectInvalidDateParameters() throws Exception {
-            mockMvc.perform(get("/api/cars/{id}/similar", availableCar.getId())
+            mockMvc.perform(get("/api/v1/cars/{id}/similar", availableCar.getId())
                             .param("startDate", "invalid-date")
                             .param("endDate", LocalDate.now().plusDays(4).toString()))
                     .andExpect(status().isBadRequest());
@@ -486,7 +486,7 @@ class AvailabilitySearchControllerIntegrationTest {
         @Test
         @DisplayName("Should work without date parameters using defaults - Requirement 2.2")
         void shouldWorkWithoutDateParametersUsingDefaults() throws Exception {
-            mockMvc.perform(get("/api/cars/{id}/similar", availableCar.getId()))
+            mockMvc.perform(get("/api/v1/cars/{id}/similar", availableCar.getId()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").isArray());
         }
@@ -494,7 +494,7 @@ class AvailabilitySearchControllerIntegrationTest {
         @Test
         @DisplayName("Should work with only startDate provided - Requirement 2.2")
         void shouldWorkWithOnlyStartDateProvided() throws Exception {
-            mockMvc.perform(get("/api/cars/{id}/similar", availableCar.getId())
+            mockMvc.perform(get("/api/v1/cars/{id}/similar", availableCar.getId())
                             .param("startDate", LocalDate.now().plusDays(5).toString()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").isArray());

@@ -17,14 +17,14 @@ public class RateLimitEndpointClassifier {
 
     public RateLimitEndpointClassifier() {
         PathPatternRequestMatcher.Builder matchers = PathPatternRequestMatcher.withDefaults();
-        add(matchers, HttpMethod.POST, "/api/auth/login", RateLimitCategory.LOGIN);
-        add(matchers, HttpMethod.POST, "/api/auth/register", RateLimitCategory.REGISTER);
-        add(matchers, HttpMethod.POST, "/api/auth/refresh", RateLimitCategory.REFRESH);
-        add(matchers, HttpMethod.POST, "/api/auth/forgot-password", RateLimitCategory.PASSWORD_RESET);
-        add(matchers, HttpMethod.POST, "/api/auth/reset-password", RateLimitCategory.PASSWORD_RESET);
-        add(matchers, HttpMethod.POST, "/api/rentals/request", RateLimitCategory.RENTAL_REQUEST);
-        add(matchers, HttpMethod.POST, "/api/rentals/*/payment-intent", RateLimitCategory.PAYMENT_INTENT);
-        add(matchers, HttpMethod.GET, "/api/oauth2/callback/**", RateLimitCategory.OAUTH2_CALLBACK);
+        add(matchers, HttpMethod.POST, "/api/v1/auth/login", RateLimitCategory.LOGIN);
+        add(matchers, HttpMethod.POST, "/api/v1/auth/register", RateLimitCategory.REGISTER);
+        add(matchers, HttpMethod.POST, "/api/v1/auth/refresh", RateLimitCategory.REFRESH);
+        add(matchers, HttpMethod.POST, "/api/v1/auth/forgot-password", RateLimitCategory.PASSWORD_RESET);
+        add(matchers, HttpMethod.POST, "/api/v1/auth/reset-password", RateLimitCategory.PASSWORD_RESET);
+        add(matchers, HttpMethod.POST, "/api/v1/rentals/request", RateLimitCategory.RENTAL_REQUEST);
+        add(matchers, HttpMethod.POST, "/api/v1/rentals/*/payment-intent", RateLimitCategory.PAYMENT_INTENT);
+        add(matchers, HttpMethod.GET, "/api/v1/oauth2/callback/**", RateLimitCategory.OAUTH2_CALLBACK);
     }
 
     private void add(PathPatternRequestMatcher.Builder matchers, HttpMethod method, String pattern,

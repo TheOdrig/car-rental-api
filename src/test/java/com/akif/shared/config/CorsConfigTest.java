@@ -18,8 +18,8 @@ class CorsConfigTest {
 
     private CorsConfiguration resolve(CorsProperties properties) {
         CorsConfigurationSource source = config.corsConfigurationSource(properties);
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/cars");
-        request.setServletPath("/api/cars");
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/cars");
+        request.setServletPath("/api/v1/cars");
         return source.getCorsConfiguration(request);
     }
 

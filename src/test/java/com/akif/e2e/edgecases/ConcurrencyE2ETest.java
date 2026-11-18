@@ -64,7 +64,7 @@ class ConcurrencyE2ETest extends E2ETestBase {
                 if (i == 0) {
                     rentalIds.add(createAndGetRentalId(rentalRequest, userToken));
                 } else {
-                    mockMvc.perform(post("/api/rentals/request")
+                    mockMvc.perform(post("/api/v1/rentals/request")
                                     .header("Authorization", "Bearer " + userToken)
                                     .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(rentalRequest)))
@@ -73,7 +73,7 @@ class ConcurrencyE2ETest extends E2ETestBase {
                 }
             }
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalIds.get(0))
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalIds.get(0))
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
         }
@@ -103,11 +103,11 @@ class ConcurrencyE2ETest extends E2ETestBase {
                     testCar.getId(), startDate, endDate);
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errorCode").value("INVALID_RENTAL_STATE"));
@@ -133,12 +133,12 @@ class ConcurrencyE2ETest extends E2ETestBase {
                     testCar.getId(), startDate, endDate);
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("Confirmed"));
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errorCode").value("INVALID_RENTAL_STATE"))

@@ -129,41 +129,41 @@ mvn spring-boot:run
 
 ### Authentication
 ```http
-POST /api/auth/register     # Register user
-POST /api/auth/login        # Login, get JWT
-GET  /api/oauth2/authorize/{provider}  # OAuth2 login
+POST /api/v1/auth/register     # Register user
+POST /api/v1/auth/login        # Login, get JWT
+GET  /api/v1/oauth2/authorize/{provider}  # OAuth2 login
 ```
 
 ### Cars
 ```http
-GET  /api/cars              # List all cars
-GET  /api/cars/{id}         # Get car details
-POST /api/cars/availability/search  # Search by date range
-GET  /api/cars/{id}/similar # Similar car recommendations
+GET  /api/v1/cars              # List all cars
+GET  /api/v1/cars/{id}         # Get car details
+POST /api/v1/cars/availability/search  # Search by date range
+GET  /api/v1/cars/{id}/similar # Similar car recommendations
 ```
 
 ### Rentals
 ```http
-POST /api/rentals/request   # Request rental
-GET  /api/rentals/me        # My rentals
-POST /api/rentals/{id}/confirm  # Admin: confirm
-POST /api/rentals/{id}/return   # Admin: complete return
+POST /api/v1/rentals/request   # Request rental
+GET  /api/v1/rentals/me        # My rentals
+POST /api/v1/rentals/{id}/confirm  # Admin: confirm
+POST /api/v1/rentals/{id}/return   # Admin: complete return
 ```
 
 ### Admin Operations
 ```http
-GET  /api/admin/dashboard/summary   # Daily summary
-GET  /api/admin/dashboard/fleet     # Fleet status
-GET  /api/admin/dashboard/metrics   # Monthly metrics
-GET  /api/admin/dashboard/revenue   # Revenue analytics
-GET  /api/admin/alerts              # Active alerts
-POST /api/admin/alerts/{id}/acknowledge  # Acknowledge alert
-POST /api/admin/quick-actions/rentals/{id}/approve  # Approve rental
-POST /api/admin/quick-actions/rentals/{id}/pickup   # Process pickup
-POST /api/admin/quick-actions/rentals/{id}/return   # Process return
-GET  /api/admin/late-returns        # Late return report
-POST /api/admin/damages             # Create damage report
-POST /api/admin/damages/{id}/assess # Assess damage
+GET  /api/v1/admin/dashboard/summary   # Daily summary
+GET  /api/v1/admin/dashboard/fleet     # Fleet status
+GET  /api/v1/admin/dashboard/metrics   # Monthly metrics
+GET  /api/v1/admin/dashboard/revenue   # Revenue analytics
+GET  /api/v1/admin/alerts              # Active alerts
+POST /api/v1/admin/alerts/{id}/acknowledge  # Acknowledge alert
+POST /api/v1/admin/quick-actions/rentals/{id}/approve  # Approve rental
+POST /api/v1/admin/quick-actions/rentals/{id}/pickup   # Process pickup
+POST /api/v1/admin/quick-actions/rentals/{id}/return   # Process return
+GET  /api/v1/admin/late-returns        # Late return report
+POST /api/v1/admin/damages             # Create damage report
+POST /api/v1/admin/damages/{id}/assess # Assess damage
 ```
 
 📖 Full API documentation available at `/swagger-ui.html`

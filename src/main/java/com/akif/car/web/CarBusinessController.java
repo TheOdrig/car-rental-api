@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/cars/business")
+@RequestMapping("/api/v1/cars/business")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Car Business", description = "Business operations for cars")
@@ -124,7 +124,7 @@ public class CarBusinessController {
     })
     public ResponseEntity<Map<String, Boolean>> canCarBeReserved(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        log.info("GET /api/cars/business/{}/can-reserve", id);
+        log.info("GET /api/v1/cars/business/{}/can-reserve", id);
         boolean canBeReserved = carService.canCarBeReserved(id);
         return ResponseEntity.ok(Map.of("canBeReserved", canBeReserved));
     }

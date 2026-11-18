@@ -67,7 +67,7 @@ class CarSearchControllerIntegrationTest {
     @Test
     @DisplayName("Should get cars by status")
     void shouldGetCarsByStatus() throws Exception {
-        mockMvc.perform(get("/api/cars/search/status/{status}", "AVAILABLE")
+        mockMvc.perform(get("/api/v1/cars/search/status/{status}", "AVAILABLE")
                 .param("page", "0")
                 .param("size", "10"))
                 .andExpect(status().isOk())
@@ -78,7 +78,7 @@ class CarSearchControllerIntegrationTest {
     @Test
     @DisplayName("Should get cars by brand")
     void shouldGetCarsByBrand() throws Exception {
-        mockMvc.perform(get("/api/cars/search/brand/{brand}", "Toyota")
+        mockMvc.perform(get("/api/v1/cars/search/brand/{brand}", "Toyota")
                 .param("page", "0")
                 .param("size", "10"))
                 .andExpect(status().isOk())
@@ -90,7 +90,7 @@ class CarSearchControllerIntegrationTest {
     @Test
     @DisplayName("Should get cars by price range")
     void shouldGetCarsByPriceRange() throws Exception {
-        mockMvc.perform(get("/api/cars/search/price-range")
+        mockMvc.perform(get("/api/v1/cars/search/price-range")
                 .param("minPrice", "200000")
                 .param("maxPrice", "300000")
                 .param("page", "0")
@@ -103,7 +103,7 @@ class CarSearchControllerIntegrationTest {
     @Test
     @DisplayName("Should get new cars")
     void shouldGetNewCars() throws Exception {
-        mockMvc.perform(get("/api/cars/search/new")
+        mockMvc.perform(get("/api/v1/cars/search/new")
                 .param("page", "0")
                 .param("size", "10"))
                 .andExpect(status().isOk())
@@ -113,7 +113,7 @@ class CarSearchControllerIntegrationTest {
     @Test
     @DisplayName("Should search cars by multiple criteria")
     void shouldSearchByMultipleCriteria() throws Exception {
-        mockMvc.perform(get("/api/cars/search/criteria")
+        mockMvc.perform(get("/api/v1/cars/search/criteria")
                 .param("brand", "Toyota")
                 .param("minPrice", "200000")
                 .param("maxPrice", "300000")

@@ -76,7 +76,7 @@ class CarControllerAuthorizationTest {
 
         @Test
         @WithMockUser(roles = "ADMIN")
-        @DisplayName("POST /api/cars - Admin should be allowed to create car")
+        @DisplayName("POST /api/v1/cars - Admin should be allowed to create car")
         void adminShouldCreateCar() throws Exception {
             CarRequest newCar = CarRequest.builder()
                     .licensePlate("06XYZ789")
@@ -90,7 +90,7 @@ class CarControllerAuthorizationTest {
                     .carStatusType(CarStatusType.AVAILABLE)
                     .build();
 
-            mockMvc.perform(post("/api/cars")
+            mockMvc.perform(post("/api/v1/cars")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(newCar)))
@@ -99,22 +99,22 @@ class CarControllerAuthorizationTest {
 
         @Test
         @WithMockUser(roles = "ADMIN")
-        @DisplayName("DELETE /api/cars/{id}/soft - Admin should be allowed to soft delete")
+        @DisplayName("DELETE /api/v1/cars/{id}/soft - Admin should be allowed to soft delete")
         void adminShouldSoftDeleteCar() throws Exception {
-            mockMvc.perform(delete("/api/cars/{id}/soft", testCar.getId())
+            mockMvc.perform(delete("/api/v1/cars/{id}/soft", testCar.getId())
                             .with(csrf()))
                     .andExpect(status().isNoContent());
         }
 
         @Test
         @WithMockUser(roles = "ADMIN")
-        @DisplayName("POST /api/cars/{id}/restore - Admin should be allowed to restore car")
+        @DisplayName("POST /api/v1/cars/{id}/restore - Admin should be allowed to restore car")
         void adminShouldRestoreCar() throws Exception {
             // First soft delete
             testCar.softDelete();
             carRepository.save(testCar);
 
-            mockMvc.perform(post("/api/cars/{id}/restore", testCar.getId())
+            mockMvc.perform(post("/api/v1/cars/{id}/restore", testCar.getId())
                             .with(csrf()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(testCar.getId()));
@@ -127,7 +127,7 @@ class CarControllerAuthorizationTest {
 
         @Test
         @WithMockUser(roles = "USER")
-        @DisplayName("POST /api/cars - User should be denied to create car (403)")
+        @DisplayName("POST /api/v1/cars - User should be denied to create car (403)")
         void userShouldBeDeniedCreateCar() throws Exception {
             CarRequest newCar = CarRequest.builder()
                     .licensePlate("06XYZ789")
@@ -141,7 +141,7 @@ class CarControllerAuthorizationTest {
                     .carStatusType(CarStatusType.AVAILABLE)
                     .build();
 
-            mockMvc.perform(post("/api/cars")
+            mockMvc.perform(post("/api/v1/cars")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(newCar)))
@@ -150,7 +150,7 @@ class CarControllerAuthorizationTest {
 
         @Test
         @WithMockUser(roles = "USER")
-        @DisplayName("PUT /api/cars/{id} - User should be denied to update car (403)")
+        @DisplayName("PUT /api/v1/cars/{id} - User should be denied to update car (403)")
         void userShouldBeDeniedUpdateCar() throws Exception {
             CarRequest updateRequest = CarRequest.builder()
                     .licensePlate("34ABC123")
@@ -163,7 +163,7 @@ class CarControllerAuthorizationTest {
                     .carStatusType(CarStatusType.AVAILABLE)
                     .build();
 
-            mockMvc.perform(put("/api/cars/{id}", testCar.getId())
+            mockMvc.perform(put("/api/v1/cars/{id}", testCar.getId())
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(updateRequest)))
@@ -172,27 +172,27 @@ class CarControllerAuthorizationTest {
 
         @Test
         @WithMockUser(roles = "USER")
-        @DisplayName("DELETE /api/cars/{id} - User should be denied to delete car (403)")
+        @DisplayName("DELETE /api/v1/cars/{id} - User should be denied to delete car (403)")
         void userShouldBeDeniedDeleteCar() throws Exception {
-            mockMvc.perform(delete("/api/cars/{id}", testCar.getId())
+            mockMvc.perform(delete("/api/v1/cars/{id}", testCar.getId())
                             .with(csrf()))
                     .andExpect(status().isForbidden());
         }
 
         @Test
         @WithMockUser(roles = "USER")
-        @DisplayName("DELETE /api/cars/{id}/soft - User should be denied to soft delete car (403)")
+        @DisplayName("DELETE /api/v1/cars/{id}/soft - User should be denied to soft delete car (403)")
         void userShouldBeDeniedSoftDeleteCar() throws Exception {
-            mockMvc.perform(delete("/api/cars/{id}/soft", testCar.getId())
+            mockMvc.perform(delete("/api/v1/cars/{id}/soft", testCar.getId())
                             .with(csrf()))
                     .andExpect(status().isForbidden());
         }
 
         @Test
         @WithMockUser(roles = "USER")
-        @DisplayName("POST /api/cars/{id}/restore - User should be denied to restore car (403)")
+        @DisplayName("POST /api/v1/cars/{id}/restore - User should be denied to restore car (403)")
         void userShouldBeDeniedRestoreCar() throws Exception {
-            mockMvc.perform(post("/api/cars/{id}/restore", testCar.getId())
+            mockMvc.perform(post("/api/v1/cars/{id}/restore", testCar.getId())
                             .with(csrf()))
                     .andExpect(status().isForbidden());
         }
@@ -204,18 +204,18 @@ class CarControllerAuthorizationTest {
 
         @Test
         @WithMockUser(roles = "USER")
-        @DisplayName("GET /api/cars/{id} - User should be allowed to read car")
+        @DisplayName("GET /api/v1/cars/{id} - User should be allowed to read car")
         void userShouldReadCar() throws Exception {
-            mockMvc.perform(get("/api/cars/{id}", testCar.getId()))
+            mockMvc.perform(get("/api/v1/cars/{id}", testCar.getId()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(testCar.getId()));
         }
 
         @Test
         @WithMockUser(roles = "USER")
-        @DisplayName("GET /api/cars/active - User should be allowed to list active cars")
+        @DisplayName("GET /api/v1/cars/active - User should be allowed to list active cars")
         void userShouldListActiveCars() throws Exception {
-            mockMvc.perform(get("/api/cars/active"))
+            mockMvc.perform(get("/api/v1/cars/active"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray());
         }

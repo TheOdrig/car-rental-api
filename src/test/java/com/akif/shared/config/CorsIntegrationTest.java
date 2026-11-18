@@ -31,7 +31,7 @@ class CorsIntegrationTest {
     @Test
     @DisplayName("a preflight request to a protected endpoint succeeds without authentication")
     void preflightSucceedsWithoutAuthentication() throws Exception {
-        mockMvc.perform(options("/api/rentals/me")
+        mockMvc.perform(options("/api/v1/rentals/me")
                         .header("Origin", ALLOWED_ORIGIN)
                         .header("Access-Control-Request-Method", "GET")
                         .header("Access-Control-Request-Headers", "Authorization"))
@@ -43,7 +43,7 @@ class CorsIntegrationTest {
     @Test
     @DisplayName("a preflight request from an unknown origin is rejected")
     void preflightFromUnknownOriginRejected() throws Exception {
-        mockMvc.perform(options("/api/rentals/me")
+        mockMvc.perform(options("/api/v1/rentals/me")
                         .header("Origin", "https://evil.example.com")
                         .header("Access-Control-Request-Method", "GET"))
                 .andExpect(status().isForbidden())
@@ -53,7 +53,7 @@ class CorsIntegrationTest {
     @Test
     @DisplayName("a rejected request still carries CORS headers for an allowed origin")
     void unauthenticatedResponseCarriesCorsHeaders() throws Exception {
-        mockMvc.perform(get("/api/rentals/me").header("Origin", ALLOWED_ORIGIN))
+        mockMvc.perform(get("/api/v1/rentals/me").header("Origin", ALLOWED_ORIGIN))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().string("Access-Control-Allow-Origin", ALLOWED_ORIGIN));
     }
@@ -61,7 +61,7 @@ class CorsIntegrationTest {
     @Test
     @DisplayName("the origin is never echoed back as a wildcard")
     void originIsNeverWildcard() throws Exception {
-        mockMvc.perform(get("/api/cars").header("Origin", ALLOWED_ORIGIN))
+        mockMvc.perform(get("/api/v1/cars").header("Origin", ALLOWED_ORIGIN))
                 .andExpect(header().string("Access-Control-Allow-Origin", ALLOWED_ORIGIN));
     }
 }

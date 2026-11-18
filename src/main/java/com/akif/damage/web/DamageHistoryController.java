@@ -37,7 +37,7 @@ public class DamageHistoryController {
 
     private final AuthService authService;
 
-    @GetMapping("/api/admin/damages/vehicle/{carId}")
+    @GetMapping("/api/v1/admin/damages/vehicle/{carId}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get vehicle damage history", description = "Get damage history for a vehicle (admin only)")
     @ApiResponses(value = {
@@ -49,12 +49,12 @@ public class DamageHistoryController {
             @PathVariable Long carId,
             @PageableDefault(size = 20) Pageable pageable) {
 
-        log.info("GET /api/admin/damages/vehicle/{}", carId);
+        log.info("GET /api/v1/admin/damages/vehicle/{}", carId);
         Page<DamageReportDto> damages = damageHistoryService.getDamagesByVehicle(carId, pageable);
         return ResponseEntity.ok(damages);
     }
 
-    @GetMapping("/api/admin/damages/customer/{userId}")
+    @GetMapping("/api/v1/admin/damages/customer/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get customer damage history", description = "Get damage history for a customer (admin only)")
     @ApiResponses(value = {
@@ -66,12 +66,12 @@ public class DamageHistoryController {
             @PathVariable Long userId,
             @PageableDefault(size = 20) Pageable pageable) {
 
-        log.info("GET /api/admin/damages/customer/{}", userId);
+        log.info("GET /api/v1/admin/damages/customer/{}", userId);
         Page<DamageReportDto> damages = damageHistoryService.getDamagesByCustomer(userId, pageable);
         return ResponseEntity.ok(damages);
     }
 
-    @GetMapping("/api/damages/me")
+    @GetMapping("/api/v1/damages/me")
     @Operation(summary = "Get my damage history", description = "Get current user's damage history")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "History retrieved"),
@@ -82,7 +82,7 @@ public class DamageHistoryController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("GET /api/damages/me - User: {}", username);
+        log.info("GET /api/v1/damages/me - User: {}", username);
 
         UserDto user = authService.getUserByUsername(username);
         
@@ -90,7 +90,7 @@ public class DamageHistoryController {
         return ResponseEntity.ok(damages);
     }
 
-    @GetMapping("/api/admin/damages/search")
+    @GetMapping("/api/v1/admin/damages/search")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Search damages", description = "Search damages with filters (admin only)")
     @ApiResponses(value = {
@@ -112,7 +112,7 @@ public class DamageHistoryController {
             @RequestParam(required = false) Long carId,
             @PageableDefault(size = 20) Pageable pageable) {
 
-        log.info("GET /api/admin/damages/search");
+        log.info("GET /api/v1/admin/damages/search");
         DamageSearchFilterDto filter = new DamageSearchFilterDto(
                 startDate, endDate, severity, category, status, carId
         );
@@ -120,7 +120,7 @@ public class DamageHistoryController {
         return ResponseEntity.ok(damages);
     }
 
-    @GetMapping("/api/admin/damages/statistics")
+    @GetMapping("/api/v1/admin/damages/statistics")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get damage statistics", description = "Get damage statistics for date range (admin only)")
     @ApiResponses(value = {
@@ -133,7 +133,7 @@ public class DamageHistoryController {
             @Parameter(description = "End date")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
-        log.info("GET /api/admin/damages/statistics - startDate: {}, endDate: {}", startDate, endDate);
+        log.info("GET /api/v1/admin/damages/statistics - startDate: {}, endDate: {}", startDate, endDate);
         DamageStatisticsDto statistics = damageHistoryService.getDamageStatistics(startDate, endDate);
         return ResponseEntity.ok(statistics);
     }

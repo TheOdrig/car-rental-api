@@ -84,7 +84,7 @@ class ProfileControllerIntegrationTest {
     private String getTokenForUser(String username, String password) throws Exception {
         LoginRequest loginRequest = new LoginRequest(username, password);
 
-        MvcResult result = mockMvc.perform(post("/api/auth/login")
+        MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
@@ -96,13 +96,13 @@ class ProfileControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("GET /api/users/me/profile")
+    @DisplayName("GET /api/v1/users/me/profile")
     class GetProfile {
 
         @Test
         @DisplayName("Should return profile with valid JWT")
         void shouldReturnProfileWithValidJwt() throws Exception {
-            mockMvc.perform(get("/api/users/me/profile")
+            mockMvc.perform(get("/api/v1/users/me/profile")
                     .header("Authorization", userToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.username").value("testuser"))
@@ -115,21 +115,21 @@ class ProfileControllerIntegrationTest {
         @Test
         @DisplayName("Should return 401 without JWT")
         void shouldReturn401WithoutJwt() throws Exception {
-            mockMvc.perform(get("/api/users/me/profile"))
+            mockMvc.perform(get("/api/v1/users/me/profile"))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("Should return 401 with invalid JWT")
         void shouldReturn401WithInvalidJwt() throws Exception {
-            mockMvc.perform(get("/api/users/me/profile")
+            mockMvc.perform(get("/api/v1/users/me/profile")
                     .header("Authorization", "Bearer invalid-token"))
                     .andExpect(status().isUnauthorized());
         }
     }
 
     @Nested
-    @DisplayName("PUT /api/users/me/profile")
+    @DisplayName("PUT /api/v1/users/me/profile")
     class UpdateProfile {
 
         @Test
@@ -137,7 +137,7 @@ class ProfileControllerIntegrationTest {
         void shouldUpdateProfileSuccessfully() throws Exception {
             ProfileUpdateRequest request = new ProfileUpdateRequest("John", "Doe", "+9876543210");
 
-            mockMvc.perform(put("/api/users/me/profile")
+            mockMvc.perform(put("/api/v1/users/me/profile")
                     .header("Authorization", userToken)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
@@ -152,7 +152,7 @@ class ProfileControllerIntegrationTest {
         void shouldClearPhoneWhenEmptyStringProvided() throws Exception {
             ProfileUpdateRequest request = new ProfileUpdateRequest("John", "Doe", "");
 
-            mockMvc.perform(put("/api/users/me/profile")
+            mockMvc.perform(put("/api/v1/users/me/profile")
                     .header("Authorization", userToken)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
@@ -167,7 +167,7 @@ class ProfileControllerIntegrationTest {
         void shouldReturn400WithInvalidData() throws Exception {
             ProfileUpdateRequest request = new ProfileUpdateRequest("", "", null);
 
-            mockMvc.perform(put("/api/users/me/profile")
+            mockMvc.perform(put("/api/v1/users/me/profile")
                     .header("Authorization", userToken)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
@@ -179,7 +179,7 @@ class ProfileControllerIntegrationTest {
         void shouldReturn401WithoutJwt() throws Exception {
             ProfileUpdateRequest request = new ProfileUpdateRequest("John", "Doe", null);
 
-            mockMvc.perform(put("/api/users/me/profile")
+            mockMvc.perform(put("/api/v1/users/me/profile")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isUnauthorized());

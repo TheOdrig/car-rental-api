@@ -71,9 +71,9 @@ class CarControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/cars/{id} - Should return car")
+    @DisplayName("GET /api/v1/cars/{id} - Should return car")
     void shouldReturnCarById() throws Exception {
-        mockMvc.perform(get("/api/cars/{id}", testCar.getId()))
+        mockMvc.perform(get("/api/v1/cars/{id}", testCar.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(testCar.getId()))
@@ -84,9 +84,9 @@ class CarControllerIntegrationTest {
 
     @Test
     @WithMockUser
-    @DisplayName("GET /api/cars/licensePlate/{licensePlate} - Should return car")
+    @DisplayName("GET /api/v1/cars/licensePlate/{licensePlate} - Should return car")
     void shouldReturnCarByLicensePlate() throws Exception {
-        mockMvc.perform(get("/api/cars/licensePlate/{licensePlate}", "34ABC123"))
+        mockMvc.perform(get("/api/v1/cars/licensePlate/{licensePlate}", "34ABC123"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.licensePlate").value("34ABC123"))
@@ -95,7 +95,7 @@ class CarControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("POST /api/cars - Should create car")
+    @DisplayName("POST /api/v1/cars - Should create car")
     void shouldCreateCar() throws Exception {
         CarRequest newCar = CarRequest.builder()
                 .licensePlate("06XYZ789")
@@ -109,7 +109,7 @@ class CarControllerIntegrationTest {
                 .carStatusType(CarStatusType.AVAILABLE)
                 .build();
 
-        mockMvc.perform(post("/api/cars")
+        mockMvc.perform(post("/api/v1/cars")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newCar)))
@@ -121,7 +121,7 @@ class CarControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("PUT /api/cars/{id} - Should update car")
+    @DisplayName("PUT /api/v1/cars/{id} - Should update car")
     void shouldUpdateCar() throws Exception {
         CarRequest updateRequest = CarRequest.builder()
                 .licensePlate("34ABC123")
@@ -135,7 +135,7 @@ class CarControllerIntegrationTest {
                 .carStatusType(CarStatusType.AVAILABLE)
                 .build();
 
-        mockMvc.perform(put("/api/cars/{id}", testCar.getId())
+        mockMvc.perform(put("/api/v1/cars/{id}", testCar.getId())
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
@@ -147,20 +147,20 @@ class CarControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("DELETE /api/cars/{id} - Should delete car")
+    @DisplayName("DELETE /api/v1/cars/{id} - Should delete car")
     void shouldDeleteCar() throws Exception {
-        mockMvc.perform(delete("/api/cars/{id}", testCar.getId())
+        mockMvc.perform(delete("/api/v1/cars/{id}", testCar.getId())
                         .with(csrf()))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/cars/{id}", testCar.getId()))
+        mockMvc.perform(get("/api/v1/cars/{id}", testCar.getId()))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @DisplayName("GET /api/cars - Should return paginated cars")
+    @DisplayName("GET /api/v1/cars - Should return paginated cars")
     void shouldReturnPaginatedCars() throws Exception {
-        mockMvc.perform(get("/api/cars")
+        mockMvc.perform(get("/api/v1/cars")
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
@@ -172,9 +172,9 @@ class CarControllerIntegrationTest {
 
     @Test
     @WithMockUser
-    @DisplayName("GET /api/cars/active - Should return active cars")
+    @DisplayName("GET /api/v1/cars/active - Should return active cars")
     void shouldReturnActiveCars() throws Exception {
-        mockMvc.perform(get("/api/cars/active")
+        mockMvc.perform(get("/api/v1/cars/active")
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
@@ -185,15 +185,15 @@ class CarControllerIntegrationTest {
 
     @Test
     @WithMockUser
-    @DisplayName("GET /api/cars/{id} - Should return 404 for non-existent car")
+    @DisplayName("GET /api/v1/cars/{id} - Should return 404 for non-existent car")
     void shouldReturn404ForNonExistentCar() throws Exception {
-        mockMvc.perform(get("/api/cars/{id}", 99999L))
+        mockMvc.perform(get("/api/v1/cars/{id}", 99999L))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     @WithMockUser
-    @DisplayName("GET /api/cars/active - Should use default sort (createTime DESC)")
+    @DisplayName("GET /api/v1/cars/active - Should use default sort (createTime DESC)")
     void shouldUseDefaultSort() throws Exception {
         Car secondCar = Car.builder()
                 .licensePlate("06DEF456")
@@ -208,7 +208,7 @@ class CarControllerIntegrationTest {
                 .build();
         carRepository.save(secondCar);
 
-        mockMvc.perform(get("/api/cars/active"))
+        mockMvc.perform(get("/api/v1/cars/active"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content", hasSize(2)));
@@ -216,7 +216,7 @@ class CarControllerIntegrationTest {
 
     @Test
     @WithMockUser
-    @DisplayName("GET /api/cars/active?sort=price,asc - Should sort by price ascending")
+    @DisplayName("GET /api/v1/cars/active?sort=price,asc - Should sort by price ascending")
     void shouldSortByPriceAscending() throws Exception {
         Car expensiveCar = Car.builder()
                 .licensePlate("06DEF456")
@@ -231,7 +231,7 @@ class CarControllerIntegrationTest {
                 .build();
         carRepository.save(expensiveCar);
 
-        mockMvc.perform(get("/api/cars/active")
+        mockMvc.perform(get("/api/v1/cars/active")
                         .param("sort", "price,asc"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].brand").value("Toyota"))
@@ -240,9 +240,9 @@ class CarControllerIntegrationTest {
 
     @Test
     @WithMockUser
-    @DisplayName("GET /api/cars/filter-options - Should return filter options")
+    @DisplayName("GET /api/v1/cars/filter-options - Should return filter options")
     void shouldReturnFilterOptions() throws Exception {
-        mockMvc.perform(get("/api/cars/filter-options"))
+        mockMvc.perform(get("/api/v1/cars/filter-options"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.brands").isArray())
                 .andExpect(jsonPath("$.transmissionTypes").isArray())
@@ -252,9 +252,9 @@ class CarControllerIntegrationTest {
 
     @Test
     @WithMockUser
-    @DisplayName("GET /api/cars/filter-options - Should include test car brand")
+    @DisplayName("GET /api/v1/cars/filter-options - Should include test car brand")
     void shouldIncludeTestCarBrand() throws Exception {
-        mockMvc.perform(get("/api/cars/filter-options"))
+        mockMvc.perform(get("/api/v1/cars/filter-options"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.brands").isNotEmpty());
     }

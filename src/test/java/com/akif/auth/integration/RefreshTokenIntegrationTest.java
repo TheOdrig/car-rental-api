@@ -89,7 +89,7 @@ class RefreshTokenIntegrationTest {
     }
 
     private JsonNode login() throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/auth/login")
+        MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"refresh-user\",\"password\":\"password123\"}"))
                 .andExpect(status().isOk())
@@ -98,7 +98,7 @@ class RefreshTokenIntegrationTest {
     }
 
     private MvcResult refresh(String refreshToken) throws Exception {
-        return mockMvc.perform(post("/api/auth/refresh")
+        return mockMvc.perform(post("/api/v1/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"" + refreshToken + "\"}"))
                 .andReturn();
@@ -154,7 +154,7 @@ class RefreshTokenIntegrationTest {
         String first = login().get("refreshToken").asText();
         JsonNode body = objectMapper.readTree(refresh(first).getResponse().getContentAsString());
 
-        mockMvc.perform(get("/api/users/me/profile")
+        mockMvc.perform(get("/api/v1/users/me/profile")
                         .header("Authorization", "Bearer " + body.get("accessToken").asText()))
                 .andExpect(status().isOk());
     }
@@ -213,7 +213,7 @@ class RefreshTokenIntegrationTest {
     void logoutRevokesToken() throws Exception {
         String raw = login().get("refreshToken").asText();
 
-        mockMvc.perform(post("/api/auth/logout")
+        mockMvc.perform(post("/api/v1/auth/logout")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"" + raw + "\"}"))
                 .andExpect(status().isNoContent());
@@ -224,7 +224,7 @@ class RefreshTokenIntegrationTest {
     @Test
     @DisplayName("logout with an unknown token is a no-op")
     void logoutWithUnknownTokenIsNoop() throws Exception {
-        mockMvc.perform(post("/api/auth/logout")
+        mockMvc.perform(post("/api/v1/auth/logout")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"never-issued\"}"))
                 .andExpect(status().isNoContent());
@@ -233,7 +233,7 @@ class RefreshTokenIntegrationTest {
     @Test
     @DisplayName("an unknown refresh token is rejected")
     void unknownTokenRejected() throws Exception {
-        mockMvc.perform(post("/api/auth/refresh")
+        mockMvc.perform(post("/api/v1/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"never-issued\"}"))
                 .andExpect(status().isUnauthorized())
@@ -258,7 +258,7 @@ class RefreshTokenIntegrationTest {
     void refreshTokenRejectedAsBearer() throws Exception {
         String raw = login().get("refreshToken").asText();
 
-        mockMvc.perform(get("/api/users/me/profile").header("Authorization", "Bearer " + raw))
+        mockMvc.perform(get("/api/v1/users/me/profile").header("Authorization", "Bearer " + raw))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -267,7 +267,7 @@ class RefreshTokenIntegrationTest {
     void passwordChangeRevokesTokens() throws Exception {
         JsonNode session = login();
 
-        mockMvc.perform(post("/api/users/me/password")
+        mockMvc.perform(post("/api/v1/users/me/password")
                         .header("Authorization", "Bearer " + session.get("accessToken").asText())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"currentPassword\":\"password123\",\"newPassword\":\"another-password1\"}"))

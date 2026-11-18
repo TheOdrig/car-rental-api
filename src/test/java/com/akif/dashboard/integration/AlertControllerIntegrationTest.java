@@ -113,7 +113,7 @@ class AlertControllerIntegrationTest {
                 .severity(severity)
                 .title("Test Alert - " + type.name())
                 .message("This is a test alert message for " + type.name())
-                .actionUrl("/api/admin/test/" + type.name().toLowerCase())
+                .actionUrl("/api/v1/admin/test/" + type.name().toLowerCase())
                 .referenceId(1L)
                 .acknowledged(acknowledged)
                 .build();
@@ -127,7 +127,7 @@ class AlertControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when user tries to access alerts")
         void shouldReturn403WhenUserTriesToAccessAlerts() throws Exception {
-            mockMvc.perform(get("/api/admin/alerts")
+            mockMvc.perform(get("/api/v1/admin/alerts")
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }
@@ -135,14 +135,14 @@ class AlertControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when no authentication provided")
         void shouldReturn403WhenNoAuthenticationProvided() throws Exception {
-            mockMvc.perform(get("/api/admin/alerts"))
+            mockMvc.perform(get("/api/v1/admin/alerts"))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("Should return 200 when admin accesses alerts")
         void shouldReturn200WhenAdminAccessesAlerts() throws Exception {
-            mockMvc.perform(get("/api/admin/alerts")
+            mockMvc.perform(get("/api/v1/admin/alerts")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk());
         }
@@ -155,7 +155,7 @@ class AlertControllerIntegrationTest {
         @Test
         @DisplayName("Should return empty list when no alerts")
         void shouldReturnEmptyListWhenNoAlerts() throws Exception {
-            mockMvc.perform(get("/api/admin/alerts")
+            mockMvc.perform(get("/api/v1/admin/alerts")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").isArray())
@@ -168,7 +168,7 @@ class AlertControllerIntegrationTest {
             createTestAlert(AlertType.LATE_RETURN, AlertSeverity.CRITICAL, false);
             createTestAlert(AlertType.FAILED_PAYMENT, AlertSeverity.HIGH, true);
 
-            mockMvc.perform(get("/api/admin/alerts")
+            mockMvc.perform(get("/api/v1/admin/alerts")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").isArray())
@@ -184,7 +184,7 @@ class AlertControllerIntegrationTest {
             createTestAlert(AlertType.LATE_RETURN, AlertSeverity.CRITICAL, false);
             createTestAlert(AlertType.FAILED_PAYMENT, AlertSeverity.HIGH, false);
 
-            mockMvc.perform(get("/api/admin/alerts")
+            mockMvc.perform(get("/api/v1/admin/alerts")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.length()").value(3))
@@ -200,7 +200,7 @@ class AlertControllerIntegrationTest {
             createTestAlert(AlertType.FAILED_PAYMENT, AlertSeverity.HIGH, false);
             createTestAlert(AlertType.LOW_AVAILABILITY, AlertSeverity.WARNING, false);
 
-            mockMvc.perform(get("/api/admin/alerts")
+            mockMvc.perform(get("/api/v1/admin/alerts")
                             .header("Authorization", adminToken)
                             .param("type", "LATE_RETURN"))
                     .andExpect(status().isOk())
@@ -218,7 +218,7 @@ class AlertControllerIntegrationTest {
         void shouldAcknowledgeAlertSuccessfully() throws Exception {
             Alert alert = createTestAlert(AlertType.LATE_RETURN, AlertSeverity.CRITICAL, false);
 
-            mockMvc.perform(post("/api/admin/alerts/{id}/acknowledge", alert.getId())
+            mockMvc.perform(post("/api/v1/admin/alerts/{id}/acknowledge", alert.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(alert.getId()))
@@ -234,7 +234,7 @@ class AlertControllerIntegrationTest {
         @Test
         @DisplayName("Should return 404 when alert not found")
         void shouldReturn404WhenAlertNotFound() throws Exception {
-            mockMvc.perform(post("/api/admin/alerts/{id}/acknowledge", 99999L)
+            mockMvc.perform(post("/api/v1/admin/alerts/{id}/acknowledge", 99999L)
                             .header("Authorization", adminToken))
                     .andExpect(status().isNotFound());
         }
@@ -244,7 +244,7 @@ class AlertControllerIntegrationTest {
         void shouldReturn403WhenUserTriesToAcknowledgeAlert() throws Exception {
             Alert alert = createTestAlert(AlertType.LATE_RETURN, AlertSeverity.CRITICAL, false);
 
-            mockMvc.perform(post("/api/admin/alerts/{id}/acknowledge", alert.getId())
+            mockMvc.perform(post("/api/v1/admin/alerts/{id}/acknowledge", alert.getId())
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }
@@ -254,11 +254,11 @@ class AlertControllerIntegrationTest {
         void shouldNotShowAcknowledgedAlertInActiveAlerts() throws Exception {
             Alert alert = createTestAlert(AlertType.LATE_RETURN, AlertSeverity.CRITICAL, false);
 
-            mockMvc.perform(post("/api/admin/alerts/{id}/acknowledge", alert.getId())
+            mockMvc.perform(post("/api/v1/admin/alerts/{id}/acknowledge", alert.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk());
 
-            mockMvc.perform(get("/api/admin/alerts")
+            mockMvc.perform(get("/api/v1/admin/alerts")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.length()").value(0));
@@ -274,7 +274,7 @@ class AlertControllerIntegrationTest {
         void shouldReturnAlertWithAllExpectedFields() throws Exception {
             Alert alert = createTestAlert(AlertType.LATE_RETURN, AlertSeverity.CRITICAL, false);
 
-            mockMvc.perform(get("/api/admin/alerts")
+            mockMvc.perform(get("/api/v1/admin/alerts")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$[0].id").value(alert.getId()))

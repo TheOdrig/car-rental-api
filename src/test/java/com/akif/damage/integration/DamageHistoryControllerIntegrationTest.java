@@ -164,7 +164,7 @@ class DamageHistoryControllerIntegrationTest {
                 DamageCategory.SCRATCH
         );
 
-        mockMvc.perform(post("/api/admin/damages")
+        mockMvc.perform(post("/api/v1/admin/damages")
                         .header("Authorization", adminToken)
                         .param("rentalId", testRental.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -178,7 +178,7 @@ class DamageHistoryControllerIntegrationTest {
                 DamageCategory.DENT
         );
 
-        mockMvc.perform(post("/api/admin/damages")
+        mockMvc.perform(post("/api/v1/admin/damages")
                         .header("Authorization", adminToken)
                         .param("rentalId", testRental.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -195,7 +195,7 @@ class DamageHistoryControllerIntegrationTest {
         void shouldGetVehicleDamageHistoryAsAdmin() throws Exception {
             createDamageReports();
 
-            mockMvc.perform(get("/api/admin/damages/vehicle/{carId}", testCar.getId())
+            mockMvc.perform(get("/api/v1/admin/damages/vehicle/{carId}", testCar.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray())
@@ -206,7 +206,7 @@ class DamageHistoryControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when user tries to access vehicle damage history")
         void shouldReturn403WhenUserTriesToAccessVehicleDamageHistory() throws Exception {
-            mockMvc.perform(get("/api/admin/damages/vehicle/{carId}", testCar.getId())
+            mockMvc.perform(get("/api/v1/admin/damages/vehicle/{carId}", testCar.getId())
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }
@@ -214,7 +214,7 @@ class DamageHistoryControllerIntegrationTest {
         @Test
         @DisplayName("Should return empty page for vehicle with no damages")
         void shouldReturnEmptyPageForVehicleWithNoDamages() throws Exception {
-            mockMvc.perform(get("/api/admin/damages/vehicle/{carId}", testCar.getId())
+            mockMvc.perform(get("/api/v1/admin/damages/vehicle/{carId}", testCar.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray())
@@ -231,7 +231,7 @@ class DamageHistoryControllerIntegrationTest {
         void shouldGetCustomerDamageHistoryAsAdmin() throws Exception {
             createDamageReports();
 
-            mockMvc.perform(get("/api/admin/damages/customer/{userId}", testUser.getId())
+            mockMvc.perform(get("/api/v1/admin/damages/customer/{userId}", testUser.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray())
@@ -241,7 +241,7 @@ class DamageHistoryControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when user tries to access other customer's damage history")
         void shouldReturn403WhenUserTriesToAccessOtherCustomersDamageHistory() throws Exception {
-            mockMvc.perform(get("/api/admin/damages/customer/{userId}", testUser.getId())
+            mockMvc.perform(get("/api/v1/admin/damages/customer/{userId}", testUser.getId())
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }
@@ -256,7 +256,7 @@ class DamageHistoryControllerIntegrationTest {
         void shouldGetOwnDamageHistoryAsUser() throws Exception {
             createDamageReports();
 
-            mockMvc.perform(get("/api/damages/me")
+            mockMvc.perform(get("/api/v1/damages/me")
                             .header("Authorization", userToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray())
@@ -266,7 +266,7 @@ class DamageHistoryControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when unauthenticated")
         void shouldReturn403WhenUnauthenticated() throws Exception {
-            mockMvc.perform(get("/api/damages/me"))
+            mockMvc.perform(get("/api/v1/damages/me"))
                     .andExpect(status().isUnauthorized());
         }
     }
@@ -280,7 +280,7 @@ class DamageHistoryControllerIntegrationTest {
         void shouldSearchDamagesBySeverityAsAdmin() throws Exception {
             createDamageReports();
 
-            mockMvc.perform(get("/api/admin/damages/search")
+            mockMvc.perform(get("/api/v1/admin/damages/search")
                             .header("Authorization", adminToken)
                             .param("severity", "MINOR"))
                     .andExpect(status().isOk())
@@ -293,7 +293,7 @@ class DamageHistoryControllerIntegrationTest {
         void shouldSearchDamagesByCategoryAsAdmin() throws Exception {
             createDamageReports();
 
-            mockMvc.perform(get("/api/admin/damages/search")
+            mockMvc.perform(get("/api/v1/admin/damages/search")
                             .header("Authorization", adminToken)
                             .param("category", "SCRATCH"))
                     .andExpect(status().isOk())
@@ -306,7 +306,7 @@ class DamageHistoryControllerIntegrationTest {
         void shouldSearchDamagesByCarIdAsAdmin() throws Exception {
             createDamageReports();
 
-            mockMvc.perform(get("/api/admin/damages/search")
+            mockMvc.perform(get("/api/v1/admin/damages/search")
                             .header("Authorization", adminToken)
                             .param("carId", testCar.getId().toString()))
                     .andExpect(status().isOk())
@@ -317,7 +317,7 @@ class DamageHistoryControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when user tries to search damages")
         void shouldReturn403WhenUserTriesToSearchDamages() throws Exception {
-            mockMvc.perform(get("/api/admin/damages/search")
+            mockMvc.perform(get("/api/v1/admin/damages/search")
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }
@@ -332,7 +332,7 @@ class DamageHistoryControllerIntegrationTest {
         void shouldGetDamageStatisticsAsAdmin() throws Exception {
             createDamageReports();
 
-            mockMvc.perform(get("/api/admin/damages/statistics")
+            mockMvc.perform(get("/api/v1/admin/damages/statistics")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.totalDamages").exists())
@@ -344,7 +344,7 @@ class DamageHistoryControllerIntegrationTest {
         void shouldGetDamageStatisticsWithDateRange() throws Exception {
             createDamageReports();
 
-            mockMvc.perform(get("/api/admin/damages/statistics")
+            mockMvc.perform(get("/api/v1/admin/damages/statistics")
                             .header("Authorization", adminToken)
                             .param("startDate", LocalDate.now().minusDays(30).toString())
                             .param("endDate", LocalDate.now().toString()))
@@ -355,7 +355,7 @@ class DamageHistoryControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when user tries to access statistics")
         void shouldReturn403WhenUserTriesToAccessStatistics() throws Exception {
-            mockMvc.perform(get("/api/admin/damages/statistics")
+            mockMvc.perform(get("/api/v1/admin/damages/statistics")
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }

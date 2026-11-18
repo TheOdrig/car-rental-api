@@ -37,14 +37,14 @@ class CurrencyControllerIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Nested
-    @DisplayName("GET /api/exchange-rates")
+    @DisplayName("GET /api/v1/exchange-rates")
     class GetAllRates {
 
         @Test
         @WithMockUser
         @DisplayName("Should return all exchange rates")
         void shouldReturnAllExchangeRates() throws Exception {
-            mockMvc.perform(get("/api/exchange-rates"))
+            mockMvc.perform(get("/api/v1/exchange-rates"))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.baseCurrency").exists())
@@ -54,14 +54,14 @@ class CurrencyControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("GET /api/exchange-rates/{from}/{to}")
+    @DisplayName("GET /api/v1/exchange-rates/{from}/{to}")
     class GetRate {
 
         @Test
         @WithMockUser
         @DisplayName("Should return exchange rate between USD and TRY")
         void shouldReturnExchangeRateBetweenUsdAndTry() throws Exception {
-            mockMvc.perform(get("/api/exchange-rates/USD/TRY"))
+            mockMvc.perform(get("/api/v1/exchange-rates/USD/TRY"))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.from").value("USD"))
@@ -74,7 +74,7 @@ class CurrencyControllerIntegrationTest {
         @WithMockUser
         @DisplayName("Should return rate 1.0 for same currency")
         void shouldReturnRateOneForSameCurrency() throws Exception {
-            mockMvc.perform(get("/api/exchange-rates/USD/USD"))
+            mockMvc.perform(get("/api/v1/exchange-rates/USD/USD"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.rate").value(1));
         }
@@ -83,13 +83,13 @@ class CurrencyControllerIntegrationTest {
         @WithMockUser
         @DisplayName("Should return 400 for invalid currency code")
         void shouldReturn400ForInvalidCurrencyCode() throws Exception {
-            mockMvc.perform(get("/api/exchange-rates/INVALID/TRY"))
+            mockMvc.perform(get("/api/v1/exchange-rates/INVALID/TRY"))
                     .andExpect(status().isBadRequest());
         }
     }
 
     @Nested
-    @DisplayName("POST /api/exchange-rates/convert")
+    @DisplayName("POST /api/v1/exchange-rates/convert")
     class Convert {
 
         @Test
@@ -102,7 +102,7 @@ class CurrencyControllerIntegrationTest {
                     CurrencyType.TRY
             );
 
-            mockMvc.perform(post("/api/exchange-rates/convert")
+            mockMvc.perform(post("/api/v1/exchange-rates/convert")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -125,7 +125,7 @@ class CurrencyControllerIntegrationTest {
                     CurrencyType.USD
             );
 
-            mockMvc.perform(post("/api/exchange-rates/convert")
+            mockMvc.perform(post("/api/v1/exchange-rates/convert")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -147,7 +147,7 @@ class CurrencyControllerIntegrationTest {
                     }
                     """;
 
-            mockMvc.perform(post("/api/exchange-rates/convert")
+            mockMvc.perform(post("/api/v1/exchange-rates/convert")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(invalidRequest))
@@ -165,7 +165,7 @@ class CurrencyControllerIntegrationTest {
                     }
                     """;
 
-            mockMvc.perform(post("/api/exchange-rates/convert")
+            mockMvc.perform(post("/api/v1/exchange-rates/convert")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(invalidRequest))
@@ -174,14 +174,14 @@ class CurrencyControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST /api/exchange-rates/refresh")
+    @DisplayName("POST /api/v1/exchange-rates/refresh")
     class RefreshRates {
 
         @Test
         @WithMockUser(roles = "ADMIN")
         @DisplayName("Should refresh rates when admin")
         void shouldRefreshRatesWhenAdmin() throws Exception {
-            mockMvc.perform(post("/api/exchange-rates/refresh")
+            mockMvc.perform(post("/api/v1/exchange-rates/refresh")
                             .with(csrf()))
                     .andExpect(status().isOk());
         }
@@ -190,7 +190,7 @@ class CurrencyControllerIntegrationTest {
         @WithMockUser(roles = "USER")
         @DisplayName("Should return 403 when not admin")
         void shouldReturn403WhenNotAdmin() throws Exception {
-            mockMvc.perform(post("/api/exchange-rates/refresh")
+            mockMvc.perform(post("/api/v1/exchange-rates/refresh")
                             .with(csrf()))
                     .andExpect(status().isForbidden());
         }
@@ -198,7 +198,7 @@ class CurrencyControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when not authenticated")
         void shouldReturn403WhenNotAuthenticated() throws Exception {
-            mockMvc.perform(post("/api/exchange-rates/refresh")
+            mockMvc.perform(post("/api/v1/exchange-rates/refresh")
                             .with(csrf()))
                     .andExpect(status().isUnauthorized());
         }

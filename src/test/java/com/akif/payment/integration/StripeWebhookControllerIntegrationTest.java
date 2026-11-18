@@ -46,7 +46,7 @@ class StripeWebhookControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST /api/webhooks/stripe")
+    @DisplayName("POST /api/v1/webhooks/stripe")
     class HandleWebhook {
 
         @Test
@@ -54,7 +54,7 @@ class StripeWebhookControllerIntegrationTest {
         void shouldReturn200WhenWebhookProcessedSuccessfully() throws Exception {
             doNothing().when(webhookHandler).handleWebhookEvent(anyString(), anyString());
 
-            mockMvc.perform(post("/api/webhooks/stripe")
+            mockMvc.perform(post("/api/v1/webhooks/stripe")
                             .contentType(MediaType.APPLICATION_JSON)
                             .header("Stripe-Signature", validSignature)
                             .content(validPayload))
@@ -65,7 +65,7 @@ class StripeWebhookControllerIntegrationTest {
         @Test
         @DisplayName("Should return 400 when signature is missing")
         void shouldReturn400WhenSignatureMissing() throws Exception {
-            mockMvc.perform(post("/api/webhooks/stripe")
+            mockMvc.perform(post("/api/v1/webhooks/stripe")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(validPayload))
                     .andExpect(status().isBadRequest())
@@ -75,7 +75,7 @@ class StripeWebhookControllerIntegrationTest {
         @Test
         @DisplayName("Should return 400 when signature is empty")
         void shouldReturn400WhenSignatureEmpty() throws Exception {
-            mockMvc.perform(post("/api/webhooks/stripe")
+            mockMvc.perform(post("/api/v1/webhooks/stripe")
                             .contentType(MediaType.APPLICATION_JSON)
                             .header("Stripe-Signature", "")
                             .content(validPayload))
@@ -89,7 +89,7 @@ class StripeWebhookControllerIntegrationTest {
             doThrow(new WebhookSignatureException("evt_test_123", new Exception("Invalid signature")))
                     .when(webhookHandler).handleWebhookEvent(anyString(), anyString());
 
-            mockMvc.perform(post("/api/webhooks/stripe")
+            mockMvc.perform(post("/api/v1/webhooks/stripe")
                             .contentType(MediaType.APPLICATION_JSON)
                             .header("Stripe-Signature", "invalid_signature")
                             .content(validPayload))
@@ -103,7 +103,7 @@ class StripeWebhookControllerIntegrationTest {
             doThrow(new RuntimeException("Unexpected error"))
                     .when(webhookHandler).handleWebhookEvent(anyString(), anyString());
 
-            mockMvc.perform(post("/api/webhooks/stripe")
+            mockMvc.perform(post("/api/v1/webhooks/stripe")
                             .contentType(MediaType.APPLICATION_JSON)
                             .header("Stripe-Signature", validSignature)
                             .content(validPayload))
@@ -116,7 +116,7 @@ class StripeWebhookControllerIntegrationTest {
         void shouldAcceptWebhookWithValidPayloadAndSignature() throws Exception {
             doNothing().when(webhookHandler).handleWebhookEvent(validPayload, validSignature);
 
-            mockMvc.perform(post("/api/webhooks/stripe")
+            mockMvc.perform(post("/api/v1/webhooks/stripe")
                             .contentType(MediaType.APPLICATION_JSON)
                             .header("Stripe-Signature", validSignature)
                             .content(validPayload))

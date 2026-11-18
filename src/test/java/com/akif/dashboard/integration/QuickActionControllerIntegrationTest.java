@@ -185,7 +185,7 @@ class QuickActionControllerIntegrationTest {
         void shouldReturn403WhenUserTriesToApproveRental() throws Exception {
             Rental rental = createTestRental(RentalStatus.REQUESTED, CarStatusType.AVAILABLE);
 
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/approve", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/approve", rental.getId())
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }
@@ -195,7 +195,7 @@ class QuickActionControllerIntegrationTest {
         void shouldReturn403WhenNoAuthenticationProvided() throws Exception {
             Rental rental = createTestRental(RentalStatus.REQUESTED, CarStatusType.AVAILABLE);
 
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/approve", rental.getId()))
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/approve", rental.getId()))
                     .andExpect(status().isUnauthorized());
         }
 
@@ -205,7 +205,7 @@ class QuickActionControllerIntegrationTest {
             Rental rental = createTestRental(RentalStatus.CONFIRMED, CarStatusType.RESERVED);
 
             payRental(rental.getId());
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/pickup", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/pickup", rental.getId())
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }
@@ -215,7 +215,7 @@ class QuickActionControllerIntegrationTest {
         void shouldReturn403WhenUserTriesToProcessReturn() throws Exception {
             Rental rental = createTestRental(RentalStatus.IN_USE, CarStatusType.RESERVED);
 
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/return", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/return", rental.getId())
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }
@@ -230,7 +230,7 @@ class QuickActionControllerIntegrationTest {
         void shouldApproveRentalSuccessfully() throws Exception {
             Rental rental = createTestRental(RentalStatus.REQUESTED, CarStatusType.AVAILABLE);
 
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/approve", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/approve", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
@@ -245,7 +245,7 @@ class QuickActionControllerIntegrationTest {
         @Test
         @DisplayName("Should return 404 when rental not found")
         void shouldReturn404WhenRentalNotFound() throws Exception {
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/approve", 99999L)
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/approve", 99999L)
                             .header("Authorization", adminToken))
                     .andExpect(status().isNotFound());
         }
@@ -255,7 +255,7 @@ class QuickActionControllerIntegrationTest {
         void shouldReturn400WhenRentalIsNotInRequestedState() throws Exception {
             Rental rental = createTestRental(RentalStatus.CONFIRMED, CarStatusType.RESERVED);
 
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/approve", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/approve", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isBadRequest());
         }
@@ -270,12 +270,12 @@ class QuickActionControllerIntegrationTest {
         void shouldProcessPickupSuccessfully() throws Exception {
             Rental rental = createTestRental(RentalStatus.REQUESTED, CarStatusType.AVAILABLE);
 
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/approve", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/approve", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk());
 
             payRental(rental.getId());
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/pickup", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/pickup", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
@@ -290,7 +290,7 @@ class QuickActionControllerIntegrationTest {
         @Test
         @DisplayName("Should return 404 when rental not found")
         void shouldReturn404WhenRentalNotFound() throws Exception {
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/pickup", 99999L)
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/pickup", 99999L)
                             .header("Authorization", adminToken))
                     .andExpect(status().isNotFound());
         }
@@ -301,7 +301,7 @@ class QuickActionControllerIntegrationTest {
             Rental rental = createTestRental(RentalStatus.REQUESTED, CarStatusType.AVAILABLE);
 
             payRental(rental.getId());
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/pickup", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/pickup", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isBadRequest());
         }
@@ -316,16 +316,16 @@ class QuickActionControllerIntegrationTest {
         void shouldProcessReturnSuccessfully() throws Exception {
             Rental rental = createTestRental(RentalStatus.REQUESTED, CarStatusType.AVAILABLE);
 
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/approve", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/approve", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk());
 
             payRental(rental.getId());
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/pickup", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/pickup", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk());
 
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/return", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/return", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
@@ -340,7 +340,7 @@ class QuickActionControllerIntegrationTest {
         @Test
         @DisplayName("Should return 404 when rental not found")
         void shouldReturn404WhenRentalNotFound() throws Exception {
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/return", 99999L)
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/return", 99999L)
                             .header("Authorization", adminToken))
                     .andExpect(status().isNotFound());
         }
@@ -350,7 +350,7 @@ class QuickActionControllerIntegrationTest {
         void shouldReturn400WhenRentalIsNotInInUseState() throws Exception {
             Rental rental = createTestRental(RentalStatus.CONFIRMED, CarStatusType.RESERVED);
 
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/return", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/return", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isBadRequest());
         }
@@ -365,18 +365,18 @@ class QuickActionControllerIntegrationTest {
         void shouldCompleteFullQuickActionWorkflow() throws Exception {
             Rental rental = createTestRental(RentalStatus.REQUESTED, CarStatusType.AVAILABLE);
 
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/approve", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/approve", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.newStatus").value("CONFIRMED"));
 
             payRental(rental.getId());
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/pickup", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/pickup", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.newStatus").value("IN_USE"));
 
-            mockMvc.perform(post("/api/admin/quick-actions/rentals/{id}/return", rental.getId())
+            mockMvc.perform(post("/api/v1/admin/quick-actions/rentals/{id}/return", rental.getId())
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.newStatus").value("RETURNED"));

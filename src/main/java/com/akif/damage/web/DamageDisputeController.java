@@ -26,7 +26,7 @@ public class DamageDisputeController {
 
     private final DamageDisputeService damageDisputeService;
 
-    @PostMapping("/api/damages/{id}/dispute")
+    @PostMapping("/api/v1/damages/{id}/dispute")
     @Operation(summary = "Create dispute", description = "Customer creates a dispute for damage report")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Dispute created"),
@@ -41,12 +41,12 @@ public class DamageDisputeController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("POST /api/damages/{}/dispute - User: {}", id, username);
+        log.info("POST /api/v1/damages/{}/dispute - User: {}", id, username);
         DamageDisputeResponse response = damageDisputeService.createDispute(id, request, username);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/api/admin/damages/{id}/resolve")
+    @PostMapping("/api/v1/admin/damages/{id}/resolve")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Resolve dispute", description = "Admin resolves a dispute (admin only)")
     @ApiResponses(value = {
@@ -62,7 +62,7 @@ public class DamageDisputeController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("POST /api/admin/damages/{}/resolve - user: {}", id, username);
+        log.info("POST /api/v1/admin/damages/{}/resolve - user: {}", id, username);
         DamageDisputeResponse response = damageDisputeService.resolveDispute(id, resolution, username);
         return ResponseEntity.ok(response);
     }

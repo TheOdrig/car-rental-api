@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 
 @RestController
-@RequestMapping("/api/admin/dashboard")
+@RequestMapping("/api/v1/admin/dashboard")
 @RequiredArgsConstructor
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
@@ -44,7 +44,7 @@ public class DashboardController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
     public ResponseEntity<DailySummaryDto> getDailySummary() {
-        log.info("GET /api/admin/dashboard/summary");
+        log.info("GET /api/v1/admin/dashboard/summary");
         DailySummaryDto summary = dashboardService.getDailySummary();
         return ResponseEntity.ok(summary);
     }
@@ -57,7 +57,7 @@ public class DashboardController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
     public ResponseEntity<FleetStatusDto> getFleetStatus() {
-        log.info("GET /api/admin/dashboard/fleet");
+        log.info("GET /api/v1/admin/dashboard/fleet");
         FleetStatusDto fleetStatus = dashboardService.getFleetStatus();
         return ResponseEntity.ok(fleetStatus);
     }
@@ -78,7 +78,7 @@ public class DashboardController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         
-        log.info("GET /api/admin/dashboard/metrics - startDate: {}, endDate: {}", startDate, endDate);
+        log.info("GET /api/v1/admin/dashboard/metrics - startDate: {}, endDate: {}", startDate, endDate);
         
         MonthlyMetricsDto metrics;
         if (startDate != null && endDate != null) {
@@ -98,7 +98,7 @@ public class DashboardController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
     public ResponseEntity<RevenueAnalyticsDto> getRevenueAnalytics() {
-        log.info("GET /api/admin/dashboard/revenue");
+        log.info("GET /api/v1/admin/dashboard/revenue");
         RevenueAnalyticsDto analytics = dashboardService.getRevenueAnalytics();
         return ResponseEntity.ok(analytics);
     }
@@ -112,7 +112,7 @@ public class DashboardController {
     })
     public ResponseEntity<Page<PendingItemDto>> getPendingApprovals(
             @PageableDefault(size = 10, sort = "createTime") Pageable pageable) {
-        log.info("GET /api/admin/dashboard/pending/approvals - page: {}, size: {}", 
+        log.info("GET /api/v1/admin/dashboard/pending/approvals - page: {}, size: {}", 
                 pageable.getPageNumber(), pageable.getPageSize());
         Page<PendingItemDto> approvals = dashboardService.getPendingApprovals(pageable);
         return ResponseEntity.ok(approvals);
@@ -127,7 +127,7 @@ public class DashboardController {
     })
     public ResponseEntity<Page<PendingItemDto>> getTodaysPickups(
             @PageableDefault(size = 10, sort = "startDate") Pageable pageable) {
-        log.info("GET /api/admin/dashboard/pending/pickups - page: {}, size: {}", 
+        log.info("GET /api/v1/admin/dashboard/pending/pickups - page: {}, size: {}", 
                 pageable.getPageNumber(), pageable.getPageSize());
         Page<PendingItemDto> pickups = dashboardService.getTodaysPickups(pageable);
         return ResponseEntity.ok(pickups);
@@ -142,7 +142,7 @@ public class DashboardController {
     })
     public ResponseEntity<Page<PendingItemDto>> getTodaysReturns(
             @PageableDefault(size = 10, sort = "endDate") Pageable pageable) {
-        log.info("GET /api/admin/dashboard/pending/returns - page: {}, size: {}", 
+        log.info("GET /api/v1/admin/dashboard/pending/returns - page: {}, size: {}", 
                 pageable.getPageNumber(), pageable.getPageSize());
         Page<PendingItemDto> returns = dashboardService.getTodaysReturns(pageable);
         return ResponseEntity.ok(returns);
@@ -157,7 +157,7 @@ public class DashboardController {
     })
     public ResponseEntity<Page<PendingItemDto>> getOverdueRentals(
             @PageableDefault(size = 10, sort = "endDate") Pageable pageable) {
-        log.info("GET /api/admin/dashboard/pending/overdue - page: {}, size: {}", 
+        log.info("GET /api/v1/admin/dashboard/pending/overdue - page: {}, size: {}", 
                 pageable.getPageNumber(), pageable.getPageSize());
         Page<PendingItemDto> overdue = dashboardService.getOverdueRentals(pageable);
         return ResponseEntity.ok(overdue);

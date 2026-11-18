@@ -161,7 +161,7 @@ class StripeWebhookSignedIntegrationTest {
     }
 
     private ResultActions deliver(String payload, String signatureHeader) throws Exception {
-        return mockMvc.perform(post("/api/webhooks/stripe")
+        return mockMvc.perform(post("/api/v1/webhooks/stripe")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Stripe-Signature", signatureHeader)
                 .content(payload));
@@ -322,7 +322,7 @@ class StripeWebhookSignedIntegrationTest {
     @Test
     @DisplayName("rejects a request without a Stripe-Signature header")
     void rejectsMissingHeader() throws Exception {
-        mockMvc.perform(post("/api/webhooks/stripe")
+        mockMvc.perform(post("/api/v1/webhooks/stripe")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(intentEvent("evt_none", "payment_intent.succeeded", "succeeded")))
                 .andExpect(status().isBadRequest());
@@ -531,7 +531,7 @@ class StripeWebhookSignedIntegrationTest {
     void oversizedBodyIsRejected() throws Exception {
         String padding = "x".repeat(300_000);
 
-        mockMvc.perform(post("/api/webhooks/stripe")
+        mockMvc.perform(post("/api/v1/webhooks/stripe")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Stripe-Signature", "t=1,v1=abc")
                         .content("{\"pad\":\"" + padding + "\"}"))

@@ -81,7 +81,7 @@ class OAuth2ControllerIntegrationTest {
         @Test
         @DisplayName("Should redirect to Google authorization page")
         void shouldRedirectToGoogleAuthorizationPage() throws Exception {
-            MvcResult result = mockMvc.perform(get("/api/oauth2/authorize/google"))
+            MvcResult result = mockMvc.perform(get("/api/v1/oauth2/authorize/google"))
                     .andExpect(status().is3xxRedirection())
                     .andReturn();
 
@@ -98,7 +98,7 @@ class OAuth2ControllerIntegrationTest {
         @Test
         @DisplayName("Should redirect to GitHub authorization page")
         void shouldRedirectToGitHubAuthorizationPage() throws Exception {
-            MvcResult result = mockMvc.perform(get("/api/oauth2/authorize/github"))
+            MvcResult result = mockMvc.perform(get("/api/v1/oauth2/authorize/github"))
                     .andExpect(status().is3xxRedirection())
                     .andReturn();
 
@@ -123,7 +123,7 @@ class OAuth2ControllerIntegrationTest {
             String invalidState = "invalid-state-parameter";
             String authCode = "valid-auth-code";
 
-            mockMvc.perform(get("/api/oauth2/callback/google")
+            mockMvc.perform(get("/api/v1/oauth2/callback/google")
                             .param("code", authCode)
                             .param("state", invalidState))
                     .andExpect(status().isBadRequest())
@@ -133,7 +133,7 @@ class OAuth2ControllerIntegrationTest {
         @Test
         @DisplayName("Should reject callback with empty state")
         void shouldRejectCallbackWithEmptyState() throws Exception {
-            mockMvc.perform(get("/api/oauth2/callback/google")
+            mockMvc.perform(get("/api/v1/oauth2/callback/google")
                             .param("code", "some-code")
                             .param("state", ""))
                     .andExpect(status().isBadRequest())
@@ -146,7 +146,7 @@ class OAuth2ControllerIntegrationTest {
 
             String expiredState = "expired-state-base64";
 
-            mockMvc.perform(get("/api/oauth2/callback/github")
+            mockMvc.perform(get("/api/v1/oauth2/callback/github")
                             .param("code", "some-code")
                             .param("state", expiredState))
                     .andExpect(status().isBadRequest())
@@ -164,7 +164,7 @@ class OAuth2ControllerIntegrationTest {
             String validState = stateService.generateState();
             String authCode = "valid-auth-code";
 
-            mockMvc.perform(post("/api/oauth2/link/github")
+            mockMvc.perform(post("/api/v1/oauth2/link/github")
                             .with(csrf())
                             .param("code", authCode)
                             .param("state", validState))
@@ -186,7 +186,7 @@ class OAuth2ControllerIntegrationTest {
 
             String accessToken = getAccessTokenForUser("stateuser", "password123");
 
-            mockMvc.perform(post("/api/oauth2/link/github")
+            mockMvc.perform(post("/api/v1/oauth2/link/github")
                             .with(csrf())
                             .header("Authorization", "Bearer " + accessToken)
                             .param("code", "valid-code")
@@ -222,7 +222,7 @@ class OAuth2ControllerIntegrationTest {
     }
 
     private String getAccessTokenForUser(String username, String password) throws Exception {
-        MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
+        MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
                         .with(csrf())
                         .contentType("application/json")
                         .content(String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password)))

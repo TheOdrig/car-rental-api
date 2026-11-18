@@ -19,7 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/exchange-rates")
+@RequestMapping("/api/v1/exchange-rates")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Currency", description = "Currency conversion and exchange rate operations")

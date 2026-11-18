@@ -67,7 +67,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
             Optional<Payment> paymentOptional = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL);
             assertThat(paymentOptional).isEmpty();
 
-            mockMvc.perform(post("/api/rentals/{id}/cancel", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                             .header("Authorization", "Bearer " + userToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(rentalId))
@@ -101,7 +101,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.getDisplayName()));
@@ -117,7 +117,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
 
             eventCaptor.clear();
 
-            mockMvc.perform(post("/api/rentals/{id}/cancel", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                             .header("Authorization", "Bearer " + userToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(rentalId))
@@ -150,12 +150,12 @@ class CancellationRefundE2ETest extends E2ETestBase {
             Car testCar = carRepository.save(TestDataBuilder.createAvailableCar());
 
             Long rentalId = createAndGetRentalId(TestDataBuilder.createRentalRequest(testCar.getId()), userToken);
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
             eventCaptor.clear();
 
-            mockMvc.perform(post("/api/rentals/{id}/cancel", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                             .header("Authorization", "Bearer " + userToken))
                     .andExpect(status().isOk());
 
@@ -189,13 +189,13 @@ class CancellationRefundE2ETest extends E2ETestBase {
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
-            mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.getDisplayName()));
 
             payRental(rentalId);
-            mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
@@ -209,7 +209,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
 
             eventCaptor.clear();
 
-            mockMvc.perform(post("/api/rentals/{id}/cancel", rentalId)
+            mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                             .header("Authorization", "Bearer " + userToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(rentalId))

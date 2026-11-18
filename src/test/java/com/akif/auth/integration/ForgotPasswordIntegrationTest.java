@@ -86,7 +86,7 @@ class ForgotPasswordIntegrationTest {
         }
 
         @Nested
-        @DisplayName("POST /api/auth/forgot-password")
+        @DisplayName("POST /api/v1/auth/forgot-password")
         class ForgotPassword {
 
                 @Test
@@ -94,7 +94,7 @@ class ForgotPasswordIntegrationTest {
                 void shouldAcceptRequestForExistingEmail() throws Exception {
                         ForgotPasswordRequest request = new ForgotPasswordRequest("test@example.com");
 
-                        mockMvc.perform(post("/api/auth/forgot-password")
+                        mockMvc.perform(post("/api/v1/auth/forgot-password")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isOk());
@@ -107,7 +107,7 @@ class ForgotPasswordIntegrationTest {
                 void shouldAcceptRequestForNonExistingEmailWithoutError() throws Exception {
                         ForgotPasswordRequest request = new ForgotPasswordRequest("nonexistent@example.com");
 
-                        mockMvc.perform(post("/api/auth/forgot-password")
+                        mockMvc.perform(post("/api/v1/auth/forgot-password")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isOk());
@@ -120,7 +120,7 @@ class ForgotPasswordIntegrationTest {
                 void shouldReturn400ForInvalidEmailFormat() throws Exception {
                         ForgotPasswordRequest request = new ForgotPasswordRequest("invalid-email");
 
-                        mockMvc.perform(post("/api/auth/forgot-password")
+                        mockMvc.perform(post("/api/v1/auth/forgot-password")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isBadRequest());
@@ -140,7 +140,7 @@ class ForgotPasswordIntegrationTest {
 
                         ForgotPasswordRequest request = new ForgotPasswordRequest("test@example.com");
 
-                        mockMvc.perform(post("/api/auth/forgot-password")
+                        mockMvc.perform(post("/api/v1/auth/forgot-password")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isOk());
@@ -151,7 +151,7 @@ class ForgotPasswordIntegrationTest {
         }
 
         @Nested
-        @DisplayName("POST /api/auth/reset-password")
+        @DisplayName("POST /api/v1/auth/reset-password")
         class ResetPassword {
 
                 @Test
@@ -169,7 +169,7 @@ class ForgotPasswordIntegrationTest {
 
                         ResetPasswordRequest request = new ResetPasswordRequest(tokenValue, "newPassword456");
 
-                        mockMvc.perform(post("/api/auth/reset-password")
+                        mockMvc.perform(post("/api/v1/auth/reset-password")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isOk());
@@ -196,7 +196,7 @@ class ForgotPasswordIntegrationTest {
 
                         ResetPasswordRequest request = new ResetPasswordRequest(tokenValue, "newPassword456");
 
-                        mockMvc.perform(post("/api/auth/reset-password")
+                        mockMvc.perform(post("/api/v1/auth/reset-password")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isBadRequest());
@@ -207,7 +207,7 @@ class ForgotPasswordIntegrationTest {
                 void shouldReturn400ForInvalidToken() throws Exception {
                         ResetPasswordRequest request = new ResetPasswordRequest("invalid-token", "newPassword456");
 
-                        mockMvc.perform(post("/api/auth/reset-password")
+                        mockMvc.perform(post("/api/v1/auth/reset-password")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isBadRequest());
@@ -228,7 +228,7 @@ class ForgotPasswordIntegrationTest {
 
                         ResetPasswordRequest request = new ResetPasswordRequest(tokenValue, "newPassword456");
 
-                        mockMvc.perform(post("/api/auth/reset-password")
+                        mockMvc.perform(post("/api/v1/auth/reset-password")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isBadRequest());
@@ -249,7 +249,7 @@ class ForgotPasswordIntegrationTest {
 
                         ResetPasswordRequest request = new ResetPasswordRequest(tokenValue, "short");
 
-                        mockMvc.perform(post("/api/auth/reset-password")
+                        mockMvc.perform(post("/api/v1/auth/reset-password")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isBadRequest());

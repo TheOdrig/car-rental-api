@@ -83,7 +83,7 @@ class AvatarControllerIntegrationTest {
         private String getTokenForUser(String username, String password) throws Exception {
                 LoginRequest loginRequest = new LoginRequest(username, password);
 
-                MvcResult result = mockMvc.perform(post("/api/auth/login")
+                MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(loginRequest)))
                                 .andExpect(status().isOk())
@@ -95,7 +95,7 @@ class AvatarControllerIntegrationTest {
         }
 
         @Nested
-        @DisplayName("POST /api/users/me/avatar")
+        @DisplayName("POST /api/v1/users/me/avatar")
         class UploadAvatar {
 
                 @Test
@@ -107,7 +107,7 @@ class AvatarControllerIntegrationTest {
                                         "image/jpeg",
                                         "test image content".getBytes());
 
-                        mockMvc.perform(multipart("/api/users/me/avatar")
+                        mockMvc.perform(multipart("/api/v1/users/me/avatar")
                                         .file(avatarFile)
                                         .header("Authorization", userToken))
                                         .andExpect(status().isOk())
@@ -124,7 +124,7 @@ class AvatarControllerIntegrationTest {
                                         "application/pdf",
                                         "pdf content".getBytes());
 
-                        mockMvc.perform(multipart("/api/users/me/avatar")
+                        mockMvc.perform(multipart("/api/v1/users/me/avatar")
                                         .file(pdfFile)
                                         .header("Authorization", userToken))
                                         .andExpect(status().isBadRequest());
@@ -139,7 +139,7 @@ class AvatarControllerIntegrationTest {
                                         "image/jpeg",
                                         "test image content".getBytes());
 
-                        mockMvc.perform(multipart("/api/users/me/avatar")
+                        mockMvc.perform(multipart("/api/v1/users/me/avatar")
                                         .file(avatarFile))
                                         .andExpect(status().isUnauthorized());
                 }
@@ -153,7 +153,7 @@ class AvatarControllerIntegrationTest {
                                         "image/png",
                                         "png content".getBytes());
 
-                        mockMvc.perform(multipart("/api/users/me/avatar")
+                        mockMvc.perform(multipart("/api/v1/users/me/avatar")
                                         .file(pngFile)
                                         .header("Authorization", userToken))
                                         .andExpect(status().isOk())
@@ -162,13 +162,13 @@ class AvatarControllerIntegrationTest {
         }
 
         @Nested
-        @DisplayName("DELETE /api/users/me/avatar")
+        @DisplayName("DELETE /api/v1/users/me/avatar")
         class DeleteAvatar {
 
                 @Test
                 @DisplayName("Should delete avatar successfully")
                 void shouldDeleteAvatarSuccessfully() throws Exception {
-                        mockMvc.perform(delete("/api/users/me/avatar")
+                        mockMvc.perform(delete("/api/v1/users/me/avatar")
                                         .header("Authorization", userToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.message").value("Avatar deleted successfully"));
@@ -177,14 +177,14 @@ class AvatarControllerIntegrationTest {
                 @Test
                 @DisplayName("Should return 401 without JWT")
                 void shouldReturn401WithoutJwt() throws Exception {
-                        mockMvc.perform(delete("/api/users/me/avatar"))
+                        mockMvc.perform(delete("/api/v1/users/me/avatar"))
                                         .andExpect(status().isUnauthorized());
                 }
 
                 @Test
                 @DisplayName("Should handle delete when no avatar exists")
                 void shouldHandleDeleteWhenNoAvatarExists() throws Exception {
-                        mockMvc.perform(delete("/api/users/me/avatar")
+                        mockMvc.perform(delete("/api/v1/users/me/avatar")
                                         .header("Authorization", userToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.message").value("Avatar deleted successfully"));

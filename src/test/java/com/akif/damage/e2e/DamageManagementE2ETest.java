@@ -76,20 +76,20 @@ class DamageManagementE2ETest extends E2ETestBase {
                         RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(car.getId());
                         Long rentalId = createAndGetRentalId(rentalRequest, customerToken);
 
-                        mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.getDisplayName()));
 
                         payRental(rentalId);
-                        mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{}"))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.status").value(RentalStatus.IN_USE.getDisplayName()));
 
-                        mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{}"))
@@ -104,7 +104,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         DamageSeverity.MODERATE,
                                         DamageCategory.DENT);
 
-                        String damageResponse = mockMvc.perform(post("/api/admin/damages")
+                        String damageResponse = mockMvc.perform(post("/api/v1/admin/damages")
                                         .header("Authorization", "Bearer " + adminToken)
                                         .param("rentalId", rentalId.toString())
                                         .contentType(MediaType.APPLICATION_JSON)
@@ -138,7 +138,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         "image/jpeg",
                                         "test image content 2".getBytes());
 
-                        mockMvc.perform(multipart("/api/admin/damages/{id}/photos", damageId)
+                        mockMvc.perform(multipart("/api/v1/admin/damages/{id}/photos", damageId)
                                         .file(photo1)
                                         .file(photo2)
                                         .header("Authorization", "Bearer " + adminToken))
@@ -146,7 +146,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .andExpect(jsonPath("$").isArray())
                                         .andExpect(jsonPath("$.length()").value(2));
 
-                        mockMvc.perform(get("/api/admin/damages/{id}", damageId)
+                        mockMvc.perform(get("/api/v1/admin/damages/{id}", damageId)
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.photos").exists())
@@ -162,7 +162,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         null,
                                         "Door panel needs replacement. Labor and parts included in estimate.");
 
-                        mockMvc.perform(post("/api/admin/damages/{id}/assess", damageId)
+                        mockMvc.perform(post("/api/v1/admin/damages/{id}/assess", damageId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(assessmentRequest)))
@@ -189,7 +189,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         "I disagree with this damage assessment",
                                         "The dent was pre-existing when I picked up the car. I have photos from pickup.");
 
-                        mockMvc.perform(post("/api/damages/{id}/dispute", damageId)
+                        mockMvc.perform(post("/api/v1/damages/{id}/dispute", damageId)
                                         .header("Authorization", "Bearer " + customerToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(disputeRequest)))
@@ -211,7 +211,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         new BigDecimal("750.00"),
                                         "After reviewing customer's pickup photos, determined dent was partially visible. Customer liability reduced by 50%.");
 
-                        mockMvc.perform(post("/api/admin/damages/{id}/resolve", damageId)
+                        mockMvc.perform(post("/api/v1/admin/damages/{id}/resolve", damageId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(resolutionRequest)))
@@ -228,7 +228,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                         assertThat(resolvedEvents.get(0).refundAmount())
                                         .isEqualByComparingTo(new BigDecimal("750.00"));
 
-                        mockMvc.perform(get("/api/admin/damages/{id}", damageId)
+                        mockMvc.perform(get("/api/v1/admin/damages/{id}", damageId)
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.status").value("RESOLVED"))
@@ -252,18 +252,18 @@ class DamageManagementE2ETest extends E2ETestBase {
                         RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(car.getId());
                         Long rentalId = createAndGetRentalId(rentalRequest, customerToken);
 
-                        mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk());
 
                         payRental(rentalId);
-                        mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{}"))
                                         .andExpect(status().isOk());
 
-                        mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{}"))
@@ -275,7 +275,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         DamageSeverity.MAJOR,
                                         DamageCategory.MECHANICAL_DAMAGE);
 
-                        String damageResponse = mockMvc.perform(post("/api/admin/damages")
+                        String damageResponse = mockMvc.perform(post("/api/v1/admin/damages")
                                         .header("Authorization", "Bearer " + adminToken)
                                         .param("rentalId", rentalId.toString())
                                         .contentType(MediaType.APPLICATION_JSON)
@@ -295,7 +295,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         null,
                                         "Engine requires complete overhaul");
 
-                        mockMvc.perform(post("/api/admin/damages/{id}/assess", damageId)
+                        mockMvc.perform(post("/api/v1/admin/damages/{id}/assess", damageId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(assessmentRequest)))
@@ -323,18 +323,18 @@ class DamageManagementE2ETest extends E2ETestBase {
                         RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(car.getId());
                         Long rentalId = createAndGetRentalId(rentalRequest, customerToken);
 
-                        mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk());
 
                         payRental(rentalId);
-                        mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{}"))
                                         .andExpect(status().isOk());
 
-                        mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{}"))
@@ -346,7 +346,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         DamageSeverity.MODERATE,
                                         DamageCategory.GLASS_DAMAGE);
 
-                        String damageResponse = mockMvc.perform(post("/api/admin/damages")
+                        String damageResponse = mockMvc.perform(post("/api/v1/admin/damages")
                                         .header("Authorization", "Bearer " + adminToken)
                                         .param("rentalId", rentalId.toString())
                                         .contentType(MediaType.APPLICATION_JSON)
@@ -366,7 +366,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         new BigDecimal("500.00"),
                                         "Windshield replacement needed");
 
-                        mockMvc.perform(post("/api/admin/damages/{id}/assess", damageId)
+                        mockMvc.perform(post("/api/v1/admin/damages/{id}/assess", damageId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(assessmentRequest)))
@@ -400,7 +400,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                         RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(car.getId());
                         Long rentalId = createAndGetRentalId(rentalRequest, customerToken);
 
-                        mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk());
 
@@ -410,14 +410,14 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         DamageSeverity.MINOR,
                                         DamageCategory.SCRATCH);
 
-                        mockMvc.perform(post("/api/admin/damages")
+                        mockMvc.perform(post("/api/v1/admin/damages")
                                         .header("Authorization", "Bearer " + customerToken)
                                         .param("rentalId", rentalId.toString())
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(damageRequest)))
                                         .andExpect(status().isForbidden());
 
-                        mockMvc.perform(post("/api/admin/damages")
+                        mockMvc.perform(post("/api/v1/admin/damages")
                                         .header("Authorization", "Bearer " + adminToken)
                                         .param("rentalId", rentalId.toString())
                                         .contentType(MediaType.APPLICATION_JSON)
@@ -446,18 +446,18 @@ class DamageManagementE2ETest extends E2ETestBase {
                         RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(car.getId());
                         Long rentalId = createAndGetRentalId(rentalRequest, customerToken);
 
-                        mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk());
 
                         payRental(rentalId);
-                        mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{}"))
                                         .andExpect(status().isOk());
 
-                        mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{}"))
@@ -469,7 +469,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         DamageSeverity.MINOR,
                                         DamageCategory.SCRATCH);
 
-                        String damageResponse = mockMvc.perform(post("/api/admin/damages")
+                        String damageResponse = mockMvc.perform(post("/api/v1/admin/damages")
                                         .header("Authorization", "Bearer " + adminToken)
                                         .param("rentalId", rentalId.toString())
                                         .contentType(MediaType.APPLICATION_JSON)
@@ -489,7 +489,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         null,
                                         "Minor scratch repair");
 
-                        mockMvc.perform(post("/api/admin/damages/{id}/assess", damageId)
+                        mockMvc.perform(post("/api/v1/admin/damages/{id}/assess", damageId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(assessmentRequest)))
@@ -503,13 +503,13 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         "Dispute reason",
                                         "Comments");
 
-                        mockMvc.perform(post("/api/damages/{id}/dispute", damageId)
+                        mockMvc.perform(post("/api/v1/damages/{id}/dispute", damageId)
                                         .header("Authorization", "Bearer " + otherUserToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(disputeRequest)))
                                         .andExpect(status().isForbidden());
 
-                        mockMvc.perform(post("/api/damages/{id}/dispute", damageId)
+                        mockMvc.perform(post("/api/v1/damages/{id}/dispute", damageId)
                                         .header("Authorization", "Bearer " + customerToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(disputeRequest)))
@@ -539,18 +539,18 @@ class DamageManagementE2ETest extends E2ETestBase {
                         RentalRequest rentalRequest1 = TestDataBuilder.createRentalRequest(car.getId());
                         Long rentalId1 = createAndGetRentalId(rentalRequest1, customerToken);
 
-                        mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId1)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId1)
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk());
 
                         payRental(rentalId1);
-                        mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId1)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId1)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{}"))
                                         .andExpect(status().isOk());
 
-                        mockMvc.perform(post("/api/rentals/{id}/return", rentalId1)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId1)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{}"))
@@ -562,14 +562,14 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         DamageSeverity.MINOR,
                                         DamageCategory.SCRATCH);
 
-                        mockMvc.perform(post("/api/admin/damages")
+                        mockMvc.perform(post("/api/v1/admin/damages")
                                         .header("Authorization", "Bearer " + adminToken)
                                         .param("rentalId", rentalId1.toString())
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(damageRequest)))
                                         .andExpect(status().isCreated());
 
-                        mockMvc.perform(get("/api/admin/damages/vehicle/{carId}", car.getId())
+                        mockMvc.perform(get("/api/v1/admin/damages/vehicle/{carId}", car.getId())
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.content").isArray())
@@ -595,18 +595,18 @@ class DamageManagementE2ETest extends E2ETestBase {
                         RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(car.getId());
                         Long rentalId = createAndGetRentalId(rentalRequest, customerToken);
 
-                        mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk());
 
                         payRental(rentalId);
-                        mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{}"))
                                         .andExpect(status().isOk());
 
-                        mockMvc.perform(post("/api/rentals/{id}/return", rentalId)
+                        mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{}"))
@@ -618,14 +618,14 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         DamageSeverity.MINOR,
                                         DamageCategory.SCRATCH);
 
-                        mockMvc.perform(post("/api/admin/damages")
+                        mockMvc.perform(post("/api/v1/admin/damages")
                                         .header("Authorization", "Bearer " + adminToken)
                                         .param("rentalId", rentalId.toString())
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(damageRequest)))
                                         .andExpect(status().isCreated());
 
-                        mockMvc.perform(get("/api/damages/me")
+                        mockMvc.perform(get("/api/v1/damages/me")
                                         .header("Authorization", "Bearer " + customerToken))
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.content").isArray())

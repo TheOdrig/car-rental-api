@@ -87,7 +87,7 @@ public abstract class E2ETestBase {
     }
 
     protected Long createAndGetRentalId(RentalRequest request, String token) throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/rentals/request")
+        MvcResult result = mockMvc.perform(post("/api/v1/rentals/request")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

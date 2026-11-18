@@ -72,7 +72,7 @@ class PricingControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST /api/pricing/calculate")
+    @DisplayName("POST /api/v1/pricing/calculate")
     class CalculatePrice {
 
         @Test
@@ -85,7 +85,7 @@ class PricingControllerIntegrationTest {
                     LocalDate.now().plusDays(15)
             );
 
-            mockMvc.perform(post("/api/pricing/calculate")
+            mockMvc.perform(post("/api/v1/pricing/calculate")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -107,7 +107,7 @@ class PricingControllerIntegrationTest {
                     LocalDate.now().plusDays(15)
             );
 
-            mockMvc.perform(post("/api/pricing/calculate")
+            mockMvc.perform(post("/api/v1/pricing/calculate")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -124,7 +124,7 @@ class PricingControllerIntegrationTest {
                     LocalDate.now().plusDays(10)
             );
 
-            mockMvc.perform(post("/api/pricing/calculate")
+            mockMvc.perform(post("/api/v1/pricing/calculate")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -142,7 +142,7 @@ class PricingControllerIntegrationTest {
                     LocalDate.now().plusDays(40)
             );
 
-            mockMvc.perform(post("/api/pricing/calculate")
+            mockMvc.perform(post("/api/v1/pricing/calculate")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -162,7 +162,7 @@ class PricingControllerIntegrationTest {
                     LocalDate.now().plusDays(20)
             );
 
-            mockMvc.perform(post("/api/pricing/calculate")
+            mockMvc.perform(post("/api/v1/pricing/calculate")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -173,14 +173,14 @@ class PricingControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("GET /api/pricing/preview")
+    @DisplayName("GET /api/v1/pricing/preview")
     class PreviewPrice {
 
         @Test
         @WithMockUser
         @DisplayName("Should preview price successfully")
         void shouldPreviewPriceSuccessfully() throws Exception {
-            mockMvc.perform(get("/api/pricing/preview")
+            mockMvc.perform(get("/api/v1/pricing/preview")
                             .param("carId", testCar.getId().toString())
                             .param("startDate", LocalDate.now().plusDays(10).toString())
                             .param("endDate", LocalDate.now().plusDays(15).toString()))
@@ -195,7 +195,7 @@ class PricingControllerIntegrationTest {
         @WithMockUser
         @DisplayName("Should return 404 when car not found")
         void shouldReturn404WhenCarNotFound() throws Exception {
-            mockMvc.perform(get("/api/pricing/preview")
+            mockMvc.perform(get("/api/v1/pricing/preview")
                             .param("carId", "99999")
                             .param("startDate", LocalDate.now().plusDays(10).toString())
                             .param("endDate", LocalDate.now().plusDays(15).toString()))
@@ -206,7 +206,7 @@ class PricingControllerIntegrationTest {
         @WithMockUser
         @DisplayName("Should return 400 for missing parameters")
         void shouldReturn400ForMissingParameters() throws Exception {
-            mockMvc.perform(get("/api/pricing/preview")
+            mockMvc.perform(get("/api/v1/pricing/preview")
                             .param("carId", testCar.getId().toString()))
                     .andExpect(status().isBadRequest());
         }
@@ -215,7 +215,7 @@ class PricingControllerIntegrationTest {
         @WithMockUser
         @DisplayName("Should return 400 for invalid date format")
         void shouldReturn400ForInvalidDateFormat() throws Exception {
-            mockMvc.perform(get("/api/pricing/preview")
+            mockMvc.perform(get("/api/v1/pricing/preview")
                             .param("carId", testCar.getId().toString())
                             .param("startDate", "invalid-date")
                             .param("endDate", LocalDate.now().plusDays(15).toString()))
@@ -224,13 +224,13 @@ class PricingControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("GET /api/pricing/strategies")
+    @DisplayName("GET /api/v1/pricing/strategies")
     class GetEnabledStrategies {
 
         @Test
         @DisplayName("Should return list of enabled strategies without authentication")
         void shouldReturnListOfEnabledStrategies() throws Exception {
-            mockMvc.perform(get("/api/pricing/strategies"))
+            mockMvc.perform(get("/api/v1/pricing/strategies"))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$").isArray())
@@ -242,7 +242,7 @@ class PricingControllerIntegrationTest {
         @Test
         @DisplayName("Should return strategies in correct order without authentication")
         void shouldReturnStrategiesInCorrectOrder() throws Exception {
-            mockMvc.perform(get("/api/pricing/strategies"))
+            mockMvc.perform(get("/api/v1/pricing/strategies"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$[0].order").value(1))
                     .andExpect(jsonPath("$[0].name").value("Season Pricing"));
@@ -262,7 +262,7 @@ class PricingControllerIntegrationTest {
                     LocalDate.now().plusDays(15)
             );
 
-            mockMvc.perform(post("/api/pricing/calculate")
+            mockMvc.perform(post("/api/v1/pricing/calculate")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))

@@ -54,7 +54,7 @@ class PricingIntegrationE2ETest extends E2ETestBase {
 
             RentalRequest rentalRequest = TestDataBuilder.createEarlyBookingRentalRequest(testCar.getId());
 
-            String responseJson = mockMvc.perform(post("/api/rentals/request")
+            String responseJson = mockMvc.perform(post("/api/v1/rentals/request")
                             .header("Authorization", "Bearer " + userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(rentalRequest)))
@@ -93,7 +93,7 @@ class PricingIntegrationE2ETest extends E2ETestBase {
 
             RentalRequest rentalRequest = TestDataBuilder.createLongDurationRentalRequest(testCar.getId());
 
-            String responseJson = mockMvc.perform(post("/api/rentals/request")
+            String responseJson = mockMvc.perform(post("/api/v1/rentals/request")
                             .header("Authorization", "Bearer " + userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(rentalRequest)))
@@ -139,7 +139,7 @@ class PricingIntegrationE2ETest extends E2ETestBase {
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(
                     testCar.getId(), startDate, endDate);
 
-            String responseJson = mockMvc.perform(post("/api/rentals/request")
+            String responseJson = mockMvc.perform(post("/api/v1/rentals/request")
                             .header("Authorization", "Bearer " + userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(rentalRequest)))
@@ -176,7 +176,7 @@ class PricingIntegrationE2ETest extends E2ETestBase {
 
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
 
-            String responseJson = mockMvc.perform(post("/api/rentals/request")
+            String responseJson = mockMvc.perform(post("/api/v1/rentals/request")
                             .header("Authorization", "Bearer " + userToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(rentalRequest)))

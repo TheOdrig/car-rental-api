@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/admin/rentals")
+@RequestMapping("/api/v1/admin/rentals")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Penalty Waiver Management", description = "Admin operations for waiving penalties")
@@ -52,7 +52,7 @@ public class PenaltyWaiverController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("POST /api/admin/rentals/{}/penalty/waive - Admin: {}", id, username);
+        log.info("POST /api/v1/admin/rentals/{}/penalty/waive - Admin: {}", id, username);
 
         UserDto admin = authService.getUserByUsername(username);
 
@@ -83,7 +83,7 @@ public class PenaltyWaiverController {
             @Parameter(description = "Rental ID", required = true)
             @PathVariable Long id) {
 
-        log.debug("GET /api/admin/rentals/{}/penalty/history", id);
+        log.debug("GET /api/v1/admin/rentals/{}/penalty/history", id);
 
         List<PenaltyWaiver> history = penaltyWaiverService.getPenaltyHistory(id);
         List<PenaltyWaiverResponse> response = history.stream()

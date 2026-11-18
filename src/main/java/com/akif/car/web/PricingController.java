@@ -22,7 +22,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/pricing")
+@RequestMapping("/api/v1/pricing")
 @RequiredArgsConstructor
 @Tag(name = "Pricing", description = "Dynamic pricing management endpoints")
 public class PricingController {

@@ -46,7 +46,7 @@ class GlobalExceptionHandlerTest {
     @BeforeEach
     void setUp() {
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
-        mockRequest.setRequestURI("/api/cars/123");
+        mockRequest.setRequestURI("/api/v1/cars/123");
         webRequest = new ServletWebRequest(mockRequest);
     }
 
@@ -66,7 +66,7 @@ class GlobalExceptionHandlerTest {
             assertThat(response.getBody().getErrorCode()).isEqualTo("CAR_NOT_FOUND");
             assertThat(response.getBody().getMessage()).isEqualTo("Car not found with id: 123");
             assertThat(response.getBody().getStatus()).isEqualTo(404);
-            assertThat(response.getBody().getPath()).isEqualTo("/api/cars/123");
+            assertThat(response.getBody().getPath()).isEqualTo("/api/v1/cars/123");
             assertThat(response.getBody().getTraceId()).isNotNull();
         }
 
@@ -233,7 +233,7 @@ class GlobalExceptionHandlerTest {
         void shouldExtractPathFromWebRequest() {
             String path = handler.extractPath(webRequest);
 
-            assertThat(path).isEqualTo("/api/cars/123");
+            assertThat(path).isEqualTo("/api/v1/cars/123");
         }
     }
 }

@@ -165,7 +165,7 @@ class DashboardControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when user tries to access admin dashboard")
         void shouldReturn403WhenUserTriesToAccessAdminDashboard() throws Exception {
-            mockMvc.perform(get("/api/admin/dashboard/summary")
+            mockMvc.perform(get("/api/v1/admin/dashboard/summary")
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }
@@ -173,14 +173,14 @@ class DashboardControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when no authentication provided")
         void shouldReturn403WhenNoAuthenticationProvided() throws Exception {
-            mockMvc.perform(get("/api/admin/dashboard/summary"))
+            mockMvc.perform(get("/api/v1/admin/dashboard/summary"))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("Should return 200 when admin accesses dashboard")
         void shouldReturn200WhenAdminAccessesDashboard() throws Exception {
-            mockMvc.perform(get("/api/admin/dashboard/summary")
+            mockMvc.perform(get("/api/v1/admin/dashboard/summary")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk());
         }
@@ -193,7 +193,7 @@ class DashboardControllerIntegrationTest {
         @Test
         @DisplayName("Should return daily summary with zero counts when no data")
         void shouldReturnDailySummaryWithZeroCountsWhenNoData() throws Exception {
-            mockMvc.perform(get("/api/admin/dashboard/summary")
+            mockMvc.perform(get("/api/v1/admin/dashboard/summary")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.pendingApprovals").value(0))
@@ -208,7 +208,7 @@ class DashboardControllerIntegrationTest {
         void shouldReturnCorrectPendingApprovalsCount() throws Exception {
             createTestRental(RentalStatus.REQUESTED, LocalDate.now().plusDays(1), LocalDate.now().plusDays(5));
 
-            mockMvc.perform(get("/api/admin/dashboard/summary")
+            mockMvc.perform(get("/api/v1/admin/dashboard/summary")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.pendingApprovals").value(1));
@@ -219,7 +219,7 @@ class DashboardControllerIntegrationTest {
         void shouldReturnCorrectTodaysPickupsCount() throws Exception {
             createTestRental(RentalStatus.CONFIRMED, LocalDate.now(), LocalDate.now().plusDays(5));
 
-            mockMvc.perform(get("/api/admin/dashboard/summary")
+            mockMvc.perform(get("/api/v1/admin/dashboard/summary")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.todaysPickups").value(1));
@@ -230,7 +230,7 @@ class DashboardControllerIntegrationTest {
         void shouldReturnCorrectTodaysReturnsCount() throws Exception {
             createTestRental(RentalStatus.IN_USE, LocalDate.now().minusDays(5), LocalDate.now());
 
-            mockMvc.perform(get("/api/admin/dashboard/summary")
+            mockMvc.perform(get("/api/v1/admin/dashboard/summary")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.todaysReturns").value(1));
@@ -241,7 +241,7 @@ class DashboardControllerIntegrationTest {
         void shouldReturnCorrectOverdueRentalsCount() throws Exception {
             createTestRental(RentalStatus.IN_USE, LocalDate.now().minusDays(10), LocalDate.now().minusDays(1));
 
-            mockMvc.perform(get("/api/admin/dashboard/summary")
+            mockMvc.perform(get("/api/v1/admin/dashboard/summary")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.overdueRentals").value(1));
@@ -255,7 +255,7 @@ class DashboardControllerIntegrationTest {
         @Test
         @DisplayName("Should return fleet status successfully")
         void shouldReturnFleetStatusSuccessfully() throws Exception {
-            mockMvc.perform(get("/api/admin/dashboard/fleet")
+            mockMvc.perform(get("/api/v1/admin/dashboard/fleet")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.totalCars").exists())
@@ -269,7 +269,7 @@ class DashboardControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when user tries to access fleet status")
         void shouldReturn403WhenUserTriesToAccessFleetStatus() throws Exception {
-            mockMvc.perform(get("/api/admin/dashboard/fleet")
+            mockMvc.perform(get("/api/v1/admin/dashboard/fleet")
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }
@@ -282,7 +282,7 @@ class DashboardControllerIntegrationTest {
         @Test
         @DisplayName("Should return monthly metrics without date range")
         void shouldReturnMonthlyMetricsWithoutDateRange() throws Exception {
-            mockMvc.perform(get("/api/admin/dashboard/metrics")
+            mockMvc.perform(get("/api/v1/admin/dashboard/metrics")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.totalRevenue").exists())
@@ -299,7 +299,7 @@ class DashboardControllerIntegrationTest {
             LocalDate startDate = LocalDate.now().minusMonths(1);
             LocalDate endDate = LocalDate.now();
 
-            mockMvc.perform(get("/api/admin/dashboard/metrics")
+            mockMvc.perform(get("/api/v1/admin/dashboard/metrics")
                             .header("Authorization", adminToken)
                             .param("startDate", startDate.toString())
                             .param("endDate", endDate.toString()))
@@ -311,7 +311,7 @@ class DashboardControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when user tries to access metrics")
         void shouldReturn403WhenUserTriesToAccessMetrics() throws Exception {
-            mockMvc.perform(get("/api/admin/dashboard/metrics")
+            mockMvc.perform(get("/api/v1/admin/dashboard/metrics")
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }
@@ -324,7 +324,7 @@ class DashboardControllerIntegrationTest {
         @Test
         @DisplayName("Should return revenue analytics successfully")
         void shouldReturnRevenueAnalyticsSuccessfully() throws Exception {
-            mockMvc.perform(get("/api/admin/dashboard/revenue")
+            mockMvc.perform(get("/api/v1/admin/dashboard/revenue")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.dailyRevenue").exists())
@@ -335,7 +335,7 @@ class DashboardControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when user tries to access revenue analytics")
         void shouldReturn403WhenUserTriesToAccessRevenueAnalytics() throws Exception {
-            mockMvc.perform(get("/api/admin/dashboard/revenue")
+            mockMvc.perform(get("/api/v1/admin/dashboard/revenue")
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }
@@ -350,7 +350,7 @@ class DashboardControllerIntegrationTest {
         void shouldReturnPendingApprovalsWithPagination() throws Exception {
             createTestRental(RentalStatus.REQUESTED, LocalDate.now().plusDays(1), LocalDate.now().plusDays(5));
 
-            mockMvc.perform(get("/api/admin/dashboard/pending/approvals")
+            mockMvc.perform(get("/api/v1/admin/dashboard/pending/approvals")
                             .header("Authorization", adminToken)
                             .param("page", "0")
                             .param("size", "10"))
@@ -363,7 +363,7 @@ class DashboardControllerIntegrationTest {
         @Test
         @DisplayName("Should return todays pickups with pagination")
         void shouldReturnTodaysPickupsWithPagination() throws Exception {
-            mockMvc.perform(get("/api/admin/dashboard/pending/pickups")
+            mockMvc.perform(get("/api/v1/admin/dashboard/pending/pickups")
                             .header("Authorization", adminToken)
                             .param("page", "0")
                             .param("size", "10"))
@@ -374,7 +374,7 @@ class DashboardControllerIntegrationTest {
         @Test
         @DisplayName("Should return todays returns with pagination")
         void shouldReturnTodaysReturnsWithPagination() throws Exception {
-            mockMvc.perform(get("/api/admin/dashboard/pending/returns")
+            mockMvc.perform(get("/api/v1/admin/dashboard/pending/returns")
                             .header("Authorization", adminToken)
                             .param("page", "0")
                             .param("size", "10"))
@@ -385,7 +385,7 @@ class DashboardControllerIntegrationTest {
         @Test
         @DisplayName("Should return overdue rentals with pagination")
         void shouldReturnOverdueRentalsWithPagination() throws Exception {
-            mockMvc.perform(get("/api/admin/dashboard/pending/overdue")
+            mockMvc.perform(get("/api/v1/admin/dashboard/pending/overdue")
                             .header("Authorization", adminToken)
                             .param("page", "0")
                             .param("size", "10"))
@@ -396,7 +396,7 @@ class DashboardControllerIntegrationTest {
         @Test
         @DisplayName("Should return 403 when user tries to access pending items")
         void shouldReturn403WhenUserTriesToAccessPendingItems() throws Exception {
-            mockMvc.perform(get("/api/admin/dashboard/pending/approvals")
+            mockMvc.perform(get("/api/v1/admin/dashboard/pending/approvals")
                             .header("Authorization", userToken))
                     .andExpect(status().isForbidden());
         }
