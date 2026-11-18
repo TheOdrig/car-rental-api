@@ -59,20 +59,19 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
                 ? request.severity()
                 : determineSeverity(request.repairCostEstimate());
 
+        CurrencyType currency = resolveCurrency(damageReport, request);
+        int places = currency.getDecimalPlaces();
         boolean hasInsurance = Boolean.TRUE.equals(request.insuranceCoverage());
-        BigDecimal deductible = request.insuranceDeductible() != null
+        BigDecimal deductible = round(request.insuranceDeductible() != null
                 ? request.insuranceDeductible()
-                : damageConfig.getDefaultInsuranceDeductible();
+                : damageConfig.getDefaultInsuranceDeductible(), places);
+        BigDecimal repairCost = round(request.repairCostEstimate(), places);
 
-        BigDecimal customerLiability = calculateCustomerLiability(
-                request.repairCostEstimate(),
-                hasInsurance,
-                deductible
-        );
+        BigDecimal customerLiability = round(calculateCustomerLiability(repairCost, hasInsurance, deductible), places);
 
-        damageReport.assess(severity, request.category(), request.repairCostEstimate(), customerLiability,
+        damageReport.assess(severity, request.category(), repairCost, customerLiability,
                 hasInsurance, deductible, request.assessmentNotes(), user.id(), LocalDateTime.now(clock));
-        damageReport.assignCurrency(resolveCurrency(damageReport, request));
+        damageReport.assignCurrency(currency);
 
         damageReport = damageReportRepository.save(damageReport);
 
@@ -111,20 +110,19 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
                 ? request.severity()
                 : determineSeverity(request.repairCostEstimate());
 
+        CurrencyType currency = resolveCurrency(damageReport, request);
+        int places = currency.getDecimalPlaces();
         boolean hasInsurance = Boolean.TRUE.equals(request.insuranceCoverage());
-        BigDecimal deductible = request.insuranceDeductible() != null
+        BigDecimal deductible = round(request.insuranceDeductible() != null
                 ? request.insuranceDeductible()
-                : damageConfig.getDefaultInsuranceDeductible();
+                : damageConfig.getDefaultInsuranceDeductible(), places);
+        BigDecimal repairCost = round(request.repairCostEstimate(), places);
 
-        BigDecimal customerLiability = calculateCustomerLiability(
-                request.repairCostEstimate(),
-                hasInsurance,
-                deductible
-        );
+        BigDecimal customerLiability = round(calculateCustomerLiability(repairCost, hasInsurance, deductible), places);
 
-        damageReport.reviseAssessment(severity, request.category(), request.repairCostEstimate(), customerLiability,
+        damageReport.reviseAssessment(severity, request.category(), repairCost, customerLiability,
                 hasInsurance, deductible, request.assessmentNotes(), user.id(), LocalDateTime.now(clock));
-        damageReport.assignCurrency(resolveCurrency(damageReport, request));
+        damageReport.assignCurrency(currency);
 
         damageReport = damageReportRepository.save(damageReport);
 
@@ -134,6 +132,10 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
                 damageId, severity, customerLiability);
 
         return buildResponseDto(damageReport, carStatusUpdated);
+    }
+
+    private static BigDecimal round(BigDecimal amount, int places) {
+        return amount == null ? null : amount.setScale(places, java.math.RoundingMode.HALF_UP);
     }
 
     private CurrencyType resolveCurrency(DamageReport damageReport, DamageAssessmentRequest request) {

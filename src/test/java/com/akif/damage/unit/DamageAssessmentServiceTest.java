@@ -164,6 +164,23 @@ class DamageAssessmentServiceTest {
         }
 
         @Test
+        @DisplayName("Should round repair cost, deductible and liability to whole yen for JPY")
+        void shouldRoundLiabilityToWholeYen() {
+            when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
+            when(authService.getUserByUsername("admin")).thenReturn(testUser);
+            when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
+            DamageAssessmentRequest request = new DamageAssessmentRequest(DamageSeverity.MINOR, DamageCategory.SCRATCH,
+                    new BigDecimal("12345.67"), false, null, "n", com.akif.shared.enums.CurrencyType.JPY);
+            when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
+
+            damageAssessmentService.assessDamage(1L, request, "admin");
+
+            assertThat(testDamageReport.getCustomerLiability()).isEqualTo(new BigDecimal("12346"));
+            assertThat(testDamageReport.getRepairCostEstimate()).isEqualTo(new BigDecimal("12346"));
+            assertThat(testDamageReport.getInsuranceDeductible().scale()).isZero();
+        }
+
+        @Test
         @DisplayName("Should keep an explicit assessment currency")
         void shouldKeepExplicitCurrency() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));

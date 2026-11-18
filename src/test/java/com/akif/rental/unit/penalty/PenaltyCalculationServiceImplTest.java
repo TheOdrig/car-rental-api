@@ -114,11 +114,11 @@ class PenaltyCalculationServiceImplTest {
         void shouldThrowExceptionForInvalidHourlyPenaltyRange() {
             BigDecimal dailyRate = new BigDecimal("500.00");
 
-            assertThatThrownBy(() -> service.calculateHourlyPenalty(dailyRate, 0))
+            assertThatThrownBy(() -> service.calculateHourlyPenalty(dailyRate, 0, CurrencyType.TRY))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Hourly penalty applies only for 1-6 hours late");
 
-            assertThatThrownBy(() -> service.calculateHourlyPenalty(dailyRate, 7))
+            assertThatThrownBy(() -> service.calculateHourlyPenalty(dailyRate, 7, CurrencyType.TRY))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Hourly penalty applies only for 1-6 hours late");
         }
@@ -184,11 +184,11 @@ class PenaltyCalculationServiceImplTest {
         void shouldThrowExceptionForInvalidDailyPenaltyRange() {
             BigDecimal dailyRate = new BigDecimal("500.00");
 
-            assertThatThrownBy(() -> service.calculateDailyPenalty(dailyRate, 0))
+            assertThatThrownBy(() -> service.calculateDailyPenalty(dailyRate, 0, CurrencyType.TRY))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Daily penalty applies only for 1+ days late");
 
-            assertThatThrownBy(() -> service.calculateDailyPenalty(dailyRate, -1))
+            assertThatThrownBy(() -> service.calculateDailyPenalty(dailyRate, -1, CurrencyType.TRY))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Daily penalty applies only for 1+ days late");
         }
@@ -230,8 +230,8 @@ class PenaltyCalculationServiceImplTest {
             BigDecimal excessivePenalty = new BigDecimal("3000.00");
             BigDecimal normalPenalty = new BigDecimal("200.00");
 
-            BigDecimal cappedExcessive = service.applyPenaltyCap(excessivePenalty, dailyRate);
-            BigDecimal cappedNormal = service.applyPenaltyCap(normalPenalty, dailyRate);
+            BigDecimal cappedExcessive = service.applyPenaltyCap(excessivePenalty, dailyRate, CurrencyType.TRY);
+            BigDecimal cappedNormal = service.applyPenaltyCap(normalPenalty, dailyRate, CurrencyType.TRY);
 
             assertThat(cappedExcessive).isEqualByComparingTo(new BigDecimal("2500.00"));
             assertThat(cappedNormal).isEqualByComparingTo(new BigDecimal("200.00"));
@@ -318,6 +318,39 @@ class PenaltyCalculationServiceImplTest {
 
             assertThat(result.penaltyAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
             assertThat(result.dailyRate()).isEqualByComparingTo(new BigDecimal("1000.00"));
+        }
+    }
+
+    @Nested
+    @DisplayName("Zero-decimal currencies")
+    class ZeroDecimalCurrency {
+
+        @Test
+        @DisplayName("Should round penalties to whole yen")
+        void shouldRoundPenaltiesToWholeYen() {
+            assertThat(service.calculateHourlyPenalty(new BigDecimal("1234"), 3, CurrencyType.JPY))
+                    .isEqualTo(new BigDecimal("370"));
+            assertThat(service.calculateDailyPenalty(new BigDecimal("1234"), 1, CurrencyType.JPY))
+                    .isEqualTo(new BigDecimal("1851"));
+            assertThat(service.applyPenaltyCap(new BigDecimal("99999"), new BigDecimal("1234"), CurrencyType.JPY))
+                    .isEqualTo(new BigDecimal("6170"));
+        }
+
+        @Test
+        @DisplayName("Should produce a whole-yen penalty for a late JPY rental")
+        void shouldProduceWholeYenPenaltyForLateRental() {
+            testRental = Rental.builder()
+                    .id(2L)
+                    .endDate(LocalDate.now().minusDays(2))
+                    .dailyPrice(new BigDecimal("1234"))
+                    .currency(CurrencyType.JPY)
+                    .build();
+            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(3);
+
+            PenaltyResult result = service.calculatePenalty(testRental, returnTime);
+
+            assertThat(result.penaltyAmount().scale()).isZero();
+            assertThat(result.penaltyAmount()).isEqualTo(new BigDecimal("247"));
         }
     }
 }

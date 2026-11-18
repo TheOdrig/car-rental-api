@@ -11,6 +11,7 @@ import com.akif.car.internal.service.pricing.*;
 import com.akif.car.internal.config.PricingConfig;
 import com.akif.car.internal.exception.CarNotFoundException;
 import com.akif.car.domain.Car;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.car.internal.repository.CarRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +46,7 @@ public class DynamicPricingServiceImpl implements DynamicPricingService, Pricing
 
         PricingContext context = createContext(car, startDate, endDate, bookingDate);
         
-        return calculatePriceWithContext(context);
+        return calculatePriceWithContext(context, car.getCurrencyType());
     }
 
     @Override
@@ -61,7 +62,8 @@ public class DynamicPricingServiceImpl implements DynamicPricingService, Pricing
             .toList();
     }
 
-    private PricingResult calculatePriceWithContext(PricingContext context) {
+    private PricingResult calculatePriceWithContext(PricingContext context, CurrencyType currency) {
+        int places = currency.getDecimalPlaces();
         List<PricingStrategy> enabledStrategies = getEnabledStrategies();
         
         log.debug("Applying {} enabled strategies", enabledStrategies.size());
@@ -84,9 +86,9 @@ public class DynamicPricingServiceImpl implements DynamicPricingService, Pricing
             .multiply(BigDecimal.valueOf(context.rentalDays()));
 
         BigDecimal calculatedPrice = baseTotalPrice.multiply(combinedMultiplier)
-            .setScale(2, RoundingMode.HALF_UP);
+            .setScale(places, RoundingMode.HALF_UP);
 
-        BigDecimal finalPrice = applyPriceCaps(calculatedPrice, context.rentalDays());
+        BigDecimal finalPrice = applyPriceCaps(calculatedPrice, context.rentalDays(), currency);
 
         log.info("Price calculation complete: base={}, combined={}, final={}", 
             baseTotalPrice, calculatedPrice, finalPrice);
@@ -97,27 +99,29 @@ public class DynamicPricingServiceImpl implements DynamicPricingService, Pricing
             .appliedModifiers(appliedModifiers)
             .combinedMultiplier(combinedMultiplier)
             .finalPrice(finalPrice)
+            .scale(places)
             .build();
     }
 
-    private BigDecimal applyPriceCaps(BigDecimal calculatedPrice, int rentalDays) {
+    private BigDecimal applyPriceCaps(BigDecimal calculatedPrice, int rentalDays, CurrencyType currency) {
+        int places = currency.getDecimalPlaces();
         BigDecimal dailyPrice = calculatedPrice.divide(
             BigDecimal.valueOf(rentalDays), 
-            2, 
+            places, 
             RoundingMode.HALF_UP
         );
 
-        BigDecimal minDailyPrice = config.getMinDailyPrice();
-        BigDecimal maxDailyPrice = config.getMaxDailyPrice();
+        BigDecimal minDailyPrice = config.minDailyPriceFor(currency);
+        BigDecimal maxDailyPrice = config.maxDailyPriceFor(currency);
 
         if (dailyPrice.compareTo(minDailyPrice) < 0) {
             log.warn("Daily price {} below minimum {}, applying cap", dailyPrice, minDailyPrice);
-            return minDailyPrice.multiply(BigDecimal.valueOf(rentalDays));
+            return minDailyPrice.multiply(BigDecimal.valueOf(rentalDays)).setScale(places, RoundingMode.HALF_UP);
         }
 
         if (dailyPrice.compareTo(maxDailyPrice) > 0) {
             log.warn("Daily price {} above maximum {}, applying cap", dailyPrice, maxDailyPrice);
-            return maxDailyPrice.multiply(BigDecimal.valueOf(rentalDays));
+            return maxDailyPrice.multiply(BigDecimal.valueOf(rentalDays)).setScale(places, RoundingMode.HALF_UP);
         }
 
         return calculatedPrice;

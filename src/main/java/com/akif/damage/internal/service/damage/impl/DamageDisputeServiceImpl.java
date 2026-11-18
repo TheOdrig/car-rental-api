@@ -91,7 +91,11 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
         }
 
         BigDecimal originalLiability = damageReport.getCustomerLiability();
-        BigDecimal adjustedLiability = resolution.adjustedCustomerLiability();
+        int places = damageReport.getCurrency() != null ? damageReport.getCurrency().getDecimalPlaces() : 2;
+        BigDecimal adjustedLiability = resolution.adjustedCustomerLiability()
+                .setScale(places, java.math.RoundingMode.HALF_UP);
+        BigDecimal adjustedRepairCost = resolution.adjustedRepairCost() == null ? null
+                : resolution.adjustedRepairCost().setScale(places, java.math.RoundingMode.HALF_UP);
         BigDecimal refundAmount = BigDecimal.ZERO;
 
         if (adjustedLiability.compareTo(originalLiability) < 0) {
@@ -99,7 +103,7 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
             processRefundForAdjustment(damageReport, adjustedLiability);
         }
 
-        damageReport.resolveDispute(adjustedLiability, resolution.adjustedRepairCost(), resolution.resolutionNotes(),
+        damageReport.resolveDispute(adjustedLiability, adjustedRepairCost, resolution.resolutionNotes(),
                 user.id(), LocalDateTime.now(clock));
         damageReport = damageReportRepository.save(damageReport);
 

@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import com.akif.shared.enums.CurrencyType;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
@@ -61,20 +63,20 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
         String breakdown;
         
         if (lateHours <= 6) {
-            penalty = calculateHourlyPenalty(dailyRate, lateHours);
+            penalty = calculateHourlyPenalty(dailyRate, lateHours, rental.getCurrency());
             breakdown = String.format("Hourly penalty: %d hours × %.0f%% × %s = %s",
                 lateHours,
                 penaltyConfig.getHourlyPenaltyRate().multiply(new BigDecimal("100")),
                 dailyRate,
                 penalty);
         } else if (lateHours <= 24) {
-            penalty = calculateDailyPenalty(dailyRate, 1);
+            penalty = calculateDailyPenalty(dailyRate, 1, rental.getCurrency());
             breakdown = String.format("Daily penalty: 1 day × %.0f%% × %s = %s",
                 penaltyConfig.getDailyPenaltyRate().multiply(new BigDecimal("100")),
                 dailyRate,
                 penalty);
         } else {
-            penalty = calculateDailyPenalty(dailyRate, lateDays);
+            penalty = calculateDailyPenalty(dailyRate, lateDays, rental.getCurrency());
             breakdown = String.format("Daily penalty: %d days × %.0f%% × %s = %s",
                 lateDays,
                 penaltyConfig.getDailyPenaltyRate().multiply(new BigDecimal("100")),
@@ -83,7 +85,7 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
         }
 
         BigDecimal originalPenalty = penalty;
-        penalty = applyPenaltyCap(penalty, dailyRate);
+        penalty = applyPenaltyCap(penalty, dailyRate, rental.getCurrency());
         boolean cappedAtMax = penalty.compareTo(originalPenalty) < 0;
         
         if (cappedAtMax) {
@@ -107,7 +109,7 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
     }
 
     @Override
-    public BigDecimal calculateHourlyPenalty(BigDecimal dailyRate, int lateHours) {
+    public BigDecimal calculateHourlyPenalty(BigDecimal dailyRate, int lateHours, CurrencyType currency) {
         if (lateHours <= 0 || lateHours > 6) {
             throw new IllegalArgumentException("Hourly penalty applies only for 1-6 hours late");
         }
@@ -115,7 +117,7 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
         BigDecimal penalty = dailyRate
             .multiply(penaltyConfig.getHourlyPenaltyRate())
             .multiply(new BigDecimal(lateHours))
-            .setScale(2, RoundingMode.HALF_UP);
+            .setScale(currency.getDecimalPlaces(), RoundingMode.HALF_UP);
         
         log.debug("Hourly penalty calculated: {} hours × {}% × {} = {}",
             lateHours, penaltyConfig.getHourlyPenaltyRate(), dailyRate, penalty);
@@ -124,7 +126,7 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
     }
 
     @Override
-    public BigDecimal calculateDailyPenalty(BigDecimal dailyRate, int lateDays) {
+    public BigDecimal calculateDailyPenalty(BigDecimal dailyRate, int lateDays, CurrencyType currency) {
         if (lateDays <= 0) {
             throw new IllegalArgumentException("Daily penalty applies only for 1+ days late");
         }
@@ -132,7 +134,7 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
         BigDecimal penalty = dailyRate
             .multiply(penaltyConfig.getDailyPenaltyRate())
             .multiply(new BigDecimal(lateDays))
-            .setScale(2, RoundingMode.HALF_UP);
+            .setScale(currency.getDecimalPlaces(), RoundingMode.HALF_UP);
         
         log.debug("Daily penalty calculated: {} days × {}% × {} = {}",
             lateDays, penaltyConfig.getDailyPenaltyRate(), dailyRate, penalty);
@@ -141,10 +143,10 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
     }
 
     @Override
-    public BigDecimal applyPenaltyCap(BigDecimal penalty, BigDecimal dailyRate) {
+    public BigDecimal applyPenaltyCap(BigDecimal penalty, BigDecimal dailyRate, CurrencyType currency) {
         BigDecimal maxPenalty = dailyRate
             .multiply(penaltyConfig.getPenaltyCapMultiplier())
-            .setScale(2, RoundingMode.HALF_UP);
+            .setScale(currency.getDecimalPlaces(), RoundingMode.HALF_UP);
         
         if (penalty.compareTo(maxPenalty) > 0) {
             log.debug("Penalty {} exceeds cap {}. Applying cap.", penalty, maxPenalty);

@@ -9,6 +9,7 @@ import com.akif.car.internal.repository.CarRepository;
 import com.akif.car.internal.service.pricing.PricingStrategy;
 import com.akif.car.internal.service.pricing.impl.DynamicPricingServiceImpl;
 import com.akif.car.internal.config.PricingConfig;
+import com.akif.shared.enums.CurrencyType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -57,6 +58,7 @@ class DynamicPricingServiceImplTest {
             .id(1L)
             .price(new BigDecimal("500"))
             .bodyType("SUV")
+            .currencyType(CurrencyType.TRY)
             .build();
     }
 
@@ -68,8 +70,8 @@ class DynamicPricingServiceImplTest {
         @DisplayName("Should calculate price with single strategy")
         void shouldCalculatePriceWithSingleStrategy() {
             when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
-            when(config.getMinDailyPrice()).thenReturn(new BigDecimal("100"));
-            when(config.getMaxDailyPrice()).thenReturn(new BigDecimal("10000"));
+            when(config.minDailyPriceFor(any())).thenReturn(new BigDecimal("100"));
+            when(config.maxDailyPriceFor(any())).thenReturn(new BigDecimal("10000"));
             when(strategy1.isEnabled()).thenReturn(true);
             when(strategy1.getOrder()).thenReturn(1);
             when(strategy1.calculate(any(PricingContext.class)))
@@ -95,8 +97,8 @@ class DynamicPricingServiceImplTest {
         @DisplayName("Should combine multiple strategy modifiers by multiplication")
         void shouldCombineMultipleStrategyModifiers() {
             when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
-            when(config.getMinDailyPrice()).thenReturn(new BigDecimal("100"));
-            when(config.getMaxDailyPrice()).thenReturn(new BigDecimal("10000"));
+            when(config.minDailyPriceFor(any())).thenReturn(new BigDecimal("100"));
+            when(config.maxDailyPriceFor(any())).thenReturn(new BigDecimal("10000"));
             when(strategy1.isEnabled()).thenReturn(true);
             when(strategy1.getOrder()).thenReturn(1);
             when(strategy1.calculate(any(PricingContext.class)))
@@ -124,8 +126,8 @@ class DynamicPricingServiceImplTest {
         @DisplayName("Should skip disabled strategies")
         void shouldSkipDisabledStrategies() {
             when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
-            when(config.getMinDailyPrice()).thenReturn(new BigDecimal("100"));
-            when(config.getMaxDailyPrice()).thenReturn(new BigDecimal("10000"));
+            when(config.minDailyPriceFor(any())).thenReturn(new BigDecimal("100"));
+            when(config.maxDailyPriceFor(any())).thenReturn(new BigDecimal("10000"));
             when(strategy1.isEnabled()).thenReturn(false);
             when(strategy2.isEnabled()).thenReturn(true);
             when(strategy2.getOrder()).thenReturn(2);
@@ -167,8 +169,8 @@ class DynamicPricingServiceImplTest {
         @DisplayName("Should enforce minimum daily price cap")
         void shouldEnforceMinimumDailyPriceCap() {
             when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
-            when(config.getMinDailyPrice()).thenReturn(new BigDecimal("100"));
-            when(config.getMaxDailyPrice()).thenReturn(new BigDecimal("10000"));
+            when(config.minDailyPriceFor(any())).thenReturn(new BigDecimal("100"));
+            when(config.maxDailyPriceFor(any())).thenReturn(new BigDecimal("10000"));
 
             when(strategy1.isEnabled()).thenReturn(true);
             when(strategy1.getOrder()).thenReturn(1);
@@ -186,6 +188,48 @@ class DynamicPricingServiceImplTest {
 
             assertThat(result.finalPrice()).isEqualByComparingTo(new BigDecimal("600.00"));
         }
+
+        @Test
+        @DisplayName("Should round a zero-decimal currency price to whole units and use that currency's limits")
+        void shouldRoundZeroDecimalCurrencyToWholeUnits() {
+            Car yenCar = Car.builder().id(2L).price(new BigDecimal("12345.67")).bodyType("SUV")
+                .currencyType(CurrencyType.JPY).build();
+            when(carRepository.findByIdAndIsDeletedFalse(2L)).thenReturn(Optional.of(yenCar));
+            when(config.minDailyPriceFor(CurrencyType.JPY)).thenReturn(new BigDecimal("1000"));
+            when(config.maxDailyPriceFor(CurrencyType.JPY)).thenReturn(new BigDecimal("1500000"));
+            when(strategy1.isEnabled()).thenReturn(true);
+            when(strategy1.getOrder()).thenReturn(1);
+            when(strategy1.calculate(any(PricingContext.class)))
+                .thenReturn(PriceModifier.surcharge("Test", new BigDecimal("1.15"), "15% surcharge"));
+            service = new DynamicPricingServiceImpl(Clock.systemDefaultZone(), List.of(strategy1), carRepository, config);
+
+            PricingResult result = service.calculatePrice(
+                2L, LocalDate.now().plusDays(10), LocalDate.now().plusDays(12), LocalDate.now());
+
+            assertThat(result.finalPrice().scale()).isZero();
+            assertThat(result.finalPrice()).isEqualTo(new BigDecimal("42593"));
+            assertThat(result.effectiveDailyPrice().scale()).isZero();
+        }
+
+        @Test
+        @DisplayName("Should not cap a realistic yen price with the default base-currency maximum")
+        void shouldNotCapYenWithDefaultMaximum() {
+            Car yenCar = Car.builder().id(2L).price(new BigDecimal("15000")).bodyType("SUV")
+                .currencyType(CurrencyType.JPY).build();
+            when(carRepository.findByIdAndIsDeletedFalse(2L)).thenReturn(Optional.of(yenCar));
+            when(config.minDailyPriceFor(CurrencyType.JPY)).thenReturn(new BigDecimal("1000"));
+            when(config.maxDailyPriceFor(CurrencyType.JPY)).thenReturn(new BigDecimal("1500000"));
+            when(strategy1.isEnabled()).thenReturn(true);
+            when(strategy1.getOrder()).thenReturn(1);
+            when(strategy1.calculate(any(PricingContext.class)))
+                .thenReturn(PriceModifier.discount("Test", new BigDecimal("1.00"), "none"));
+            service = new DynamicPricingServiceImpl(Clock.systemDefaultZone(), List.of(strategy1), carRepository, config);
+
+            PricingResult result = service.calculatePrice(
+                2L, LocalDate.now().plusDays(10), LocalDate.now().plusDays(10), LocalDate.now());
+
+            assertThat(result.finalPrice()).isEqualTo(new BigDecimal("15000"));
+        }
     }
 
     @Nested
@@ -196,8 +240,8 @@ class DynamicPricingServiceImplTest {
         @DisplayName("Should calculate preview price using current date as booking date")
         void shouldCalculatePreviewPriceUsingCurrentDate() {
             when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
-            when(config.getMinDailyPrice()).thenReturn(new BigDecimal("100"));
-            when(config.getMaxDailyPrice()).thenReturn(new BigDecimal("10000"));
+            when(config.minDailyPriceFor(any())).thenReturn(new BigDecimal("100"));
+            when(config.maxDailyPriceFor(any())).thenReturn(new BigDecimal("10000"));
             when(strategy1.isEnabled()).thenReturn(true);
             when(strategy1.getOrder()).thenReturn(1);
             when(strategy1.calculate(any(PricingContext.class)))

@@ -26,6 +26,7 @@ public record PricingResult(
         private List<PriceModifier> appliedModifiers;
         private BigDecimal combinedMultiplier;
         private BigDecimal finalPrice;
+        private int scale = 2;
 
         public Builder basePrice(BigDecimal basePrice) {
             this.basePrice = basePrice;
@@ -47,6 +48,11 @@ public record PricingResult(
             return this;
         }
 
+        public Builder scale(int scale) {
+            this.scale = scale;
+            return this;
+        }
+
         public Builder finalPrice(BigDecimal finalPrice) {
             this.finalPrice = finalPrice;
             return this;
@@ -55,7 +61,7 @@ public record PricingResult(
         public PricingResult build() {
             BigDecimal baseTotalPrice = basePrice.multiply(BigDecimal.valueOf(rentalDays));
             BigDecimal effectiveDailyPrice = rentalDays > 0 
-                ? finalPrice.divide(BigDecimal.valueOf(rentalDays), 2, RoundingMode.HALF_UP)
+                ? finalPrice.divide(BigDecimal.valueOf(rentalDays), scale, RoundingMode.HALF_UP)
                 : finalPrice;
             BigDecimal totalSavings = baseTotalPrice.subtract(finalPrice);
 

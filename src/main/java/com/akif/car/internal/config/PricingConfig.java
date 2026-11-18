@@ -6,13 +6,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import com.akif.shared.enums.CurrencyType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.MonthDay;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -23,12 +26,23 @@ public class PricingConfig {
 
     private BigDecimal minDailyPrice = new BigDecimal("100");
     private BigDecimal maxDailyPrice = new BigDecimal("10000");
+    private Map<CurrencyType, DailyLimits> dailyLimits = new EnumMap<>(CurrencyType.class);
     private SeasonConfig season = new SeasonConfig();
     private EarlyBookingConfig earlyBooking = new EarlyBookingConfig();
     private DurationConfig duration = new DurationConfig();
     private WeekendConfig weekend = new WeekendConfig();
     private DemandConfig demand = new DemandConfig();
     private StrategyConfig strategy = new StrategyConfig();
+
+    public BigDecimal minDailyPriceFor(CurrencyType currency) {
+        DailyLimits limits = dailyLimits.get(currency);
+        return limits != null && limits.getMin() != null ? limits.getMin() : minDailyPrice;
+    }
+
+    public BigDecimal maxDailyPriceFor(CurrencyType currency) {
+        DailyLimits limits = dailyLimits.get(currency);
+        return limits != null && limits.getMax() != null ? limits.getMax() : maxDailyPrice;
+    }
 
     @PostConstruct
     public void validate() {
@@ -57,6 +71,13 @@ public class PricingConfig {
                 log.warn("Invalid surcharge multiplier for {}: {}. Using default.", name, value);
             }
         }
+    }
+
+    @Getter
+    @Setter
+    public static class DailyLimits {
+        private BigDecimal min;
+        private BigDecimal max;
     }
 
     @Getter
