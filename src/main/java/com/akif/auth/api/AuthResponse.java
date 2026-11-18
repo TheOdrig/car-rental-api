@@ -48,4 +48,9 @@ public record AuthResponse(
             return new AuthResponse(accessToken, refreshToken, tokenType, expiresIn, username);
         }
     }
+
+    @Override
+    public String toString() {
+        return "AuthResponse[accessToken=[REDACTED], refreshToken=[REDACTED], tokenType=" + tokenType + ", expiresIn=" + expiresIn + ", username=" + username + "]";
+    }
 }

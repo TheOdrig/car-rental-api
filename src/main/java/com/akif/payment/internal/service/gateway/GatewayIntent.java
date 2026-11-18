@@ -9,4 +9,8 @@ public record GatewayIntent(
         long amountMinor,
         String currency
 ) {
+    @Override
+    public String toString() {
+        return "GatewayIntent[id=" + id + ", clientSecret=[REDACTED], status=" + status + ", paymentMethodId=" + paymentMethodId + ", customerId=" + customerId + ", amountMinor=" + amountMinor + ", currency=" + currency + "]";
+    }
 }

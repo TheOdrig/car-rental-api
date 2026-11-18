@@ -38,9 +38,17 @@ public class RefreshTokenService {
     }
 
     public record Rotation(Long userId, String refreshToken) {
+        @Override
+        public String toString() {
+            return "Rotation[userId=" + userId + ", refreshToken=[REDACTED]]";
+        }
     }
 
     private record Issued(RefreshToken entity, String rawToken) {
+        @Override
+        public String toString() {
+            return "Issued[rawToken=[REDACTED]]";
+        }
     }
 
     @Transactional

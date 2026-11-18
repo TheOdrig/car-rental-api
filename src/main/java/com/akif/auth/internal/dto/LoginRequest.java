@@ -12,4 +12,9 @@ public record LoginRequest(
     @NotBlank(message = "Password cannot be blank")
     @Size(min = 8, message = "Password must be at least 6 characters")
     String password
-) {}
+) {
+    @Override
+    public String toString() {
+        return "LoginRequest[username=" + username + ", password=[REDACTED]]";
+    }
+}

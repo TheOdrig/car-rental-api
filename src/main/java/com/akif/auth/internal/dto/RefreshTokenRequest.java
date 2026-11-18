@@ -6,4 +6,9 @@ public record RefreshTokenRequest(
 
     @NotBlank(message = "Refresh token cannot be blank")
     String refreshToken
-) {}
+) {
+    @Override
+    public String toString() {
+        return "RefreshTokenRequest[refreshToken=[REDACTED]]";
+    }
+}

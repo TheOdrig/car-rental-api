@@ -24,4 +24,8 @@ public record RegisterRequest(
 
         @Size(max = 50, message = "Last name must not exceed 50 characters")
         String lastName) {
+    @Override
+    public String toString() {
+        return "RegisterRequest[username=" + username + ", email=" + email + ", password=[REDACTED], firstName=" + firstName + ", lastName=" + lastName + "]";
+    }
 }

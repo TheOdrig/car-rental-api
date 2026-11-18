@@ -14,4 +14,8 @@ public record PaymentIntentResult(
         BigDecimal amount,
         CurrencyType currency
 ) {
+    @Override
+    public String toString() {
+        return "PaymentIntentResult[paymentId=" + paymentId + ", rentalId=" + rentalId + ", paymentIntentId=" + paymentIntentId + ", clientSecret=[REDACTED], publishableKey=" + publishableKey + ", status=" + status + ", amount=" + amount + ", currency=" + currency + "]";
+    }
 }

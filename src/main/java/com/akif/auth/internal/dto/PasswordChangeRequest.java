@@ -11,4 +11,8 @@ public record PasswordChangeRequest(
         @NotBlank(message = "New password cannot be blank")
         @Size(min = 8, message = "New password must be at least 8 characters")
         String newPassword) {
+    @Override
+    public String toString() {
+        return "PasswordChangeRequest[currentPassword=[REDACTED], newPassword=[REDACTED]]";
+    }
 }

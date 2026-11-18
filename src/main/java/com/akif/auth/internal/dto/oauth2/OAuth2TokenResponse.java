@@ -21,4 +21,9 @@ public record OAuth2TokenResponse(
 
     @JsonProperty("id_token")
     String idToken
-) {}
+) {
+    @Override
+    public String toString() {
+        return "OAuth2TokenResponse[accessToken=[REDACTED], tokenType=" + tokenType + ", expiresIn=" + expiresIn + ", refreshToken=[REDACTED], scope=" + scope + ", idToken=[REDACTED]]";
+    }
+}
