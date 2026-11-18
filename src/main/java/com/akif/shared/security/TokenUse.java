@@ -1,8 +1,7 @@
 package com.akif.shared.security;
 
 public enum TokenUse {
-    ACCESS("access"),
-    REFRESH("refresh");
+    ACCESS("access");
 
     public static final String CLAIM = "token_use";
 

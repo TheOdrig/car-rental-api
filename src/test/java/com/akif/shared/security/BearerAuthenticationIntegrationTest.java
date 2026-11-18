@@ -93,7 +93,7 @@ class BearerAuthenticationIntegrationTest {
                                 .subject("bearer-user")
                                 .issuedAt(now)
                                 .expiresAt(now.plusSeconds(600))
-                                .claim(TokenUse.CLAIM, TokenUse.REFRESH.claimValue())
+                                .claim(TokenUse.CLAIM, "refresh")
                                 .build()))
                 .getTokenValue();
 

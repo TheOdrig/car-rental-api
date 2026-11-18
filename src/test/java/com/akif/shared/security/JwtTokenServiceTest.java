@@ -81,7 +81,7 @@ class JwtTokenServiceTest {
                 .subject("alice")
                 .issuedAt(NOW)
                 .expiresAt(NOW.plus(Duration.ofDays(7)))
-                .claim(TokenUse.CLAIM, TokenUse.REFRESH.claimValue())
+                .claim(TokenUse.CLAIM, "refresh")
                 .build());
 
         assertThatThrownBy(() -> accessDecoder.decode(refreshToken))

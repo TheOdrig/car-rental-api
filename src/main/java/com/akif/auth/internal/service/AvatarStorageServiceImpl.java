@@ -21,7 +21,7 @@ public class AvatarStorageServiceImpl implements AvatarStorageService {
             "image/png",
             "image/gif",
             "image/webp");
-    private static final long MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+    private static final long MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
     private static final int DEFAULT_URL_EXPIRATION_MINUTES = 60;
 
     private final FileUploadService fileUploadService;
