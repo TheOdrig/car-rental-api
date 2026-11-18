@@ -64,7 +64,7 @@ class ManagementEndpointsTest {
         assertThat(exposure).isEqualTo("health,info,prometheus");
         for (String path : new String[] {"/actuator/env", "/actuator/beans", "/actuator/metrics",
                 "/actuator/heapdump", "/actuator/loggers"}) {
-            assertThat(get(managementPort, path).statusCode()).as(path).isIn(401, 403, 404);
+            assertThat(get(managementPort, path).statusCode()).as(path).isEqualTo(404);
         }
     }
 
