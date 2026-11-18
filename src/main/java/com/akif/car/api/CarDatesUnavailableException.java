@@ -1,5 +1,6 @@
 package com.akif.car.api;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
@@ -7,7 +8,7 @@ import java.time.LocalDate;
 
 public class CarDatesUnavailableException extends BaseException {
 
-    public static final String ERROR_CODE = "CAR_DATES_UNAVAILABLE";
+    public static final String ERROR_CODE = ErrorCode.CAR_DATES_UNAVAILABLE.name();
 
     private CarDatesUnavailableException(String message) {
         super(ERROR_CODE, message, HttpStatus.CONFLICT);

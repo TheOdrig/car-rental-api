@@ -1,5 +1,6 @@
 package com.akif.shared.handler;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -43,15 +44,15 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    static final String ERROR_CODE_AUTHENTICATION_FAILED = "AUTHENTICATION_FAILED";
-    static final String ERROR_CODE_ACCESS_DENIED = "ACCESS_DENIED";
-    static final String ERROR_CODE_VALIDATION_FAILED = "VALIDATION_FAILED";
-    static final String ERROR_CODE_CONSTRAINT_VIOLATION = "CONSTRAINT_VIOLATION";
-    static final String ERROR_CODE_INVALID_JSON = "INVALID_JSON";
-    static final String ERROR_CODE_MISSING_PARAMETER = "MISSING_PARAMETER";
-    static final String ERROR_CODE_INVALID_PARAMETER_TYPE = "INVALID_PARAMETER_TYPE";
-    static final String ERROR_CODE_ENDPOINT_NOT_FOUND = "ENDPOINT_NOT_FOUND";
-    static final String ERROR_CODE_INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
+    static final String ERROR_CODE_AUTHENTICATION_FAILED = ErrorCode.AUTHENTICATION_FAILED.name();
+    static final String ERROR_CODE_ACCESS_DENIED = ErrorCode.ACCESS_DENIED.name();
+    static final String ERROR_CODE_VALIDATION_FAILED = ErrorCode.VALIDATION_FAILED.name();
+    static final String ERROR_CODE_CONSTRAINT_VIOLATION = ErrorCode.CONSTRAINT_VIOLATION.name();
+    static final String ERROR_CODE_INVALID_JSON = ErrorCode.INVALID_JSON.name();
+    static final String ERROR_CODE_MISSING_PARAMETER = ErrorCode.MISSING_PARAMETER.name();
+    static final String ERROR_CODE_INVALID_PARAMETER_TYPE = ErrorCode.INVALID_PARAMETER_TYPE.name();
+    static final String ERROR_CODE_ENDPOINT_NOT_FOUND = ErrorCode.ENDPOINT_NOT_FOUND.name();
+    static final String ERROR_CODE_INTERNAL_SERVER_ERROR = ErrorCode.INTERNAL_SERVER_ERROR.name();
 
     private static final Comparator<FieldProblem> BY_FIELD_THEN_MESSAGE =
             Comparator.comparing(FieldProblem::field).thenComparing(FieldProblem::message);

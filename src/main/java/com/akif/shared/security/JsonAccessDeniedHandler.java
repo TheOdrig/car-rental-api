@@ -1,5 +1,6 @@
 package com.akif.shared.security;
 
+import com.akif.shared.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -12,7 +13,7 @@ import java.io.IOException;
 @Component
 public class JsonAccessDeniedHandler implements AccessDeniedHandler {
 
-    public static final String ERROR_CODE = "ACCESS_DENIED";
+    public static final String ERROR_CODE = ErrorCode.ACCESS_DENIED.name();
 
     private final ApiErrorWriter errorWriter;
 

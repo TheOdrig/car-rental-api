@@ -1,16 +1,17 @@
 package com.akif.damage.internal.exception;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
 public class DamageDisputeException extends BaseException {
 
     public DamageDisputeException(String message) {
-        super("DAMAGE_DISPUTE_ERROR", message, HttpStatus.BAD_REQUEST);
+        super(ErrorCode.DAMAGE_DISPUTE_ERROR.name(), message, HttpStatus.BAD_REQUEST);
     }
 
     public DamageDisputeException(String message, HttpStatus httpStatus) {
-        super("DAMAGE_DISPUTE_ERROR", message, httpStatus);
+        super(ErrorCode.DAMAGE_DISPUTE_ERROR.name(), message, httpStatus);
     }
 
     public static DamageDisputeException invalidStatus(String currentStatus) {

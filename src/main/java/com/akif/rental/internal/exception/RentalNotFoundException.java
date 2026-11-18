@@ -1,11 +1,12 @@
 package com.akif.rental.internal.exception;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
 public class RentalNotFoundException extends BaseException {
 
-    public static final String ERROR_CODE = "RENTAL_NOT_FOUND";
+    public static final String ERROR_CODE = ErrorCode.RENTAL_NOT_FOUND.name();
 
     public RentalNotFoundException(String message) {
         super(ERROR_CODE, message, HttpStatus.NOT_FOUND);

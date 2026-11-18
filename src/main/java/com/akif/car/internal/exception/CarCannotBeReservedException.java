@@ -1,11 +1,12 @@
 package com.akif.car.internal.exception;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
 public class CarCannotBeReservedException extends BaseException {
 
-    public static final String ERROR_CODE = "CAR_CANNOT_BE_RESERVED";
+    public static final String ERROR_CODE = ErrorCode.CAR_CANNOT_BE_RESERVED.name();
 
     public CarCannotBeReservedException(String message) {
         super(ERROR_CODE, message, HttpStatus.BAD_REQUEST);

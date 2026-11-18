@@ -1,16 +1,17 @@
 package com.akif.damage.internal.exception;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
 public class DamageReportException extends BaseException {
 
     public DamageReportException(String message) {
-        super("DAMAGE_REPORT_ERROR", message, HttpStatus.BAD_REQUEST);
+        super(ErrorCode.DAMAGE_REPORT_ERROR.name(), message, HttpStatus.BAD_REQUEST);
     }
 
     public DamageReportException(String message, HttpStatus httpStatus) {
-        super("DAMAGE_REPORT_ERROR", message, httpStatus);
+        super(ErrorCode.DAMAGE_REPORT_ERROR.name(), message, httpStatus);
     }
 
     public static DamageReportException notFound(Long damageId) {

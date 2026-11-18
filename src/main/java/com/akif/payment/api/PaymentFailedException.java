@@ -1,11 +1,12 @@
 package com.akif.payment.api;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
 public class PaymentFailedException extends BaseException {
 
-    public static final String ERROR_CODE = "PAYMENT_FAILED";
+    public static final String ERROR_CODE = ErrorCode.PAYMENT_FAILED.name();
 
     public PaymentFailedException(String message) {
         super(ERROR_CODE, message, HttpStatus.PAYMENT_REQUIRED);

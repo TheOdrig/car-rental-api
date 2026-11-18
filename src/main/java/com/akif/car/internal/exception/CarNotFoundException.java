@@ -1,11 +1,12 @@
 package com.akif.car.internal.exception;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
 public class CarNotFoundException extends BaseException {
 
-    public static final String  ERROR_CODE = "CAR_NOT_FOUND";
+    public static final String  ERROR_CODE = ErrorCode.CAR_NOT_FOUND.name();
 
     public CarNotFoundException(String message) {
         super(ERROR_CODE, message, HttpStatus.NOT_FOUND);

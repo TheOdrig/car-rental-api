@@ -1,5 +1,6 @@
 package com.akif.shared.security;
 
+import com.akif.shared.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -13,7 +14,7 @@ import java.io.IOException;
 @Component
 public class JsonAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    public static final String ERROR_CODE = "AUTHENTICATION_FAILED";
+    public static final String ERROR_CODE = ErrorCode.AUTHENTICATION_FAILED.name();
 
     private final BearerTokenAuthenticationEntryPoint delegate = new BearerTokenAuthenticationEntryPoint();
     private final ApiErrorWriter errorWriter;

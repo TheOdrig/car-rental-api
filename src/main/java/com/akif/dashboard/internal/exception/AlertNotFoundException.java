@@ -1,11 +1,12 @@
 package com.akif.dashboard.internal.exception;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
 public class AlertNotFoundException extends BaseException {
 
-    public static final String ERROR_CODE = "ALERT_NOT_FOUND";
+    public static final String ERROR_CODE = ErrorCode.ALERT_NOT_FOUND.name();
 
     public AlertNotFoundException(String message) {
         super(ERROR_CODE, message, HttpStatus.NOT_FOUND);

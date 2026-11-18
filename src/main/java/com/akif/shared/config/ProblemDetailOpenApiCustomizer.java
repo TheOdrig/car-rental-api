@@ -1,10 +1,13 @@
 package com.akif.shared.config;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.security.Access;
 import com.akif.shared.security.ApiAccessPolicy;
+import com.akif.shared.security.ratelimit.RateLimitEndpointClassifier;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.IntegerSchema;
@@ -15,9 +18,12 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.springdoc.core.customizers.OpenApiCustomizer;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -66,6 +72,9 @@ public class ProblemDetailOpenApiCustomizer implements OpenApiCustomizer {
         if (path.contains("{")) {
             sorted.computeIfAbsent("404", code -> new ApiResponse().description("Resource not found"));
         }
+        if (RateLimitEndpointClassifier.classifyTemplate(method, path).isPresent()) {
+            sorted.computeIfAbsent("429", code -> tooManyRequests());
+        }
         sorted.computeIfAbsent("500", code -> new ApiResponse().description("Unexpected error"));
 
         ApiResponses result = new ApiResponses();
@@ -80,6 +89,15 @@ public class ProblemDetailOpenApiCustomizer implements OpenApiCustomizer {
         if (!secured) {
             operation.setSecurity(new ArrayList<>());
         }
+    }
+
+    private static ApiResponse tooManyRequests() {
+        return new ApiResponse()
+                .description("Rate limit exceeded; retry after the number of seconds in the Retry-After header")
+                .addHeaderObject(HttpHeaders.RETRY_AFTER, new Header()
+                        .description("Seconds to wait before the next attempt")
+                        .required(true)
+                        .schema(new IntegerSchema().format("int64").minimum(BigDecimal.ONE)));
     }
 
     private static boolean isError(String code) {
@@ -119,7 +137,9 @@ public class ProblemDetailOpenApiCustomizer implements OpenApiCustomizer {
                 .description("HTTP status code"));
         schema.addProperty("detail", new StringSchema().description("Explanation specific to this occurrence"));
         schema.addProperty("instance", new StringSchema().format("uri").description("Request path"));
-        schema.addProperty("code", new StringSchema().description("Stable machine readable error code"));
+        schema.addProperty("code", new StringSchema()
+                ._enum(Arrays.stream(ErrorCode.values()).map(Enum::name).toList())
+                .description("Stable machine readable error code"));
         schema.addProperty("timestamp", new StringSchema().format("date-time").description("UTC time of the error"));
         schema.addProperty("traceId", new StringSchema().description("Correlation id of the request"));
         ArraySchema errors = new ArraySchema();

@@ -1,5 +1,6 @@
 package com.akif.shared.security.ratelimit;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.security.ApiErrorWriter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,7 +17,7 @@ import java.util.Optional;
 @Slf4j
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    public static final String ERROR_CODE = "RATE_LIMIT_EXCEEDED";
+    public static final String ERROR_CODE = ErrorCode.RATE_LIMIT_EXCEEDED.name();
 
     private final RateLimitProperties properties;
     private final RateLimitEndpointClassifier classifier;

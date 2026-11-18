@@ -1,5 +1,6 @@
 package com.akif.payment.internal.exception;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
@@ -10,17 +11,17 @@ public class WebhookDeliveryException extends BaseException {
     }
 
     public static WebhookDeliveryException missingSignature() {
-        return new WebhookDeliveryException("WEBHOOK_SIGNATURE_MISSING",
+        return new WebhookDeliveryException(ErrorCode.WEBHOOK_SIGNATURE_MISSING.name(),
                 "Missing Stripe-Signature header", HttpStatus.BAD_REQUEST);
     }
 
     public static WebhookDeliveryException payloadTooLarge(long limitBytes) {
-        return new WebhookDeliveryException("WEBHOOK_PAYLOAD_TOO_LARGE",
+        return new WebhookDeliveryException(ErrorCode.WEBHOOK_PAYLOAD_TOO_LARGE.name(),
                 "Webhook body exceeds " + limitBytes + " bytes", HttpStatus.CONTENT_TOO_LARGE);
     }
 
     public static WebhookDeliveryException processingFailed() {
-        return new WebhookDeliveryException("WEBHOOK_PROCESSING_FAILED",
+        return new WebhookDeliveryException(ErrorCode.WEBHOOK_PROCESSING_FAILED.name(),
                 "Webhook processing failed", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

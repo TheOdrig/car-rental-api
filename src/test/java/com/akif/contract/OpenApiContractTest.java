@@ -1,6 +1,8 @@
 package com.akif.contract;
 
 import com.akif.CarRentalApplication;
+import com.akif.shared.exception.ErrorCode;
+import com.akif.shared.security.ratelimit.RateLimitEndpointClassifier;
 import com.akif.testsupport.TestcontainersConfiguration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -95,6 +98,50 @@ class OpenApiContractTest {
             }
         }
         assertThat(failures).isEmpty();
+    }
+
+    @Test
+    @DisplayName("every rate limited operation documents a 429 ProblemDetail with Retry-After")
+    void rateLimitedOperationsDocument429() throws Exception {
+        JsonNode spec = mapper.readTree(generate());
+        List<String> failures = new ArrayList<>();
+        List<String> limited = new ArrayList<>();
+        for (Map.Entry<String, JsonNode> path : spec.path("paths").properties()) {
+            for (String method : HTTP_METHODS) {
+                JsonNode operation = path.getValue().path(method);
+                if (operation.isMissingNode()) {
+                    continue;
+                }
+                JsonNode tooMany = operation.path("responses").path("429");
+                boolean rateLimited = RateLimitEndpointClassifier
+                        .classifyTemplate(method.toUpperCase(), path.getKey()).isPresent();
+                String where = method.toUpperCase() + " " + path.getKey();
+                if (rateLimited) {
+                    limited.add(where);
+                    if (!tooMany.path("content").path("application/problem+json").path("schema").path("$ref")
+                            .asString("").equals("#/components/schemas/ProblemDetail")
+                            || tooMany.path("headers").path("Retry-After").isMissingNode()) {
+                        failures.add(where + " lacks a 429 ProblemDetail with Retry-After");
+                    }
+                } else if (!tooMany.isMissingNode()) {
+                    failures.add(where + " documents 429 but is not rate limited");
+                }
+            }
+        }
+        assertThat(limited).hasSize(RateLimitEndpointClassifier.RULES.size());
+        assertThat(failures).isEmpty();
+    }
+
+    @Test
+    @DisplayName("the ProblemDetail code property enumerates exactly the ErrorCode values")
+    void problemCodeEnumMatchesErrorCodes() throws Exception {
+        JsonNode codes = mapper.readTree(generate()).path("components").path("schemas").path("ProblemDetail")
+                .path("properties").path("code").path("enum");
+        List<String> documented = new ArrayList<>();
+        codes.forEach(code -> documented.add(code.asString()));
+
+        assertThat(documented).containsExactlyInAnyOrderElementsOf(
+                Stream.of(ErrorCode.values()).map(Enum::name).toList());
     }
 
     @Test

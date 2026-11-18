@@ -1,11 +1,12 @@
 package com.akif.rental.internal.exception;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
 public class OpenRentalRequestLimitException extends BaseException {
 
-    public static final String ERROR_CODE = "OPEN_RENTAL_REQUEST_LIMIT_EXCEEDED";
+    public static final String ERROR_CODE = ErrorCode.OPEN_RENTAL_REQUEST_LIMIT_EXCEEDED.name();
 
     public OpenRentalRequestLimitException(int limit) {
         super(ERROR_CODE,

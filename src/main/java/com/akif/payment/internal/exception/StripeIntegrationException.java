@@ -1,5 +1,6 @@
 package com.akif.payment.internal.exception;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -11,7 +12,7 @@ public class StripeIntegrationException extends BaseException {
     private final String stripeErrorMessage;
 
     public StripeIntegrationException(String stripeErrorCode, String stripeErrorMessage) {
-        super("STRIPE_INTEGRATION_ERROR", 
+        super(ErrorCode.STRIPE_INTEGRATION_ERROR.name(), 
               String.format("Stripe API error: %s - %s", stripeErrorCode, stripeErrorMessage),
               HttpStatus.BAD_GATEWAY);
         this.stripeErrorCode = stripeErrorCode;
@@ -19,7 +20,7 @@ public class StripeIntegrationException extends BaseException {
     }
 
     public StripeIntegrationException(String stripeErrorCode, String stripeErrorMessage, Throwable cause) {
-        super("STRIPE_INTEGRATION_ERROR",
+        super(ErrorCode.STRIPE_INTEGRATION_ERROR.name(),
               String.format("Stripe API error: %s - %s", stripeErrorCode, stripeErrorMessage),
               HttpStatus.BAD_GATEWAY,
               cause);

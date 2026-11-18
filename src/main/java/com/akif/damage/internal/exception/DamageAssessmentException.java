@@ -1,16 +1,17 @@
 package com.akif.damage.internal.exception;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
 public class DamageAssessmentException extends BaseException {
 
     public DamageAssessmentException(String message) {
-        super("DAMAGE_ASSESSMENT_ERROR", message, HttpStatus.BAD_REQUEST);
+        super(ErrorCode.DAMAGE_ASSESSMENT_ERROR.name(), message, HttpStatus.BAD_REQUEST);
     }
 
     public DamageAssessmentException(String message, HttpStatus httpStatus) {
-        super("DAMAGE_ASSESSMENT_ERROR", message, httpStatus);
+        super(ErrorCode.DAMAGE_ASSESSMENT_ERROR.name(), message, httpStatus);
     }
 
     public static DamageAssessmentException invalidStatus(String currentStatus) {

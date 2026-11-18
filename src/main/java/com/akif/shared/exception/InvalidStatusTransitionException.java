@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 
 public class InvalidStatusTransitionException extends BaseException {
 
-    public static final String ERROR_CODE = "INVALID_STATUS_TRANSITION";
+    public static final String ERROR_CODE = ErrorCode.INVALID_STATUS_TRANSITION.name();
 
     public InvalidStatusTransitionException(String message) {
         super(ERROR_CODE, message, HttpStatus.BAD_REQUEST);

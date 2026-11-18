@@ -1,11 +1,12 @@
 package com.akif.car.api;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
 public class CarNotAvailableException extends BaseException {
 
-    public static final String ERROR_CODE = "CAR_NOT_AVAILABLE";
+    public static final String ERROR_CODE = ErrorCode.CAR_NOT_AVAILABLE.name();
 
     public CarNotAvailableException(String message) {
         super(ERROR_CODE, message, HttpStatus.BAD_REQUEST);

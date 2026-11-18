@@ -1,11 +1,12 @@
 package com.akif.auth.internal.exception;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
 public class UserAlreadyExistsException extends BaseException {
     
-    public static final String ERROR_CODE = "USER_ALREADY_EXISTS";
+    public static final String ERROR_CODE = ErrorCode.USER_ALREADY_EXISTS.name();
     
     public UserAlreadyExistsException(String message) {
         super(ERROR_CODE, message, HttpStatus.CONFLICT);

@@ -1,11 +1,12 @@
 package com.akif.auth.internal.exception;
 
+import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 
 public class UserNotFoundException extends BaseException {
 
-    public static final String ERROR_CODE = "USER_NOT_FOUND";
+    public static final String ERROR_CODE = ErrorCode.USER_NOT_FOUND.name();
 
     public UserNotFoundException(String message) {
         super(ERROR_CODE, message, HttpStatus.NOT_FOUND);

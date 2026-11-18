@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 
 public class InvalidTokenException extends BaseException {
     
-    public static final String ERROR_CODE = "INVALID_TOKEN";
+    public static final String ERROR_CODE = ErrorCode.INVALID_TOKEN.name();
     
     public InvalidTokenException(String message) {
         super(ERROR_CODE, message, HttpStatus.UNAUTHORIZED);
