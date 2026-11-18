@@ -807,147 +807,6 @@
         },
         "type" : "object"
       },
-      "CarSearchRequest" : {
-        "description" : "Search criteria",
-        "properties" : {
-          "bodyType" : {
-            "maxLength" : 20,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "brand" : {
-            "maxLength" : 50,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "carStatusType" : {
-            "enum" : [ "Available", "Rented", "Maintenance", "Reserved", "Damaged", "Inspection" ],
-            "type" : "string"
-          },
-          "color" : {
-            "maxLength" : 30,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "currencyType" : {
-            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
-            "type" : "string"
-          },
-          "engineType" : {
-            "maxLength" : 20,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "fuelType" : {
-            "maxLength" : 20,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "hasDamage" : {
-            "type" : "boolean"
-          },
-          "hasExpiredDocuments" : {
-            "type" : "boolean"
-          },
-          "isNew" : {
-            "type" : "boolean"
-          },
-          "maxDoors" : {
-            "format" : "int32",
-            "maximum" : 6,
-            "type" : "integer"
-          },
-          "maxKilometer" : {
-            "format" : "int64",
-            "maximum" : 999999,
-            "type" : "integer"
-          },
-          "maxPrice" : {
-            "maximum" : 9.9999999999E8,
-            "type" : "number"
-          },
-          "maxProductionYear" : {
-            "format" : "int32",
-            "maximum" : 2030,
-            "type" : "integer"
-          },
-          "maxRating" : {
-            "maximum" : 5.0,
-            "type" : "number"
-          },
-          "maxSeats" : {
-            "format" : "int32",
-            "maximum" : 9,
-            "type" : "integer"
-          },
-          "minDoors" : {
-            "format" : "int32",
-            "minimum" : 2,
-            "type" : "integer"
-          },
-          "minKilometer" : {
-            "format" : "int64",
-            "minimum" : 0,
-            "type" : "integer"
-          },
-          "minPrice" : {
-            "minimum" : 0.0,
-            "type" : "number"
-          },
-          "minProductionYear" : {
-            "format" : "int32",
-            "minimum" : 1900,
-            "type" : "integer"
-          },
-          "minRating" : {
-            "minimum" : 1.0,
-            "type" : "number"
-          },
-          "minSeats" : {
-            "format" : "int32",
-            "minimum" : 1,
-            "type" : "integer"
-          },
-          "model" : {
-            "maxLength" : 50,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "needsService" : {
-            "type" : "boolean"
-          },
-          "page" : {
-            "format" : "int32",
-            "minimum" : 0,
-            "type" : "integer"
-          },
-          "searchTerm" : {
-            "maxLength" : 100,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "size" : {
-            "format" : "int32",
-            "maximum" : 100,
-            "minimum" : 1,
-            "type" : "integer"
-          },
-          "sortBy" : {
-            "pattern" : "^(id|licensePlate|brand|model|productionYear|price|createTime|rating)$",
-            "type" : "string"
-          },
-          "sortDirection" : {
-            "pattern" : "^(asc|desc)$",
-            "type" : "string"
-          },
-          "transmissionType" : {
-            "maxLength" : 20,
-            "minLength" : 0,
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
       "CarStatusUpdateRequest" : {
         "description" : "Status update data",
         "properties" : {
@@ -1085,6 +944,22 @@
           }
         },
         "required" : [ "amount", "fromCurrency", "toCurrency" ],
+        "type" : "object"
+      },
+      "CurrencyTotals" : {
+        "properties" : {
+          "assessedCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "currency" : {
+            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
+            "type" : "string"
+          },
+          "totalCustomerLiability" : {
+            "type" : "number"
+          }
+        },
         "type" : "object"
       },
       "DailyRevenueDto" : {
@@ -2768,12 +2643,16 @@
             "format" : "int32",
             "type" : "integer"
           },
+          "damageCostByCurrency" : {
+            "description" : "Customer damage liability grouped by assessment currency; amounts of different currencies are never summed together.",
+            "items" : {
+              "$ref" : "#/components/schemas/CurrencyTotals"
+            },
+            "type" : "array"
+          },
           "lateReturns" : {
             "format" : "int32",
             "type" : "integer"
-          },
-          "totalDamageCost" : {
-            "type" : "number"
           },
           "totalDamageReports" : {
             "format" : "int32",
@@ -7789,15 +7668,6 @@
           }
         }, {
           "in" : "query",
-          "name" : "minKilometer",
-          "required" : false,
-          "schema" : {
-            "format" : "int64",
-            "minimum" : 0,
-            "type" : "integer"
-          }
-        }, {
-          "in" : "query",
           "name" : "maxKilometer",
           "required" : false,
           "schema" : {
@@ -7812,15 +7682,6 @@
           "schema" : {
             "format" : "int32",
             "minimum" : 2,
-            "type" : "integer"
-          }
-        }, {
-          "in" : "query",
-          "name" : "maxDoors",
-          "required" : false,
-          "schema" : {
-            "format" : "int32",
-            "maximum" : 6,
             "type" : "integer"
           }
         }, {
@@ -7848,42 +7709,6 @@
           "schema" : {
             "minimum" : 1.0,
             "type" : "number"
-          }
-        }, {
-          "in" : "query",
-          "name" : "maxRating",
-          "required" : false,
-          "schema" : {
-            "maximum" : 5.0,
-            "type" : "number"
-          }
-        }, {
-          "in" : "query",
-          "name" : "isNew",
-          "required" : false,
-          "schema" : {
-            "type" : "boolean"
-          }
-        }, {
-          "in" : "query",
-          "name" : "hasDamage",
-          "required" : false,
-          "schema" : {
-            "type" : "boolean"
-          }
-        }, {
-          "in" : "query",
-          "name" : "needsService",
-          "required" : false,
-          "schema" : {
-            "type" : "boolean"
-          }
-        }, {
-          "in" : "query",
-          "name" : "hasExpiredDocuments",
-          "required" : false,
-          "schema" : {
-            "type" : "boolean"
           }
         }, {
           "in" : "query",
@@ -7956,64 +7781,6 @@
         "security" : [ ],
         "summary" : "Search cars",
         "tags" : [ "Car Management" ]
-      },
-      "post" : {
-        "description" : "Search cars with various criteria",
-        "operationId" : "searchCars_1",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/CarSearchRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/PageResponseCarResponse"
-                }
-              }
-            },
-            "description" : "Search completed successfully"
-          },
-          "400" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Invalid search criteria"
-          },
-          "401" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Authentication required"
-          },
-          "500" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Unexpected error"
-          }
-        },
-        "summary" : "Search cars",
-        "tags" : [ "Car Search" ]
       }
     },
     "/api/v1/cars/search/brand/{brand}" : {

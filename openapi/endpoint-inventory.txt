@@ -56,7 +56,6 @@ PATCH /api/v1/cars/business/{id}/status ADMIN
 GET /api/v1/cars/filter-options PUBLIC
 GET /api/v1/cars/licensePlate/{licensePlate} AUTHENTICATED
 GET /api/v1/cars/search PUBLIC
-POST /api/v1/cars/search AUTHENTICATED
 GET /api/v1/cars/search/brand/{brand} PUBLIC
 GET /api/v1/cars/search/criteria PUBLIC
 GET /api/v1/cars/search/new PUBLIC
