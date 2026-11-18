@@ -1,10 +1,10 @@
 # 🚗 Car Rental API
 
-A production-ready REST API for car rental management, built with **Spring Boot** and **Spring Modulith** modular architecture.
+A REST API for car rental management, built with **Spring Boot** and **Spring Modulith** modular architecture.
 
 [![Java](https://img.shields.io/badge/Java-17-orange)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-green)](https://spring.io/projects/spring-boot)
-[![Tests](https://img.shields.io/badge/Tests-800%2B%20passing-brightgreen)](/)
+[![Tests](https://img.shields.io/badge/Tests-Maven%20verify-blue)](#-testing)
 [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
 ## ✨ Features
@@ -84,7 +84,7 @@ graph TD
 | `dashboard` | Admin metrics, alerts, quick actions | `rental`, `car`, `payment`, `damage` |
 | `notification` | Event-driven email notifications | *(events only)* |
 
-📖 See [Architecture Decision Records](docs/architecture/adr/) for design rationale and [Developer Guide](docs/architecture/DEVELOPER_GUIDE.md) for implementation details.
+Module boundaries are enforced with Spring Modulith.
 
 ## 🛠️ Tech Stack
 
@@ -96,7 +96,7 @@ graph TD
 | Payment | Stripe API |
 | Email | SendGrid SMTP, Thymeleaf templates |
 | Cache | Caffeine |
-| Testing | JUnit 5, Mockito, 800+ tests |
+| Testing | JUnit 5, Mockito, Spring Boot Test |
 | Docs | Swagger/OpenAPI |
 
 ## 🚀 Quick Start
@@ -182,7 +182,7 @@ mvn jacoco:report
 ```
 
 **Test Coverage:**
-- 800+ tests passing
+- Large automated suite (run `./mvnw verify` for current results)
 - Unit, integration, and E2E tests
 - Module boundary verification
 - Complete rental lifecycle coverage
@@ -201,16 +201,11 @@ src/main/java/com/akif/
 ├── rental/         # Rental operations module
 ├── shared/         # Shared kernel
 └── starter/        # Application entry point
-
-docs/architecture/
-├── adr/            # Architecture Decision Records
-├── MIGRATION.md    # Migration documentation
-└── DEVELOPER_GUIDE.md  # Developer guide
 ```
 
 ## 🔧 Configuration
 
-See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for detailed configuration options including:
+Configuration options include:
 - Database setup
 - Stripe integration
 - Email configuration
@@ -223,13 +218,13 @@ See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for detailed configuration op
 - **Admin Dashboard** with real-time metrics, 5-level alert system, event-driven cache invalidation
 - **Event-Driven Architecture** for decoupled module communication
 - **ID Reference + Denormalization** pattern for cross-module entities
-- **800+ Automated Tests** with E2E coverage
-- **CI/CD Pipeline** with module verification
+- **Automated test suite** with unit, integration and E2E tests
+- **Local verification gate** (`scripts/verify`, pre-push hook)
 - **5 ADRs** documenting architectural decisions
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read the [Contributing Guidelines](CONTRIBUTING.md) before submitting a pull request.
+Contributions are welcome.
 
 Quick steps:
 1. Fork the repository
@@ -237,10 +232,6 @@ Quick steps:
 3. Run tests (`mvn test`)
 4. Commit changes using [Conventional Commits](https://www.conventionalcommits.org/)
 5. Push and open Pull Request
-
-## 📋 Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for version history and notable changes.
 
 ## 📝 License
 
