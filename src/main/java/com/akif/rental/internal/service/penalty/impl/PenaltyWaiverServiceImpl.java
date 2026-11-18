@@ -141,7 +141,8 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
         }
 
         try {
-            PaymentResult refundResult = paymentService.refundPayment(payment.id(), waiver.getWaivedAmount());
+            PaymentResult refundResult = paymentService.refundPayment(
+                    payment.id(), waiver.getWaivedAmount(), "waiver-" + waiver.getId() + ":refund");
 
             if (refundResult.success()) {
                 waiver.recordRefund(refundResult.transactionId());

@@ -18,6 +18,9 @@ import com.akif.rental.api.RentalStatus;
 import com.akif.rental.internal.config.RentalProperties;
 import com.akif.rental.internal.exception.InvalidRentalStateException;
 import com.akif.rental.internal.exception.OpenRentalRequestLimitException;
+import com.akif.rental.internal.exception.PaymentWindowNotOpenException;
+import com.akif.rental.internal.exception.PaymentNotAuthorizedException;
+import com.akif.rental.internal.exception.RentalPaymentNotFoundException;
 import com.akif.rental.internal.exception.RentalNotFoundException;
 import com.akif.rental.internal.exception.RentalValidationException;
 import com.akif.rental.internal.dto.penalty.PenaltyResult;
@@ -282,7 +285,7 @@ public class RentalServiceImpl implements RentalService {
     public RentalResponse pickupRental(Long rentalId, String pickupNotes) {
         log.info("Processing pickup for rental: {}", rentalId);
 
-        Rental rental = findRentalById(rentalId);
+        Rental rental = findRentalForUpdate(rentalId);
 
         if (!rental.getStatus().canPickup()) {
             throw new InvalidRentalStateException(
@@ -298,8 +301,7 @@ public class RentalServiceImpl implements RentalService {
 
         PaymentDto payment = findPaymentByRentalId(rentalId);
         if (payment.status() != PaymentStatus.AUTHORIZED && payment.status() != PaymentStatus.CAPTURED) {
-            throw new InvalidRentalStateException(
-                    "Payment must be AUTHORIZED before pickup. Current status: " + payment.status());
+            throw new PaymentNotAuthorizedException(payment.status().name());
         }
 
         PaymentResult captureResult = paymentService.capturePayment(payment.id());
@@ -323,7 +325,7 @@ public class RentalServiceImpl implements RentalService {
     public RentalResponse returnRental(Long rentalId, String returnNotes) {
         log.info("Processing return for rental: {}", rentalId);
 
-        Rental rental = findRentalById(rentalId);
+        Rental rental = findRentalForUpdate(rentalId);
 
         if (!rental.getStatus().canReturn()) {
             throw new InvalidRentalStateException(
@@ -354,7 +356,7 @@ public class RentalServiceImpl implements RentalService {
     public RentalResponse cancelRental(Long rentalId, String username, String reason) {
         log.info("Cancelling rental: {} by user: {}", rentalId, username);
 
-        Rental rental = findRentalById(rentalId);
+        Rental rental = findRentalForUpdate(rentalId);
         UserDto currentUser = findUserByUsername(username);
 
         if (!currentUser.isAdmin() && !rental.getUserId().equals(currentUser.id())) {
@@ -401,7 +403,7 @@ public class RentalServiceImpl implements RentalService {
         PaymentDto payment = findPaymentByRentalId(rentalId);
 
         if (payment.status() == PaymentStatus.CAPTURED) {
-            PaymentResult refundResult = paymentService.refundPayment(payment.id(), payment.amount());
+            PaymentResult refundResult = paymentService.refundPayment(payment.id(), payment.amount(), cancelRefundKey(rentalId));
 
             if (!refundResult.success()) {
                 throw new PaymentFailedException(
@@ -455,12 +457,12 @@ public class RentalServiceImpl implements RentalService {
                 .divide(BigDecimal.valueOf(totalDays), 4, RoundingMode.HALF_UP);
         BigDecimal refundAmount = payment.amount()
                 .multiply(refundPercentage)
-                .setScale(2, RoundingMode.HALF_UP);
+                .setScale(rental.getCurrency().getDecimalPlaces(), RoundingMode.DOWN);
 
         log.info("Calculating partial refund: totalDays={}, remainingDays={}, percentage={}, amount={}",
                 totalDays, remainingDays, refundPercentage, refundAmount);
 
-        PaymentResult refundResult = paymentService.refundPayment(payment.id(), refundAmount);
+        PaymentResult refundResult = paymentService.refundPayment(payment.id(), refundAmount, cancelRefundKey(rental.getId()));
 
         if (!refundResult.success()) {
             throw new PaymentFailedException(
@@ -469,6 +471,10 @@ public class RentalServiceImpl implements RentalService {
         }
 
         return new RefundInfo(true, refundAmount, refundResult.transactionId());
+    }
+
+    private static String cancelRefundKey(Long rentalId) {
+        return "rental-" + rentalId + ":cancel-refund";
     }
 
     private record RefundInfo(boolean refundProcessed, BigDecimal refundAmount, String refundTransactionId) {
@@ -528,6 +534,11 @@ public class RentalServiceImpl implements RentalService {
             throw new InvalidRentalStateException(rental.getStatus().name(), RentalStatus.CONFIRMED.name());
         }
 
+        LocalDate paymentOpensOn = rental.getStartDate().minusDays(rentalProperties.getPaymentWindowDays());
+        if (LocalDate.now(clock).isBefore(paymentOpensOn)) {
+            throw new PaymentWindowNotOpenException(paymentOpensOn);
+        }
+
         PaymentIntentResult result = paymentService.createOrGetIntentForRental(rentalId);
         log.info("Payment intent ready for rental: {}, status: {}", rentalId, result.status());
         return result;
@@ -544,7 +555,7 @@ public class RentalServiceImpl implements RentalService {
         }
 
         return paymentService.syncAndGetSummaryForRental(rentalId)
-                .orElseThrow(() -> new RentalNotFoundException("Payment not found for rental: " + rentalId));
+                .orElseThrow(() -> new RentalPaymentNotFoundException(rentalId));
     }
 
     private void requireCarAvailable(Long carId) {
@@ -554,6 +565,11 @@ public class RentalServiceImpl implements RentalService {
                     carId,
                     "Car status is: " + car.getCarStatusType().getDisplayName());
         }
+    }
+
+    private Rental findRentalForUpdate(Long id) {
+        return rentalRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new RentalNotFoundException(id));
     }
 
     private Rental findRentalById(Long id) {
@@ -571,8 +587,7 @@ public class RentalServiceImpl implements RentalService {
 
     private PaymentDto findPaymentByRentalId(Long rentalId) {
         return paymentService.getPaymentByRentalId(rentalId)
-                .orElseThrow(() -> new RentalNotFoundException(
-                        "Payment not found for rental: " + rentalId));
+                .orElseThrow(() -> new RentalPaymentNotFoundException(rentalId));
     }
 
     private void logRentalOperationSuccess(String operation, RentalResponse result) {
@@ -680,7 +695,8 @@ public class RentalServiceImpl implements RentalService {
                 rental.getStartDate(),
                 rental.getEndDate(),
                 Boolean.TRUE.equals(rental.getHasDamageReports()),
-                rental.getDamageReportsCount() != null ? rental.getDamageReportsCount() : 0);
+                rental.getDamageReportsCount() != null ? rental.getDamageReportsCount() : 0,
+                rental.getCurrency());
     }
 
     @Override

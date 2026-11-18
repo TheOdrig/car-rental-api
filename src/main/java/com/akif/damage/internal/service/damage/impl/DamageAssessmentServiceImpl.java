@@ -5,6 +5,8 @@ import java.time.Clock;
 import com.akif.auth.api.AuthService;
 import com.akif.auth.api.UserDto;
 import com.akif.car.api.CarService;
+import com.akif.rental.api.RentalService;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.damage.internal.config.DamageConfig;
 import com.akif.damage.api.DamageAssessedEvent;
 import com.akif.damage.api.DamageSeverity;
@@ -39,6 +41,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
 
     private final CarService carService;
     private final AuthService authService;
+    private final RentalService rentalService;
 
     @Override
     @Transactional
@@ -69,6 +72,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
 
         damageReport.assess(severity, request.category(), request.repairCostEstimate(), customerLiability,
                 hasInsurance, deductible, request.assessmentNotes(), user.id(), LocalDateTime.now(clock));
+        damageReport.assignCurrency(resolveCurrency(damageReport, request));
 
         damageReport = damageReportRepository.save(damageReport);
 
@@ -120,6 +124,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
 
         damageReport.reviseAssessment(severity, request.category(), request.repairCostEstimate(), customerLiability,
                 hasInsurance, deductible, request.assessmentNotes(), user.id(), LocalDateTime.now(clock));
+        damageReport.assignCurrency(resolveCurrency(damageReport, request));
 
         damageReport = damageReportRepository.save(damageReport);
 
@@ -129,6 +134,16 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
                 damageId, severity, customerLiability);
 
         return buildResponseDto(damageReport, carStatusUpdated);
+    }
+
+    private CurrencyType resolveCurrency(DamageReport damageReport, DamageAssessmentRequest request) {
+        if (request.currency() != null) {
+            return request.currency();
+        }
+        if (damageReport.getCurrency() != null) {
+            return damageReport.getCurrency();
+        }
+        return rentalService.getRentalSummaryById(damageReport.getRentalId()).currency();
     }
 
     @Override
@@ -183,6 +198,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
                 damageReport.getSeverity(),
                 damageReport.getRepairCostEstimate(),
                 damageReport.getCustomerLiability(),
+                damageReport.getCurrency(),
                 damageReport.getInsuranceCoverage(),
                 damageReport.getInsuranceDeductible(),
                 damageReport.getAssessmentNotes(),

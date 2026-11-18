@@ -15,4 +15,5 @@ public class RentalProperties {
     private int maxLeadDays = 180;
     private int maxOpenRequestsPerUser = 3;
     private int requestExpiryHours = 24;
+    private int paymentWindowDays = 5;
 }

@@ -75,7 +75,8 @@ public class DamageChargeServiceImpl implements DamageChargeService {
         PaymentResult result = paymentService.chargeDamage(
                 damageReport.getRentalId(),
                 damageReport.getId(),
-                damageReport.getCustomerLiability());
+                damageReport.getCustomerLiability(),
+                damageReport.getCurrency());
 
         if (result.success()) {
             damageReport.markCharged(result.transactionId());

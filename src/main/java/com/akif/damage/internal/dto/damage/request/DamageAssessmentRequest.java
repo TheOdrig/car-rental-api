@@ -6,6 +6,8 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import com.akif.shared.enums.CurrencyType;
+
 import java.math.BigDecimal;
 
 public record DamageAssessmentRequest(
@@ -25,5 +27,18 @@ public record DamageAssessmentRequest(
     BigDecimal insuranceDeductible,
     
     @Size(max = 1000, message = "Assessment notes cannot exceed 1000 characters")
-    String assessmentNotes
-) {}
+    String assessmentNotes,
+
+    CurrencyType currency
+) {
+
+    public DamageAssessmentRequest(
+            DamageSeverity severity,
+            DamageCategory category,
+            BigDecimal repairCostEstimate,
+            Boolean insuranceCoverage,
+            BigDecimal insuranceDeductible,
+            String assessmentNotes) {
+        this(severity, category, repairCostEstimate, insuranceCoverage, insuranceDeductible, assessmentNotes, null);
+    }
+}

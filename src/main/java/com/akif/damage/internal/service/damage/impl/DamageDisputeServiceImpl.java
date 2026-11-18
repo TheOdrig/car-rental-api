@@ -134,7 +134,7 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
             return;
         }
 
-        var refundResult = paymentService.refund(transactionId, refundAmount);
+        var refundResult = paymentService.refund(transactionId, refundAmount, "damage-" + damageReport.getId() + ":dispute-refund");
         
         if (refundResult.success()) {
             log.info("Refund processed successfully: damageId={}, refundAmount={}, transactionId={}", 

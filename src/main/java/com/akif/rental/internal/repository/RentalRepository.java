@@ -5,7 +5,9 @@ import com.akif.rental.domain.model.Rental;
 import com.akif.rental.domain.enums.LateReturnStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -25,6 +27,16 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
         Page<Rental> findByStatusAndIsDeletedFalse(RentalStatus status, Pageable pageable);
 
         Optional<Rental> findByIdAndIsDeletedFalse(Long id);
+
+        @Lock(LockModeType.PESSIMISTIC_WRITE)
+        @Query("SELECT r FROM Rental r WHERE r.id = :id AND r.isDeleted = false")
+        Optional<Rental> findByIdForUpdate(@Param("id") Long id);
+
+        @Query("SELECT r.id FROM Rental r " +
+                        "WHERE r.status = com.akif.rental.api.RentalStatus.CONFIRMED " +
+                        "AND r.startDate <= :today " +
+                        "AND r.isDeleted = false ORDER BY r.id")
+        List<Long> findConfirmedIdsStartingOnOrBefore(@Param("today") LocalDate today);
 
         @Query("SELECT r FROM Rental r " +
                         "WHERE r.status = :status " +

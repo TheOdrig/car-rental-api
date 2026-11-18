@@ -136,7 +136,8 @@ class DamageReportServiceTest {
                 LocalDate.now().minusDays(5),
                 LocalDate.now().plusDays(2),
                 false,
-                0);
+                0,
+                CurrencyType.TRY);
 
         testDamageReport = DamageReport.builder()
                 .id(1L)

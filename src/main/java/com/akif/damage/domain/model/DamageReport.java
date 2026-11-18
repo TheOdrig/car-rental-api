@@ -4,6 +4,7 @@ import com.akif.damage.domain.enums.DamageCategory;
 import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.domain.enums.DamageStatus;
 import com.akif.shared.domain.BaseEntity;
+import com.akif.shared.enums.CurrencyType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -98,6 +99,10 @@ public class DamageReport extends BaseEntity {
     @Column(name = "customer_liability", precision = 12, scale = 2)
     private BigDecimal customerLiability;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "currency", length = 10)
+    private CurrencyType currency;
+
     @Column(name = "insurance_coverage")
     private Boolean insuranceCoverage;
 
@@ -161,6 +166,12 @@ public class DamageReport extends BaseEntity {
         this.assessmentNotes = notes;
         this.assessedBy = assessorId;
         this.assessedAt = assessedTime;
+    }
+
+    public void assignCurrency(CurrencyType assigned) {
+        if (assigned != null) {
+            this.currency = assigned;
+        }
     }
 
     public void dispute(String reason, String comments, Long customerId, LocalDateTime disputedTime) {

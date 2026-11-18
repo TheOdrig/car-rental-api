@@ -232,6 +232,7 @@ public class DamageReportServiceImpl implements DamageReportService {
                 damageReport.getStatus(),
                 damageReport.getRepairCostEstimate(),
                 damageReport.getCustomerLiability(),
+                damageReport.getCurrency(),
                 damageReport.getInsuranceCoverage(),
                 damageReport.getReportedAt(),
                 damageReport.getAssessedAt(),

@@ -23,6 +23,7 @@ public class RateLimitEndpointClassifier {
         add(matchers, HttpMethod.POST, "/api/auth/forgot-password", RateLimitCategory.PASSWORD_RESET);
         add(matchers, HttpMethod.POST, "/api/auth/reset-password", RateLimitCategory.PASSWORD_RESET);
         add(matchers, HttpMethod.POST, "/api/rentals/request", RateLimitCategory.RENTAL_REQUEST);
+        add(matchers, HttpMethod.POST, "/api/rentals/*/payment-intent", RateLimitCategory.PAYMENT_INTENT);
         add(matchers, HttpMethod.GET, "/api/oauth2/callback/**", RateLimitCategory.OAUTH2_CALLBACK);
     }
 

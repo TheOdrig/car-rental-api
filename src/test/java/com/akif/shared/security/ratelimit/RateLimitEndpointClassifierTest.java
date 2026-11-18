@@ -30,6 +30,14 @@ class RateLimitEndpointClassifierTest {
     }
 
     @Test
+    @DisplayName("throttles starting a rental payment")
+    void classifiesPaymentIntent() {
+        assertThat(classify("POST", "/api/rentals/12/payment-intent")).contains(RateLimitCategory.PAYMENT_INTENT);
+        assertThat(classify("POST", "/api/rentals/12/payment-intent/")).contains(RateLimitCategory.PAYMENT_INTENT);
+        assertThat(classify("GET", "/api/rentals/12/payment")).isEmpty();
+    }
+
+    @Test
     @DisplayName("tolerates a trailing slash")
     void toleratesTrailingSlash() {
         assertThat(classify("POST", "/api/auth/login/")).contains(RateLimitCategory.LOGIN);

@@ -237,8 +237,8 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             assertThat(rental.getStatus()).isEqualTo(RentalStatus.CONFIRMED);
             mockMvc.perform(post("/api/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errorCode").value(InvalidRentalStateException.ERROR_CODE));
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.errorCode").value("PAYMENT_NOT_AUTHORIZED"));
         }
     }
 }

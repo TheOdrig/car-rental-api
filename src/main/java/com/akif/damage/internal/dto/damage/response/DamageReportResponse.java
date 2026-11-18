@@ -5,6 +5,8 @@ import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.domain.enums.DamageStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import com.akif.shared.enums.CurrencyType;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +25,7 @@ public record DamageReportResponse(
         DamageStatus status,
         BigDecimal repairCostEstimate,
         BigDecimal customerLiability,
+        CurrencyType currency,
         Boolean insuranceCoverage,
         LocalDateTime reportedAt,
         LocalDateTime assessedAt,

@@ -215,19 +215,19 @@ class PenaltyWaiverServiceImplTest {
             when(penaltyWaiverRepository.save(any(PenaltyWaiver.class))).thenReturn(testWaiver);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(paymentService.getPenaltyPaymentByRentalId(1L)).thenReturn(Optional.of(testPaymentDto));
-            when(paymentService.refundPayment(eq(1L), any(BigDecimal.class)))
+            when(paymentService.refundPayment(eq(1L), any(BigDecimal.class), anyString()))
                     .thenReturn(PaymentResult.success("refund_123", "Refund successful"));
 
             service.waivePenalty(1L, new BigDecimal("50.00"), "Refund reason", 100L);
 
-            verify(paymentService).refundPayment(eq(1L), eq(new BigDecimal("50.00")));
+            verify(paymentService).refundPayment(eq(1L), eq(new BigDecimal("50.00")), eq("waiver-1:refund"));
         }
 
         @Test
         @DisplayName("Should update waiver with refund transaction ID")
         void shouldUpdateWaiverWithRefundTransactionId() {
             when(paymentService.getPenaltyPaymentByRentalId(1L)).thenReturn(Optional.of(testPaymentDto));
-            when(paymentService.refundPayment(eq(1L), any(BigDecimal.class)))
+            when(paymentService.refundPayment(eq(1L), any(BigDecimal.class), anyString()))
                     .thenReturn(PaymentResult.success("refund_456", "Refund successful"));
             when(penaltyWaiverRepository.save(any(PenaltyWaiver.class))).thenReturn(testWaiver);
 
@@ -244,14 +244,14 @@ class PenaltyWaiverServiceImplTest {
 
             service.processRefundForWaiver(testWaiver);
 
-            verify(paymentService, never()).refundPayment(any(), any());
+            verify(paymentService, never()).refundPayment(any(), any(), any());
         }
 
         @Test
         @DisplayName("Should handle refund failure gracefully")
         void shouldHandleRefundFailureGracefully() {
             when(paymentService.getPenaltyPaymentByRentalId(1L)).thenReturn(Optional.of(testPaymentDto));
-            when(paymentService.refundPayment(eq(1L), any(BigDecimal.class)))
+            when(paymentService.refundPayment(eq(1L), any(BigDecimal.class), anyString()))
                     .thenReturn(PaymentResult.failure("Refund failed"));
 
             assertThatThrownBy(() -> service.processRefundForWaiver(testWaiver))

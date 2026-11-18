@@ -407,7 +407,7 @@ class RentalServiceTest {
         @DisplayName("pickup is rejected when the car is no longer AVAILABLE")
         void pickupRejectedWhenCarUnavailable() {
             testRental.confirm(null);
-            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(carService.getCarForBooking(1L)).thenReturn(carWithStatus(CarStatusType.DAMAGED));
 
             assertThatThrownBy(() -> rentalService.pickupRental(1L, null))
@@ -420,7 +420,7 @@ class RentalServiceTest {
         @DisplayName("pickup is rejected with a conflict while another rental of the car is in use")
         void pickupRejectedWhenAnotherRentalInUse() {
             testRental.confirm(null);
-            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(carService.getCarForBooking(1L)).thenReturn(carWithStatus(CarStatusType.AVAILABLE));
             when(rentalRepository.existsByCarIdAndStatusAndIsDeletedFalseAndIdNot(
                     1L, RentalStatus.IN_USE, 1L)).thenReturn(true);
@@ -483,7 +483,7 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should successfully cancel requested rental without refund")
         void shouldSuccessfullyCancelRequestedRentalWithoutRefund() {
-            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(authService.getUserByUsername("testuser")).thenReturn(testUser);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
@@ -491,7 +491,7 @@ class RentalServiceTest {
             RentalResponse result = rentalService.cancelRental(1L, "testuser", null);
 
             assertThat(result).isNotNull();
-            verify(paymentService, never()).refundPayment(anyLong(), any());
+            verify(paymentService, never()).refundPayment(anyLong(), any(), any());
             verify(eventPublisher).publishEvent(any(Object.class));
         }
 
@@ -502,7 +502,7 @@ class RentalServiceTest {
                     Set.of(Role.USER),
                     true);
 
-            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(authService.getUserByUsername("otheruser")).thenReturn(otherUser);
 
             assertThatThrownBy(() -> rentalService.cancelRental(1L, "otheruser", null))
@@ -521,7 +521,7 @@ class RentalServiceTest {
             PaymentDto paymentDto = createTestPaymentDto();
             PaymentResult captureResult = new PaymentResult(true, "TXN-123", "Captured");
 
-            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(carService.getCarForBooking(1L)).thenReturn(testCar);
             when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(paymentDto));
             when(paymentService.capturePayment(anyLong())).thenReturn(captureResult);
@@ -540,7 +540,7 @@ class RentalServiceTest {
             testRental.confirm(null);
             testRental.pickUp(null);
 
-            when(rentalRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
 

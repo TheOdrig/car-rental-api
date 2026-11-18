@@ -65,6 +65,9 @@ class DamageAssessmentServiceTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
+    @Mock
+    private com.akif.rental.api.RentalService rentalService;
+
     @Spy
     private Clock clock = Clock.systemDefaultZone();
 
@@ -113,6 +116,11 @@ class DamageAssessmentServiceTest {
                 .reportedAt(LocalDateTime.now())
                 .build();
 
+        when(rentalService.getRentalSummaryById(any())).thenReturn(new com.akif.rental.api.RentalSummaryDto(
+                1L, 1L, 1L, "Toyota", "Corolla", "34ABC123", "c@example.com", "C U",
+                java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(3), false, 0,
+                com.akif.shared.enums.CurrencyType.TRY));
+
         testAssessmentRequest = new DamageAssessmentRequest(
                 DamageSeverity.MINOR,
                 DamageCategory.SCRATCH,
@@ -140,6 +148,34 @@ class DamageAssessmentServiceTest {
             assertThat(result.damageId()).isEqualTo(1L);
             verify(damageReportRepository).save(any(DamageReport.class));
             verify(eventPublisher).publishEvent(any(DamageAssessedEvent.class));
+        }
+
+        @Test
+        @DisplayName("Should default the damage currency to the rental currency at assessment time")
+        void shouldDefaultCurrencyToRentalCurrency() {
+            when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
+            when(authService.getUserByUsername("admin")).thenReturn(testUser);
+            when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
+            when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
+
+            damageAssessmentService.assessDamage(1L, testAssessmentRequest, "admin");
+
+            assertThat(testDamageReport.getCurrency()).isEqualTo(com.akif.shared.enums.CurrencyType.TRY);
+        }
+
+        @Test
+        @DisplayName("Should keep an explicit assessment currency")
+        void shouldKeepExplicitCurrency() {
+            when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
+            when(authService.getUserByUsername("admin")).thenReturn(testUser);
+            when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
+            when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
+            DamageAssessmentRequest request = new DamageAssessmentRequest(DamageSeverity.MINOR, DamageCategory.SCRATCH,
+                    new BigDecimal("500.00"), true, new BigDecimal("100.00"), "n", com.akif.shared.enums.CurrencyType.EUR);
+
+            damageAssessmentService.assessDamage(1L, request, "admin");
+
+            assertThat(testDamageReport.getCurrency()).isEqualTo(com.akif.shared.enums.CurrencyType.EUR);
         }
 
         @Test

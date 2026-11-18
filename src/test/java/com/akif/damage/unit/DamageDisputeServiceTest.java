@@ -33,6 +33,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.context.ApplicationEventPublisher;
 
+import com.akif.shared.enums.CurrencyType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -116,7 +117,8 @@ class DamageDisputeServiceTest {
                 LocalDate.now().minusDays(5),
                 LocalDate.now().plusDays(2),
                 true,
-                1);
+                1,
+                CurrencyType.USD);
 
         testDamageReport = DamageReport.builder()
                 .id(1L)
@@ -260,7 +262,7 @@ class DamageDisputeServiceTest {
         void shouldResolveDisputeSuccessfullyWithPartialRefund() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(authService.getUserByUsername("admin")).thenReturn(testAdmin);
-            when(paymentService.refund(anyString(), any(BigDecimal.class)))
+            when(paymentService.refund(anyString(), any(BigDecimal.class), anyString()))
                     .thenReturn(new PaymentResult(true, "refund_123", "Refund successful"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
@@ -270,7 +272,7 @@ class DamageDisputeServiceTest {
             assertThat(result.status()).isEqualTo(DamageStatus.RESOLVED);
             assertThat(result.refundAmount()).isEqualTo(new BigDecimal("250.00"));
 
-            verify(paymentService).refund("txn_123456", new BigDecimal("250.00"));
+            verify(paymentService).refund("txn_123456", new BigDecimal("250.00"), "damage-1:dispute-refund");
             verify(eventPublisher).publishEvent(any(DamageResolvedEvent.class));
         }
 
@@ -279,7 +281,7 @@ class DamageDisputeServiceTest {
         void shouldUpdateDamageReportWithResolutionDetails() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(authService.getUserByUsername("admin")).thenReturn(testAdmin);
-            when(paymentService.refund(anyString(), any(BigDecimal.class)))
+            when(paymentService.refund(anyString(), any(BigDecimal.class), anyString()))
                     .thenReturn(new PaymentResult(true, "refund_123", "Refund successful"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
@@ -324,7 +326,7 @@ class DamageDisputeServiceTest {
             DamageDisputeResponse result = damageDisputeService.resolveDispute(1L, noRefundResolution, "admin");
 
             assertThat(result.refundAmount()).isEqualTo(BigDecimal.ZERO);
-            verify(paymentService, never()).refund(anyString(), any());
+            verify(paymentService, never()).refund(anyString(), any(), anyString());
         }
 
         @Test
@@ -332,7 +334,7 @@ class DamageDisputeServiceTest {
         void shouldPublishDamageResolvedEventWithRefundAmount() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(authService.getUserByUsername("admin")).thenReturn(testAdmin);
-            when(paymentService.refund(anyString(), any(BigDecimal.class)))
+            when(paymentService.refund(anyString(), any(BigDecimal.class), anyString()))
                     .thenReturn(new PaymentResult(true, "refund_123", "Refund successful"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
@@ -359,12 +361,12 @@ class DamageDisputeServiceTest {
         @Test
         @DisplayName("Should process refund successfully")
         void shouldProcessRefundSuccessfully() {
-            when(paymentService.refund("txn_123456", new BigDecimal("250.00")))
+            when(paymentService.refund("txn_123456", new BigDecimal("250.00"), "damage-1:dispute-refund"))
                     .thenReturn(new PaymentResult(true, "refund_123", "Refund successful"));
 
             damageDisputeService.processRefundForAdjustment(testDamageReport, new BigDecimal("250.00"));
 
-            verify(paymentService).refund("txn_123456", new BigDecimal("250.00"));
+            verify(paymentService).refund("txn_123456", new BigDecimal("250.00"), "damage-1:dispute-refund");
         }
 
         @Test
@@ -374,7 +376,7 @@ class DamageDisputeServiceTest {
 
             damageDisputeService.processRefundForAdjustment(testDamageReport, new BigDecimal("250.00"));
 
-            verify(paymentService, never()).refund(any(), any());
+            verify(paymentService, never()).refund(any(), any(), any());
         }
 
         @Test
@@ -382,7 +384,7 @@ class DamageDisputeServiceTest {
         void shouldSkipRefundWhenAdjustedAmountEqualsOriginal() {
             damageDisputeService.processRefundForAdjustment(testDamageReport, new BigDecimal("500.00"));
 
-            verify(paymentService, never()).refund(any(), any());
+            verify(paymentService, never()).refund(any(), any(), any());
         }
     }
 }

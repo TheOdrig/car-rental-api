@@ -25,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
+import com.akif.shared.enums.CurrencyType;
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -85,7 +86,8 @@ class DamageChargeServiceTest {
                 java.time.LocalDate.now(),
                 java.time.LocalDate.now().plusDays(7),
                 false,
-                0
+                0,
+                CurrencyType.USD
         );
     }
 
@@ -149,7 +151,7 @@ class DamageChargeServiceTest {
         void shouldChargeDamageSuccessfullyById() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L))
                     .thenReturn(Optional.of(testDamageReport));
-            when(paymentService.chargeDamage(any(), any(), any()))
+            when(paymentService.chargeDamage(any(), any(), any(), any()))
                     .thenReturn(new PaymentResult(true, "TXN-12345", "Success"));
 
             PaymentResult result = damageChargeService.chargeDamageById(1L);
@@ -175,7 +177,7 @@ class DamageChargeServiceTest {
         void shouldHandlePaymentFailure() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L))
                     .thenReturn(Optional.of(testDamageReport));
-            when(paymentService.chargeDamage(any(), any(), any()))
+            when(paymentService.chargeDamage(any(), any(), any(), any()))
                     .thenReturn(new PaymentResult(false, null, "Payment failed"));
 
             PaymentResult result = damageChargeService.chargeDamageById(1L);
