@@ -74,7 +74,6 @@ class EventPublicationRegistryIntegrationTest {
                 LocalDate.now().plusDays(5),
                 new BigDecimal("2000.00"),
                 CurrencyType.TRY,
-                "Istanbul Airport",
                 null);
     }
 

@@ -39,7 +39,6 @@ public class EmailTemplateService implements IEmailTemplateService {
         context.setVariable("returnDate", event.returnDate().format(DATE_FORMATTER));
         context.setVariable("totalPrice", event.totalPrice());
         context.setVariable("currency", event.currency().name());
-        context.setVariable("pickupLocation", event.pickupLocation());
 
         return templateEngine.process("email/rental/rental-confirmation", context);
     }
@@ -66,7 +65,6 @@ public class EmailTemplateService implements IEmailTemplateService {
         Context context = new Context();
         context.setVariable("rentalId", event.rentalId());
         context.setVariable("pickupDate", event.pickupDate().format(DATE_FORMATTER));
-        context.setVariable("pickupLocation", event.pickupLocation());
         context.setVariable("carBrand", event.carBrand());
         context.setVariable("carModel", event.carModel());
         context.setVariable("timeWindow", "9:00 AM - 6:00 PM");
@@ -81,8 +79,9 @@ public class EmailTemplateService implements IEmailTemplateService {
         Context context = new Context();
         context.setVariable("rentalId", event.rentalId());
         context.setVariable("returnDate", event.returnDate().format(DATE_FORMATTER));
-        context.setVariable("returnLocation", event.returnLocation());
-        context.setVariable("dailyPenaltyRate", event.dailyPenaltyRate());
+        context.setVariable("hourlyPenalty", event.currency().formatAmount(event.hourlyPenaltyAmount()));
+        context.setVariable("dailyPenalty", event.currency().formatAmount(event.dailyPenaltyAmount()));
+        context.setVariable("gracePeriodMinutes", event.gracePeriodMinutes());
 
         return templateEngine.process("email/rental/return-reminder", context);
     }

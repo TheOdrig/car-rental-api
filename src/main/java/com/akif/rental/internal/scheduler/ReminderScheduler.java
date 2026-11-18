@@ -6,7 +6,9 @@ import com.akif.rental.api.RentalStatus;
 import com.akif.rental.api.PickupReminderEvent;
 import com.akif.rental.api.ReturnReminderEvent;
 import com.akif.rental.domain.model.Rental;
+import com.akif.rental.internal.config.PenaltyConfig;
 import com.akif.rental.internal.repository.RentalRepository;
+import com.akif.shared.enums.CurrencyType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -17,6 +19,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -28,6 +31,7 @@ public class ReminderScheduler {
     private final Clock clock;
 
     private final RentalRepository rentalRepository;
+    private final PenaltyConfig penaltyConfig;
     private final ApplicationEventPublisher eventPublisher;
 
     @Scheduled(cron = "0 0 8 * * *")
@@ -116,7 +120,6 @@ public class ReminderScheduler {
                 rental.getUserEmail(),
                 LocalDateTime.now(clock),
                 rental.getStartDate(),
-                "Pickup Location", // TODO: Add pickup location to Rental entity if needed
                 rental.getCarBrand(),
                 rental.getCarModel()
         );
@@ -124,14 +127,18 @@ public class ReminderScheduler {
     }
 
     private void publishReturnReminderEvent(Rental rental) {
+        CurrencyType currency = rental.getCurrency();
         ReturnReminderEvent event = new ReturnReminderEvent(
                 rental.getId(),
                 rental.getUserEmail(),
                 LocalDateTime.now(clock),
                 rental.getEndDate(),
-                "Return Location", // TODO: Add return location to Rental entity if needed
-                rental.getDailyPrice()
-        );
+                currency,
+                rental.getDailyPrice().multiply(penaltyConfig.getHourlyPenaltyRate())
+                        .setScale(currency.getDecimalPlaces(), RoundingMode.HALF_UP),
+                rental.getDailyPrice().multiply(penaltyConfig.getDailyPenaltyRate())
+                        .setScale(currency.getDecimalPlaces(), RoundingMode.HALF_UP),
+                penaltyConfig.getGracePeriodMinutes());
         eventPublisher.publishEvent(event);
     }
 }

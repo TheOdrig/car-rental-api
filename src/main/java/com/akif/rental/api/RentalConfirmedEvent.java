@@ -16,7 +16,6 @@ public record RentalConfirmedEvent(
         LocalDate returnDate,
         BigDecimal totalPrice,
         CurrencyType currency,
-        String pickupLocation,
         String notes) implements RentalEvent {
 
     public RentalConfirmedEvent(
@@ -28,9 +27,8 @@ public record RentalConfirmedEvent(
             LocalDate pickupDate,
             LocalDate returnDate,
             BigDecimal totalPrice,
-            CurrencyType currency,
-            String pickupLocation) {
+            CurrencyType currency) {
         this(rentalId, customerEmail, occurredAt, carBrand, carModel, pickupDate, returnDate, totalPrice, currency,
-                pickupLocation, null);
+                null);
     }
 }

@@ -8,7 +8,6 @@ public record PickupReminderEvent(
         String customerEmail,
         LocalDateTime occurredAt,
         LocalDate pickupDate,
-        String pickupLocation,
         String carBrand,
         String carModel) implements RentalEvent {
 }

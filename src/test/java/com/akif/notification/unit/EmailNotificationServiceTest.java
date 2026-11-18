@@ -65,9 +65,7 @@ class EmailNotificationServiceTest {
                 LocalDate.of(2025, 12, 10),
                 LocalDate.of(2025, 12, 15),
                 new BigDecimal("2500.00"),
-                CurrencyType.TRY,
-                "Istanbul Airport"
-            );
+                CurrencyType.TRY);
         }
 
         @Test
@@ -196,10 +194,8 @@ class EmailNotificationServiceTest {
                 "customer@example.com",
                 LocalDateTime.now(),
                 LocalDate.of(2025, 12, 10),
-                "Istanbul Airport",
                 "Toyota",
-                "Corolla"
-            );
+                "Corolla");
         }
 
         @Test
@@ -254,9 +250,10 @@ class EmailNotificationServiceTest {
                 "customer@example.com",
                 LocalDateTime.now(),
                 LocalDate.of(2025, 12, 15),
-                "Istanbul Airport",
-                new BigDecimal("100.00")
-            );
+                CurrencyType.TRY,
+                new BigDecimal("12.50"),
+                new BigDecimal("75.00"),
+                60);
         }
 
         @Test
@@ -374,9 +371,7 @@ class EmailNotificationServiceTest {
                 LocalDate.of(2025, 12, 10),
                 LocalDate.of(2025, 12, 15),
                 new BigDecimal("2500.00"),
-                CurrencyType.TRY,
-                "Istanbul Airport"
-            );
+                CurrencyType.TRY);
         }
 
         @Test

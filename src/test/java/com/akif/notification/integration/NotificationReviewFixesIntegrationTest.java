@@ -133,8 +133,16 @@ class NotificationReviewFixesIntegrationTest {
     }
 
     private RentalConfirmedEvent event() {
-        return new RentalConfirmedEvent(77L, "customer@example.com", LocalDateTime.now(), "Toyota", "Corolla",
-                LocalDate.now().plusDays(1), LocalDate.now().plusDays(5), new BigDecimal("2000.00"),
-                CurrencyType.TRY, "Istanbul Airport", null);
+        return new RentalConfirmedEvent(
+ 77L,
+ "customer@example.com",
+ LocalDateTime.now(),
+ "Toyota",
+ "Corolla",
+ LocalDate.now().plusDays(1),
+ LocalDate.now().plusDays(5),
+ new BigDecimal("2000.00"),
+ CurrencyType.TRY,
+ null);
     }
 }

@@ -106,14 +106,6 @@
                                 style="margin: 0 0 24px 0;">
                                 <tr>
                                     <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
-                                        Location:</td>
-                                    <td style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
-                                        class="text-value">
-                                        <span th:text="${returnLocation}">Airport Terminal</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 8px 0; font-size: 14px; color: #4b5563;" class="text-label">
                                         Return Date:</td>
                                     <td style="padding: 8px 0; font-size: 14px; font-weight: 600; color: #111827;"
                                         class="text-value">
@@ -123,7 +115,7 @@
                             </table>
 
                             <div
-                                th:replace="~{email/shared/warning-box :: warningBox('Late returns incur a penalty of $' + ${dailyPenaltyRate} + ' per day. Please return on time to avoid charges.')}">
+                                th:replace="~{email/shared/warning-box :: warningBox('After a ' + ${gracePeriodMinutes} + '-minute grace period, late returns are charged ' + ${hourlyPenalty} + ' per hour for the first six hours and ' + ${dailyPenalty} + ' per day after that.')}">
                             </div>
 
                             <div

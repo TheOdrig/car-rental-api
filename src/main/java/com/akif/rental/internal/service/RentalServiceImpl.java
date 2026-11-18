@@ -273,7 +273,6 @@ public class RentalServiceImpl implements RentalService {
                 updatedRental.getEndDate(),
                 updatedRental.getTotalPrice(),
                 updatedRental.getCurrency(),
-                "Main Office",
                 notes);
         eventPublisher.publishEvent(event);
         log.info("Published RentalConfirmedEvent for rental: {}", updatedRental.getId());

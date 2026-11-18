@@ -56,7 +56,6 @@ class EmailTemplateServiceTest {
                     LocalDate.of(2025, 12, 15),
                     new BigDecimal("2500.00"),
                     CurrencyType.TRY,
-                    "Istanbul Airport",
                     null);
         }
 
@@ -127,21 +126,6 @@ class EmailTemplateServiceTest {
                         Context context = invocation.getArgument(1);
                         assertThat(context.getVariable("totalPrice")).isEqualTo(new BigDecimal("2500.00"));
                         assertThat(context.getVariable("currency")).isEqualTo("TRY");
-                        return "<html>Email</html>";
-                    });
-
-            emailTemplateService.renderConfirmationEmail(event);
-
-            verify(templateEngine).process(eq("email/rental/rental-confirmation"), any(Context.class));
-        }
-
-        @Test
-        @DisplayName("Should include pickup location in template context")
-        void shouldIncludePickupLocationInTemplateContext() {
-            when(templateEngine.process(eq("email/rental/rental-confirmation"), any(Context.class)))
-                    .thenAnswer(invocation -> {
-                        Context context = invocation.getArgument(1);
-                        assertThat(context.getVariable("pickupLocation")).isEqualTo("Istanbul Airport");
                         return "<html>Email</html>";
                     });
 
@@ -256,7 +240,6 @@ class EmailTemplateServiceTest {
                     "customer@example.com",
                     LocalDateTime.now(),
                     LocalDate.of(2025, 12, 10),
-                    "Istanbul Airport",
                     "Toyota",
                     "Corolla");
         }
@@ -280,21 +263,6 @@ class EmailTemplateServiceTest {
                     .thenAnswer(invocation -> {
                         Context context = invocation.getArgument(1);
                         assertThat(context.getVariable("pickupDate")).isNotNull();
-                        return "<html>Email</html>";
-                    });
-
-            emailTemplateService.renderPickupReminderEmail(event);
-
-            verify(templateEngine).process(eq("email/rental/pickup-reminder"), any(Context.class));
-        }
-
-        @Test
-        @DisplayName("Should include pickup location in template context")
-        void shouldIncludePickupLocationInTemplateContext() {
-            when(templateEngine.process(eq("email/rental/pickup-reminder"), any(Context.class)))
-                    .thenAnswer(invocation -> {
-                        Context context = invocation.getArgument(1);
-                        assertThat(context.getVariable("pickupLocation")).isEqualTo("Istanbul Airport");
                         return "<html>Email</html>";
                     });
 
@@ -348,8 +316,10 @@ class EmailTemplateServiceTest {
                     "customer@example.com",
                     LocalDateTime.now(),
                     LocalDate.of(2025, 12, 15),
-                    "Istanbul Airport",
-                    new BigDecimal("100.00"));
+                    CurrencyType.TRY,
+                    new BigDecimal("12.50"),
+                    new BigDecimal("75.00"),
+                    60);
         }
 
         @Test
@@ -380,27 +350,14 @@ class EmailTemplateServiceTest {
         }
 
         @Test
-        @DisplayName("Should include return location in template context")
-        void shouldIncludeReturnLocationInTemplateContext() {
-            when(templateEngine.process(eq("email/rental/return-reminder"), any(Context.class)))
-                    .thenAnswer(invocation -> {
-                        Context context = invocation.getArgument(1);
-                        assertThat(context.getVariable("returnLocation")).isEqualTo("Istanbul Airport");
-                        return "<html>Email</html>";
-                    });
-
-            emailTemplateService.renderReturnReminderEmail(event);
-
-            verify(templateEngine).process(eq("email/rental/return-reminder"), any(Context.class));
-        }
-
-        @Test
         @DisplayName("Should include late penalty information in template context")
         void shouldIncludeLatePenaltyInformationInTemplateContext() {
             when(templateEngine.process(eq("email/rental/return-reminder"), any(Context.class)))
                     .thenAnswer(invocation -> {
                         Context context = invocation.getArgument(1);
-                        assertThat(context.getVariable("dailyPenaltyRate")).isEqualTo(new BigDecimal("100.00"));
+                        assertThat(context.getVariable("hourlyPenalty")).isEqualTo("₺12.50");
+                        assertThat(context.getVariable("dailyPenalty")).isEqualTo("₺75.00");
+                        assertThat(context.getVariable("gracePeriodMinutes")).isEqualTo(60);
                         return "<html>Email</html>";
                     });
 

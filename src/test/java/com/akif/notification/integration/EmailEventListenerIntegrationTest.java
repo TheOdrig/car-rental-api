@@ -69,7 +69,6 @@ class EmailEventListenerIntegrationTest {
                     LocalDate.now().plusDays(5),
                     new BigDecimal("2000.00"),
                     CurrencyType.TRY,
-                    "Istanbul Airport",
                     null);
 
             publishInTransaction(event);
@@ -87,7 +86,6 @@ class EmailEventListenerIntegrationTest {
                 assertThat(sentEmail.body()).contains("Toyota");
                 assertThat(sentEmail.body()).contains("Corolla");
                 assertThat(sentEmail.body()).contains("2000.00");
-                assertThat(sentEmail.body()).contains("Istanbul Airport");
             });
         }
     }
@@ -141,7 +139,6 @@ class EmailEventListenerIntegrationTest {
                     "customer@example.com",
                     LocalDateTime.now(),
                     LocalDate.now().plusDays(1),
-                    "Istanbul Airport",
                     "Toyota",
                     "Corolla");
 
@@ -162,7 +159,6 @@ class EmailEventListenerIntegrationTest {
                 assertThat(sentEmail.referenceId()).isEqualTo(1L);
                 assertThat(sentEmail.body()).contains("Toyota");
                 assertThat(sentEmail.body()).contains("Corolla");
-                assertThat(sentEmail.body()).contains("Istanbul Airport");
             });
         }
     }
@@ -179,8 +175,10 @@ class EmailEventListenerIntegrationTest {
                     "customer@example.com",
                     LocalDateTime.now(),
                     LocalDate.now(),
-                    "Istanbul Airport",
-                    new BigDecimal("500.00"));
+                    CurrencyType.TRY,
+                    new BigDecimal("12.50"),
+                    new BigDecimal("75.00"),
+                    60);
 
             publishInTransaction(event);
 
@@ -197,8 +195,7 @@ class EmailEventListenerIntegrationTest {
                 assertThat(sentEmail.subject()).contains("Return Reminder");
                 assertThat(sentEmail.type()).isEqualTo(EmailType.RETURN_REMINDER);
                 assertThat(sentEmail.referenceId()).isEqualTo(1L);
-                assertThat(sentEmail.body()).contains("Istanbul Airport");
-                assertThat(sentEmail.body()).contains("500.00");
+                assertThat(sentEmail.body()).contains("₺12.50").contains("₺75.00").contains("60-minute grace period");
             });
         }
     }

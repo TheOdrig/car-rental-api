@@ -51,7 +51,6 @@ class EmailEventListenerTest {
                     LocalDate.of(2025, 12, 15),
                     new BigDecimal("2500.00"),
                     CurrencyType.TRY,
-                    "Istanbul Airport",
                     null);
         }
 
@@ -104,7 +103,6 @@ class EmailEventListenerTest {
                     "customer@example.com",
                     LocalDateTime.now(),
                     LocalDate.of(2025, 12, 10),
-                    "Istanbul Airport",
                     "Toyota",
                     "Corolla");
         }
@@ -131,8 +129,10 @@ class EmailEventListenerTest {
                     "customer@example.com",
                     LocalDateTime.now(),
                     LocalDate.of(2025, 12, 15),
-                    "Istanbul Airport",
-                    new BigDecimal("100.00"));
+                    CurrencyType.TRY,
+                    new BigDecimal("12.50"),
+                    new BigDecimal("75.00"),
+                    60);
         }
 
         @Test
@@ -189,7 +189,6 @@ class EmailEventListenerTest {
                     LocalDate.of(2025, 12, 15),
                     new BigDecimal("2500.00"),
                     CurrencyType.TRY,
-                    "Istanbul Airport",
                     null);
 
             PaymentCapturedEvent paymentEvent = new PaymentCapturedEvent(
