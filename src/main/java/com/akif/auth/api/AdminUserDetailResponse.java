@@ -1,6 +1,7 @@
 package com.akif.auth.api;
 
 import com.akif.shared.enums.Role;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -37,7 +38,8 @@ public record AdminUserDetailResponse(
             BigDecimal totalSpent,
             double averageRentalDuration,
             int totalDamageReports,
-            BigDecimal totalDamageCost,
+            @Schema(description = "Customer damage liability grouped by assessment currency; amounts of different currencies are never summed together.")
+            List<UserDamageStatisticsDto.CurrencyTotals> damageCostByCurrency,
             int lateReturns,
             int customerSinceDays) {
     }

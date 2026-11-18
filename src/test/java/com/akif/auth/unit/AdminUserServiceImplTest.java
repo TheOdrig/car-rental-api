@@ -9,6 +9,7 @@ import com.akif.auth.internal.repository.UserRepository;
 import com.akif.auth.internal.service.AdminUserServiceImpl;
 import com.akif.damage.api.DamageService;
 import com.akif.auth.api.UserDamageStatisticsDto;
+import com.akif.shared.enums.CurrencyType;
 import com.akif.rental.api.RentalService;
 import com.akif.auth.api.UserRentalStatisticsDto;
 import com.akif.shared.enums.Role;
@@ -27,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -132,7 +134,9 @@ class AdminUserServiceImplTest {
             assertThat(stats.averageRentalDuration()).isEqualTo(5.2);
             assertThat(stats.lateReturns()).isEqualTo(2);
             assertThat(stats.totalDamageReports()).isEqualTo(3);
-            assertThat(stats.totalDamageCost()).isEqualByComparingTo(new BigDecimal("350.00"));
+            assertThat(stats.damageCostByCurrency()).extracting(UserDamageStatisticsDto.CurrencyTotals::currency)
+                    .containsExactly(CurrencyType.EUR, CurrencyType.TRY);
+            assertThat(stats.damageCostByCurrency().get(1).totalCustomerLiability()).isEqualByComparingTo("300.00");
         }
 
         @Test
@@ -171,7 +175,7 @@ class AdminUserServiceImplTest {
         @DisplayName("Should handle user with zero rentals")
         void shouldHandleUserWithZeroRentals() {
             UserRentalStatisticsDto zeroRentalStats = new UserRentalStatisticsDto(0, 0, 0, 0, BigDecimal.ZERO, 0.0, 0);
-            UserDamageStatisticsDto zeroDamageStats = new UserDamageStatisticsDto(0, BigDecimal.ZERO);
+            UserDamageStatisticsDto zeroDamageStats = new UserDamageStatisticsDto(0, List.of());
 
             when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
             when(rentalService.getUserStatistics(1L)).thenReturn(zeroRentalStats);
@@ -183,13 +187,13 @@ class AdminUserServiceImplTest {
             assertThat(result.statistics().completedRentals()).isZero();
             assertThat(result.statistics().totalSpent()).isEqualByComparingTo(BigDecimal.ZERO);
             assertThat(result.statistics().totalDamageReports()).isZero();
-            assertThat(result.statistics().totalDamageCost()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(result.statistics().damageCostByCurrency()).isEmpty();
         }
 
         @Test
         @DisplayName("Should handle user with zero damages")
         void shouldHandleUserWithZeroDamages() {
-            UserDamageStatisticsDto zeroDamageStats = new UserDamageStatisticsDto(0, BigDecimal.ZERO);
+            UserDamageStatisticsDto zeroDamageStats = new UserDamageStatisticsDto(0, List.of());
 
             when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
             when(rentalService.getUserStatistics(1L)).thenReturn(testRentalStats);
@@ -198,7 +202,7 @@ class AdminUserServiceImplTest {
             AdminUserDetailResponse result = adminUserService.getUserDetailForAdmin(1L);
 
             assertThat(result.statistics().totalDamageReports()).isZero();
-            assertThat(result.statistics().totalDamageCost()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(result.statistics().damageCostByCurrency()).isEmpty();
         }
 
         @Test
@@ -302,6 +306,8 @@ class AdminUserServiceImplTest {
     }
 
     private UserDamageStatisticsDto createDamageStatistics() {
-        return new UserDamageStatisticsDto(3, new BigDecimal("350.00"));
+        return new UserDamageStatisticsDto(3, List.of(
+                new UserDamageStatisticsDto.CurrencyTotals(CurrencyType.EUR, 1, new BigDecimal("50.00")),
+                new UserDamageStatisticsDto.CurrencyTotals(CurrencyType.TRY, 2, new BigDecimal("300.00"))));
     }
 }

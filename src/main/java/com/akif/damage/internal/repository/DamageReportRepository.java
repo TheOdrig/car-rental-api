@@ -174,9 +174,13 @@ public interface DamageReportRepository extends JpaRepository<DamageReport, Long
         int countByCustomerUserIdAndIsDeletedFalse(Long customerUserId);
 
         @Query("""
-                        SELECT COALESCE(SUM(d.customerLiability), 0) FROM DamageReport d
+                        SELECT d.currency, COUNT(d), COALESCE(SUM(d.customerLiability), 0)
+                        FROM DamageReport d
                         WHERE d.customerUserId = :customerUserId
                         AND d.isDeleted = false
+                        AND d.currency IS NOT NULL
+                        GROUP BY d.currency
+                        ORDER BY d.currency
                         """)
-        BigDecimal sumCustomerLiabilityByCustomerUserId(@Param("customerUserId") Long customerUserId);
+        List<Object[]> customerLiabilityByCurrency(@Param("customerUserId") Long customerUserId);
 }

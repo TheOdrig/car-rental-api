@@ -8,6 +8,7 @@ import com.akif.auth.api.UserDamageStatisticsDto;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.mapper.DamageMapper;
 import com.akif.damage.internal.repository.DamageReportRepository;
+import com.akif.shared.enums.CurrencyType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -81,14 +82,15 @@ public class DamageServiceImpl implements DamageService {
 
         int totalDamageReports = damageReportRepository.countByCustomerUserIdAndIsDeletedFalse(userId);
 
-        BigDecimal totalDamageCost = damageReportRepository.sumCustomerLiabilityByCustomerUserId(userId);
-        if (totalDamageCost == null) {
-            totalDamageCost = BigDecimal.ZERO;
-        }
+        List<UserDamageStatisticsDto.CurrencyTotals> byCurrency = damageReportRepository
+                .customerLiabilityByCurrency(userId).stream()
+                .map(row -> new UserDamageStatisticsDto.CurrencyTotals(
+                        (CurrencyType) row[0], (Long) row[1], (BigDecimal) row[2]))
+                .toList();
 
-        log.info("User {} damage statistics: totalReports={}, totalCost={}",
-                userId, totalDamageReports, totalDamageCost);
+        log.info("User {} damage statistics: totalReports={}, currencies={}",
+                userId, totalDamageReports, byCurrency.size());
 
-        return new UserDamageStatisticsDto(totalDamageReports, totalDamageCost);
+        return new UserDamageStatisticsDto(totalDamageReports, byCurrency);
     }
 }

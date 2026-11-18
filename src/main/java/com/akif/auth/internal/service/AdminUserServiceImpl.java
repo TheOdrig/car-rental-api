@@ -145,7 +145,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 rentalStats.totalSpent(),
                 rentalStats.averageRentalDuration(),
                 damageStats.totalDamageReports(),
-                damageStats.totalDamageCost(),
+                damageStats.byCurrency(),
                 rentalStats.lateReturns(),
                 customerSinceDays);
     }

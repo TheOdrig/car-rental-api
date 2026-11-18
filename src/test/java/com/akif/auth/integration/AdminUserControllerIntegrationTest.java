@@ -175,6 +175,10 @@ class AdminUserControllerIntegrationTest {
     }
 
     private DamageReport createTestDamageReport(User user, Rental rental) {
+        return createTestDamageReport(user, rental, CurrencyType.TRY);
+    }
+
+    private DamageReport createTestDamageReport(User user, Rental rental, CurrencyType damageCurrency) {
         DamageReport damage = DamageReport.builder()
                 .rentalId(rental.getId())
                 .carId(testCar.getId())
@@ -192,6 +196,7 @@ class AdminUserControllerIntegrationTest {
                 .category(DamageCategory.SCRATCH)
                 .status(DamageStatus.RESOLVED)
                 .repairCostEstimate(new BigDecimal("200.00"))
+                .currency(damageCurrency)
                 .customerLiability(new BigDecimal("150.00"))
                 .reportedBy(adminUser.getId())
                 .reportedAt(LocalDateTime.now())
@@ -314,12 +319,18 @@ class AdminUserControllerIntegrationTest {
             Rental rental = createTestRental(testCustomer, RentalStatus.RETURNED, false);
             createTestDamageReport(testCustomer, rental);
             createTestDamageReport(testCustomer, rental);
+            createTestDamageReport(testCustomer, rental, CurrencyType.EUR);
 
             mockMvc.perform(get("/api/v1/admin/users/{id}", testCustomer.getId())
                     .header("Authorization", adminToken))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.statistics.totalDamageReports").value(2))
-                    .andExpect(jsonPath("$.statistics.totalDamageCost").value(300.00));
+                    .andExpect(jsonPath("$.statistics.totalDamageReports").value(3))
+                    .andExpect(jsonPath("$.statistics.damageCostByCurrency.length()").value(2))
+                    .andExpect(jsonPath("$.statistics.damageCostByCurrency[0].currency").value("EUR"))
+                    .andExpect(jsonPath("$.statistics.damageCostByCurrency[0].totalCustomerLiability").value(150.00))
+                    .andExpect(jsonPath("$.statistics.damageCostByCurrency[1].currency").value("TRY"))
+                    .andExpect(jsonPath("$.statistics.damageCostByCurrency[1].assessedCount").value(2))
+                    .andExpect(jsonPath("$.statistics.damageCostByCurrency[1].totalCustomerLiability").value(300.00));
         }
     }
 }
