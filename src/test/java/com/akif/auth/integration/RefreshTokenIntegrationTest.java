@@ -187,7 +187,7 @@ class RefreshTokenIntegrationTest {
 
         MvcResult reuse = refresh(first);
         assertThat(reuse.getResponse().getStatus()).isEqualTo(401);
-        assertThat(objectMapper.readTree(reuse.getResponse().getContentAsString()).get("errorCode").asText())
+        assertThat(objectMapper.readTree(reuse.getResponse().getContentAsString()).get("code").asText())
                 .isEqualTo("INVALID_TOKEN");
 
         assertThat(refresh(second).getResponse().getStatus()).isEqualTo(401);
@@ -237,7 +237,7 @@ class RefreshTokenIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"never-issued\"}"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.errorCode").value("INVALID_TOKEN"));
+                .andExpect(jsonPath("$.code").value("INVALID_TOKEN"));
     }
 
     @Test
@@ -249,7 +249,7 @@ class RefreshTokenIntegrationTest {
         MvcResult result = refresh(raw);
 
         assertThat(result.getResponse().getStatus()).isEqualTo(401);
-        assertThat(objectMapper.readTree(result.getResponse().getContentAsString()).get("errorCode").asText())
+        assertThat(objectMapper.readTree(result.getResponse().getContentAsString()).get("code").asText())
                 .isEqualTo("TOKEN_EXPIRED");
     }
 

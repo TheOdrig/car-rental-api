@@ -1,197 +1,259 @@
 package com.akif.shared.handler;
 
 import com.akif.shared.exception.BaseException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.context.MessageSourceResolvable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.validation.method.ParameterErrors;
+import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-
-import java.time.Clock;
-import java.time.LocalDateTime;
+import java.lang.reflect.Method;
 import java.time.format.DateTimeParseException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 
 @RestControllerAdvice
 @Slf4j
 @RequiredArgsConstructor
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-        private final Clock clock;
+    static final String ERROR_CODE_AUTHENTICATION_FAILED = "AUTHENTICATION_FAILED";
+    static final String ERROR_CODE_ACCESS_DENIED = "ACCESS_DENIED";
+    static final String ERROR_CODE_VALIDATION_FAILED = "VALIDATION_FAILED";
+    static final String ERROR_CODE_CONSTRAINT_VIOLATION = "CONSTRAINT_VIOLATION";
+    static final String ERROR_CODE_INVALID_JSON = "INVALID_JSON";
+    static final String ERROR_CODE_MISSING_PARAMETER = "MISSING_PARAMETER";
+    static final String ERROR_CODE_INVALID_PARAMETER_TYPE = "INVALID_PARAMETER_TYPE";
+    static final String ERROR_CODE_ENDPOINT_NOT_FOUND = "ENDPOINT_NOT_FOUND";
+    static final String ERROR_CODE_INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
 
-        private static final String ERROR_CODE_AUTHENTICATION_FAILED = "AUTHENTICATION_FAILED";
-        private static final String ERROR_CODE_ACCESS_DENIED = "ACCESS_DENIED";
-        private static final String ERROR_CODE_VALIDATION_FAILED = "VALIDATION_FAILED";
-        private static final String ERROR_CODE_CONSTRAINT_VIOLATION = "CONSTRAINT_VIOLATION";
-        private static final String ERROR_CODE_INVALID_JSON = "INVALID_JSON";
-        private static final String ERROR_CODE_MISSING_PARAMETER = "MISSING_PARAMETER";
-        private static final String ERROR_CODE_INVALID_PARAMETER_TYPE = "INVALID_PARAMETER_TYPE";
-        private static final String ERROR_CODE_ENDPOINT_NOT_FOUND = "ENDPOINT_NOT_FOUND";
-        private static final String ERROR_CODE_INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
+    private static final Comparator<FieldProblem> BY_FIELD_THEN_MESSAGE =
+            Comparator.comparing(FieldProblem::field).thenComparing(FieldProblem::message);
 
-        @ExceptionHandler(BaseException.class)
-        public ResponseEntity<ErrorResponseDto> handleBaseException(BaseException ex, WebRequest request) {
-                log.error("[{}] {}", ex.getErrorCode(), ex.getMessage());
-                ResponseEntity<ErrorResponseDto> response = buildErrorResponse(ex.getErrorCode(), ex.getMessage(), ex.getHttpStatus(), request);
-                if (!ex.getDetails().isEmpty() && response.getBody() != null) {
-                        response.getBody().setDetails(ex.getDetails());
+    private final ProblemFactory problems;
+
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity<ProblemDetail> handleBaseException(BaseException ex, WebRequest request) {
+        log.error("[{}] {}", ex.getErrorCode(), ex.getMessage());
+        ProblemDetail problem = problems.create(ex.getHttpStatus(), ex.getErrorCode(), ex.getMessage(),
+                extractPath(request), ex.getDetails());
+        return respond(problem);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ProblemDetail> handleConstraintViolationException(
+            ConstraintViolationException ex, WebRequest request) {
+        List<FieldProblem> errors = ex.getConstraintViolations().stream()
+                .map(violation -> new FieldProblem(extractPropertyName(violation), violation.getMessage()))
+                .distinct()
+                .sorted(BY_FIELD_THEN_MESSAGE)
+                .toList();
+        log.error("[{}] Constraint violation: {}", ERROR_CODE_CONSTRAINT_VIOLATION, errors);
+        return respond(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_CONSTRAINT_VIOLATION,
+                "Constraint violation occurred", extractPath(request), errors));
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ProblemDetail> handleAuthenticationException(
+            AuthenticationException ex, WebRequest request) {
+        log.error("[{}] Authentication failed: {}", ERROR_CODE_AUTHENTICATION_FAILED, ex.getMessage());
+        return respond(problems.create(HttpStatus.UNAUTHORIZED, ERROR_CODE_AUTHENTICATION_FAILED,
+                "Authentication failed. Please check your credentials.", extractPath(request)));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ProblemDetail> handleAccessDeniedException(
+            AccessDeniedException ex, WebRequest request) {
+        log.error("[{}] Access denied: {}", ERROR_CODE_ACCESS_DENIED, ex.getMessage());
+        return respond(problems.create(HttpStatus.FORBIDDEN, ERROR_CODE_ACCESS_DENIED,
+                "Access denied. You don't have permission to perform this action.", extractPath(request)));
+    }
+
+    @ExceptionHandler(DateTimeParseException.class)
+    public ResponseEntity<ProblemDetail> handleDateTimeParseException(
+            DateTimeParseException ex, WebRequest request) {
+        log.error("[{}] Invalid date format: {}", ERROR_CODE_INVALID_PARAMETER_TYPE, ex.getMessage());
+        return respond(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_INVALID_PARAMETER_TYPE,
+                "Invalid date format. Expected format: yyyy-MM-dd", extractPath(request)));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ProblemDetail> handleGenericException(Exception ex, WebRequest request) {
+        log.error("[{}] Unexpected error: {}", ERROR_CODE_INTERNAL_SERVER_ERROR, ex.getMessage(), ex);
+        return respond(problems.create(HttpStatus.INTERNAL_SERVER_ERROR, ERROR_CODE_INTERNAL_SERVER_ERROR,
+                "An unexpected error occurred. Please try again later.", extractPath(request)));
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        List<FieldProblem> errors = new ArrayList<>();
+        Object target = ex.getBindingResult().getTarget();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            errors.add(new FieldProblem(reportedField(target, error.getField()), messageOf(error)));
+        }
+        for (ObjectError error : ex.getBindingResult().getGlobalErrors()) {
+            errors.add(new FieldProblem(error.getObjectName(), messageOf(error)));
+        }
+        List<FieldProblem> sorted = errors.stream().distinct().sorted(BY_FIELD_THEN_MESSAGE).toList();
+        log.error("[{}] Validation failed: {}", ERROR_CODE_VALIDATION_FAILED, sorted);
+        return respondObject(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_VALIDATION_FAILED,
+                "Validation failed", extractPath(request), sorted));
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHandlerMethodValidationException(
+            HandlerMethodValidationException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        List<FieldProblem> errors = new ArrayList<>();
+        for (ParameterValidationResult result : ex.getParameterValidationResults()) {
+            if (result instanceof ParameterErrors parameterErrors) {
+                Object target = parameterErrors.getArgument();
+                for (FieldError error : parameterErrors.getFieldErrors()) {
+                    errors.add(new FieldProblem(reportedField(target, error.getField()), messageOf(error)));
                 }
-                return response;
+            } else {
+                String name = result.getMethodParameter().getParameterName();
+                String field = name != null ? name : "parameter" + result.getMethodParameter().getParameterIndex();
+                result.getResolvableErrors().forEach(error -> errors.add(new FieldProblem(field, messageOf(error))));
+            }
         }
+        List<FieldProblem> sorted = errors.stream().distinct().sorted(BY_FIELD_THEN_MESSAGE).toList();
+        log.error("[{}] Validation failed: {}", ERROR_CODE_VALIDATION_FAILED, sorted);
+        return respondObject(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_VALIDATION_FAILED,
+                "Validation failed", extractPath(request), sorted));
+    }
 
-        @ExceptionHandler(MethodArgumentNotValidException.class)
-        public ResponseEntity<ErrorResponseDto> handleMethodArgumentNotValidException(
-                        MethodArgumentNotValidException ex, WebRequest request) {
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        log.error("[{}] Invalid JSON: {}", ERROR_CODE_INVALID_JSON, ex.getMessage());
+        return respondObject(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_INVALID_JSON,
+                "Invalid JSON format in request body", extractPath(request)));
+    }
 
-                Map<String, String> fieldErrors = new HashMap<>();
-                ex.getBindingResult().getFieldErrors()
-                                .forEach(error -> fieldErrors.put(error.getField(), error.getDefaultMessage()));
+    @Override
+    protected ResponseEntity<Object> handleMissingServletRequestParameter(
+            MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatusCode status,
+            WebRequest request) {
+        log.error("[{}] Missing parameter: {}", ERROR_CODE_MISSING_PARAMETER, ex.getParameterName());
+        return respondObject(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_MISSING_PARAMETER,
+                String.format("Required parameter '%s' is missing", ex.getParameterName()), extractPath(request)));
+    }
 
-                log.error("[{}] Validation failed: {}", ERROR_CODE_VALIDATION_FAILED, fieldErrors);
-                return buildErrorResponse(ERROR_CODE_VALIDATION_FAILED, "Validation failed",
-                                HttpStatus.BAD_REQUEST, request, fieldErrors);
+    @Override
+    protected ResponseEntity<Object> handleTypeMismatch(
+            TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        String name = ex instanceof MethodArgumentTypeMismatchException mismatch ? mismatch.getName()
+                : ex.getPropertyName();
+        String expectedType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown";
+        log.error("[{}] Type mismatch for '{}': expected {}", ERROR_CODE_INVALID_PARAMETER_TYPE, name, expectedType);
+        return respondObject(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_INVALID_PARAMETER_TYPE,
+                String.format("Invalid parameter type for '%s'. Expected: %s", name, expectedType),
+                extractPath(request)));
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleNoHandlerFoundException(
+            NoHandlerFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        log.error("[{}] Endpoint not found: {} {}", ERROR_CODE_ENDPOINT_NOT_FOUND, ex.getHttpMethod(),
+                ex.getRequestURL());
+        return respondObject(problems.create(HttpStatus.NOT_FOUND, ERROR_CODE_ENDPOINT_NOT_FOUND,
+                "The requested endpoint was not found", extractPath(request)));
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleNoResourceFoundException(
+            NoResourceFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        log.error("[{}] Endpoint not found: {} {}", ERROR_CODE_ENDPOINT_NOT_FOUND, ex.getHttpMethod(),
+                ex.getResourcePath());
+        return respondObject(problems.create(HttpStatus.NOT_FOUND, ERROR_CODE_ENDPOINT_NOT_FOUND,
+                "The requested endpoint was not found", extractPath(request)));
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleExceptionInternal(
+            Exception ex, Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
+        ResponseEntity<Object> response = super.handleExceptionInternal(ex, body, headers, statusCode, request);
+        if (response == null || !(response.getBody() instanceof ProblemDetail problem)) {
+            return response;
         }
+        problems.enrich(problem, defaultCode(statusCode), extractPath(request));
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.putAll(response.getHeaders());
+        responseHeaders.setContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        return new ResponseEntity<>(problem, responseHeaders, response.getStatusCode());
+    }
 
-        @ExceptionHandler(ConstraintViolationException.class)
-        public ResponseEntity<ErrorResponseDto> handleConstraintViolationException(
-                        ConstraintViolationException ex, WebRequest request) {
+    public String extractPath(WebRequest request) {
+        return request.getDescription(false).replace("uri=", "");
+    }
 
-                Map<String, String> validationErrors = ex.getConstraintViolations().stream()
-                                .collect(Collectors.toMap(
-                                                this::extractPropertyName,
-                                                ConstraintViolation::getMessage,
-                                                (existing, replacement) -> existing));
+    private ResponseEntity<ProblemDetail> respond(ProblemDetail problem) {
+        return ResponseEntity.status(problem.getStatus())
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(problem);
+    }
 
-                log.error("[{}] Constraint violation: {}", ERROR_CODE_CONSTRAINT_VIOLATION, validationErrors);
-                return buildErrorResponse(ERROR_CODE_CONSTRAINT_VIOLATION, "Constraint violation occurred",
-                                HttpStatus.BAD_REQUEST, request, validationErrors);
+    private ResponseEntity<Object> respondObject(ProblemDetail problem) {
+        return ResponseEntity.status(problem.getStatus())
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(problem);
+    }
+
+    private static String defaultCode(HttpStatusCode status) {
+        HttpStatus resolved = HttpStatus.resolve(status.value());
+        return resolved != null ? resolved.name() : "HTTP_" + status.value();
+    }
+
+    private static String messageOf(MessageSourceResolvable error) {
+        String message = error.getDefaultMessage();
+        return message != null ? message : "invalid";
+    }
+
+    private String extractPropertyName(ConstraintViolation<?> violation) {
+        String path = violation.getPropertyPath().toString();
+        int lastDot = path.lastIndexOf('.');
+        return lastDot >= 0 ? path.substring(lastDot + 1) : path;
+    }
+
+    static String reportedField(Object target, String property) {
+        if (target == null || property == null || property.isEmpty()) {
+            return property;
         }
-
-        @ExceptionHandler(AuthenticationException.class)
-        public ResponseEntity<ErrorResponseDto> handleAuthenticationException(
-                        AuthenticationException ex, WebRequest request) {
-                log.error("[{}] Authentication failed: {}", ERROR_CODE_AUTHENTICATION_FAILED, ex.getMessage());
-                return buildErrorResponse(ERROR_CODE_AUTHENTICATION_FAILED,
-                                "Authentication failed. Please check your credentials.",
-                                HttpStatus.UNAUTHORIZED, request);
+        String capitalized = property.substring(0, 1).toUpperCase(Locale.ROOT) + property.substring(1);
+        for (Method method : target.getClass().getMethods()) {
+            ReportsAsField annotation = method.getAnnotation(ReportsAsField.class);
+            if (annotation != null
+                    && (method.getName().equals("is" + capitalized) || method.getName().equals("get" + capitalized))) {
+                return annotation.value();
+            }
         }
-
-        @ExceptionHandler(AccessDeniedException.class)
-        public ResponseEntity<ErrorResponseDto> handleAccessDeniedException(
-                        AccessDeniedException ex, WebRequest request) {
-                log.error("[{}] Access denied: {}", ERROR_CODE_ACCESS_DENIED, ex.getMessage());
-                return buildErrorResponse(ERROR_CODE_ACCESS_DENIED,
-                                "Access denied. You don't have permission to perform this action.",
-                                HttpStatus.FORBIDDEN, request);
-        }
-
-        @ExceptionHandler(HttpMessageNotReadableException.class)
-        public ResponseEntity<ErrorResponseDto> handleHttpMessageNotReadableException(
-                        HttpMessageNotReadableException ex, WebRequest request) {
-                log.error("[{}] Invalid JSON: {}", ERROR_CODE_INVALID_JSON, ex.getMessage());
-                return buildErrorResponse(ERROR_CODE_INVALID_JSON,
-                                "Invalid JSON format in request body",
-                                HttpStatus.BAD_REQUEST, request);
-        }
-
-        @ExceptionHandler(MissingServletRequestParameterException.class)
-        public ResponseEntity<ErrorResponseDto> handleMissingServletRequestParameterException(
-                        MissingServletRequestParameterException ex, WebRequest request) {
-                log.error("[{}] Missing parameter: {}", ERROR_CODE_MISSING_PARAMETER, ex.getParameterName());
-                return buildErrorResponse(ERROR_CODE_MISSING_PARAMETER,
-                                String.format("Required parameter '%s' is missing", ex.getParameterName()),
-                                HttpStatus.BAD_REQUEST, request);
-        }
-
-        @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-        public ResponseEntity<ErrorResponseDto> handleMethodArgumentTypeMismatchException(
-                        MethodArgumentTypeMismatchException ex, WebRequest request) {
-                String expectedType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown";
-                log.error("[{}] Type mismatch for '{}': expected {}",
-                                ERROR_CODE_INVALID_PARAMETER_TYPE, ex.getName(), expectedType);
-                return buildErrorResponse(ERROR_CODE_INVALID_PARAMETER_TYPE,
-                                String.format("Invalid parameter type for '%s'. Expected: %s", ex.getName(),
-                                                expectedType),
-                                HttpStatus.BAD_REQUEST, request);
-        }
-
-        @ExceptionHandler(DateTimeParseException.class)
-        public ResponseEntity<ErrorResponseDto> handleDateTimeParseException(
-                        DateTimeParseException ex, WebRequest request) {
-                log.error("[{}] Invalid date format: {}", ERROR_CODE_INVALID_PARAMETER_TYPE, ex.getMessage());
-                return buildErrorResponse(ERROR_CODE_INVALID_PARAMETER_TYPE,
-                                "Invalid date format. Expected format: yyyy-MM-dd",
-                                HttpStatus.BAD_REQUEST, request);
-        }
-
-        @ExceptionHandler(NoHandlerFoundException.class)
-        public ResponseEntity<ErrorResponseDto> handleNoHandlerFoundException(
-                        NoHandlerFoundException ex, WebRequest request) {
-                log.error("[{}] Endpoint not found: {} {}",
-                                ERROR_CODE_ENDPOINT_NOT_FOUND, ex.getHttpMethod(), ex.getRequestURL());
-                return buildErrorResponse(ERROR_CODE_ENDPOINT_NOT_FOUND,
-                                "The requested endpoint was not found",
-                                HttpStatus.NOT_FOUND, request);
-        }
-
-        @ExceptionHandler(Exception.class)
-        public ResponseEntity<ErrorResponseDto> handleGenericException(Exception ex, WebRequest request) {
-                log.error("[{}] Unexpected error: {}", ERROR_CODE_INTERNAL_SERVER_ERROR, ex.getMessage(), ex);
-                return buildErrorResponse(ERROR_CODE_INTERNAL_SERVER_ERROR,
-                                "An unexpected error occurred. Please try again later.",
-                                HttpStatus.INTERNAL_SERVER_ERROR, request);
-        }
-
-        private ResponseEntity<ErrorResponseDto> buildErrorResponse(
-                        String errorCode, String message, HttpStatus status, WebRequest request) {
-                return buildErrorResponse(errorCode, message, status, request, null);
-        }
-
-        private ResponseEntity<ErrorResponseDto> buildErrorResponse(
-                        String errorCode, String message, HttpStatus status, WebRequest request,
-                        Map<String, String> validationErrors) {
-
-                ErrorResponseDto errorResponse = ErrorResponseDto.builder()
-                                .errorCode(errorCode)
-                                .message(message)
-                                .timestamp(LocalDateTime.now(clock))
-                                .status(status.value())
-                                .path(extractPath(request))
-                                .traceId(generateTraceId())
-                                .validationErrors(validationErrors)
-                                .build();
-
-                return ResponseEntity.status(status).body(errorResponse);
-        }
-
-        private String extractPropertyName(ConstraintViolation<?> violation) {
-                String path = violation.getPropertyPath().toString();
-                int lastDot = path.lastIndexOf('.');
-                return lastDot >= 0 ? path.substring(lastDot + 1) : path;
-        }
-
-        public String extractPath(WebRequest request) {
-                return request.getDescription(false).replace("uri=", "");
-        }
-
-        public String generateTraceId() {
-                String correlationId = MDC.get("correlationId");
-                return correlationId != null ? correlationId : UUID.randomUUID().toString();
-        }
+        return property;
+    }
 }

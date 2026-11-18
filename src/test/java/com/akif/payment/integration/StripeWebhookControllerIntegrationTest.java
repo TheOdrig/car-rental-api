@@ -69,7 +69,7 @@ class StripeWebhookControllerIntegrationTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(validPayload))
                     .andExpect(status().isBadRequest())
-                    .andExpect(content().string("Missing signature"));
+                    .andExpect(jsonPath("$.code").value("WEBHOOK_SIGNATURE_MISSING"));
         }
 
         @Test
@@ -80,7 +80,7 @@ class StripeWebhookControllerIntegrationTest {
                             .header("Stripe-Signature", "")
                             .content(validPayload))
                     .andExpect(status().isBadRequest())
-                    .andExpect(content().string("Missing signature"));
+                    .andExpect(jsonPath("$.code").value("WEBHOOK_SIGNATURE_MISSING"));
         }
 
         @Test
@@ -94,7 +94,7 @@ class StripeWebhookControllerIntegrationTest {
                             .header("Stripe-Signature", "invalid_signature")
                             .content(validPayload))
                     .andExpect(status().isBadRequest())
-                    .andExpect(content().string("Invalid signature"));
+                    .andExpect(jsonPath("$.code").value("WEBHOOK_SIGNATURE_INVALID"));
         }
 
         @Test
@@ -108,7 +108,7 @@ class StripeWebhookControllerIntegrationTest {
                             .header("Stripe-Signature", validSignature)
                             .content(validPayload))
                     .andExpect(status().isInternalServerError())
-                    .andExpect(content().string("Error processing webhook"));
+                    .andExpect(jsonPath("$.code").value("WEBHOOK_PROCESSING_FAILED"));
         }
 
         @Test

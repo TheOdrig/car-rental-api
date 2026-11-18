@@ -110,7 +110,7 @@ class BookingIntegrityIntegrationTest {
 
     private String errorCode(MvcResult result) throws Exception {
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        return body.path("errorCode").asText();
+        return body.path("code").asText();
     }
 
     @Test
@@ -147,7 +147,7 @@ class BookingIntegrityIntegrationTest {
                     created++;
                 } else {
                     assertThat(status).isEqualTo(409);
-                    assertThat(errorCode(result)).isEqualTo("CAR_NOT_AVAILABLE");
+                    assertThat(errorCode(result)).isEqualTo("CAR_DATES_UNAVAILABLE");
                     conflicts++;
                 }
             }
@@ -231,7 +231,7 @@ class BookingIntegrityIntegrationTest {
 
         MvcResult overlapping = book(second, car.getId(), end, end.plusDays(2));
         assertThat(overlapping.getResponse().getStatus()).isEqualTo(409);
-        assertThat(errorCode(overlapping)).isEqualTo("CAR_NOT_AVAILABLE");
+        assertThat(errorCode(overlapping)).isEqualTo("CAR_DATES_UNAVAILABLE");
 
         assertThat(book(second, car.getId(), end.plusDays(1), end.plusDays(3)).getResponse().getStatus())
                 .isEqualTo(201);

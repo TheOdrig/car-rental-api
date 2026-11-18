@@ -69,7 +69,7 @@ class ConcurrencyE2ETest extends E2ETestBase {
                                     .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(rentalRequest)))
                             .andExpect(status().isConflict())
-                            .andExpect(jsonPath("$.errorCode").value("CAR_NOT_AVAILABLE"));
+                            .andExpect(jsonPath("$.code").value("CAR_DATES_UNAVAILABLE"));
                 }
             }
 
@@ -110,7 +110,7 @@ class ConcurrencyE2ETest extends E2ETestBase {
             mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errorCode").value("INVALID_RENTAL_STATE"));
+                    .andExpect(jsonPath("$.code").value("INVALID_RENTAL_STATE"));
         }
 
         @Test
@@ -141,8 +141,8 @@ class ConcurrencyE2ETest extends E2ETestBase {
             mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errorCode").value("INVALID_RENTAL_STATE"))
-                    .andExpect(jsonPath("$.message").value("Invalid rental state. Current: CONFIRMED, Required: REQUESTED"));
+                    .andExpect(jsonPath("$.code").value("INVALID_RENTAL_STATE"))
+                    .andExpect(jsonPath("$.detail").value("Invalid rental state. Current: CONFIRMED, Required: REQUESTED"));
         }
     }
 }

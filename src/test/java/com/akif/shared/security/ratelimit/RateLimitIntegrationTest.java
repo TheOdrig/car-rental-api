@@ -77,10 +77,10 @@ class RateLimitIntegrationTest {
         MvcResult limited = mockMvc.perform(json("/api/v1/auth/login", body))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(header().exists("Retry-After"))
-                .andExpect(jsonPath("$.errorCode").value("RATE_LIMIT_EXCEEDED"))
+                .andExpect(jsonPath("$.code").value("RATE_LIMIT_EXCEEDED"))
                 .andExpect(jsonPath("$.status").value(429))
-                .andExpect(jsonPath("$.path").value("/api/v1/auth/login"))
-                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.instance").value("/api/v1/auth/login"))
+                .andExpect(jsonPath("$.detail").exists())
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.traceId").exists())
                 .andReturn();

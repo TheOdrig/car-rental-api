@@ -100,7 +100,7 @@ class BearerAuthenticationIntegrationTest {
         mockMvc.perform(get("/api/v1/users/me/profile").header("Authorization", "Bearer " + refreshToken))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().exists("WWW-Authenticate"))
-                .andExpect(jsonPath("$.errorCode").value("AUTHENTICATION_FAILED"));
+                .andExpect(jsonPath("$.code").value("AUTHENTICATION_FAILED"));
     }
 
     @Test
@@ -111,7 +111,7 @@ class BearerAuthenticationIntegrationTest {
 
         mockMvc.perform(get("/api/v1/admin/dashboard/summary").header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.errorCode").value("ACCESS_DENIED"));
+                .andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
         mockMvc.perform(get("/api/v1/admin/dashboard/summary").header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk());
     }
@@ -130,8 +130,8 @@ class BearerAuthenticationIntegrationTest {
     void missingTokenYields401() throws Exception {
         mockMvc.perform(get("/api/v1/users/me/profile"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.errorCode").value("AUTHENTICATION_FAILED"))
-                .andExpect(jsonPath("$.path").value("/api/v1/users/me/profile"));
+                .andExpect(jsonPath("$.code").value("AUTHENTICATION_FAILED"))
+                .andExpect(jsonPath("$.instance").value("/api/v1/users/me/profile"));
     }
 
     @Test

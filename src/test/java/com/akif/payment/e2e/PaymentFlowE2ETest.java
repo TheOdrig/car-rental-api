@@ -553,8 +553,8 @@ class PaymentFlowE2ETest extends E2ETestBase {
                 mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
                                 .header("Authorization", "Bearer " + customerToken))
                         .andExpect(status().isConflict())
-                        .andExpect(jsonPath("$.errorCode").value("PAYMENT_WINDOW_NOT_OPEN"))
-                        .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString(opensOn.toString())))
+                        .andExpect(jsonPath("$.code").value("PAYMENT_WINDOW_NOT_OPEN"))
+                        .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString(opensOn.toString())))
                         .andExpect(jsonPath("$.details.paymentOpensOn").value(opensOn.toString()));
                 verify(paymentGateway, times(0)).createIntent(any(), anyString());
             } finally {
@@ -587,7 +587,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
                     .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.errorCode").value("PAYMENT_NOT_AUTHORIZED"));
+                    .andExpect(jsonPath("$.code").value("PAYMENT_NOT_AUTHORIZED"));
         }
 
         @Test
@@ -602,7 +602,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.errorCode").value("PAYMENT_NOT_FOUND"));
+                    .andExpect(jsonPath("$.code").value("PAYMENT_NOT_FOUND"));
         }
 
         @Test

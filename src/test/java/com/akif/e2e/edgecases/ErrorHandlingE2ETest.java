@@ -69,8 +69,8 @@ class ErrorHandlingE2ETest extends E2ETestBase {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(rentalRequest)))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.errorCode").value(CarNotFoundException.ERROR_CODE))
-                    .andExpect(jsonPath("$.message").value("Car not found with id: " + nonExistentCarId));
+                    .andExpect(jsonPath("$.code").value(CarNotFoundException.ERROR_CODE))
+                    .andExpect(jsonPath("$.detail").value("Car not found with id: " + nonExistentCarId));
         }
     }
 
@@ -96,8 +96,8 @@ class ErrorHandlingE2ETest extends E2ETestBase {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(rentalRequest)))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errorCode").value(CarNotAvailableException.ERROR_CODE))
-                    .andExpect(jsonPath("$.message").exists());
+                    .andExpect(jsonPath("$.code").value(CarNotAvailableException.ERROR_CODE))
+                    .andExpect(jsonPath("$.detail").exists());
         }
 
         @Test
@@ -118,8 +118,8 @@ class ErrorHandlingE2ETest extends E2ETestBase {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(rentalRequest)))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errorCode").value(CarNotAvailableException.ERROR_CODE))
-                    .andExpect(jsonPath("$.message").exists());
+                    .andExpect(jsonPath("$.code").value(CarNotAvailableException.ERROR_CODE))
+                    .andExpect(jsonPath("$.detail").exists());
         }
     }
 
@@ -152,8 +152,8 @@ class ErrorHandlingE2ETest extends E2ETestBase {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(pickupRequest)))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errorCode").value(InvalidRentalStateException.ERROR_CODE))
-                    .andExpect(jsonPath("$.message").exists());
+                    .andExpect(jsonPath("$.code").value(InvalidRentalStateException.ERROR_CODE))
+                    .andExpect(jsonPath("$.detail").exists());
         }
 
         @Test
@@ -178,8 +178,8 @@ class ErrorHandlingE2ETest extends E2ETestBase {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errorCode").value(InvalidRentalStateException.ERROR_CODE))
-                    .andExpect(jsonPath("$.message").exists());
+                    .andExpect(jsonPath("$.code").value(InvalidRentalStateException.ERROR_CODE))
+                    .andExpect(jsonPath("$.detail").exists());
         }
 
         @Test
@@ -208,8 +208,8 @@ class ErrorHandlingE2ETest extends E2ETestBase {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.errorCode").value(InvalidRentalStateException.ERROR_CODE))
-                    .andExpect(jsonPath("$.message").exists());
+                    .andExpect(jsonPath("$.code").value(InvalidRentalStateException.ERROR_CODE))
+                    .andExpect(jsonPath("$.detail").exists());
         }
     }
 
@@ -238,7 +238,7 @@ class ErrorHandlingE2ETest extends E2ETestBase {
             mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.errorCode").value("PAYMENT_NOT_AUTHORIZED"));
+                    .andExpect(jsonPath("$.code").value("PAYMENT_NOT_AUTHORIZED"));
         }
     }
 }

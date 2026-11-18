@@ -1,6 +1,7 @@
 package com.akif.rental.api;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.akif.shared.handler.ReportsAsField;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
@@ -29,6 +30,7 @@ public record RentalRequest(
     public static final int MAX_RENTAL_DAYS = 30;
     public static final int MAX_LEAD_DAYS = 180;
 
+    @ReportsAsField("endDate")
     @AssertTrue(message = "End date must be after start date")
     public boolean isEndDateAfterStartDate() {
         if (startDate == null || endDate == null) {
@@ -37,6 +39,7 @@ public record RentalRequest(
         return endDate.isAfter(startDate);
     }
 
+    @ReportsAsField("endDate")
     @AssertTrue(message = "Rental cannot be longer than 30 days")
     public boolean isWithinMaxRentalLength() {
         if (startDate == null || endDate == null || !endDate.isAfter(startDate)) {
@@ -45,6 +48,7 @@ public record RentalRequest(
         return ChronoUnit.DAYS.between(startDate, endDate) + 1 <= MAX_RENTAL_DAYS;
     }
 
+    @ReportsAsField("startDate")
     @AssertTrue(message = "Start date cannot be more than 180 days ahead")
     public boolean isWithinMaxLeadTime() {
         if (startDate == null) {

@@ -378,7 +378,7 @@ class RentalControllerIntegrationTest {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request2)))
                                         .andExpect(status().isConflict())
-                                        .andExpect(jsonPath("$.errorCode").value("CAR_NOT_AVAILABLE"));
+                                        .andExpect(jsonPath("$.code").value("CAR_DATES_UNAVAILABLE"));
                 }
 
                 @Test
@@ -407,7 +407,7 @@ class RentalControllerIntegrationTest {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request2)))
                                         .andExpect(status().isConflict())
-                                        .andExpect(jsonPath("$.errorCode").value("CAR_NOT_AVAILABLE"));
+                                        .andExpect(jsonPath("$.code").value("CAR_DATES_UNAVAILABLE"));
                 }
         }
 }

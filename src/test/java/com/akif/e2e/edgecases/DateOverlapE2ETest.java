@@ -73,7 +73,7 @@ class DateOverlapE2ETest extends E2ETestBase {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(overlappingRentalRequest)))
                     .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.errorCode").value("CAR_NOT_AVAILABLE"));
+                    .andExpect(jsonPath("$.code").value("CAR_DATES_UNAVAILABLE"));
         }
     }
 
@@ -157,7 +157,7 @@ class DateOverlapE2ETest extends E2ETestBase {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(rentalRequest)))
                     .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.errorCode").value("CAR_NOT_AVAILABLE"));
+                    .andExpect(jsonPath("$.code").value("CAR_DATES_UNAVAILABLE"));
 
             mockMvc.perform(post("/api/v1/rentals/{id}/confirm", firstRentalId)
                             .header("Authorization", "Bearer " + adminToken))

@@ -2,6 +2,7 @@ package com.akif.car.internal.dto.availability;
 
 import com.akif.shared.enums.CurrencyType;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.akif.shared.handler.ReportsAsField;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -59,6 +60,7 @@ public class AvailabilitySearchRequest {
     @Max(value = 100, message = "Page size cannot exceed 100")
     private Integer size = 20;
 
+    @ReportsAsField("endDate")
     @AssertTrue(message = "End date must be after start date")
     public boolean isEndDateAfterStartDate() {
         if (startDate == null || endDate == null) {
@@ -67,6 +69,7 @@ public class AvailabilitySearchRequest {
         return endDate.isAfter(startDate);
     }
 
+    @ReportsAsField("maxPrice")
     @AssertTrue(message = "Maximum price must be greater than minimum price")
     public boolean isMaxPriceGreaterThanMinPrice() {
         if (minPrice == null || maxPrice == null) {
@@ -75,6 +78,7 @@ public class AvailabilitySearchRequest {
         return maxPrice.compareTo(minPrice) > 0;
     }
 
+    @ReportsAsField("maxProductionYear")
     @AssertTrue(message = "Maximum production year must be greater than or equal to minimum production year")
     public boolean isMaxYearGreaterThanMinYear() {
         if (minProductionYear == null || maxProductionYear == null) {

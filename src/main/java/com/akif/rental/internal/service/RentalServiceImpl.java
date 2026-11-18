@@ -4,6 +4,7 @@ import java.time.Clock;
 
 import com.akif.car.api.CarResponse;
 import com.akif.car.api.CarStatusType;
+import com.akif.car.api.CarDatesUnavailableException;
 import com.akif.car.api.CarNotAvailableException;
 import com.akif.payment.api.PaymentFailedException;
 import com.akif.rental.api.RentalResponse;
@@ -200,7 +201,7 @@ public class RentalServiceImpl implements RentalService {
     private void checkDateOverlap(Long carId, LocalDate startDate, LocalDate endDate) {
         long overlappingCount = rentalRepository.countOverlappingRentals(carId, startDate, endDate);
         if (overlappingCount > 0) {
-            throw CarNotAvailableException.bookedForDates(carId, startDate, endDate);
+            throw CarDatesUnavailableException.bookedForDates(carId, startDate, endDate);
         }
     }
 
@@ -209,7 +210,7 @@ public class RentalServiceImpl implements RentalService {
             return rentalRepository.saveAndFlush(rental);
         } catch (DataIntegrityViolationException e) {
             if (isExclusionViolation(e)) {
-                throw CarNotAvailableException.bookedForDates(
+                throw CarDatesUnavailableException.bookedForDates(
                         rental.getCarId(), rental.getStartDate(), rental.getEndDate());
             }
             throw e;
@@ -296,7 +297,7 @@ public class RentalServiceImpl implements RentalService {
         requireCarAvailable(rental.getCarId());
         if (rentalRepository.existsByCarIdAndStatusAndIsDeletedFalseAndIdNot(
                 rental.getCarId(), RentalStatus.IN_USE, rental.getId())) {
-            throw CarNotAvailableException.stillInUse(rental.getCarId());
+            throw CarDatesUnavailableException.stillInUse(rental.getCarId());
         }
 
         PaymentDto payment = findPaymentByRentalId(rentalId);

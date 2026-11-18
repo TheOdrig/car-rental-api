@@ -6,6 +6,7 @@ import com.akif.car.api.CarResponse;
 import com.akif.car.api.CarService;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.api.PricingResult;
+import com.akif.car.api.CarDatesUnavailableException;
 import com.akif.car.api.CarNotAvailableException;
 import com.akif.car.api.DynamicPricingService;
 import com.akif.payment.api.*;
@@ -236,8 +237,8 @@ class RentalServiceTest {
             when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(1L);
 
             assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, "testuser"))
-                    .isInstanceOf(CarNotAvailableException.class)
-                    .satisfies(error -> assertThat(((CarNotAvailableException) error).getHttpStatus())
+                    .isInstanceOf(CarDatesUnavailableException.class)
+                    .satisfies(error -> assertThat(((CarDatesUnavailableException) error).getHttpStatus())
                             .isEqualTo(HttpStatus.CONFLICT));
 
             verify(rentalRepository, never()).saveAndFlush(any());
@@ -254,11 +255,11 @@ class RentalServiceTest {
                     new DataIntegrityViolationException("exclusion", new SQLException("conflict", "23P01")));
 
             assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, "testuser"))
-                    .isInstanceOf(CarNotAvailableException.class)
+                    .isInstanceOf(CarDatesUnavailableException.class)
                     .satisfies(error -> {
-                        CarNotAvailableException exception = (CarNotAvailableException) error;
+                        CarDatesUnavailableException exception = (CarDatesUnavailableException) error;
                         assertThat(exception.getHttpStatus()).isEqualTo(HttpStatus.CONFLICT);
-                        assertThat(exception.getErrorCode()).isEqualTo("CAR_NOT_AVAILABLE");
+                        assertThat(exception.getErrorCode()).isEqualTo("CAR_DATES_UNAVAILABLE");
                     });
         }
 
@@ -426,8 +427,8 @@ class RentalServiceTest {
                     1L, RentalStatus.IN_USE, 1L)).thenReturn(true);
 
             assertThatThrownBy(() -> rentalService.pickupRental(1L, null))
-                    .isInstanceOf(CarNotAvailableException.class)
-                    .satisfies(error -> assertThat(((CarNotAvailableException) error).getHttpStatus())
+                    .isInstanceOf(CarDatesUnavailableException.class)
+                    .satisfies(error -> assertThat(((CarDatesUnavailableException) error).getHttpStatus())
                             .isEqualTo(HttpStatus.CONFLICT));
 
             verify(paymentService, never()).capturePayment(anyLong());
