@@ -4,6 +4,7 @@ import com.akif.payment.domain.Payment;
 import com.akif.payment.domain.PaymentRefund;
 import com.akif.payment.domain.WebhookEvent;
 import com.akif.payment.domain.enums.WebhookEventStatus;
+import com.akif.payment.internal.config.InstallationIdentity;
 import com.akif.payment.internal.config.StripeConfig;
 import com.akif.payment.internal.exception.WebhookRejectedException;
 import com.akif.payment.internal.exception.WebhookSignatureException;
@@ -43,6 +44,7 @@ public class StripeWebhookHandler {
 
     private final Clock clock;
     private final StripeConfig stripeConfig;
+    private final InstallationIdentity installation;
     private final PaymentRepository paymentRepository;
     private final WebhookEventRepository webhookEventRepository;
     private final PaymentStateService stateService;
@@ -55,6 +57,7 @@ public class StripeWebhookHandler {
     public StripeWebhookHandler(
             Clock clock,
             StripeConfig stripeConfig,
+            InstallationIdentity installation,
             PaymentRepository paymentRepository,
             WebhookEventRepository webhookEventRepository,
             PaymentStateService stateService,
@@ -64,6 +67,7 @@ public class StripeWebhookHandler {
             PlatformTransactionManager transactionManager) {
         this.clock = clock;
         this.stripeConfig = stripeConfig;
+        this.installation = installation;
         this.paymentRepository = paymentRepository;
         this.webhookEventRepository = webhookEventRepository;
         this.stateService = stateService;
@@ -170,6 +174,10 @@ public class StripeWebhookHandler {
             log.warn("[AUDIT] Webhook ignored, foreign environment tag | Type: {} | Intent: {}", type, intent.getId());
             return;
         }
+        if (!belongsToThisInstallation(intent)) {
+            log.warn("[AUDIT] Webhook ignored, foreign installation tag | Type: {} | Intent: {}", type, intent.getId());
+            return;
+        }
         Located located = locate(type, intent);
         if (located.payment() == null) {
             log.warn("[AUDIT] Webhook has no matching payment | Type: {} | Intent: {}", type, intent.getId());
@@ -205,6 +213,11 @@ public class StripeWebhookHandler {
         String expected = stripeConfig.getMetadataEnvironment();
         String actual = intent.getMetadata() != null ? intent.getMetadata().get("env") : null;
         return expected != null && !expected.isBlank() && expected.equals(actual);
+    }
+
+    private boolean belongsToThisInstallation(PaymentIntent intent) {
+        String actual = intent.getMetadata() != null ? intent.getMetadata().get("installation_id") : null;
+        return actual != null && actual.equals(installation.id());
     }
 
     private void cancelOrphan(String intentId) {
@@ -263,7 +276,7 @@ public class StripeWebhookHandler {
             return new Located(byIntent.get(), false);
         }
         String paymentId = intent.getMetadata() != null ? intent.getMetadata().get("payment_id") : null;
-        if (paymentId == null) {
+        if (paymentId == null || !belongsToThisInstallation(intent)) {
             return new Located(null, false);
         }
         Optional<Payment> byMetadata;

@@ -1,6 +1,7 @@
 package com.akif.payment.unit.gateway.impl;
 
 import com.akif.payment.api.PaymentResult;
+import com.akif.payment.internal.config.InstallationIdentity;
 import com.akif.payment.internal.config.StripeConfig;
 import com.akif.payment.internal.exception.StripeIntegrationException;
 import com.akif.payment.internal.service.gateway.ChargeCommand;
@@ -36,7 +37,7 @@ class StripePaymentGatewayTest {
         ReflectionTestUtils.setField(config, "apiKey", "sk_test_unit");
         ReflectionTestUtils.setField(config, "apiBaseUrl", stripe.baseUrl());
         ReflectionTestUtils.setField(config, "maxNetworkRetries", 0);
-        gateway = new StripePaymentGateway(config);
+        gateway = new StripePaymentGateway(config, new InstallationIdentity(() -> "install-123"));
     }
 
     @AfterEach
@@ -67,6 +68,17 @@ class StripePaymentGatewayTest {
                 .containsEntry("capture_method", "manual")
                 .containsEntry("setup_future_usage", "off_session")
                 .containsEntry("metadata[payment_id]", "7")
+                .containsEntry("metadata[rental_id]", "3")
+                .containsEntry("metadata[installation_id]", "install-123");
+    }
+
+    @Test
+    @DisplayName("tags the customer created for the intent with the installation identity")
+    void customerCarriesInstallationIdentity() {
+        gateway.createIntent(command(new BigDecimal("120.50"), CurrencyType.USD), "intent-key-2");
+
+        Recorded customer = stripe.requestsTo("POST", "/v1/customers").get(0);
+        assertThat(customer.form()).containsEntry("metadata[installation_id]", "install-123")
                 .containsEntry("metadata[rental_id]", "3");
     }
 

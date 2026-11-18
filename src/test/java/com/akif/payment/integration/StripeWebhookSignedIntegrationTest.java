@@ -62,6 +62,9 @@ class StripeWebhookSignedIntegrationTest {
     private TestEventCaptor eventCaptor;
 
     @Autowired
+    private com.akif.payment.internal.config.InstallationIdentity installation;
+
+    @Autowired
     private RentalRepository rentalRepository;
 
     @MockitoBean
@@ -137,7 +140,8 @@ class StripeWebhookSignedIntegrationTest {
         return "{\"id\":\"" + eventId + "\",\"object\":\"event\",\"type\":\"" + type + "\",\"data\":{\"object\":{"
                 + "\"id\":\"" + intent + "\",\"object\":\"payment_intent\",\"amount\":" + amountMinor
                 + ",\"currency\":\"" + currency + "\",\"status\":\"" + status + "\",\"customer\":\"cus_wh\","
-                + "\"payment_method\":\"pm_wh\",\"metadata\":{\"env\":\"test\",\"payment_id\":\"" + payment.getId() + "\"},"
+                + "\"payment_method\":\"pm_wh\",\"metadata\":{\"env\":\"test\",\"installation_id\":\"" + installation.id()
+                + "\",\"payment_id\":\"" + payment.getId() + "\"},"
                 + "\"last_payment_error\":{\"message\":\"Your card was declined.\",\"code\":\"card_declined\"}}}}";
     }
 
@@ -508,6 +512,41 @@ class StripeWebhookSignedIntegrationTest {
     void missingEnvironmentIsIgnored() throws Exception {
         String payload = intentEvent("evt_env2", "payment_intent.succeeded", "succeeded")
                 .replace("\"env\":\"test\",", "");
+
+        deliver(payload).andExpect(status().isOk());
+
+        assertThat(reload().getStatus()).isEqualTo(PaymentStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("an event from another installation is ignored even when the environment tag matches")
+    void foreignInstallationIsIgnored() throws Exception {
+        String payload = intentEvent("evt_inst1", "payment_intent.succeeded", "succeeded")
+                .replace(installation.id(), "00000000-0000-4000-8000-000000000000");
+
+        deliver(payload).andExpect(status().isOk());
+
+        assertThat(reload().getStatus()).isEqualTo(PaymentStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("an event without an installation identity is ignored")
+    void missingInstallationIsIgnored() throws Exception {
+        String payload = intentEvent("evt_inst2", "payment_intent.succeeded", "succeeded")
+                .replace("\"installation_id\":\"" + installation.id() + "\",", "");
+
+        deliver(payload).andExpect(status().isOk());
+
+        assertThat(reload().getStatus()).isEqualTo(PaymentStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("the metadata fallback does not locate a payment for a foreign installation")
+    void metadataFallbackRequiresInstallation() throws Exception {
+        payment.nextAttempt();
+        payment = paymentRepository.saveAndFlush(payment);
+        String payload = intentEvent("evt_inst3", "payment_intent.amount_capturable_updated", "requires_capture")
+                .replace(installation.id(), "00000000-0000-4000-8000-000000000000");
 
         deliver(payload).andExpect(status().isOk());
 

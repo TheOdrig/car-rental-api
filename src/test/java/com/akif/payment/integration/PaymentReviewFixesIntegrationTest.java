@@ -81,6 +81,13 @@ import static org.mockito.Mockito.verify;
 class PaymentReviewFixesIntegrationTest {
 
     @Autowired
+    private com.akif.payment.internal.config.InstallationIdentity installation;
+
+    private String keyPrefix() {
+        return "car-rental:" + installation.id() + ":";
+    }
+
+    @Autowired
     private PaymentService paymentService;
 
     @Autowired
@@ -225,7 +232,7 @@ class PaymentReviewFixesIntegrationTest {
         assertThat(paymentService.chargePayment(penalty.getId()).success()).isTrue();
 
         List<String> keys = chargeKeys(2);
-        assertThat(keys.get(0)).isEqualTo("car-rental:rental-" + rental.getId() + ":penalty:1");
+        assertThat(keys.get(0)).isEqualTo(keyPrefix() + "rental-" + rental.getId() + ":penalty:1");
         assertThat(keys.get(1)).isEqualTo(keys.get(0));
     }
 
@@ -242,8 +249,8 @@ class PaymentReviewFixesIntegrationTest {
         assertThat(paymentService.chargePayment(penalty.getId()).success()).isTrue();
 
         List<String> keys = chargeKeys(2);
-        assertThat(keys.get(0)).isEqualTo("car-rental:rental-" + rental.getId() + ":penalty:1");
-        assertThat(keys.get(1)).isEqualTo("car-rental:rental-" + rental.getId() + ":penalty:2");
+        assertThat(keys.get(0)).isEqualTo(keyPrefix() + "rental-" + rental.getId() + ":penalty:1");
+        assertThat(keys.get(1)).isEqualTo(keyPrefix() + "rental-" + rental.getId() + ":penalty:2");
     }
 
     @Test
@@ -269,7 +276,7 @@ class PaymentReviewFixesIntegrationTest {
         })).isInstanceOf(IllegalStateException.class);
 
         assertThat(paymentService.chargeDamage(rental.getId(), 41L, new BigDecimal("90.00"), null).success()).isTrue();
-        assertThat(chargeKeys(1).get(0)).isEqualTo("car-rental:damage-41:charge:1");
+        assertThat(chargeKeys(1).get(0)).isEqualTo(keyPrefix() + "damage-41:charge:1");
     }
 
     @Test
@@ -352,7 +359,7 @@ class PaymentReviewFixesIntegrationTest {
         ArgumentCaptor<String> keys = ArgumentCaptor.forClass(String.class);
         verify(paymentGateway, times(2)).refund(anyString(), any(), any(), keys.capture());
         assertThat(keys.getAllValues().get(0)).isEqualTo(keys.getAllValues().get(1));
-        assertThat(keys.getAllValues().get(0)).isEqualTo("car-rental:waiver-9:refund");
+        assertThat(keys.getAllValues().get(0)).isEqualTo(keyPrefix() + "waiver-9:refund");
     }
 
     @Test

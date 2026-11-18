@@ -1,14 +1,25 @@
 package com.akif.payment.internal.service.gateway;
 
+import com.akif.payment.internal.config.InstallationIdentity;
 import org.springframework.stereotype.Component;
 
 @Component
 public class IdempotencyKeyGenerator {
 
-    private static final String PREFIX = "car-rental";
+    private static final String APP = "car-rental";
+
+    private final InstallationIdentity installation;
+
+    public IdempotencyKeyGenerator(InstallationIdentity installation) {
+        this.installation = installation;
+    }
+
+    private String prefix() {
+        return APP + ":" + installation.id();
+    }
 
     public String forCustomer(Long rentalId) {
-        return String.format("%s:rental-%d:customer", PREFIX, rentalId);
+        return String.format("%s:rental-%d:customer", prefix(), rentalId);
     }
 
     public String forIntent(Long rentalId, Long paymentId, int attempt) {
@@ -20,7 +31,7 @@ public class IdempotencyKeyGenerator {
     }
 
     public String forOrphanCancel(String intentId) {
-        return PREFIX + ":orphan-cancel:" + intentId;
+        return prefix() + ":orphan-cancel:" + intentId;
     }
 
     public String forCancel(Long rentalId, Long paymentId, int attempt) {
@@ -28,19 +39,19 @@ public class IdempotencyKeyGenerator {
     }
 
     public String forPenaltyCharge(Long rentalId, int attempt) {
-        return String.format("%s:rental-%d:penalty:%d", PREFIX, rentalId, attempt);
+        return String.format("%s:rental-%d:penalty:%d", prefix(), rentalId, attempt);
     }
 
     public String forDamageCharge(Long damageId, int attempt) {
-        return String.format("%s:damage-%d:charge:%d", PREFIX, damageId, attempt);
+        return String.format("%s:damage-%d:charge:%d", prefix(), damageId, attempt);
     }
 
     public String forRefundOperation(String operationKey, int failedAttempts) {
-        String base = PREFIX + ":" + operationKey;
+        String base = prefix() + ":" + operationKey;
         return failedAttempts <= 0 ? base : base + ":retry-" + failedAttempts;
     }
 
     private String key(Long rentalId, Long paymentId, String operation, int version) {
-        return String.format("%s:rental-%d:payment-%d:%s:%d", PREFIX, rentalId, paymentId, operation, version);
+        return String.format("%s:rental-%d:payment-%d:%s:%d", prefix(), rentalId, paymentId, operation, version);
     }
 }

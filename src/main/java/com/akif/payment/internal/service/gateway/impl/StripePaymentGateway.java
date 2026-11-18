@@ -1,6 +1,7 @@
 package com.akif.payment.internal.service.gateway.impl;
 
 import com.akif.payment.api.PaymentResult;
+import com.akif.payment.internal.config.InstallationIdentity;
 import com.akif.payment.internal.config.StripeConfig;
 import com.akif.payment.internal.exception.StripeIntegrationException;
 import com.akif.payment.internal.service.gateway.ChargeCommand;
@@ -38,6 +39,7 @@ public class StripePaymentGateway implements PaymentGateway {
     private static final String METADATA_APP = "car-rental";
 
     private final StripeConfig stripeConfig;
+    private final InstallationIdentity installation;
 
     @Override
     public GatewayIntent createIntent(IntentCommand command, String idempotencyKey) {
@@ -63,7 +65,8 @@ public class StripePaymentGateway implements PaymentGateway {
                     .putMetadata("payment_id", String.valueOf(command.paymentId()))
                     .putMetadata("rental_id", String.valueOf(command.rentalId()))
                     .putMetadata("app", METADATA_APP)
-                    .putMetadata("env", stripeConfig.getMetadataEnvironment());
+                    .putMetadata("env", stripeConfig.getMetadataEnvironment())
+                    .putMetadata("installation_id", installation.id());
             if (command.description() != null) {
                 params.setDescription(command.description());
             }
@@ -155,7 +158,8 @@ public class StripePaymentGateway implements PaymentGateway {
                     .putMetadata("payment_id", String.valueOf(command.paymentId()))
                     .putMetadata("rental_id", String.valueOf(command.rentalId()))
                     .putMetadata("app", METADATA_APP)
-                    .putMetadata("env", stripeConfig.getMetadataEnvironment());
+                    .putMetadata("env", stripeConfig.getMetadataEnvironment())
+                    .putMetadata("installation_id", installation.id());
             if (command.description() != null) {
                 params.setDescription(command.description());
             }
@@ -201,7 +205,10 @@ public class StripePaymentGateway implements PaymentGateway {
 
     private String createCustomer(IntentCommand command) throws StripeException {
         CustomerCreateParams.Builder params = CustomerCreateParams.builder()
-                .putMetadata("rental_id", String.valueOf(command.rentalId()));
+                .putMetadata("rental_id", String.valueOf(command.rentalId()))
+                .putMetadata("app", METADATA_APP)
+                .putMetadata("env", stripeConfig.getMetadataEnvironment())
+                .putMetadata("installation_id", installation.id());
         if (command.customerEmail() != null) {
             params.setEmail(command.customerEmail());
         }
