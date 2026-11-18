@@ -1,13 +1,4 @@
--- =============================================================================
--- V8: Seed Cars (18 vehicles across different classes)
--- =============================================================================
--- Status: AVAILABLE (most), RENTED (2), RESERVED (1), MAINTENANCE (1)
--- =============================================================================
-
--- -----------------------------------------------------------------------------
--- Economy Class ($35-48/day)
--- -----------------------------------------------------------------------------
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -24,7 +15,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1718629879998-ee8cfc09df39?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -41,7 +32,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1594502225401-a9eab8b405dd?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -58,10 +49,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1609030429269-ca5b7a409310?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
--- -----------------------------------------------------------------------------
--- Compact Class ($40-55/day)
--- -----------------------------------------------------------------------------
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -78,7 +66,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1605515321331-46a63d31758c?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -95,7 +83,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1708849894321-2c9bc515df0e?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -112,7 +100,7 @@ INSERT INTO gallery.car (
     'https://www.log.com.tr/wp-content/uploads/2023/01/2025-fiat-egea-tipo-suv-benzeri-bir-formda-olacak-copy-1000x562.jpg'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -129,7 +117,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1643142311721-c36cd233fb95?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -146,7 +134,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1757695526350-1a2db6ff8e02?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -163,7 +151,7 @@ INSERT INTO gallery.car (
     'https://cdn3.focus.bg/autodata/i/seat/leon/leon-cupra-ii/large/c34323f28221796d10f7df07e042d14f.jpg'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -180,10 +168,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1582639510494-c80b5de9f148?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
--- -----------------------------------------------------------------------------
--- Mid-Size Class ($60-75/day)
--- -----------------------------------------------------------------------------
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -200,7 +185,7 @@ INSERT INTO gallery.car (
     'https://www.thedrive.com/wp-content/uploads/2023/05/02/corollahatch-1-scaled.jpg?w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -217,10 +202,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1673822317394-6fd502a324e6?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
--- -----------------------------------------------------------------------------
--- SUV Class ($75-85/day)
--- -----------------------------------------------------------------------------
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -237,7 +219,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1705624843697-4461f9dce482?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -254,7 +236,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1688893287585-b1bc00e608fc?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -271,10 +253,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1538940714252-fc70779afa46?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
--- -----------------------------------------------------------------------------
--- Premium Class ($90-120/day)
--- -----------------------------------------------------------------------------
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -291,7 +270,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1639056067266-43a821cf0a1f?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -308,7 +287,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1710011115921-7e67a8e4b483?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -325,10 +304,7 @@ INSERT INTO gallery.car (
     'https://www.sixt.com.tr/storage/cache/a4831ea1285880c2536797abe33a35a517ddeacf.webp'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
--- -----------------------------------------------------------------------------
--- Premium SUV Class ($145/day)
--- -----------------------------------------------------------------------------
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,
@@ -345,10 +321,7 @@ INSERT INTO gallery.car (
     'https://images.unsplash.com/photo-1629897046038-371765238f26?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO NOTHING;
 
--- -----------------------------------------------------------------------------
--- Electric Class ($180/day)
--- -----------------------------------------------------------------------------
-INSERT INTO gallery.car (
+INSERT INTO car_rental.car (
     create_time, update_time, is_deleted, version,
     license_plate, vin_number, brand, model, production_year,
     price, currency_type, damage_price, car_status_type,

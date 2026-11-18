@@ -61,7 +61,7 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     Page<Car> findByIsDeletedFalseOrderByLikeCountDesc(Pageable pageable);
 
-    @Query(value = "SELECT * FROM gallery.car c WHERE " +
+    @Query(value = "SELECT * FROM car_rental.car c WHERE " +
             "(CAST(:searchTerm AS VARCHAR) IS NULL OR " +
             "LOWER(c.license_plate) LIKE CAST(:searchTerm AS VARCHAR) OR " +
             "LOWER(c.brand) LIKE CAST(:searchTerm AS VARCHAR) OR " +
@@ -84,7 +84,7 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             "(CAST(:carStatusType AS VARCHAR) IS NULL OR c.car_status_type = CAST(:carStatusType AS VARCHAR)) AND "
             +
             "c.is_deleted = false " +
-            "ORDER BY c.create_time DESC", countQuery = "SELECT COUNT(*) FROM gallery.car c WHERE " +
+            "ORDER BY c.create_time DESC", countQuery = "SELECT COUNT(*) FROM car_rental.car c WHERE " +
             "(CAST(:searchTerm AS VARCHAR) IS NULL OR " +
             "LOWER(c.license_plate) LIKE CAST(:searchTerm AS VARCHAR) OR " +
             "LOWER(c.brand) LIKE CAST(:searchTerm AS VARCHAR) OR " +

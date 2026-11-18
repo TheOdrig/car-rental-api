@@ -24,8 +24,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsernameAndIsDeletedFalse(String username);
 
     @Query(value = """
-                SELECT DISTINCT u.* FROM gallery.users u
-                LEFT JOIN gallery.user_roles r ON u.id = r.user_id
+                SELECT DISTINCT u.* FROM car_rental.users u
+                LEFT JOIN car_rental.user_roles r ON u.id = r.user_id
                 WHERE u.is_deleted = false
                 AND (CAST(:role AS TEXT) IS NULL OR r.role = CAST(:role AS TEXT))
                 AND (CAST(:status AS TEXT) IS NULL OR
@@ -37,8 +37,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
                     OR LOWER(u.last_name) LIKE LOWER('%' || CAST(:search AS TEXT) || '%'))
                 ORDER BY u.create_time DESC
             """, countQuery = """
-                SELECT COUNT(DISTINCT u.id) FROM gallery.users u
-                LEFT JOIN gallery.user_roles r ON u.id = r.user_id
+                SELECT COUNT(DISTINCT u.id) FROM car_rental.users u
+                LEFT JOIN car_rental.user_roles r ON u.id = r.user_id
                 WHERE u.is_deleted = false
                 AND (CAST(:role AS TEXT) IS NULL OR r.role = CAST(:role AS TEXT))
                 AND (CAST(:status AS TEXT) IS NULL OR
