@@ -34,7 +34,7 @@ public class AvatarStorageServiceImpl implements AvatarStorageService {
 
         String avatarKey = fileUploadService.uploadFile(file, AVATARS_DIRECTORY);
 
-        log.info("Avatar stored successfully for user: {} with key: {}", username, avatarKey);
+        log.info("Avatar stored successfully for user: {}", username);
         return avatarKey;
     }
 
@@ -45,9 +45,9 @@ public class AvatarStorageServiceImpl implements AvatarStorageService {
             return;
         }
 
-        log.info("Deleting avatar with key: {}", avatarKey);
+        log.info("Deleting stored avatar");
         fileUploadService.deleteFile(avatarKey);
-        log.info("Avatar deleted successfully: {}", avatarKey);
+        log.info("Stored avatar deleted");
     }
 
     @Override

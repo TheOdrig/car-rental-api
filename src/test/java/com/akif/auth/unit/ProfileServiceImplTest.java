@@ -1,5 +1,6 @@
 package com.akif.auth.unit;
 
+import com.akif.auth.api.AvatarStorageService;
 import com.akif.auth.api.UserDto;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.dto.ProfileUpdateRequest;
@@ -33,6 +34,9 @@ class ProfileServiceImplTest {
 
     @Mock
     private UserMapper userMapper;
+
+    @Mock
+    private AvatarStorageService avatarStorageService;
 
     @InjectMocks
     private ProfileServiceImpl profileService;
@@ -177,6 +181,72 @@ class ProfileServiceImplTest {
             profileService.removeAvatar("testuser");
 
             verify(userRepository).save(argThat(user -> user.getAvatarUrl() == null));
+        }
+
+        @Test
+        @DisplayName("Should delete the stored object by its key, not by a presigned link")
+        void shouldDeleteByStoredKey() {
+            testUser.changeAvatar("avatars/user1_old.jpg");
+            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+            when(userRepository.save(any(User.class))).thenReturn(testUser);
+            when(userMapper.toDto(testUser)).thenReturn(testUserDto);
+            when(avatarStorageService.generateAvatarUrl(anyString(), anyInt()))
+                    .thenReturn("https://cdn.example.com/avatars/user1_old.jpg?X-Amz-Signature=abc");
+            profileService.getProfile("testuser");
+
+            profileService.removeAvatar("testuser");
+
+            verify(avatarStorageService).deleteAvatar("avatars/user1_old.jpg");
+            verify(avatarStorageService, never()).deleteAvatar(contains("https://"));
+        }
+
+        @Test
+        @DisplayName("Should not call storage when there is no avatar to remove")
+        void shouldNotDeleteWhenNoAvatar() {
+            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+            when(userRepository.save(any(User.class))).thenReturn(testUser);
+
+            profileService.removeAvatar("testuser");
+
+            verify(avatarStorageService, never()).deleteAvatar(any());
+        }
+
+        @Test
+        @DisplayName("Should delete the previous object when a new avatar replaces it")
+        void shouldDeletePreviousObjectOnReupload() {
+            testUser.changeAvatar("avatars/user1_old.jpg");
+            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+            when(userRepository.save(any(User.class))).thenReturn(testUser);
+
+            profileService.updateAvatarUrl("testuser", "avatars/user1_new.jpg");
+
+            verify(avatarStorageService).deleteAvatar("avatars/user1_old.jpg");
+            verify(avatarStorageService, never()).deleteAvatar("avatars/user1_new.jpg");
+        }
+
+        @Test
+        @DisplayName("Should keep the object when the same key is stored again")
+        void shouldKeepObjectWhenKeyUnchanged() {
+            testUser.changeAvatar("avatars/user1_same.jpg");
+            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+            when(userRepository.save(any(User.class))).thenReturn(testUser);
+
+            profileService.updateAvatarUrl("testuser", "avatars/user1_same.jpg");
+
+            verify(avatarStorageService, never()).deleteAvatar(any());
+        }
+
+        @Test
+        @DisplayName("Should not fail the request when the old object cannot be deleted")
+        void shouldSurviveStorageFailure() {
+            testUser.changeAvatar("avatars/user1_old.jpg");
+            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+            when(userRepository.save(any(User.class))).thenReturn(testUser);
+            doThrow(new RuntimeException("storage down")).when(avatarStorageService).deleteAvatar(any());
+
+            profileService.removeAvatar("testuser");
+
+            assertThat(testUser.getAvatarUrl()).isNull();
         }
     }
 }

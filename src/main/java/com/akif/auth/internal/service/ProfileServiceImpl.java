@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 @RequiredArgsConstructor
@@ -82,8 +84,12 @@ public class ProfileServiceImpl implements ProfileService {
         log.info("Updating avatar for user: {}", username);
 
         User user = findUserByUsername(username);
+        String previousKey = user.getAvatarUrl();
         user.changeAvatar(avatarKey);
         userRepository.save(user);
+        if (previousKey != null && !previousKey.isBlank() && !previousKey.equals(avatarKey)) {
+            deleteStoredAvatarAfterCommit(previousKey);
+        }
 
         log.info("Avatar updated successfully for user: {}", username);
     }
@@ -94,10 +100,34 @@ public class ProfileServiceImpl implements ProfileService {
         log.info("Removing avatar for user: {}", username);
 
         User user = findUserByUsername(username);
+        String storedKey = user.getAvatarUrl();
         user.removeAvatar();
         userRepository.save(user);
+        if (storedKey != null && !storedKey.isBlank()) {
+            deleteStoredAvatarAfterCommit(storedKey);
+        }
 
         log.info("Avatar removed successfully for user: {}", username);
+    }
+
+    private void deleteStoredAvatarAfterCommit(String avatarKey) {
+        Runnable deletion = () -> {
+            try {
+                avatarStorageService.deleteAvatar(avatarKey);
+            } catch (RuntimeException e) {
+                log.warn("Could not delete a replaced avatar object: {}", e.getClass().getSimpleName());
+            }
+        };
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    deletion.run();
+                }
+            });
+        } else {
+            deletion.run();
+        }
     }
 
     private User findUserByUsername(String username) {

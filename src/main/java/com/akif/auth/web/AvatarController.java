@@ -49,12 +49,6 @@ public class AvatarController {
             @AuthenticationPrincipal UserDetails userDetails) {
         log.info("DELETE /api/v1/users/me/avatar - Deleting avatar for user: {}", userDetails.getUsername());
 
-        var profile = profileService.getProfile(userDetails.getUsername());
-
-        if (profile.avatarUrl() != null) {
-            avatarStorageService.deleteAvatar(profile.avatarUrl());
-        }
-
         profileService.removeAvatar(userDetails.getUsername());
 
         log.info("Avatar deleted successfully for user: {}", userDetails.getUsername());

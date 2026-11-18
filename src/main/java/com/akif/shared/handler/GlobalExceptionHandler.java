@@ -195,7 +195,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleNoHandlerFoundException(
             NoHandlerFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         log.error("[{}] Endpoint not found: {} {}", ERROR_CODE_ENDPOINT_NOT_FOUND, ex.getHttpMethod(),
-                ex.getRequestURL());
+                extractPath(request));
         return respondObject(problems.create(HttpStatus.NOT_FOUND, ERROR_CODE_ENDPOINT_NOT_FOUND,
                 "The requested endpoint was not found", extractPath(request)));
     }

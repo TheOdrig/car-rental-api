@@ -27,6 +27,8 @@ class LogSafetyTest {
     private static final Pattern HARMLESS_IDENTIFIER = Pattern.compile(
             "(?i)(tokenid|tokenversion|tokencount|tokenuse|tokentype|tokenuri|expir|hash|fingerprint|count|length"
                     + "|size|enabled|exists|isblank|isempty|isnull|resetid|passwordreset(requested)?event)");
+    private static final Pattern URL_LIKE = Pattern.compile(
+            "(?i:presigned)|(?<![A-Za-z])(?i:url)|(?<=[a-z0-9_])Url(?![a-z])|URL(?![a-z])");
     private static final Pattern FORBIDDEN_OUTPUT = Pattern.compile(
             "\\bSystem\\.(out|err)\\.|\\.printStackTrace\\(");
 
@@ -51,6 +53,26 @@ class LogSafetyTest {
             }
         }
         assertThat(findings).as("sensitive values must not be logged").isEmpty();
+    }
+
+    @Test
+    @DisplayName("log statements never pass URLs or presigned links")
+    void logStatementsDoNotReferenceUrls() throws IOException {
+        List<String> findings = new ArrayList<>();
+        for (Path file : javaFiles()) {
+            String source = Files.readString(file, StandardCharsets.UTF_8);
+            Matcher call = LOG_CALL.matcher(source);
+            while (call.find()) {
+                String statement = statementFrom(source, call.end());
+                String expression = STRING_LITERAL.matcher(statement).replaceAll("\"\"");
+                Matcher url = URL_LIKE.matcher(expression);
+                while (url.find()) {
+                    findings.add("%s:%d logs %s".formatted(relative(file), lineOf(source, call.start()),
+                            identifierAround(expression, url.start(), url.end())));
+                }
+            }
+        }
+        assertThat(findings).as("URLs and presigned links must not be logged").isEmpty();
     }
 
     @Test
