@@ -1,8 +1,8 @@
 package com.akif.damage.domain.model;
 
-import com.akif.damage.domain.enums.DamageCategory;
+import com.akif.damage.api.DamageCategory;
 import com.akif.damage.api.DamageSeverity;
-import com.akif.damage.domain.enums.DamageStatus;
+import com.akif.damage.api.DamageStatus;
 import com.akif.shared.domain.BaseEntity;
 import com.akif.shared.enums.CurrencyType;
 import jakarta.persistence.*;

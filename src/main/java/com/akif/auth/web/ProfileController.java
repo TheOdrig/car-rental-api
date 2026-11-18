@@ -1,6 +1,6 @@
 package com.akif.auth.web;
 
-import com.akif.auth.api.ProfileService;
+import com.akif.auth.internal.service.ProfileService;
 import com.akif.auth.api.UserDto;
 import com.akif.auth.internal.dto.ProfileUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;

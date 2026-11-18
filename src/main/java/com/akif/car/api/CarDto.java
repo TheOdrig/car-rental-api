@@ -1,6 +1,5 @@
 package com.akif.car.api;
 
-import com.akif.car.api.CarStatusType;
 import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
@@ -15,6 +14,7 @@ public record CarDto(
     CarStatusType status,
     String bodyType,
     Integer seats,
+    String thumbnailUrl,
     boolean available,
     boolean deleted
 ) {

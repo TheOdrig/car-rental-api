@@ -1,5 +1,6 @@
 package com.akif.car.internal.service;
 
+import com.akif.car.api.CarCatalog;
 import com.akif.car.api.CarDto;
 import com.akif.car.api.CarResponse;
 import com.akif.car.api.CarStatusType;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,13 +33,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class CarQueryService {
+public class CarQueryService implements CarCatalog {
 
     private final Clock clock;
     private final CarRepository carRepository;
     private final CarMapper carMapper;
     private final CarLookup carLookup;
 
+    @Override
     @Cacheable(value = CacheConfig.CARS_CACHE, key = "'dto:' + #id")
     public CarDto getCarDtoById(Long id) {
         log.debug("Getting minimal CarDto for cross-module usage, id: {}", id);
@@ -46,9 +49,10 @@ public class CarQueryService {
         return result;
     }
 
-    public CarResponse getCarForBooking(Long id) {
+    @Override
+    public CarDto getCarForBooking(Long id) {
         log.debug("Reading car {} for booking straight from the database", id);
-        return carMapper.toDto(carLookup.requireActiveById(id));
+        return carMapper.toCarDto(carLookup.requireActiveById(id));
     }
 
     @Cacheable(value = CacheConfig.CARS_CACHE, key = "#id")
@@ -211,10 +215,6 @@ public class CarQueryService {
         return carRepository.countByIsDeletedFalse();
     }
 
-    public boolean existsByLicensePlate(String licensePlate) {
-        return carRepository.existsByLicensePlate(licensePlate);
-    }
-
     @Cacheable(value = CacheConfig.CARS_CACHE,
             key = "T(java.util.Arrays).asList('criteria', #searchTerm, #brand, #model, #minPrice, #maxPrice, #status, #page, #size)")
     public Page<CarResponse> searchCarsByCriteria(String searchTerm, String brand, String model,
@@ -234,16 +234,9 @@ public class CarQueryService {
         return result;
     }
 
-    public int countByStatus(CarStatusType status) {
-        return (int) carRepository.countByCarStatusTypeAndIsDeletedFalse(status);
-    }
-
-    public int countTotalActiveCars() {
-        return (int) carRepository.countByIsDeletedFalse();
-    }
-
-    public java.util.Map<Long, CarStatusType> findActiveCarStatuses() {
-        java.util.Map<Long, CarStatusType> statuses = new java.util.HashMap<>();
+    @Override
+    public Map<Long, CarStatusType> findActiveCarStatuses() {
+        Map<Long, CarStatusType> statuses = new HashMap<>();
         for (Object[] row : carRepository.findActiveCarStatusRows()) {
             statuses.put((Long) row[0], (CarStatusType) row[1]);
         }

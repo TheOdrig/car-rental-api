@@ -1,11 +1,11 @@
 package com.akif.damage.unit;
 
-import com.akif.auth.api.AuthService;
+import com.akif.auth.api.UserLookup;
 import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.auth.api.UserDto;
 import com.akif.damage.api.DamageDisputedEvent;
 import com.akif.damage.api.DamageResolvedEvent;
-import com.akif.damage.domain.enums.DamageStatus;
+import com.akif.damage.api.DamageStatus;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.dto.damage.request.DamageDisputeRequest;
 import com.akif.damage.internal.dto.damage.request.DamageDisputeResolutionDto;
@@ -60,7 +60,7 @@ class DamageDisputeServiceTest {
     private ApplicationEventPublisher eventPublisher;
 
     @Mock
-    private AuthService authService;
+    private UserLookup userLookup;
 
     @Mock
     private RentalService rentalService;
@@ -157,7 +157,7 @@ class DamageDisputeServiceTest {
         @DisplayName("Should create dispute successfully")
         void shouldCreateDisputeSuccessfully() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("customer")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("customer")).thenReturn(testUser);
             when(rentalService.getRentalSummaryById(testDamageReport.getRentalId())).thenReturn(testRental);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
@@ -176,7 +176,7 @@ class DamageDisputeServiceTest {
         @DisplayName("Should set dispute details on damage report")
         void shouldSetDisputeDetailsOnDamageReport() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("customer")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("customer")).thenReturn(testUser);
             when(rentalService.getRentalSummaryById(testDamageReport.getRentalId())).thenReturn(testRental);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
@@ -210,7 +210,7 @@ class DamageDisputeServiceTest {
             ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.REPORTED);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("customer")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("customer")).thenReturn(testUser);
 
             assertThatThrownBy(() -> damageDisputeService.createDispute(1L, testDisputeRequest, "customer"))
                     .isInstanceOf(DamageDisputeException.class);
@@ -223,7 +223,7 @@ class DamageDisputeServiceTest {
                     Set.of(Role.USER), true);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("other")).thenReturn(differentUser);
+            when(userLookup.getUserByUsername("other")).thenReturn(differentUser);
             when(rentalService.getRentalSummaryById(testDamageReport.getRentalId())).thenReturn(testRental);
 
             assertThatThrownBy(() -> damageDisputeService.createDispute(1L, testDisputeRequest, "other"))
@@ -234,7 +234,7 @@ class DamageDisputeServiceTest {
         @DisplayName("Should publish DamageDisputedEvent when dispute created")
         void shouldPublishDamageDisputedEventWhenDisputeCreated() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("customer")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("customer")).thenReturn(testUser);
             when(rentalService.getRentalSummaryById(testDamageReport.getRentalId())).thenReturn(testRental);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
@@ -261,7 +261,7 @@ class DamageDisputeServiceTest {
         @DisplayName("Should resolve dispute successfully with partial refund")
         void shouldResolveDisputeSuccessfullyWithPartialRefund() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
             when(paymentService.refund(anyString(), any(BigDecimal.class), anyString()))
                     .thenReturn(new PaymentResult(true, "refund_123", "Refund successful"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
@@ -280,7 +280,7 @@ class DamageDisputeServiceTest {
         @DisplayName("Should update damage report with resolution details")
         void shouldUpdateDamageReportWithResolutionDetails() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
             when(paymentService.refund(anyString(), any(BigDecimal.class), anyString()))
                     .thenReturn(new PaymentResult(true, "refund_123", "Refund successful"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
@@ -305,7 +305,7 @@ class DamageDisputeServiceTest {
             ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.CHARGED);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
 
             assertThatThrownBy(() -> damageDisputeService.resolveDispute(1L, testResolutionDto, "admin"))
                     .isInstanceOf(DamageDisputeException.class);
@@ -315,7 +315,7 @@ class DamageDisputeServiceTest {
         @DisplayName("Should fail the resolution and publish nothing when the refund fails")
         void shouldFailResolutionWhenRefundFails() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
             when(paymentService.refund(anyString(), any(BigDecimal.class), anyString()))
                     .thenReturn(PaymentResult.failure("card network down"));
 
@@ -339,7 +339,7 @@ class DamageDisputeServiceTest {
                     "Dispute rejected - no refund");
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
             DamageDisputeResponse result = damageDisputeService.resolveDispute(1L, noRefundResolution, "admin");
@@ -352,7 +352,7 @@ class DamageDisputeServiceTest {
         @DisplayName("Should publish DamageResolvedEvent with refund amount")
         void shouldPublishDamageResolvedEventWithRefundAmount() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
             when(paymentService.refund(anyString(), any(BigDecimal.class), anyString()))
                     .thenReturn(new PaymentResult(true, "refund_123", "Refund successful"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);

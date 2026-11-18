@@ -2,7 +2,7 @@ package com.akif.dashboard.web;
 
 import com.akif.dashboard.api.AlertService;
 import com.akif.dashboard.api.dto.AlertDto;
-import com.akif.dashboard.domain.enums.AlertType;
+import com.akif.dashboard.api.AlertType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

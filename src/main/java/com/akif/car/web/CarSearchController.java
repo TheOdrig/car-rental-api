@@ -2,7 +2,7 @@ package com.akif.car.web;
 
 import com.akif.car.api.CarResponse;
 import com.akif.car.api.CarStatusType;
-import com.akif.car.api.CarService;
+import com.akif.car.internal.service.CarQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,7 +31,7 @@ import java.math.BigDecimal;
 @Tag(name = "Car Search", description = "Search and filtering operations for cars")
 public class CarSearchController {
 
-    private final CarService carService;
+    private final CarQueryService carQueryService;
 
     @GetMapping(value = "/status/{status}")
     @Operation(summary = "Get cars by status", description = "Retrieve cars by their status")
@@ -42,7 +42,7 @@ public class CarSearchController {
     public ResponseEntity<PageResponse<CarResponse>> getCarsByStatus(
             @Parameter(description = "Car status", required = true) @PathVariable String status,
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
-        Page<CarResponse> cars = carService.getCarsByStatus(status, pageable);
+        Page<CarResponse> cars = carQueryService.getCarsByStatus(status, pageable);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
@@ -55,7 +55,7 @@ public class CarSearchController {
     public ResponseEntity<PageResponse<CarResponse>> getCarsByBrand(
             @Parameter(description = "Car brand", required = true) @PathVariable String brand,
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
-        Page<CarResponse> cars = carService.getCarsByBrand(brand, pageable);
+        Page<CarResponse> cars = carQueryService.getCarsByBrand(brand, pageable);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
@@ -69,7 +69,7 @@ public class CarSearchController {
             @Parameter(description = "Minimum price", required = true) @RequestParam BigDecimal minPrice,
             @Parameter(description = "Maximum price", required = true) @RequestParam BigDecimal maxPrice,
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
-        Page<CarResponse> cars = carService.getCarsByPriceRange(minPrice, maxPrice, pageable);
+        Page<CarResponse> cars = carQueryService.getCarsByPriceRange(minPrice, maxPrice, pageable);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
@@ -81,7 +81,7 @@ public class CarSearchController {
     })
     public ResponseEntity<PageResponse<CarResponse>> getNewCars(
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
-        Page<CarResponse> cars = carService.getNewCars(pageable);
+        Page<CarResponse> cars = carQueryService.getNewCars(pageable);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
@@ -100,7 +100,7 @@ public class CarSearchController {
             @Parameter(description = "Status") @RequestParam(required = false) CarStatusType status,
             @Parameter(description = "Page number, zero based") @RequestParam(defaultValue = "0") @Min(0) int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        Page<CarResponse> cars = carService.searchCarsByCriteria(searchTerm, brand, model, minPrice, maxPrice, status, page, size);
+        Page<CarResponse> cars = carQueryService.searchCarsByCriteria(searchTerm, brand, model, minPrice, maxPrice, status, page, size);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 

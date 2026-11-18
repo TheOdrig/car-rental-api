@@ -1,4 +1,4 @@
-package com.akif.car.domain.enums;
+package com.akif.car.api;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonValue;

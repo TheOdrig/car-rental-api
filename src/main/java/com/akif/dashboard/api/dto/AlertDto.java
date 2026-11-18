@@ -1,7 +1,7 @@
 package com.akif.dashboard.api.dto;
 
-import com.akif.dashboard.domain.enums.AlertSeverity;
-import com.akif.dashboard.domain.enums.AlertType;
+import com.akif.dashboard.api.AlertSeverity;
+import com.akif.dashboard.api.AlertType;
 
 import java.time.LocalDateTime;
 

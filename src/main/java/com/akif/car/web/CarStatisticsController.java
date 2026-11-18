@@ -1,7 +1,10 @@
 package com.akif.car.web;
 
 import com.akif.car.internal.dto.request.CarRequest;
-import com.akif.car.api.CarService;
+import com.akif.car.internal.dto.response.CarStatisticsResponse;
+import com.akif.car.internal.service.CarQueryService;
+import com.akif.car.internal.service.CarCommandService;
+import com.akif.car.internal.service.CarStatisticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,7 +28,9 @@ import java.util.Map;
 @Tag(name = "Car Statistics", description = "Statistics and analytics for cars")
 public class CarStatisticsController {
 
-    private final CarService carService;
+    private final CarQueryService carQueryService;
+    private final CarCommandService carCommandService;
+    private final CarStatisticsService carStatisticsService;
 
     @GetMapping()
     @Operation(summary = "Get car statistics", description = "Retrieve comprehensive car statistics")
@@ -33,8 +38,8 @@ public class CarStatisticsController {
             @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public ResponseEntity<Map<String, Object>> getCarStatistics() {
-        Map<String, Object> statistics = carService.getCarStatistics();
+    public ResponseEntity<CarStatisticsResponse> getCarStatistics() {
+        CarStatisticsResponse statistics = carStatisticsService.getCarStatistics();
         return ResponseEntity.ok(statistics);
     }
 
@@ -45,7 +50,7 @@ public class CarStatisticsController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Long>> getCarsCountByStatus() {
-        Map<String, Long> statusCounts = carService.getCarsCountByStatus();
+        Map<String, Long> statusCounts = carStatisticsService.getCarsCountByStatus();
         return ResponseEntity.ok(statusCounts);
     }
 
@@ -56,7 +61,7 @@ public class CarStatisticsController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Long>> getCarsCountByBrand() {
-        Map<String, Long> brandCounts = carService.getCarsCountByBrand();
+        Map<String, Long> brandCounts = carStatisticsService.getCarsCountByBrand();
         return ResponseEntity.ok(brandCounts);
     }
 
@@ -67,7 +72,7 @@ public class CarStatisticsController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, BigDecimal>> getAveragePriceByBrand() {
-        Map<String, BigDecimal> averagePrices = carService.getAveragePriceByBrand();
+        Map<String, BigDecimal> averagePrices = carStatisticsService.getAveragePriceByBrand();
         return ResponseEntity.ok(averagePrices);
     }
 
@@ -78,7 +83,7 @@ public class CarStatisticsController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Long>> getCarCount() {
-        long count = carService.getCarCount();
+        long count = carQueryService.getCarCount();
         return ResponseEntity.ok(Map.of("count", count));
     }
 
@@ -89,7 +94,7 @@ public class CarStatisticsController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Long>> getActiveCarCount() {
-        long count = carService.getActiveCarCount();
+        long count = carQueryService.getActiveCarCount();
         return ResponseEntity.ok(Map.of("count", count));
     }
 
@@ -103,7 +108,7 @@ public class CarStatisticsController {
             @Parameter(description = "Car data to validate", required = true) @Valid @RequestBody CarRequest carRequest) {
         log.info("POST /api/v1/cars/statistics/validate");
 
-        List<String> errors = carService.validateCarData(carRequest);
+        List<String> errors = carCommandService.validateCarData(carRequest);
         boolean isValid = errors.isEmpty();
 
         Map<String, Object> result = Map.of(

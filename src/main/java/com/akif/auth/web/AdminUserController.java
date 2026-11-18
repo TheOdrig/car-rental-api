@@ -42,7 +42,7 @@ import java.util.List;
 public class AdminUserController {
 
     private final AdminUserService adminUserService;
-    private final AuthService authService;
+    private final UserLookup userLookup;
 
     @GetMapping("/stats")
     @Operation(summary = "Get user statistics (Admin)", description = "Returns user count statistics for dashboard")
@@ -118,7 +118,7 @@ public class AdminUserController {
 
         log.info("POST /api/v1/admin/users/{}/ban - Admin: {}", id, adminUser.getUsername());
 
-        UserDto admin = authService.getUserByUsername(adminUser.getUsername());
+        UserDto admin = userLookup.getUserByUsername(adminUser.getUsername());
         adminUserService.banUser(id, request.reason(), admin.id());
 
         return ResponseEntity.ok(Map.of("message", "User banned successfully"));
@@ -140,7 +140,7 @@ public class AdminUserController {
 
         log.info("POST /api/v1/admin/users/{}/unban - Admin: {}", id, adminUser.getUsername());
 
-        UserDto admin = authService.getUserByUsername(adminUser.getUsername());
+        UserDto admin = userLookup.getUserByUsername(adminUser.getUsername());
         String note = request != null ? request.note() : null;
         adminUserService.unbanUser(id, note, admin.id());
 
@@ -163,7 +163,7 @@ public class AdminUserController {
 
         log.info("POST /api/v1/admin/users/{}/notes - Admin: {}", id, adminUser.getUsername());
 
-        UserDto admin = authService.getUserByUsername(adminUser.getUsername());
+        UserDto admin = userLookup.getUserByUsername(adminUser.getUsername());
         AdminNoteDto note = adminUserService.addAdminNote(id, request.text(), admin.id(),
                 admin.username());
 

@@ -2,9 +2,9 @@ package com.akif.damage.unit;
 
 import com.akif.damage.api.DamageChargedEvent;
 import org.springframework.test.util.ReflectionTestUtils;
-import com.akif.damage.domain.enums.DamageCategory;
+import com.akif.damage.api.DamageCategory;
 import com.akif.damage.api.DamageSeverity;
-import com.akif.damage.domain.enums.DamageStatus;
+import com.akif.damage.api.DamageStatus;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.exception.DamageAssessmentException;
 import com.akif.damage.internal.repository.DamageReportRepository;

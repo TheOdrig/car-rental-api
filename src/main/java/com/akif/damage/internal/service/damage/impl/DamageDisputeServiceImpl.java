@@ -2,11 +2,11 @@ package com.akif.damage.internal.service.damage.impl;
 
 import java.time.Clock;
 
-import com.akif.auth.api.AuthService;
+import com.akif.auth.api.UserLookup;
 import com.akif.auth.api.UserDto;
 import com.akif.damage.api.DamageDisputedEvent;
 import com.akif.damage.api.DamageResolvedEvent;
-import com.akif.damage.domain.enums.DamageStatus;
+import com.akif.damage.api.DamageStatus;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.service.damage.DamageDisputeService;
 import com.akif.damage.internal.dto.damage.request.DamageDisputeRequest;
@@ -39,7 +39,7 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
     private final DamageReportRepository damageReportRepository;
     private final ApplicationEventPublisher eventPublisher;
 
-    private final AuthService authService;
+    private final UserLookup userLookup;
     private final RentalService rentalService;
 
     private final PaymentService paymentService;
@@ -50,7 +50,7 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
         DamageReport damageReport = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
                 .orElseThrow(() -> DamageReportException.notFound(damageId));
 
-        UserDto user = authService.getUserByUsername(username);
+        UserDto user = userLookup.getUserByUsername(username);
 
         if (!damageReport.canBeDisputed()) {
             throw DamageDisputeException.invalidStatus(damageReport.getStatus().name());
@@ -85,7 +85,7 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
         DamageReport damageReport = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
                 .orElseThrow(() -> DamageReportException.notFound(damageId));
 
-        UserDto user = authService.getUserByUsername(username);
+        UserDto user = userLookup.getUserByUsername(username);
 
         if (damageReport.getStatus() != DamageStatus.DISPUTED) {
             throw DamageDisputeException.cannotResolve(damageReport.getStatus().name());

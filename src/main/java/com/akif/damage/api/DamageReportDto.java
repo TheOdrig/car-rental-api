@@ -1,8 +1,5 @@
 package com.akif.damage.api;
 
-import com.akif.damage.domain.enums.DamageCategory;
-import com.akif.damage.api.DamageSeverity;
-import com.akif.damage.domain.enums.DamageStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import com.akif.shared.enums.CurrencyType;

@@ -763,6 +763,42 @@
         },
         "type" : "object"
       },
+      "CarStatisticsResponse" : {
+        "properties" : {
+          "activeCars" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "averagePrice" : {
+            "type" : "number"
+          },
+          "brandCounts" : {
+            "additionalProperties" : {
+              "format" : "int64",
+              "type" : "integer"
+            },
+            "type" : "object"
+          },
+          "maxPrice" : {
+            "type" : "number"
+          },
+          "minPrice" : {
+            "type" : "number"
+          },
+          "statusCounts" : {
+            "additionalProperties" : {
+              "format" : "int64",
+              "type" : "integer"
+            },
+            "type" : "object"
+          },
+          "totalCars" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "CarStatusUpdateRequest" : {
         "description" : "Status update data",
         "properties" : {
@@ -7922,8 +7958,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "additionalProperties" : { },
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/CarStatisticsResponse"
                 }
               }
             },

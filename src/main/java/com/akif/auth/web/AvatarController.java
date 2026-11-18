@@ -2,7 +2,7 @@ package com.akif.auth.web;
 
 import com.akif.auth.api.AvatarStorageService;
 import com.akif.auth.api.AvatarUploadResponse;
-import com.akif.auth.api.ProfileService;
+import com.akif.auth.internal.service.ProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

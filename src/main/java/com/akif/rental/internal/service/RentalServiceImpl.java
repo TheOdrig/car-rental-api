@@ -2,7 +2,7 @@ package com.akif.rental.internal.service;
 
 import java.time.Clock;
 
-import com.akif.car.api.CarResponse;
+import com.akif.car.api.CarDto;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.api.CarDatesUnavailableException;
 import com.akif.car.api.CarNotAvailableException;
@@ -32,8 +32,8 @@ import com.akif.rental.api.RentalConfirmedEvent;
 import com.akif.rental.api.RentalRequest;
 import com.akif.rental.internal.mapper.RentalMapper;
 import com.akif.rental.domain.model.Rental;
-import com.akif.car.api.CarService;
-import com.akif.auth.api.AuthService;
+import com.akif.car.api.CarCatalog;
+import com.akif.auth.api.UserLookup;
 import com.akif.auth.api.UserDto;
 import com.akif.rental.internal.service.penalty.PenaltyCalculationService;
 import com.akif.rental.internal.service.penalty.PenaltyPaymentService;
@@ -77,8 +77,8 @@ public class RentalServiceImpl implements RentalService {
 
     private final RentalRepository rentalRepository;
 
-    private final CarService carService;
-    private final AuthService authService;
+    private final CarCatalog carCatalog;
+    private final UserLookup userLookup;
 
     private final PaymentService paymentService;
     private final RentalMapper rentalMapper;
@@ -94,17 +94,17 @@ public class RentalServiceImpl implements RentalService {
         log.info("Creating rental request for user: {}, car: {}", username, request.carId());
 
         UserDto user = findUserByUsername(username);
-        CarResponse car = findCarById(request.carId());
+        CarDto car = findCarById(request.carId());
 
-        if (!car.getCarStatusType().equals(CarStatusType.AVAILABLE)) {
+        if (!car.status().equals(CarStatusType.AVAILABLE)) {
             throw new CarNotAvailableException(
-                    car.getId(),
-                    "Car status is: " + car.getCarStatusType().getDisplayName());
+                    car.id(),
+                    "Car status is: " + car.status().getDisplayName());
         }
 
         validateRentalDates(request.startDate(), request.endDate());
         checkOpenRequestLimit(user.id());
-        checkDateOverlap(car.getId(), request.startDate(), request.endDate());
+        checkDateOverlap(car.id(), request.startDate(), request.endDate());
 
         PricingResult pricingResult = dynamicPricingService.calculatePrice(
                 request.carId(),
@@ -115,18 +115,18 @@ public class RentalServiceImpl implements RentalService {
         int days = pricingResult.rentalDays();
         BigDecimal dailyPrice = pricingResult.effectiveDailyPrice();
         BigDecimal totalPrice = pricingResult.finalPrice();
-        CurrencyType currency = car.getCurrencyType();
+        CurrencyType currency = car.currency();
 
         log.info("Dynamic pricing applied: base={}, final={}, modifiers={}",
                 pricingResult.baseTotalPrice(), pricingResult.finalPrice(), pricingResult.appliedModifiers().size());
 
         Rental rental = Rental.builder()
                 .userId(user.id())
-                .carId(car.getId())
-                .carBrand(car.getBrand())
-                .carModel(car.getModel())
-                .carLicensePlate(car.getLicensePlate())
-                .carThumbnailUrl(car.getThumbnailUrl())
+                .carId(car.id())
+                .carBrand(car.brand())
+                .carModel(car.model())
+                .carLicensePlate(car.licensePlate())
+                .carThumbnailUrl(car.thumbnailUrl())
                 .userEmail(user.email())
                 .userFullName(user.firstName() + " " + user.lastName())
                 .startDate(request.startDate())
@@ -572,11 +572,11 @@ public class RentalServiceImpl implements RentalService {
     }
 
     private void requireCarAvailable(Long carId) {
-        CarResponse car = findCarById(carId);
-        if (car.getCarStatusType() != CarStatusType.AVAILABLE) {
+        CarDto car = findCarById(carId);
+        if (car.status() != CarStatusType.AVAILABLE) {
             throw new CarNotAvailableException(
                     carId,
-                    "Car status is: " + car.getCarStatusType().getDisplayName());
+                    "Car status is: " + car.status().getDisplayName());
         }
     }
 
@@ -590,12 +590,12 @@ public class RentalServiceImpl implements RentalService {
                 .orElseThrow(() -> new RentalNotFoundException(id));
     }
 
-    private CarResponse findCarById(Long id) {
-        return carService.getCarForBooking(id);
+    private CarDto findCarById(Long id) {
+        return carCatalog.getCarForBooking(id);
     }
 
     private UserDto findUserByUsername(String username) {
-        return authService.getUserByUsername(username);
+        return userLookup.getUserByUsername(username);
     }
 
     private PaymentDto findPaymentByRentalId(Long rentalId) {

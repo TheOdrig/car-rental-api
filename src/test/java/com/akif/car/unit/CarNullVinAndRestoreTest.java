@@ -9,8 +9,6 @@ import com.akif.car.internal.repository.CarRepository;
 import com.akif.car.internal.service.CarCommandService;
 import com.akif.car.internal.service.CarLookup;
 import com.akif.car.internal.service.CarQueryService;
-import com.akif.car.internal.service.CarServiceImpl;
-import com.akif.car.internal.service.CarStatisticsService;
 import com.akif.car.internal.service.CarStatusService;
 import com.akif.shared.enums.CurrencyType;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,8 +30,8 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CarServiceImpl Bug Fix Tests")
-class CarServiceImplBugFixTest {
+@DisplayName("Car update with missing VINs and restore")
+class CarNullVinAndRestoreTest {
 
     @Mock
     private CarRepository carRepository;
@@ -44,16 +42,16 @@ class CarServiceImplBugFixTest {
     @Spy
     private Clock clock = Clock.systemDefaultZone();
 
-    private CarServiceImpl carService;
+    private CarQueryService queryService;
+    private CarCommandService commandService;
+    private CarStatusService statusService;
 
     @BeforeEach
     void wireService() {
         CarLookup carLookup = new CarLookup(carRepository);
-        carService = new CarServiceImpl(
-                new CarQueryService(clock, carRepository, carMapper, carLookup),
-                new CarCommandService(clock, carRepository, carMapper, carLookup),
-                new CarStatusService(clock, carRepository, carMapper, carLookup),
-                new CarStatisticsService(carRepository));
+        queryService = new CarQueryService(clock, carRepository, carMapper, carLookup);
+        commandService = new CarCommandService(clock, carRepository, carMapper, carLookup);
+        statusService = new CarStatusService(clock, carRepository, carMapper, carLookup);
     }
 
     private Car testCar;
@@ -90,7 +88,7 @@ class CarServiceImplBugFixTest {
     }
 
     @Nested
-    @DisplayName("NPE Fix - VIN Comparison (BUG-008)")
+    @DisplayName("NPE Fix - VIN Comparison")
     class VinComparisonNpeFix {
 
         @Test
@@ -124,7 +122,7 @@ class CarServiceImplBugFixTest {
             when(carRepository.save(any(Car.class))).thenReturn(carWithNullVin);
             when(carMapper.toDto(any(Car.class))).thenReturn(testCarResponse);
 
-            assertThatCode(() -> carService.updateCar(1L, updateRequest))
+            assertThatCode(() -> commandService.updateCar(1L, updateRequest))
                     .doesNotThrowAnyException();
 
             verify(carRepository).existsByVinNumber("NEWVIN123");
@@ -149,7 +147,7 @@ class CarServiceImplBugFixTest {
             when(carRepository.save(any(Car.class))).thenReturn(testCar);
             when(carMapper.toDto(any(Car.class))).thenReturn(testCarResponse);
 
-            assertThatCode(() -> carService.updateCar(1L, updateRequest))
+            assertThatCode(() -> commandService.updateCar(1L, updateRequest))
                     .doesNotThrowAnyException();
         }
 
@@ -183,7 +181,7 @@ class CarServiceImplBugFixTest {
             when(carRepository.save(any(Car.class))).thenReturn(carWithNullVin);
             when(carMapper.toDto(any(Car.class))).thenReturn(testCarResponse);
 
-            assertThatCode(() -> carService.updateCar(1L, updateRequest))
+            assertThatCode(() -> commandService.updateCar(1L, updateRequest))
                     .doesNotThrowAnyException();
 
             verify(carRepository, never()).existsByVinNumber(any());
@@ -191,7 +189,7 @@ class CarServiceImplBugFixTest {
     }
 
     @Nested
-    @DisplayName("RestoreCar Return Type Fix (BUG-004)")
+    @DisplayName("RestoreCar Return Type Fix")
     class RestoreCarReturnTypeFix {
 
         @Test
@@ -214,7 +212,7 @@ class CarServiceImplBugFixTest {
             when(carRepository.save(any(Car.class))).thenReturn(deletedCar);
             when(carMapper.toDto(deletedCar)).thenReturn(testCarResponse);
 
-            CarResponse result = carService.restoreCar(1L);
+            CarResponse result = commandService.restoreCar(1L);
 
             assertThat(result).isNotNull();
             assertThat(result.getId()).isEqualTo(1L);
@@ -245,7 +243,7 @@ class CarServiceImplBugFixTest {
             when(carRepository.save(any(Car.class))).thenAnswer(invocation -> invocation.getArgument(0));
             when(carMapper.toDto(any(Car.class))).thenReturn(testCarResponse);
 
-            carService.restoreCar(1L);
+            commandService.restoreCar(1L);
 
             assertThat(deletedCar.getIsDeleted()).isFalse();
             verify(carRepository).save(deletedCar);

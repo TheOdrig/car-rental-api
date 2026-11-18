@@ -1,12 +1,11 @@
-package com.akif.auth.api;
+package com.akif.auth.internal.service;
 
+import com.akif.auth.api.AuthResponse;
 import com.akif.auth.internal.dto.LoginRequest;
 import com.akif.auth.internal.dto.RefreshTokenRequest;
 import com.akif.auth.internal.dto.RegisterRequest;
 
 public interface AuthService {
-
-    UserDto getUserByUsername(String username);
 
     boolean existsByUsername(String username);
 

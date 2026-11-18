@@ -2,6 +2,7 @@ package com.akif.car.internal.service;
 
 import com.akif.car.api.CarStatusType;
 import com.akif.car.api.FilterOptionsResponse;
+import com.akif.car.internal.dto.response.CarStatisticsResponse;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.shared.config.CacheConfig;
 import lombok.RequiredArgsConstructor;
@@ -24,18 +25,17 @@ public class CarStatisticsService {
     private final CarRepository carRepository;
 
     @Cacheable(value = CacheConfig.CAR_STATISTICS_CACHE, key = "'all'")
-    public Map<String, Object> getCarStatistics() {
+    public CarStatisticsResponse getCarStatistics() {
         log.debug("Getting car statistics");
 
-        Map<String, Object> statistics = new HashMap<>();
-
-        statistics.put("totalCars", carRepository.count());
-        statistics.put("activeCars", carRepository.countByIsDeletedFalse());
-        statistics.put("statusCounts", getCarsCountByStatus());
-        statistics.put("brandCounts", getCarsCountByBrand());
-        statistics.put("averagePrice", carRepository.getAveragePrice());
-        statistics.put("minPrice", carRepository.getMinPrice());
-        statistics.put("maxPrice", carRepository.getMaxPrice());
+        CarStatisticsResponse statistics = new CarStatisticsResponse(
+                carRepository.count(),
+                carRepository.countByIsDeletedFalse(),
+                getCarsCountByStatus(),
+                getCarsCountByBrand(),
+                carRepository.getAveragePrice(),
+                carRepository.getMinPrice(),
+                carRepository.getMaxPrice());
 
         log.info("Successfully retrieved car statistics");
         return statistics;

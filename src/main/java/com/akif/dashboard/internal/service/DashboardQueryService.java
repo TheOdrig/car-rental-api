@@ -2,7 +2,7 @@ package com.akif.dashboard.internal.service;
 
 import java.time.Clock;
 
-import com.akif.car.api.CarService;
+import com.akif.car.api.CarCatalog;
 import com.akif.car.api.CarStatusType;
 import com.akif.damage.api.DamageService;
 import com.akif.dashboard.api.dto.DailySummaryDto;
@@ -41,7 +41,7 @@ public class DashboardQueryService {
     private final Clock clock;
 
     private final RentalService rentalService;
-    private final CarService carService;
+    private final CarCatalog carCatalog;
     private final PaymentService paymentService;
     private final DamageService damageService;
 
@@ -66,7 +66,7 @@ public class DashboardQueryService {
     public FleetStatusDto fetchFleetStatus() {
         log.debug("Fetching fleet status data");
 
-        Map<Long, CarStatusType> fleet = carService.findActiveCarStatuses();
+        Map<Long, CarStatusType> fleet = carCatalog.findActiveCarStatuses();
         Set<Long> inUse = rentalService.findCarIdsInUse();
         Set<Long> reserved = rentalService.findCarIdsReservedOn(LocalDate.now(clock));
 

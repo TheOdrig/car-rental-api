@@ -1,7 +1,7 @@
 package com.akif.dashboard.domain.model;
 
-import com.akif.dashboard.domain.enums.AlertSeverity;
-import com.akif.dashboard.domain.enums.AlertType;
+import com.akif.dashboard.api.AlertSeverity;
+import com.akif.dashboard.api.AlertType;
 import com.akif.shared.domain.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

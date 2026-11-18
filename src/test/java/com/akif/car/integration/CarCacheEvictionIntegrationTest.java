@@ -1,7 +1,8 @@
 package com.akif.car.integration;
 
 import com.akif.CarRentalApplication;
-import com.akif.car.api.CarService;
+import com.akif.car.internal.service.CarCommandService;
+import com.akif.car.internal.service.CarStatisticsService;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.api.FilterOptionsResponse;
 import com.akif.car.internal.dto.pricing.CarPriceUpdateRequest;
@@ -30,7 +31,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CarCacheEvictionIntegrationTest {
 
     @Autowired
-    private CarService carService;
+    private CarCommandService commandService;
+
+    @Autowired
+    private CarStatisticsService statisticsService;
 
     @Autowired
     private CarRepository carRepository;
@@ -52,31 +56,31 @@ class CarCacheEvictionIntegrationTest {
     @Test
     @DisplayName("Creating a car refreshes cached filter options, counts and statistics")
     void shouldRefreshEveryCarCacheWhenCarIsCreated() {
-        assertThat(carService.getFilterOptions().brands()).isEmpty();
-        assertThat(carService.getCarsCountByBrand()).isEmpty();
-        assertThat(carService.getCarsCountByStatus().get(CarStatusType.AVAILABLE.name())).isZero();
-        assertThat(carService.getAveragePriceByBrand()).isEmpty();
+        assertThat(statisticsService.getFilterOptions().brands()).isEmpty();
+        assertThat(statisticsService.getCarsCountByBrand()).isEmpty();
+        assertThat(statisticsService.getCarsCountByStatus().get(CarStatusType.AVAILABLE.name())).isZero();
+        assertThat(statisticsService.getAveragePriceByBrand()).isEmpty();
 
-        carService.createCar(carRequest("34ABC123", "VIN00000000000001", "Toyota"));
+        commandService.createCar(carRequest("34ABC123", "VIN00000000000001", "Toyota"));
 
-        FilterOptionsResponse filterOptions = carService.getFilterOptions();
+        FilterOptionsResponse filterOptions = statisticsService.getFilterOptions();
         assertThat(filterOptions.brands()).containsExactly("Toyota");
-        assertThat(carService.getCarsCountByBrand()).containsEntry("Toyota", 1L);
-        assertThat(carService.getCarsCountByStatus()).containsEntry(CarStatusType.AVAILABLE.name(), 1L);
-        assertThat(carService.getAveragePriceByBrand()).containsKey("Toyota");
-        assertThat(carService.getCarStatistics()).containsEntry("totalCars", 1L);
+        assertThat(statisticsService.getCarsCountByBrand()).containsEntry("Toyota", 1L);
+        assertThat(statisticsService.getCarsCountByStatus()).containsEntry(CarStatusType.AVAILABLE.name(), 1L);
+        assertThat(statisticsService.getAveragePriceByBrand()).containsKey("Toyota");
+        assertThat(statisticsService.getCarStatistics().totalCars()).isEqualTo(1L);
     }
 
     @Test
     @DisplayName("Updating a price refreshes the cached average price by brand")
     void shouldRefreshAveragePriceWhenPriceIsUpdated() {
-        Long carId = carService.createCar(carRequest("34ABC123", "VIN00000000000001", "Toyota")).getId();
-        BigDecimal before = carService.getAveragePriceByBrand().get("Toyota");
+        Long carId = commandService.createCar(carRequest("34ABC123", "VIN00000000000001", "Toyota")).getId();
+        BigDecimal before = statisticsService.getAveragePriceByBrand().get("Toyota");
 
-        carService.updateCarPrice(carId,
+        commandService.updateCarPrice(carId,
                 new CarPriceUpdateRequest(new BigDecimal("999.00"), CurrencyType.TRY, "reprice", null));
 
-        BigDecimal after = carService.getAveragePriceByBrand().get("Toyota");
+        BigDecimal after = statisticsService.getAveragePriceByBrand().get("Toyota");
         assertThat(after).isNotEqualByComparingTo(before);
         assertThat(after).isEqualByComparingTo("999.00");
     }

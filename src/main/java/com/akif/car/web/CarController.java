@@ -6,7 +6,9 @@ import com.akif.car.internal.dto.request.CarRequest;
 import com.akif.car.internal.dto.request.CarSearchRequest;
 import com.akif.currency.api.ConversionResult;
 import com.akif.shared.enums.CurrencyType;
-import com.akif.car.api.CarService;
+import com.akif.car.internal.service.CarQueryService;
+import com.akif.car.internal.service.CarCommandService;
+import com.akif.car.internal.service.CarStatisticsService;
 import com.akif.currency.api.CurrencyConversionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,7 +38,9 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Car Management", description = "Basic CRUD operations for cars")
 public class CarController {
 
-    private final CarService carService;
+    private final CarQueryService carQueryService;
+    private final CarCommandService carCommandService;
+    private final CarStatisticsService carStatisticsService;
     private final CurrencyConversionService currencyConversionService;
 
     @GetMapping("/{id}")
@@ -51,7 +55,7 @@ public class CarController {
             @Parameter(description = "Car ID", required = true) @PathVariable Long id,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
         log.debug("GET /api/v1/cars/{} with currency={}", id, currency);
-        CarResponse car = carService.getCarById(id);
+        CarResponse car = carQueryService.getCarById(id);
         applyPriceConversion(car, currency);
         log.info("Successfully retrieved car: ID={}", id);
         return ResponseEntity.ok(car);
@@ -68,7 +72,7 @@ public class CarController {
     public ResponseEntity<CarResponse> getCarByLicensePlate(
             @Parameter(description = "License plate number", required = true) @PathVariable String licensePlate) {
         log.debug("GET /api/v1/cars/licensePlate/{}", licensePlate);
-        CarResponse car = carService.getCarByLicensePlate(licensePlate);
+        CarResponse car = carQueryService.getCarByLicensePlate(licensePlate);
         log.info("Successfully retrieved car by license plate: {}", licensePlate);
         return ResponseEntity.ok(car);
     }
@@ -82,7 +86,7 @@ public class CarController {
     public ResponseEntity<PageResponse<CarResponse>> searchCars(
             @Valid @ParameterObject CarSearchRequest searchRequest) {
         log.debug("GET /api/v1/cars/search - Searching cars with criteria: {}", searchRequest);
-        PageResponse<CarResponse> response = carService.searchCars(searchRequest);
+        PageResponse<CarResponse> response = carQueryService.searchCars(searchRequest);
         log.info("Successfully found {} cars", response.totalElements());
         return ResponseEntity.ok(response);
     }
@@ -97,7 +101,7 @@ public class CarController {
     })
     public ResponseEntity<FilterOptionsResponse> getFilterOptions() {
         log.debug("GET /api/v1/cars/filter-options");
-        FilterOptionsResponse options = carService.getFilterOptions();
+        FilterOptionsResponse options = carStatisticsService.getFilterOptions();
         log.info("Successfully retrieved filter options");
         return ResponseEntity.ok(options);
     }
@@ -115,7 +119,7 @@ public class CarController {
     public ResponseEntity<CarResponse> createCar(
             @Parameter(description = "Car data", required = true) @Valid @RequestBody CarRequest carRequest) {
         log.debug("POST /api/v1/cars - Creating car with license plate: {}", carRequest.getLicensePlate());
-        CarResponse car = carService.createCar(carRequest);
+        CarResponse car = carCommandService.createCar(carRequest);
         log.info("Successfully created car: ID={}, License Plate={}", car.getId(), car.getLicensePlate());
         return ResponseEntity.status(HttpStatus.CREATED).body(car);
     }
@@ -134,7 +138,7 @@ public class CarController {
             @Parameter(description = "Car ID", required = true) @PathVariable Long id,
             @Parameter(description = "Updated car data", required = true) @Valid @RequestBody CarRequest carRequest) {
         log.debug("PUT /api/v1/cars/{} - Updating car", id);
-        CarResponse car = carService.updateCar(id, carRequest);
+        CarResponse car = carCommandService.updateCar(id, carRequest);
         log.info("Successfully updated car: ID={}", id);
         return ResponseEntity.ok(car);
     }
@@ -151,7 +155,7 @@ public class CarController {
     public ResponseEntity<Void> deleteCar(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
         log.debug("DELETE /api/v1/cars/{} - Deleting car", id);
-        carService.deleteCar(id);
+        carCommandService.deleteCar(id);
         log.info("Successfully deleted car: ID={}", id);
         return ResponseEntity.noContent().build();
     }
@@ -167,7 +171,7 @@ public class CarController {
     })
     public ResponseEntity<Void> softDeleteCar(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        carService.softDeleteCar(id);
+        carCommandService.softDeleteCar(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -183,7 +187,7 @@ public class CarController {
     })
     public ResponseEntity<CarResponse> restoreCar(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        CarResponse car = carService.restoreCar(id);
+        CarResponse car = carCommandService.restoreCar(id);
         return ResponseEntity.ok(car);
     }
 
@@ -197,7 +201,7 @@ public class CarController {
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
         log.debug("GET /api/v1/cars - Getting all cars with page: {}, size: {}, currency: {}", pageable.getPageNumber(), pageable.getPageSize(), currency);
-        Page<CarResponse> cars = carService.getAllCars(pageable);
+        Page<CarResponse> cars = carQueryService.getAllCars(pageable);
         if (currency != null) {
             cars.forEach(car -> applyPriceConversion(car, currency));
         }
@@ -220,7 +224,7 @@ public class CarController {
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
         log.debug("GET /api/v1/cars/active - Getting active cars with page: {}, size: {}, sort: {}", 
                  pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
-        Page<CarResponse> cars = carService.getAllActiveCars(pageable);
+        Page<CarResponse> cars = carQueryService.getAllActiveCars(pageable);
         if (currency != null) {
             cars.forEach(car -> applyPriceConversion(car, currency));
         }

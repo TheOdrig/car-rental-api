@@ -1,6 +1,5 @@
 package com.akif.car.api;
 
-import com.akif.car.domain.enums.AvailabilityStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 

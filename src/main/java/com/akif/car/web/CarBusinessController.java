@@ -3,7 +3,8 @@ package com.akif.car.web;
 import com.akif.car.api.CarResponse;
 import com.akif.car.internal.dto.pricing.CarPriceUpdateRequest;
 import com.akif.car.internal.dto.request.CarStatusUpdateRequest;
-import com.akif.car.api.CarService;
+import com.akif.car.internal.service.CarCommandService;
+import com.akif.car.internal.service.CarStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,7 +26,8 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Car Business", description = "Business operations for cars")
 public class CarBusinessController {
 
-    private final CarService carService;
+    private final CarCommandService carCommandService;
+    private final CarStatusService carStatusService;
 
     @PostMapping(value = "/{id}/maintenance")
     @Operation(summary = "Mark car as maintenance", description = "Mark a car as under maintenance")
@@ -37,7 +39,7 @@ public class CarBusinessController {
     })
     public ResponseEntity<CarResponse> markAsMaintenance(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        CarResponse car = carService.markAsMaintenance(id);
+        CarResponse car = carStatusService.markAsMaintenance(id);
         return ResponseEntity.ok(car);
     }
 
@@ -51,7 +53,7 @@ public class CarBusinessController {
     })
     public ResponseEntity<CarResponse> markAsAvailable(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        CarResponse car = carService.markAsAvailable(id);
+        CarResponse car = carStatusService.markAsAvailable(id);
         return ResponseEntity.ok(car);
     }
 
@@ -66,7 +68,7 @@ public class CarBusinessController {
     public ResponseEntity<CarResponse> updateCarStatus(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id,
             @Parameter(description = "Status update data", required = true) @Valid @RequestBody CarStatusUpdateRequest statusUpdateRequest) {
-        CarResponse car = carService.updateCarStatus(id, statusUpdateRequest);
+        CarResponse car = carStatusService.updateCarStatus(id, statusUpdateRequest);
         return ResponseEntity.ok(car);
     }
 
@@ -81,7 +83,7 @@ public class CarBusinessController {
     public ResponseEntity<CarResponse> updateCarPrice(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id,
             @Parameter(description = "Price update data", required = true) @Valid @RequestBody CarPriceUpdateRequest priceUpdateRequest) {
-        CarResponse car = carService.updateCarPrice(id, priceUpdateRequest);
+        CarResponse car = carCommandService.updateCarPrice(id, priceUpdateRequest);
         return ResponseEntity.ok(car);
     }
 }

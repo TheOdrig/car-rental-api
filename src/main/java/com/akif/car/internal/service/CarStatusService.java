@@ -1,5 +1,6 @@
 package com.akif.car.internal.service;
 
+import com.akif.car.api.CarFleetOperations;
 import com.akif.car.api.CarResponse;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.domain.Car;
@@ -19,13 +20,14 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class CarStatusService {
+public class CarStatusService implements CarFleetOperations {
 
     private final Clock clock;
     private final CarRepository carRepository;
     private final CarMapper carMapper;
     private final CarLookup carLookup;
 
+    @Override
     @EvictCarCaches
     public CarResponse markAsMaintenance(Long id) {
         log.debug("Marking car as maintenance with id: {}", id);

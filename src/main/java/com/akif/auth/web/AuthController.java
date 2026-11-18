@@ -6,7 +6,7 @@ import com.akif.auth.internal.dto.RegisterRequest;
 import com.akif.auth.internal.dto.ForgotPasswordRequest;
 import com.akif.auth.internal.dto.ResetPasswordRequest;
 import com.akif.auth.api.AuthResponse;
-import com.akif.auth.api.AuthService;
+import com.akif.auth.internal.service.AuthService;
 import com.akif.auth.api.PasswordResetService;
 import com.akif.shared.security.ratelimit.RateLimitCategory;
 import com.akif.shared.security.ratelimit.RateLimitService;

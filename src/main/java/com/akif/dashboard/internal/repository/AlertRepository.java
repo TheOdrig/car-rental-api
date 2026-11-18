@@ -1,6 +1,6 @@
 package com.akif.dashboard.internal.repository;
 
-import com.akif.dashboard.domain.enums.AlertType;
+import com.akif.dashboard.api.AlertType;
 import com.akif.dashboard.domain.model.Alert;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

@@ -1,11 +1,11 @@
 package com.akif.damage.web;
 
-import com.akif.auth.api.AuthService;
+import com.akif.auth.api.UserLookup;
 import com.akif.auth.api.UserDto;
 import com.akif.damage.api.DamageReportDto;
-import com.akif.damage.domain.enums.DamageCategory;
+import com.akif.damage.api.DamageCategory;
 import com.akif.damage.api.DamageSeverity;
-import com.akif.damage.domain.enums.DamageStatus;
+import com.akif.damage.api.DamageStatus;
 import com.akif.damage.internal.service.damage.DamageHistoryService;
 import com.akif.damage.internal.dto.damage.request.DamageSearchFilterDto;
 import com.akif.damage.internal.dto.damage.response.DamageStatisticsDto;
@@ -37,7 +37,7 @@ public class DamageHistoryController {
 
     private final DamageHistoryService damageHistoryService;
 
-    private final AuthService authService;
+    private final UserLookup userLookup;
 
     @GetMapping("/api/v1/admin/damages/vehicle/{carId}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -86,7 +86,7 @@ public class DamageHistoryController {
         String username = authentication.getName();
         log.info("GET /api/v1/damages/me - User: {}", username);
 
-        UserDto user = authService.getUserByUsername(username);
+        UserDto user = userLookup.getUserByUsername(username);
         
         Page<DamageReportDto> damages = damageHistoryService.getDamagesByCustomer(user.id(), pageable);
         return ResponseEntity.ok(PageResponse.of(damages));

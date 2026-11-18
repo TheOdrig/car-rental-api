@@ -1,9 +1,9 @@
 package com.akif.damage.unit;
 
 import com.akif.damage.api.DamageReportDto;
-import com.akif.damage.domain.enums.DamageCategory;
+import com.akif.damage.api.DamageCategory;
 import com.akif.damage.api.DamageSeverity;
-import com.akif.damage.domain.enums.DamageStatus;
+import com.akif.damage.api.DamageStatus;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.dto.damage.request.DamageSearchFilterDto;
 import com.akif.damage.internal.dto.damage.response.DamageCurrencyTotals;

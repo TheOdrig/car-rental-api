@@ -1,15 +1,15 @@
 package com.akif.damage.unit;
 
-import com.akif.auth.api.AuthService;
+import com.akif.auth.api.UserLookup;
 import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.auth.api.UserDto;
 import com.akif.car.api.CarResponse;
-import com.akif.car.api.CarService;
+import com.akif.car.api.CarFleetOperations;
 import com.akif.car.api.CarStatusType;
 import com.akif.damage.api.DamageAssessedEvent;
-import com.akif.damage.domain.enums.DamageCategory;
+import com.akif.damage.api.DamageCategory;
 import com.akif.damage.api.DamageSeverity;
-import com.akif.damage.domain.enums.DamageStatus;
+import com.akif.damage.api.DamageStatus;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.config.DamageConfig;
 import com.akif.damage.internal.dto.damage.request.DamageAssessmentRequest;
@@ -54,10 +54,10 @@ class DamageAssessmentServiceTest {
     private DamageReportRepository damageReportRepository;
 
     @Mock
-    private CarService carService;
+    private CarFleetOperations carFleetOperations;
 
     @Mock
-    private AuthService authService;
+    private UserLookup userLookup;
 
     @Mock
     private DamageConfig damageConfig;
@@ -138,7 +138,7 @@ class DamageAssessmentServiceTest {
         @DisplayName("Should assess damage successfully")
         void shouldAssessDamageSuccessfully() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
@@ -154,7 +154,7 @@ class DamageAssessmentServiceTest {
         @DisplayName("Should default the damage currency to the rental currency at assessment time")
         void shouldDefaultCurrencyToRentalCurrency() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
@@ -167,7 +167,7 @@ class DamageAssessmentServiceTest {
         @DisplayName("Should round repair cost, deductible and liability to whole yen for JPY")
         void shouldRoundLiabilityToWholeYen() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
             DamageAssessmentRequest request = new DamageAssessmentRequest(DamageSeverity.MINOR, DamageCategory.SCRATCH,
                     new BigDecimal("12345.67"), false, null, "n", com.akif.shared.enums.CurrencyType.JPY);
@@ -184,7 +184,7 @@ class DamageAssessmentServiceTest {
         @DisplayName("Should keep an explicit assessment currency")
         void shouldKeepExplicitCurrency() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
             DamageAssessmentRequest request = new DamageAssessmentRequest(DamageSeverity.MINOR, DamageCategory.SCRATCH,
@@ -199,7 +199,7 @@ class DamageAssessmentServiceTest {
         @DisplayName("Should set customer liability correctly with insurance")
         void shouldSetCustomerLiabilityCorrectlyWithInsurance() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
@@ -224,7 +224,7 @@ class DamageAssessmentServiceTest {
                     "No insurance");
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
@@ -254,7 +254,7 @@ class DamageAssessmentServiceTest {
             ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.CHARGED);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
 
             assertThatThrownBy(() -> damageAssessmentService.assessDamage(1L, testAssessmentRequest, "admin"))
                     .isInstanceOf(DamageAssessmentException.class);
@@ -272,13 +272,13 @@ class DamageAssessmentServiceTest {
                     "Major mechanical damage");
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("500.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
             DamageAssessmentResponse result = damageAssessmentService.assessDamage(1L, majorDamageRequest, "admin");
 
-            verify(carService).markAsMaintenance(testCar.getId());
+            verify(carFleetOperations).markAsMaintenance(testCar.getId());
             assertThat(result.carStatusUpdated()).isEqualTo("MAINTENANCE");
         }
 
@@ -286,7 +286,7 @@ class DamageAssessmentServiceTest {
         @DisplayName("Should publish DamageAssessedEvent when assessment completed")
         void shouldPublishDamageAssessedEventWhenAssessmentCompleted() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
@@ -310,7 +310,7 @@ class DamageAssessmentServiceTest {
             ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.UNDER_ASSESSMENT);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 

@@ -9,7 +9,7 @@ import com.akif.car.api.DayAvailabilityDto;
 import com.akif.car.internal.dto.availability.*;
 import com.akif.car.internal.dto.availability.AvailabilitySearchRequest;
 import com.akif.currency.api.ConversionResult;
-import com.akif.car.domain.enums.AvailabilityStatus;
+import com.akif.car.api.AvailabilityStatus;
 import com.akif.car.api.CarStatusType;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.car.internal.exception.CarNotFoundException;

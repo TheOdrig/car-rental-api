@@ -1,14 +1,15 @@
 package com.akif.damage.unit;
 
-import com.akif.auth.api.AuthService;
+import com.akif.auth.api.UserLookup;
 import com.akif.auth.api.UserDto;
 import com.akif.car.api.CarDto;
-import com.akif.car.api.CarService;
+import com.akif.car.api.CarCatalog;
+import com.akif.car.api.CarFleetOperations;
 import com.akif.car.api.CarStatusType;
 import com.akif.damage.api.DamageReportedEvent;
-import com.akif.damage.domain.enums.DamageCategory;
+import com.akif.damage.api.DamageCategory;
 import com.akif.damage.api.DamageSeverity;
-import com.akif.damage.domain.enums.DamageStatus;
+import com.akif.damage.api.DamageStatus;
 import com.akif.damage.domain.model.DamagePhoto;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.config.DamageConfig;
@@ -71,10 +72,13 @@ class DamageReportServiceTest {
     private RentalService rentalService;
 
     @Mock
-    private CarService carService;
+    private CarCatalog carCatalog;
 
     @Mock
-    private AuthService authService;
+    private CarFleetOperations carFleetOperations;
+
+    @Mock
+    private UserLookup userLookup;
 
     @Mock
     private FileUploadService fileUploadService;
@@ -121,6 +125,7 @@ class DamageReportServiceTest {
                 CarStatusType.AVAILABLE,
                 "SEDAN",
                 5,
+                null,
                 true,
                 false);
 
@@ -185,8 +190,8 @@ class DamageReportServiceTest {
         @DisplayName("Should create damage report successfully")
         void shouldCreateDamageReportSuccessfully() {
             when(rentalService.getRentalSummaryById(1L)).thenReturn(testRental);
-            when(authService.getUserByUsername("testuser")).thenReturn(testUser);
-            when(carService.getCarDtoById(testCar.id())).thenReturn(testCar);
+            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(carCatalog.getCarDtoById(testCar.id())).thenReturn(testCar);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
             when(damagePhotoRepository.findByDamageReportIdAndIsDeletedFalse(any())).thenReturn(List.of());
             when(fileUploadService.generateSecureUrl(anyString(), anyInt()))
@@ -208,8 +213,8 @@ class DamageReportServiceTest {
         @DisplayName("Should call incrementDamageReportCount when creating report")
         void shouldCallIncrementDamageReportCountWhenCreatingReport() {
             when(rentalService.getRentalSummaryById(1L)).thenReturn(testRental);
-            when(authService.getUserByUsername("testuser")).thenReturn(testUser);
-            when(carService.getCarDtoById(testCar.id())).thenReturn(testCar);
+            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(carCatalog.getCarDtoById(testCar.id())).thenReturn(testCar);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
             when(damagePhotoRepository.findByDamageReportIdAndIsDeletedFalse(any())).thenReturn(List.of());
 
@@ -236,7 +241,7 @@ class DamageReportServiceTest {
         @DisplayName("Should throw exception when user not found")
         void shouldThrowExceptionWhenUserNotFound() {
             when(rentalService.getRentalSummaryById(1L)).thenReturn(testRental);
-            when(authService.getUserByUsername("unknownuser"))
+            when(userLookup.getUserByUsername("unknownuser"))
                     .thenThrow(new RuntimeException("User not found: unknownuser"));
 
             assertThatThrownBy(() -> damageReportService.createDamageReport(1L, testRequestDto, "unknownuser"))
@@ -250,8 +255,8 @@ class DamageReportServiceTest {
         @DisplayName("Should publish DamageReportedEvent when creating report")
         void shouldPublishDamageReportedEventWhenCreatingReport() {
             when(rentalService.getRentalSummaryById(1L)).thenReturn(testRental);
-            when(authService.getUserByUsername("testuser")).thenReturn(testUser);
-            when(carService.getCarDtoById(testCar.id())).thenReturn(testCar);
+            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(carCatalog.getCarDtoById(testCar.id())).thenReturn(testCar);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
             when(damagePhotoRepository.findByDamageReportIdAndIsDeletedFalse(any())).thenReturn(List.of());
 
@@ -282,14 +287,14 @@ class DamageReportServiceTest {
                     .build();
 
             when(rentalService.getRentalSummaryById(1L)).thenReturn(testRental);
-            when(authService.getUserByUsername("testuser")).thenReturn(testUser);
-            when(carService.getCarDtoById(testCar.id())).thenReturn(testCar);
+            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(carCatalog.getCarDtoById(testCar.id())).thenReturn(testCar);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(majorDamageReport);
             when(damagePhotoRepository.findByDamageReportIdAndIsDeletedFalse(any())).thenReturn(List.of());
 
             damageReportService.createDamageReport(1L, majorDamageRequest, "testuser");
 
-            verify(carService).markAsMaintenance(testCar.id());
+            verify(carFleetOperations).markAsMaintenance(testCar.id());
         }
     }
 
@@ -334,7 +339,7 @@ class DamageReportServiceTest {
                     "test content".getBytes());
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
             when(damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(1L)).thenReturn(0);
             when(damageConfig.getMaxPhotosPerReport()).thenReturn(10);
             when(damageConfig.getPhotoStorageDirectory()).thenReturn("damage-photos");
@@ -361,7 +366,7 @@ class DamageReportServiceTest {
             MultipartFile mockFile = new MockMultipartFile("photo", "test.jpg", "image/jpeg", "test".getBytes());
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
             when(damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(1L)).thenReturn(9);
             when(damageConfig.getMaxPhotosPerReport()).thenReturn(10);
 
@@ -380,7 +385,7 @@ class DamageReportServiceTest {
                     "test".getBytes());
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
             when(damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(1L)).thenReturn(0);
             when(damageConfig.getMaxPhotosPerReport()).thenReturn(10);
             when(damageConfig.getAllowedPhotoTypes()).thenReturn(List.of("image/jpeg", "image/png"));
@@ -398,7 +403,7 @@ class DamageReportServiceTest {
                     new byte[10 * 1024 * 1024]);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(authService.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
             when(damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(1L)).thenReturn(0);
             when(damageConfig.getMaxPhotosPerReport()).thenReturn(10);
             when(damageConfig.getAllowedPhotoTypes()).thenReturn(List.of("image/jpeg"));
@@ -466,7 +471,7 @@ class DamageReportServiceTest {
         @DisplayName("Should return the URL to the customer who owns the damage report")
         void shouldGetPhotoUrlForOwner() {
             when(damagePhotoRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamagePhoto));
-            when(authService.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
             when(damageConfig.getPhotoUrlExpirationMinutes()).thenReturn(60);
             when(fileUploadService.generateSecureUrl(anyString(), eq(60))).thenReturn("https://secure.url/photo.jpg");
 
@@ -482,7 +487,7 @@ class DamageReportServiceTest {
             UserDto admin = new UserDto(9L, "admin", "admin@example.com", "Ad", "Min", null, null,
                     Set.of(Role.ADMIN), true);
             when(damagePhotoRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamagePhoto));
-            when(authService.getUserByUsername("admin")).thenReturn(admin);
+            when(userLookup.getUserByUsername("admin")).thenReturn(admin);
             when(damageConfig.getPhotoUrlExpirationMinutes()).thenReturn(60);
             when(fileUploadService.generateSecureUrl(anyString(), eq(60))).thenReturn("https://secure.url/photo.jpg");
 
@@ -495,7 +500,7 @@ class DamageReportServiceTest {
             UserDto stranger = new UserDto(7L, "stranger", "stranger@example.com", "Some", "One", null, null,
                     Set.of(Role.USER), true);
             when(damagePhotoRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamagePhoto));
-            when(authService.getUserByUsername("stranger")).thenReturn(stranger);
+            when(userLookup.getUserByUsername("stranger")).thenReturn(stranger);
 
             assertThatThrownBy(() -> damageReportService.getPhotoUrl(1L, "stranger"))
                     .isInstanceOf(org.springframework.security.access.AccessDeniedException.class);

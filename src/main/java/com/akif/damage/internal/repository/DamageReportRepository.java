@@ -1,8 +1,8 @@
 package com.akif.damage.internal.repository;
 
-import com.akif.damage.domain.enums.DamageCategory;
+import com.akif.damage.api.DamageCategory;
 import com.akif.damage.api.DamageSeverity;
-import com.akif.damage.domain.enums.DamageStatus;
+import com.akif.damage.api.DamageStatus;
 import com.akif.damage.domain.model.DamageReport;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -159,14 +159,14 @@ public interface DamageReportRepository extends JpaRepository<DamageReport, Long
         @Query("""
                         SELECT COUNT(d) FROM DamageReport d
                         WHERE d.isDeleted = false
-                        AND d.status IN (com.akif.damage.domain.enums.DamageStatus.REPORTED, com.akif.damage.domain.enums.DamageStatus.UNDER_ASSESSMENT)
+                        AND d.status IN (com.akif.damage.api.DamageStatus.REPORTED, com.akif.damage.api.DamageStatus.UNDER_ASSESSMENT)
                         """)
         int countPendingAssessments();
 
         @Query("""
                         SELECT COUNT(d) FROM DamageReport d
                         WHERE d.isDeleted = false
-                        AND d.status = com.akif.damage.domain.enums.DamageStatus.DISPUTED
+                        AND d.status = com.akif.damage.api.DamageStatus.DISPUTED
                         AND d.reportedAt < :cutoffDate
                         """)
         int countUnresolvedDisputesOlderThan(@Param("cutoffDate") LocalDateTime cutoffDate);

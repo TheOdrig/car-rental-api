@@ -5,6 +5,7 @@ import com.akif.auth.internal.dto.LoginRequest;
 import com.akif.auth.internal.dto.RefreshTokenRequest;
 import com.akif.auth.internal.dto.RegisterRequest;
 import com.akif.auth.api.AuthResponse;
+import com.akif.auth.api.UserLookup;
 import com.akif.auth.api.UserDto;
 import com.akif.auth.domain.enums.AuthProvider;
 import com.akif.auth.internal.mapper.UserMapper;
@@ -14,7 +15,6 @@ import com.akif.auth.internal.exception.SocialLoginRequiredException;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.shared.security.JwtTokenService;
-import com.akif.auth.api.AuthService;
 import com.akif.shared.exception.InvalidTokenException;
 import com.akif.shared.exception.TokenExpiredException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -35,7 +35,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class AuthServiceImpl implements AuthService {
+public class AuthServiceImpl implements AuthService, UserLookup {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;

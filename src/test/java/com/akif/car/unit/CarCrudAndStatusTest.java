@@ -12,8 +12,6 @@ import com.akif.car.internal.repository.CarRepository;
 import com.akif.car.internal.service.CarCommandService;
 import com.akif.car.internal.service.CarLookup;
 import com.akif.car.internal.service.CarQueryService;
-import com.akif.car.internal.service.CarServiceImpl;
-import com.akif.car.internal.service.CarStatisticsService;
 import com.akif.car.internal.service.CarStatusService;
 import com.akif.shared.enums.CurrencyType;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,8 +37,8 @@ import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CarServiceImpl Unit Tests")
-class CarServiceImplTest {
+@DisplayName("Car CRUD and status services")
+class CarCrudAndStatusTest {
 
     @Mock
     private CarRepository carRepository;
@@ -51,16 +49,16 @@ class CarServiceImplTest {
     @Spy
     private Clock clock = Clock.systemDefaultZone();
 
-    private CarServiceImpl carService;
+    private CarQueryService queryService;
+    private CarCommandService commandService;
+    private CarStatusService statusService;
 
     @BeforeEach
     void wireService() {
         CarLookup carLookup = new CarLookup(carRepository);
-        carService = new CarServiceImpl(
-                new CarQueryService(clock, carRepository, carMapper, carLookup),
-                new CarCommandService(clock, carRepository, carMapper, carLookup),
-                new CarStatusService(clock, carRepository, carMapper, carLookup),
-                new CarStatisticsService(carRepository));
+        queryService = new CarQueryService(clock, carRepository, carMapper, carLookup);
+        commandService = new CarCommandService(clock, carRepository, carMapper, carLookup);
+        statusService = new CarStatusService(clock, carRepository, carMapper, carLookup);
     }
 
     private Car testCar1;
@@ -137,7 +135,7 @@ class CarServiceImplTest {
             when(carRepository.save(testCar1)).thenReturn(testCar1);
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
 
-            CarResponse result = carService.createCar(testCarRequest);
+            CarResponse result = commandService.createCar(testCarRequest);
 
             assertThat(result).isNotNull();
             assertThat(result.getId()).isEqualTo(1L);
@@ -157,7 +155,7 @@ class CarServiceImplTest {
 
             when(carRepository.existsByLicensePlate(testCarRequest.getLicensePlate())).thenReturn(true);
 
-            assertThatThrownBy(() -> carService.createCar(testCarRequest))
+            assertThatThrownBy(() -> commandService.createCar(testCarRequest))
                     .isInstanceOf(CarAlreadyExistsException.class)
                     .hasMessageContaining("Car already exists with license plate: " + testCarRequest.getLicensePlate());
 
@@ -174,7 +172,7 @@ class CarServiceImplTest {
             when(carRepository.existsByLicensePlate(testCarRequest.getLicensePlate())).thenReturn(false);
             when(carRepository.existsByVinNumber(testCarRequest.getVinNumber())).thenReturn(true);
 
-            assertThatThrownBy(() -> carService.createCar(testCarRequest))
+            assertThatThrownBy(() -> commandService.createCar(testCarRequest))
                     .isInstanceOf(CarAlreadyExistsException.class)
                     .hasMessageContaining("Car already exists with vinNumber: " + testCarRequest.getVinNumber());
 
@@ -196,7 +194,7 @@ class CarServiceImplTest {
             when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar1));
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
 
-            CarResponse result = carService.getCarById(1L);
+            CarResponse result = queryService.getCarById(1L);
 
             assertThat(result).isNotNull();
             assertThat(result.getId()).isEqualTo(1L);
@@ -212,7 +210,7 @@ class CarServiceImplTest {
 
             when(carRepository.findByIdAndIsDeletedFalse(999L)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> carService.getCarById(999L))
+            assertThatThrownBy(() -> queryService.getCarById(999L))
                     .isInstanceOf(CarNotFoundException.class)
                     .hasMessageContaining("Car not found with id: 999");
 
@@ -227,7 +225,7 @@ class CarServiceImplTest {
             when(carRepository.findByLicensePlateAndIsDeletedFalse("34ABC123")).thenReturn(Optional.of(testCar1));
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
 
-            CarResponse result = carService.getCarByLicensePlate("34ABC123");
+            CarResponse result = queryService.getCarByLicensePlate("34ABC123");
 
             assertThat(result).isNotNull();
             assertThat(result.getId()).isEqualTo(1L);
@@ -242,7 +240,7 @@ class CarServiceImplTest {
         void shouldThrowExceptionWhenCarLicensePlateDoesNotExist() {
             when(carRepository.findByLicensePlateAndIsDeletedFalse("NONEXISTENT")).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> carService.getCarByLicensePlate("NONEXISTENT"))
+            assertThatThrownBy(() -> queryService.getCarByLicensePlate("NONEXISTENT"))
                     .isInstanceOf(CarNotFoundException.class)
                     .hasMessageContaining("Car not found with license plate: NONEXISTENT");
 
@@ -265,7 +263,7 @@ class CarServiceImplTest {
             when(carRepository.save(testCar1)).thenReturn(testCar1);
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
 
-            CarResponse result = carService.updateCar(1L, testCarRequest);
+            CarResponse result = commandService.updateCar(1L, testCarRequest);
 
             assertThat(result).isNotNull();
             assertThat(result.getId()).isEqualTo(1L);
@@ -284,7 +282,7 @@ class CarServiceImplTest {
 
             when(carRepository.findByIdAndIsDeletedFalse(999L)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> carService.updateCar(999L, testCarRequest))
+            assertThatThrownBy(() -> commandService.updateCar(999L, testCarRequest))
                     .isInstanceOf(CarNotFoundException.class)
                     .hasMessageContaining("Car not found with id: 999");
 
@@ -305,7 +303,7 @@ class CarServiceImplTest {
 
             when(carRepository.findById(1L)).thenReturn(Optional.of(testCar1));
 
-            carService.deleteCar(1L);
+            commandService.deleteCar(1L);
 
             verify(carRepository).findById(1L);
             verify(carRepository).delete(testCar1);
@@ -317,7 +315,7 @@ class CarServiceImplTest {
 
             when(carRepository.findById(999L)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> carService.deleteCar(999L))
+            assertThatThrownBy(() -> commandService.deleteCar(999L))
                     .isInstanceOf(CarNotFoundException.class)
                     .hasMessageContaining("Car not found with id: 999");
 
@@ -340,7 +338,7 @@ class CarServiceImplTest {
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
             when(carMapper.toDto(testCar2)).thenReturn(testCarResponse);
 
-            Page<CarResponse> result = carService.getAllCars(pageable);
+            Page<CarResponse> result = queryService.getAllCars(pageable);
 
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(2);
@@ -360,7 +358,7 @@ class CarServiceImplTest {
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
             when(carMapper.toDto(testCar2)).thenReturn(testCarResponse);
 
-            Page<CarResponse> result = carService.getCarsByStatus(String.valueOf(CarStatusType.AVAILABLE), pageable);
+            Page<CarResponse> result = queryService.getCarsByStatus(String.valueOf(CarStatusType.AVAILABLE), pageable);
 
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(2);
@@ -388,7 +386,7 @@ class CarServiceImplTest {
             when(carRepository.save(testCar1)).thenReturn(testCar1);
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
 
-            CarResponse result = carService.updateCarStatus(1L, statusUpdateRequest);
+            CarResponse result = statusService.updateCarStatus(1L, statusUpdateRequest);
 
             assertThat(result).isNotNull();
             assertThat(testCar1.getCarStatusType()).isEqualTo(CarStatusType.MAINTENANCE);

@@ -3,7 +3,7 @@ package com.akif.rental.web;
 import com.akif.rental.internal.dto.penalty.PenaltyWaiverRequest;
 import com.akif.rental.internal.dto.penalty.PenaltyWaiverResponse;
 import com.akif.rental.domain.model.PenaltyWaiver;
-import com.akif.auth.api.AuthService;
+import com.akif.auth.api.UserLookup;
 import com.akif.auth.api.UserDto;
 import com.akif.rental.internal.service.penalty.PenaltyWaiverService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class PenaltyWaiverController {
 
     private final PenaltyWaiverService penaltyWaiverService;
-    private final AuthService authService;
+    private final UserLookup userLookup;
 
     @PostMapping("/{id}/penalty/waive")
     @Operation(summary = "Waive penalty",
@@ -54,7 +54,7 @@ public class PenaltyWaiverController {
         String username = authentication.getName();
         log.info("POST /api/v1/admin/rentals/{}/penalty/waive - Admin: {}", id, username);
 
-        UserDto admin = authService.getUserByUsername(username);
+        UserDto admin = userLookup.getUserByUsername(username);
 
         PenaltyWaiver waiver;
         if (Boolean.TRUE.equals(request.fullWaiver())) {

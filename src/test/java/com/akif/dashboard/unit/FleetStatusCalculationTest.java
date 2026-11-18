@@ -1,6 +1,6 @@
 package com.akif.dashboard.unit;
 
-import com.akif.car.api.CarService;
+import com.akif.car.api.CarCatalog;
 import com.akif.car.api.CarStatusType;
 import com.akif.damage.api.DamageService;
 import com.akif.dashboard.api.dto.FleetStatusDto;
@@ -27,14 +27,14 @@ class FleetStatusCalculationTest {
 
     private static final LocalDate TODAY = LocalDate.of(2026, 11, 18);
 
-    private final CarService carService = mock(CarService.class);
+    private final CarCatalog carCatalog = mock(CarCatalog.class);
     private final RentalService rentalService = mock(RentalService.class);
     private final DashboardQueryService service = new DashboardQueryService(
             Clock.fixed(Instant.parse("2026-11-18T12:00:00Z"), ZoneOffset.UTC),
-            rentalService, carService, mock(PaymentService.class), mock(DamageService.class));
+            rentalService, carCatalog, mock(PaymentService.class), mock(DamageService.class));
 
     private FleetStatusDto fleet(Map<Long, CarStatusType> statuses, Set<Long> inUse, Set<Long> reserved) {
-        when(carService.findActiveCarStatuses()).thenReturn(statuses);
+        when(carCatalog.findActiveCarStatuses()).thenReturn(statuses);
         when(rentalService.findCarIdsInUse()).thenReturn(inUse);
         when(rentalService.findCarIdsReservedOn(TODAY)).thenReturn(reserved);
         return service.fetchFleetStatus();

@@ -2,14 +2,15 @@ package com.akif.damage.internal.service.damage.impl;
 
 import java.time.Clock;
 
-import com.akif.auth.api.AuthService;
+import com.akif.auth.api.UserLookup;
 import com.akif.auth.api.UserDto;
-import com.akif.car.api.CarService;
+import com.akif.car.api.CarCatalog;
+import com.akif.car.api.CarFleetOperations;
 import com.akif.car.api.CarDto;
 import com.akif.damage.internal.config.DamageConfig;
 import com.akif.damage.api.DamageReportedEvent;
 import com.akif.damage.api.DamageSeverity;
-import com.akif.damage.domain.enums.DamageStatus;
+import com.akif.damage.api.DamageStatus;
 import com.akif.damage.domain.model.DamagePhoto;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.service.damage.DamageReportService;
@@ -50,17 +51,18 @@ public class DamageReportServiceImpl implements DamageReportService {
     private final ApplicationEventPublisher eventPublisher;
 
     private final RentalService rentalService;
-    private final CarService carService;
-    private final AuthService authService;
+    private final CarCatalog carCatalog;
+    private final CarFleetOperations carFleetOperations;
+    private final UserLookup userLookup;
 
     @Override
     @Transactional
     public DamageReportResponse createDamageReport(Long rentalId, DamageReportRequest request, String username) {
         RentalSummaryDto rental = rentalService.getRentalSummaryById(rentalId);
 
-        UserDto user = authService.getUserByUsername(username);
+        UserDto user = userLookup.getUserByUsername(username);
 
-        CarDto car = carService.getCarDtoById(rental.carId());
+        CarDto car = carCatalog.getCarDtoById(rental.carId());
 
         DamageReport damageReport = DamageReport.builder()
                 .rentalId(rental.id())
@@ -87,7 +89,7 @@ public class DamageReportServiceImpl implements DamageReportService {
         rentalService.incrementDamageReportCount(rentalId);
 
         if (request.initialSeverity() == DamageSeverity.MAJOR) {
-            carService.markAsMaintenance(rental.carId());
+            carFleetOperations.markAsMaintenance(rental.carId());
             log.info("Car {} marked as MAINTENANCE due to MAJOR damage", rental.carId());
         }
 
@@ -121,7 +123,7 @@ public class DamageReportServiceImpl implements DamageReportService {
         DamageReport damageReport = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
                 .orElseThrow(() -> DamageReportException.notFound(damageId));
 
-        UserDto user = authService.getUserByUsername(username);
+        UserDto user = userLookup.getUserByUsername(username);
 
         int currentPhotoCount = damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(damageId);
         int maxPhotos = damageConfig.getMaxPhotosPerReport();
@@ -185,7 +187,7 @@ public class DamageReportServiceImpl implements DamageReportService {
         DamagePhoto photo = damagePhotoRepository.findByIdAndIsDeletedFalse(photoId)
                 .orElseThrow(() -> DamageReportException.photoNotFound(photoId));
 
-        UserDto requester = authService.getUserByUsername(username);
+        UserDto requester = userLookup.getUserByUsername(username);
         if (!requester.isAdmin() && !requester.id().equals(photo.getDamageReport().getCustomerUserId())) {
             log.warn("User {} requested a damage photo of another customer (photoId={})", requester.id(), photoId);
             throw new AccessDeniedException("You can only view photos of your own damage reports");

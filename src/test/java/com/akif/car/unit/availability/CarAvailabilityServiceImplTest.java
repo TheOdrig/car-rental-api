@@ -2,7 +2,7 @@ package com.akif.car.unit.availability;
 
 import com.akif.car.api.DayAvailabilityDto;
 import com.akif.car.domain.Car;
-import com.akif.car.domain.enums.AvailabilityStatus;
+import com.akif.car.api.AvailabilityStatus;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.internal.dto.availability.*;
 import com.akif.car.api.PriceModifier;

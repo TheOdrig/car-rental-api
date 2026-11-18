@@ -7,7 +7,7 @@ import com.akif.car.domain.Car;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.dashboard.api.AlertService;
 import com.akif.dashboard.api.dto.FleetStatusDto;
-import com.akif.dashboard.domain.enums.AlertType;
+import com.akif.dashboard.api.AlertType;
 import com.akif.dashboard.internal.repository.AlertRepository;
 import com.akif.dashboard.internal.service.DashboardQueryService;
 import com.akif.e2e.infrastructure.TestDataBuilder;

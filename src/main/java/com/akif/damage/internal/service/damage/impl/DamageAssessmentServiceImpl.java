@@ -2,15 +2,15 @@ package com.akif.damage.internal.service.damage.impl;
 
 import java.time.Clock;
 
-import com.akif.auth.api.AuthService;
+import com.akif.auth.api.UserLookup;
 import com.akif.auth.api.UserDto;
-import com.akif.car.api.CarService;
+import com.akif.car.api.CarFleetOperations;
 import com.akif.rental.api.RentalService;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.damage.internal.config.DamageConfig;
 import com.akif.damage.api.DamageAssessedEvent;
 import com.akif.damage.api.DamageSeverity;
-import com.akif.damage.domain.enums.DamageStatus;
+import com.akif.damage.api.DamageStatus;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.service.damage.DamageAssessmentService;
 import com.akif.damage.internal.dto.damage.request.DamageAssessmentRequest;
@@ -39,8 +39,8 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
     private final DamageConfig damageConfig;
     private final ApplicationEventPublisher eventPublisher;
 
-    private final CarService carService;
-    private final AuthService authService;
+    private final CarFleetOperations carFleetOperations;
+    private final UserLookup userLookup;
     private final RentalService rentalService;
 
     @Override
@@ -49,7 +49,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
         DamageReport damageReport = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
                 .orElseThrow(() -> DamageReportException.notFound(damageId));
 
-        UserDto user = authService.getUserByUsername(username);
+        UserDto user = userLookup.getUserByUsername(username);
 
         if (!damageReport.canBeAssessed()) {
             throw DamageAssessmentException.invalidStatus(damageReport.getStatus().name());
@@ -104,7 +104,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
             throw DamageAssessmentException.alreadyCharged();
         }
 
-        UserDto user = authService.getUserByUsername(username);
+        UserDto user = userLookup.getUserByUsername(username);
 
         DamageSeverity severity = request.severity() != null
                 ? request.severity()
@@ -181,7 +181,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
 
     private String updateCarStatusBasedOnSeverity(Long carId, DamageSeverity severity) {
         if (severity.requiresMaintenance()) {
-            carService.markAsMaintenance(carId);
+            carFleetOperations.markAsMaintenance(carId);
             log.info("Car {} marked as MAINTENANCE due to {} damage", carId, severity);
             return "MAINTENANCE";
         }

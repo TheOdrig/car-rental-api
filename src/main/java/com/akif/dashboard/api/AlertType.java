@@ -1,4 +1,4 @@
-package com.akif.dashboard.domain.enums;
+package com.akif.dashboard.api;
 
 
 public enum AlertType {

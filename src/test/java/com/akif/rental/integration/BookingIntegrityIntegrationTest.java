@@ -3,7 +3,7 @@ package com.akif.rental.integration;
 import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
-import com.akif.car.api.CarService;
+import com.akif.car.internal.service.CarQueryService;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.domain.Car;
 import com.akif.car.internal.repository.CarRepository;
@@ -69,7 +69,7 @@ class BookingIntegrityIntegrationTest {
     private RentalRepository rentalRepository;
 
     @Autowired
-    private CarService carService;
+    private CarQueryService carQueryService;
 
     @Autowired
     private JwtTokenService tokenService;
@@ -302,9 +302,9 @@ class BookingIntegrityIntegrationTest {
         Car car = carRepository.save(TestDataBuilder.createAvailableCar());
         String token = tokenFor(userRepository.save(TestDataBuilder.createTestUser("renter")));
 
-        assertThat(carService.getCarById(car.getId()).getCarStatusType()).isEqualTo(CarStatusType.AVAILABLE);
+        assertThat(carQueryService.getCarById(car.getId()).getCarStatusType()).isEqualTo(CarStatusType.AVAILABLE);
         jdbcTemplate.update("UPDATE car_rental.car SET car_status_type = 'MAINTENANCE' WHERE id = ?", car.getId());
-        assertThat(carService.getCarById(car.getId()).getCarStatusType())
+        assertThat(carQueryService.getCarById(car.getId()).getCarStatusType())
                 .as("the cached read is stale, which is the point of the test")
                 .isEqualTo(CarStatusType.AVAILABLE);
 
