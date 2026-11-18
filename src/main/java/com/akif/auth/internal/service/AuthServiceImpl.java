@@ -1,5 +1,6 @@
 package com.akif.auth.internal.service;
 
+import com.akif.auth.internal.exception.UserNotFoundException;
 import com.akif.auth.internal.dto.LoginRequest;
 import com.akif.auth.internal.dto.RefreshTokenRequest;
 import com.akif.auth.internal.dto.RegisterRequest;
@@ -48,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
     public UserDto getUserByUsername(String username) {
         log.debug("Getting user by username: {}", username);
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
         return userMapper.toDto(user);
     }
     
@@ -165,7 +166,7 @@ public class AuthServiceImpl implements AuthService {
 
     private AuthResponse generateTokenResponse(Authentication authentication) {
         User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         return buildResponse(user, refreshTokenService.issue(user.getId()));
     }

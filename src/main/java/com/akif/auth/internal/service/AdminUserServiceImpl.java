@@ -1,5 +1,6 @@
 package com.akif.auth.internal.service;
 
+import com.akif.auth.internal.exception.InvalidUserStateException;
 import java.time.Clock;
 
 import com.akif.auth.api.AdminNoteDto;
@@ -180,7 +181,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
         if (user.getIsBanned() != null && user.getIsBanned()) {
             log.warn("User {} is already banned", userId);
-            throw new IllegalStateException("User is already banned");
+            throw new InvalidUserStateException("User is already banned");
         }
 
         user.ban(reason, adminId, LocalDateTime.now(clock));
@@ -200,7 +201,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
         if (user.getIsBanned() == null || !user.getIsBanned()) {
             log.warn("User {} is not banned", userId);
-            throw new IllegalStateException("User is not banned");
+            throw new InvalidUserStateException("User is not banned");
         }
 
         user.unban(LocalDateTime.now(clock));

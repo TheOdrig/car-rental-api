@@ -168,7 +168,7 @@ class OAuth2AuthServiceUsabilityTest {
         assertThatThrownBy(() -> service.processOAuth2Callback("google", "code", "state"))
                 .isInstanceOfSatisfying(OAuth2AuthenticationException.class, ex -> {
                     assertThat(ex.getErrorType()).isEqualTo(OAuth2ErrorType.LOCAL_ACCOUNT_UNVERIFIED);
-                    assertThat(ex.getErrorCode()).isEqualTo("local_account_unverified");
+                    assertThat(ex.getErrorCode()).isEqualTo("OAUTH2_LOCAL_ACCOUNT_UNVERIFIED");
                     assertThat(ex.getHttpStatus()).isEqualTo(HttpStatus.CONFLICT);
                 });
         verify(linkedAccountRepository, never()).save(any());

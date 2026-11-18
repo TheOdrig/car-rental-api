@@ -18,6 +18,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
@@ -32,6 +35,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 
 import java.lang.reflect.Method;
 import java.time.Clock;
@@ -276,6 +281,51 @@ class GlobalExceptionHandlerTest {
             assertThat(body.getInstance().toString()).isEqualTo("/api/v1/cars/123");
             assertThat(body.getTitle()).isEqualTo("Method Not Allowed");
             assertThat(body.getProperties()).containsKey("timestamp");
+        }
+    }
+
+    @Nested
+    @DisplayName("Persistence and upload failures")
+    class PersistenceAndUploadTests {
+
+        @Test
+        @DisplayName("Should answer a data integrity violation with 409 DATA_CONFLICT")
+        void shouldMapDataIntegrityViolation() {
+            ResponseEntity<ProblemDetail> response = handler.handleDataIntegrityViolation(
+                    new DataIntegrityViolationException("fk_rentals_car"), webRequest);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+            assertThat(code(response)).isEqualTo("DATA_CONFLICT");
+        }
+
+        @Test
+        @DisplayName("Should answer an optimistic lock failure with 409 CONCURRENT_MODIFICATION")
+        void shouldMapOptimisticLock() {
+            ResponseEntity<ProblemDetail> response = handler.handleOptimisticLock(
+                    new OptimisticLockingFailureException("stale"), webRequest);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+            assertThat(code(response)).isEqualTo("CONCURRENT_MODIFICATION");
+        }
+
+        @Test
+        @DisplayName("Should answer an oversized upload with 413 PAYLOAD_TOO_LARGE")
+        void shouldMapMaxUploadSize() {
+            ResponseEntity<Object> response = handler.handleMaxUploadSizeExceededException(
+                    new MaxUploadSizeExceededException(1024L), new HttpHeaders(), HttpStatus.CONTENT_TOO_LARGE, webRequest);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONTENT_TOO_LARGE);
+            assertThat(code(response)).isEqualTo("PAYLOAD_TOO_LARGE");
+        }
+
+        @Test
+        @DisplayName("Should answer a malformed multipart request with 400 INVALID_MULTIPART_REQUEST")
+        void shouldMapMultipart() {
+            ResponseEntity<ProblemDetail> response = handler.handleMultipart(
+                    new MultipartException("broken"), webRequest);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(code(response)).isEqualTo("INVALID_MULTIPART_REQUEST");
         }
     }
 

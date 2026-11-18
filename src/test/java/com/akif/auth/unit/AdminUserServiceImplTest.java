@@ -3,6 +3,7 @@ package com.akif.auth.unit;
 import com.akif.auth.api.AdminUserDetailResponse;
 import com.akif.auth.api.AdminUserDetailResponse.UserStatistics;
 import com.akif.auth.domain.User;
+import com.akif.auth.internal.exception.InvalidUserStateException;
 import com.akif.auth.internal.exception.UserNotFoundException;
 import com.akif.auth.internal.repository.AdminNoteRepository;
 import com.akif.auth.internal.repository.UserRepository;
@@ -280,6 +281,31 @@ class AdminUserServiceImplTest {
             AdminUserDetailResponse result = adminUserService.getUserDetailForAdmin(4L);
 
             assertThat(result.accountStatus().status()).isEqualTo("DELETED");
+        }
+    }
+
+    @Nested
+    @DisplayName("ban state errors")
+    class BanStateTests {
+
+        @Test
+        @DisplayName("banning an already banned user raises a domain exception")
+        void banTwice() {
+            testUser.ban("spam", 9L, LocalDateTime.now());
+            when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+
+            assertThatThrownBy(() -> adminUserService.banUser(1L, "spam", 9L))
+                    .isInstanceOf(InvalidUserStateException.class)
+                    .extracting("errorCode").isEqualTo("INVALID_USER_STATE");
+        }
+
+        @Test
+        @DisplayName("unbanning a user who is not banned raises a domain exception")
+        void unbanWhenNotBanned() {
+            when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+
+            assertThatThrownBy(() -> adminUserService.unbanUser(1L, "note", 9L))
+                    .isInstanceOf(InvalidUserStateException.class);
         }
     }
 

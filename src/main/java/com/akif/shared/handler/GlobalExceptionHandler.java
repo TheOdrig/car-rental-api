@@ -15,6 +15,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -29,6 +31,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -116,11 +120,42 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 "Invalid date format. Expected format: yyyy-MM-dd", extractPath(request)));
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ProblemDetail> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex, WebRequest request) {
+        log.warn("[{}] Data integrity violation: {}", ErrorCode.DATA_CONFLICT.name(), ex.getMostSpecificCause().getMessage());
+        return respond(problems.create(HttpStatus.CONFLICT, ErrorCode.DATA_CONFLICT.name(),
+                "The request conflicts with existing data.", extractPath(request)));
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ProblemDetail> handleOptimisticLock(
+            OptimisticLockingFailureException ex, WebRequest request) {
+        log.warn("[{}] Optimistic lock failure: {}", ErrorCode.CONCURRENT_MODIFICATION.name(), ex.getMessage());
+        return respond(problems.create(HttpStatus.CONFLICT, ErrorCode.CONCURRENT_MODIFICATION.name(),
+                "The resource was modified concurrently. Reload it and retry.", extractPath(request)));
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<ProblemDetail> handleMultipart(MultipartException ex, WebRequest request) {
+        log.warn("[{}] Invalid multipart request: {}", ErrorCode.INVALID_MULTIPART_REQUEST.name(), ex.getMessage());
+        return respond(problems.create(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_MULTIPART_REQUEST.name(),
+                "The multipart request is malformed.", extractPath(request)));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetail> handleGenericException(Exception ex, WebRequest request) {
         log.error("[{}] Unexpected error: {}", ERROR_CODE_INTERNAL_SERVER_ERROR, ex.getMessage(), ex);
         return respond(problems.create(HttpStatus.INTERNAL_SERVER_ERROR, ERROR_CODE_INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred. Please try again later.", extractPath(request)));
+    }
+
+    @Override
+    public ResponseEntity<Object> handleMaxUploadSizeExceededException(
+            MaxUploadSizeExceededException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        log.warn("[{}] Upload too large: {}", ErrorCode.PAYLOAD_TOO_LARGE.name(), ex.getMessage());
+        return respondObject(problems.create(HttpStatus.CONTENT_TOO_LARGE, ErrorCode.PAYLOAD_TOO_LARGE.name(),
+                "The uploaded file or request is too large.", extractPath(request)));
     }
 
     @Override
@@ -241,7 +276,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static String defaultCode(HttpStatusCode status) {
         HttpStatus resolved = HttpStatus.resolve(status.value());
-        return resolved != null ? resolved.name() : "HTTP_" + status.value();
+        ErrorCode code = resolved == null ? null : switch (resolved) {
+            case METHOD_NOT_ALLOWED -> ErrorCode.METHOD_NOT_ALLOWED;
+            case NOT_ACCEPTABLE -> ErrorCode.NOT_ACCEPTABLE;
+            case UNSUPPORTED_MEDIA_TYPE -> ErrorCode.UNSUPPORTED_MEDIA_TYPE;
+            case NOT_FOUND -> ErrorCode.ENDPOINT_NOT_FOUND;
+            case CONTENT_TOO_LARGE -> ErrorCode.PAYLOAD_TOO_LARGE;
+            default -> null;
+        };
+        if (code != null) {
+            return code.name();
+        }
+        return (status.is4xxClientError() ? ErrorCode.BAD_REQUEST : ErrorCode.INTERNAL_SERVER_ERROR).name();
     }
 
     private static String messageOf(MessageSourceResolvable error) {

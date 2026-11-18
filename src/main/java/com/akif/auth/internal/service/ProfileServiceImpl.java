@@ -1,5 +1,6 @@
 package com.akif.auth.internal.service;
 
+import com.akif.auth.internal.exception.UserNotFoundException;
 import com.akif.auth.api.AvatarStorageService;
 import com.akif.auth.api.ProfileService;
 import com.akif.auth.api.UserDto;
@@ -132,6 +133,6 @@ public class ProfileServiceImpl implements ProfileService {
 
     private User findUserByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
     }
 }

@@ -32,7 +32,7 @@ class OAuth2ErrorHandlingTest {
         @Test
         @DisplayName("Authorization denied error code should be 'authorization_denied'")
         void authorizationDeniedErrorCodeShouldBeCorrect() {
-            assertThat(OAuth2ErrorType.AUTHORIZATION_DENIED.getCode()).isEqualTo("authorization_denied");
+            assertThat(OAuth2ErrorType.AUTHORIZATION_DENIED.getCode()).isEqualTo("OAUTH2_AUTHORIZATION_DENIED");
         }
     }
 
@@ -54,7 +54,7 @@ class OAuth2ErrorHandlingTest {
         @Test
         @DisplayName("Authentication failed error code should be 'authentication_failed'")
         void authenticationFailedErrorCodeShouldBeCorrect() {
-            assertThat(OAuth2ErrorType.AUTHENTICATION_FAILED.getCode()).isEqualTo("authentication_failed");
+            assertThat(OAuth2ErrorType.AUTHENTICATION_FAILED.getCode()).isEqualTo("OAUTH2_AUTHENTICATION_FAILED");
         }
     }
 
@@ -76,7 +76,7 @@ class OAuth2ErrorHandlingTest {
         @Test
         @DisplayName("Invalid token error code should be 'invalid_token'")
         void invalidTokenErrorCodeShouldBeCorrect() {
-            assertThat(OAuth2ErrorType.INVALID_TOKEN.getCode()).isEqualTo("invalid_token");
+            assertThat(OAuth2ErrorType.INVALID_TOKEN.getCode()).isEqualTo("OAUTH2_INVALID_TOKEN");
         }
     }
 
@@ -98,7 +98,7 @@ class OAuth2ErrorHandlingTest {
         @Test
         @DisplayName("Provider unavailable error code should be 'provider_unavailable'")
         void providerUnavailableErrorCodeShouldBeCorrect() {
-            assertThat(OAuth2ErrorType.PROVIDER_UNAVAILABLE.getCode()).isEqualTo("provider_unavailable");
+            assertThat(OAuth2ErrorType.PROVIDER_UNAVAILABLE.getCode()).isEqualTo("OAUTH2_PROVIDER_UNAVAILABLE");
         }
     }
 
@@ -120,7 +120,7 @@ class OAuth2ErrorHandlingTest {
         @Test
         @DisplayName("Email required error code should be 'email_required'")
         void emailRequiredErrorCodeShouldBeCorrect() {
-            assertThat(OAuth2ErrorType.EMAIL_REQUIRED.getCode()).isEqualTo("email_required");
+            assertThat(OAuth2ErrorType.EMAIL_REQUIRED.getCode()).isEqualTo("OAUTH2_EMAIL_REQUIRED");
         }
     }
 
@@ -140,9 +140,9 @@ class OAuth2ErrorHandlingTest {
         }
 
         @Test
-        @DisplayName("Invalid state error code should be 'invalid_state'")
+        @DisplayName("Invalid state error code should be OAUTH2_INVALID_STATE")
         void invalidStateErrorCodeShouldBeCorrect() {
-            assertThat(OAuth2ErrorType.INVALID_STATE.getCode()).isEqualTo("invalid_state");
+            assertThat(OAuth2ErrorType.INVALID_STATE.getCode()).isEqualTo("OAUTH2_INVALID_STATE");
         }
     }
 

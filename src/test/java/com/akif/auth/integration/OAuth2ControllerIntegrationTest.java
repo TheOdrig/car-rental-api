@@ -74,6 +74,16 @@ class OAuth2ControllerIntegrationTest {
         userRepository.deleteAll();
     }
 
+    @Test
+    @DisplayName("Should answer an unsupported provider with a 400 problem and an ErrorCode")
+    void shouldRejectUnsupportedProvider() throws Exception {
+        mockMvc.perform(get("/api/v1/oauth2/authorize/foo"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith("application/problem+json"))
+                .andExpect(jsonPath("$.code").value("OAUTH2_PROVIDER_NOT_SUPPORTED"))
+                .andExpect(jsonPath("$.details.provider").value("foo"));
+    }
+
     @Nested
     @DisplayName("Authorization Redirect Tests")
     class AuthorizationRedirectTests {
@@ -127,7 +137,7 @@ class OAuth2ControllerIntegrationTest {
                             .param("code", authCode)
                             .param("state", invalidState))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").value("invalid_state"));
+                    .andExpect(jsonPath("$.code").value("OAUTH2_INVALID_STATE"));
         }
 
         @Test
@@ -137,7 +147,7 @@ class OAuth2ControllerIntegrationTest {
                             .param("code", "some-code")
                             .param("state", ""))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").value("invalid_state"));
+                    .andExpect(jsonPath("$.code").value("OAUTH2_INVALID_STATE"));
         }
 
         @Test
@@ -150,7 +160,7 @@ class OAuth2ControllerIntegrationTest {
                             .param("code", "some-code")
                             .param("state", expiredState))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").value("invalid_state"));
+                    .andExpect(jsonPath("$.code").value("OAUTH2_INVALID_STATE"));
         }
     }
 
@@ -192,7 +202,7 @@ class OAuth2ControllerIntegrationTest {
                             .param("code", "valid-code")
                             .param("state", "invalid-state"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").value("invalid_state"));
+                    .andExpect(jsonPath("$.code").value("OAUTH2_INVALID_STATE"));
         }
     }
 

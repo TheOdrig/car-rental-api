@@ -1,5 +1,6 @@
 package com.akif.auth.web;
 
+import com.akif.auth.internal.exception.UserNotFoundException;
 import com.akif.auth.internal.dto.oauth2.LinkAccountResponse;
 import com.akif.auth.api.AuthResponse;
 import com.akif.auth.domain.User;
@@ -91,7 +92,7 @@ public class OAuth2Controller {
         log.debug("Linking {} account for user: {}", provider, userDetails.getUsername());
         
         User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
         
         LinkAccountResponse response = oAuth2AuthService.linkSocialAccount(
                 provider, code, state, user.getId());

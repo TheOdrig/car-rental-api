@@ -1,5 +1,6 @@
 package com.akif.auth.internal.service;
 
+import com.akif.auth.internal.exception.UserNotFoundException;
 import java.time.Clock;
 
 import com.akif.auth.api.PasswordResetRequestedEvent;
@@ -82,7 +83,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         }
 
         var user = userRepository.findByEmail(resetToken.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + resetToken.getEmail()));
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + resetToken.getEmail()));
 
         user.changePassword(passwordService.hashPassword(newPassword));
         userRepository.save(user);

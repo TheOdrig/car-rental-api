@@ -5,6 +5,8 @@ import com.akif.shared.exception.BaseException;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+import java.util.Map;
+
 @Getter
 public class OAuth2AuthenticationException extends BaseException {
 
@@ -12,38 +14,45 @@ public class OAuth2AuthenticationException extends BaseException {
     private final String provider;
 
     public OAuth2AuthenticationException(OAuth2ErrorType errorType) {
-        super(errorType.getCode(), errorType.getMessage(), mapErrorTypeToHttpStatus(errorType));
-        this.errorType = errorType;
-        this.provider = null;
+        this(errorType, null);
     }
 
     public OAuth2AuthenticationException(OAuth2ErrorType errorType, String provider) {
         super(errorType.getCode(), errorType.getMessage(), mapErrorTypeToHttpStatus(errorType));
         this.errorType = errorType;
         this.provider = provider;
+        registerProvider(provider);
     }
 
     public OAuth2AuthenticationException(OAuth2ErrorType errorType, String provider, String customMessage) {
         super(errorType.getCode(), customMessage, mapErrorTypeToHttpStatus(errorType));
         this.errorType = errorType;
         this.provider = provider;
+        registerProvider(provider);
     }
 
     public OAuth2AuthenticationException(OAuth2ErrorType errorType, String provider, Throwable cause) {
         super(errorType.getCode(), errorType.getMessage(), mapErrorTypeToHttpStatus(errorType), cause);
         this.errorType = errorType;
         this.provider = provider;
+        registerProvider(provider);
+    }
+
+    private void registerProvider(String provider) {
+        if (provider != null) {
+            setDetails(Map.of("provider", provider));
+        }
     }
 
     private static HttpStatus mapErrorTypeToHttpStatus(OAuth2ErrorType errorType) {
         return switch (errorType) {
-            case AUTHORIZATION_DENIED, AUTHENTICATION_FAILED, INVALID_TOKEN, SOCIAL_LOGIN_REQUIRED -> 
+            case AUTHORIZATION_DENIED, AUTHENTICATION_FAILED, INVALID_TOKEN, SOCIAL_LOGIN_REQUIRED ->
                 HttpStatus.UNAUTHORIZED;
-            case PROVIDER_UNAVAILABLE -> 
+            case PROVIDER_UNAVAILABLE ->
                 HttpStatus.SERVICE_UNAVAILABLE;
-            case EMAIL_REQUIRED, INVALID_STATE -> 
+            case EMAIL_REQUIRED, INVALID_STATE, PROVIDER_NOT_SUPPORTED ->
                 HttpStatus.BAD_REQUEST;
-            case ACCOUNT_ALREADY_LINKED, LOCAL_ACCOUNT_UNVERIFIED -> 
+            case ACCOUNT_ALREADY_LINKED, LOCAL_ACCOUNT_UNVERIFIED ->
                 HttpStatus.CONFLICT;
         };
     }

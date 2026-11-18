@@ -1,5 +1,6 @@
 package com.akif.auth.domain.enums;
 
+import com.akif.auth.internal.exception.OAuth2AuthenticationException;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
@@ -21,7 +22,7 @@ public enum OAuth2Provider {
 
     public static OAuth2Provider fromString(String value) {
         if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Provider value cannot be null or empty");
+            throw new OAuth2AuthenticationException(OAuth2ErrorType.PROVIDER_NOT_SUPPORTED, value);
         }
 
         for (OAuth2Provider provider : values()) {
@@ -29,7 +30,7 @@ public enum OAuth2Provider {
                 return provider;
             }
         }
-        throw new IllegalArgumentException("Invalid OAuth2 provider: " + value);
+        throw new OAuth2AuthenticationException(OAuth2ErrorType.PROVIDER_NOT_SUPPORTED, value);
     }
 
     @Override

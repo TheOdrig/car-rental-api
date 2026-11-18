@@ -1,5 +1,6 @@
 package com.akif.auth.internal.service;
 
+import com.akif.auth.internal.exception.UserNotFoundException;
 import com.akif.auth.api.PasswordService;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.exception.InvalidPasswordException;
@@ -26,7 +27,7 @@ public class PasswordServiceImpl implements PasswordService {
         log.info("Changing password for user: {}", username);
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
 
         if (!verifyPassword(currentPassword, user.getPassword())) {
             log.warn("Invalid current password for user: {}", username);
