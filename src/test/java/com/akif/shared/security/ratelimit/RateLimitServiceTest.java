@@ -41,6 +41,22 @@ class RateLimitServiceTest {
     }
 
     @Test
+    @DisplayName("requireAvailable never consumes and consume only takes tokens on request")
+    void requireAvailableDoesNotConsume() {
+        for (int i = 0; i < 10; i++) {
+            service.requireAvailable(RateLimitCategory.LOGIN, "user|1.1.1.1");
+        }
+        for (int i = 0; i < 3; i++) {
+            service.consume(RateLimitCategory.LOGIN, "user|1.1.1.1");
+        }
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> service.requireAvailable(RateLimitCategory.LOGIN, "User|1.1.1.1"))
+                .isInstanceOf(com.akif.shared.exception.RateLimitExceededException.class);
+        service.requireAvailable(RateLimitCategory.LOGIN, "user|2.2.2.2");
+    }
+
+    @Test
     @DisplayName("tracks each client address separately")
     void tracksClientsSeparately() {
         for (int i = 0; i < 3; i++) {

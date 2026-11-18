@@ -36,8 +36,10 @@ public class RateLimitProperties {
             case OAUTH2_CALLBACK -> new Limit(20, 60);
             case RENTAL_REQUEST -> new Limit(10, 600);
             case PAYMENT_INTENT -> new Limit(10, 60);
-            case LOGIN_USERNAME -> new Limit(5, 300);
-            case PASSWORD_RESET_USERNAME -> new Limit(3, 900);
+            case LOGIN_USERNAME -> new Limit(50, 900);
+            case LOGIN_USERNAME_IP -> new Limit(5, 300);
+            case PASSWORD_RESET_USERNAME -> new Limit(20, 900);
+            case PASSWORD_RESET_EMAIL_IP -> new Limit(3, 900);
         };
     }
 

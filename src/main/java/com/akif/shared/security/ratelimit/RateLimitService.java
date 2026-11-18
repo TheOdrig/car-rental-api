@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.akif.shared.exception.RateLimitExceededException;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
+import io.github.bucket4j.EstimationProbe;
 import io.github.bucket4j.TimeMeter;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +50,33 @@ public class RateLimitService {
         if (!decision.allowed()) {
             throw new RateLimitExceededException(decision.retryAfterSeconds());
         }
+    }
+
+    public void requireAvailable(RateLimitCategory category, String identity) {
+        if (!properties.isEnabled() || identity == null || identity.isBlank()) {
+            return;
+        }
+        Bucket bucket = buckets.get(category.name() + ":" + normalize(identity), key -> newBucket(category));
+        EstimationProbe probe = bucket.estimateAbilityToConsume(1);
+        if (!probe.canBeConsumed()) {
+            long retryAfter = Math.max(1L, (probe.getNanosToWaitForRefill() + 999_999_999L) / 1_000_000_000L);
+            throw new RateLimitExceededException(retryAfter);
+        }
+    }
+
+    public void consume(RateLimitCategory category, String identity) {
+        if (!properties.isEnabled() || identity == null || identity.isBlank()) {
+            return;
+        }
+        tryConsume(category, normalize(identity));
+    }
+
+    public static String pair(String identity, String clientIp) {
+        return normalize(identity) + "|" + clientIp;
+    }
+
+    private static String normalize(String identity) {
+        return identity.trim().toLowerCase(Locale.ROOT);
     }
 
     public void clear() {

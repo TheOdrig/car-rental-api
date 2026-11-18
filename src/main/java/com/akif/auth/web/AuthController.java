@@ -8,11 +8,14 @@ import com.akif.auth.internal.dto.ResetPasswordRequest;
 import com.akif.auth.api.AuthResponse;
 import com.akif.auth.internal.service.AuthService;
 import com.akif.auth.api.PasswordResetService;
+import com.akif.shared.security.ratelimit.ClientIpResolver;
 import com.akif.shared.security.ratelimit.RateLimitCategory;
 import com.akif.shared.security.ratelimit.RateLimitService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.security.core.AuthenticationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -31,6 +34,7 @@ public class AuthController {
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
     private final RateLimitService rateLimitService;
+    private final ClientIpResolver clientIpResolver;
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user", description = "Create a new user account")
@@ -45,12 +49,22 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "User login", description = "Authenticate user and return JWT tokens")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest,
+                                              HttpServletRequest httpRequest) {
         log.info("POST /api/v1/auth/login - User login attempt: {}", loginRequest.username());
 
-        rateLimitService.enforce(RateLimitCategory.LOGIN_USERNAME, loginRequest.username());
+        String attempt = RateLimitService.pair(loginRequest.username(), clientIpResolver.resolve(httpRequest));
+        rateLimitService.requireAvailable(RateLimitCategory.LOGIN_USERNAME_IP, attempt);
+        rateLimitService.requireAvailable(RateLimitCategory.LOGIN_USERNAME, loginRequest.username());
 
-        AuthResponse response = authService.login(loginRequest);
+        AuthResponse response;
+        try {
+            response = authService.login(loginRequest);
+        } catch (AuthenticationException e) {
+            rateLimitService.consume(RateLimitCategory.LOGIN_USERNAME_IP, attempt);
+            rateLimitService.consume(RateLimitCategory.LOGIN_USERNAME, loginRequest.username());
+            throw e;
+        }
 
         log.info("User logged in successfully: {}", loginRequest.username());
         return ResponseEntity.ok(response);
@@ -76,9 +90,12 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     @Operation(summary = "Request password reset", description = "Send password reset email to the user")
-    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request,
+                                                              HttpServletRequest httpRequest) {
         log.info("POST /api/v1/auth/forgot-password - Password reset requested for email: {}", request.email());
 
+        rateLimitService.enforce(RateLimitCategory.PASSWORD_RESET_EMAIL_IP,
+                RateLimitService.pair(request.email(), clientIpResolver.resolve(httpRequest)));
         rateLimitService.enforce(RateLimitCategory.PASSWORD_RESET_USERNAME, request.email());
 
         passwordResetService.requestPasswordReset(request.email());

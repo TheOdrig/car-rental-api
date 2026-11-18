@@ -15,7 +15,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import com.akif.auth.domain.User;
+import com.akif.shared.enums.Role;
+
 import java.net.URI;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -33,12 +37,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "security.rate-limit.limits.register.period-seconds=600",
         "security.rate-limit.limits.refresh.capacity=2",
         "security.rate-limit.limits.refresh.period-seconds=60",
-        "security.rate-limit.limits.password-reset.capacity=2",
+        "security.rate-limit.limits.password-reset.capacity=5",
         "security.rate-limit.limits.password-reset.period-seconds=600",
         "security.rate-limit.limits.oauth2-callback.capacity=2",
         "security.rate-limit.limits.oauth2-callback.period-seconds=60",
         "security.rate-limit.limits.rental-request.capacity=2",
-        "security.rate-limit.limits.rental-request.period-seconds=600"
+        "security.rate-limit.limits.rental-request.period-seconds=600",
+        "security.rate-limit.limits.login-username-ip.capacity=3",
+        "security.rate-limit.limits.login-username-ip.period-seconds=300",
+        "security.rate-limit.limits.login-username.capacity=5",
+        "security.rate-limit.limits.login-username.period-seconds=900",
+        "security.rate-limit.limits.password-reset-email-ip.capacity=2",
+        "security.rate-limit.limits.password-reset-email-ip.period-seconds=900",
+        "security.rate-limit.limits.password-reset-username.capacity=3",
+        "security.rate-limit.limits.password-reset-username.period-seconds=900"
 })
 @Import(TestcontainersConfiguration.class)
 @AutoConfigureMockMvc
@@ -51,6 +63,12 @@ class RateLimitIntegrationTest {
 
     @Autowired
     private RateLimitService rateLimitService;
+
+    @Autowired
+    private com.akif.auth.internal.repository.UserRepository userRepository;
+
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
@@ -142,12 +160,65 @@ class RateLimitIntegrationTest {
     @Test
     @DisplayName("password reset requests are limited")
     void passwordResetIsLimited() throws Exception {
-        String body = "{\"email\":\"someone@example.com\"}";
-        for (int i = 0; i < 2; i++) {
-            mockMvc.perform(json("/api/v1/auth/forgot-password", body)).andExpect(status().isOk());
+        for (int i = 0; i < 5; i++) {
+            mockMvc.perform(json("/api/v1/auth/forgot-password", "{\"email\":\"someone" + i + "@example.com\"}"))
+                    .andExpect(status().isOk());
         }
 
-        assertRateLimited(mockMvc.perform(json("/api/v1/auth/forgot-password", body)).andReturn());
+        assertRateLimited(mockMvc.perform(json("/api/v1/auth/forgot-password",
+                "{\"email\":\"someone9@example.com\"}")).andReturn());
+    }
+
+    @Test
+    @DisplayName("an exhausted address and email pair does not block the same email from another address")
+    void forgotPasswordPairBucketIsPerAddress() throws Exception {
+        String body = "{\"email\":\"target@example.com\"}";
+        for (int i = 0; i < 2; i++) {
+            mockMvc.perform(fromAddress(json("/api/v1/auth/forgot-password", body), "192.0.2.1"))
+                    .andExpect(status().isOk());
+        }
+
+        assertRateLimited(mockMvc.perform(fromAddress(json("/api/v1/auth/forgot-password", body), "192.0.2.1"))
+                .andReturn());
+        mockMvc.perform(fromAddress(json("/api/v1/auth/forgot-password", body), "192.0.2.2"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("an exhausted address and username pair does not block the same username from another address")
+    void loginPairBucketIsPerAddress() throws Exception {
+        String body = "{\"username\":\"victim-two\",\"password\":\"wrong-password\"}";
+        for (int i = 0; i < 3; i++) {
+            mockMvc.perform(fromAddress(json("/api/v1/auth/login", body), "198.51.100.1"))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        assertRateLimited(mockMvc.perform(fromAddress(json("/api/v1/auth/login", body), "198.51.100.1")).andReturn());
+        mockMvc.perform(fromAddress(json("/api/v1/auth/login", body), "198.51.100.2"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("successful logins do not consume the per-username buckets")
+    void successfulLoginsDoNotConsume() throws Exception {
+        User user = userRepository.save(User.builder()
+                .username("rate-limit-owner")
+                .email("rate-limit-owner@example.com")
+                .password(passwordEncoder.encode("correct-password-1"))
+                .roles(Set.of(Role.USER))
+                .enabled(true)
+                .build());
+        try {
+            String good = "{\"username\":\"rate-limit-owner\",\"password\":\"correct-password-1\"}";
+            String bad = "{\"username\":\"rate-limit-owner\",\"password\":\"wrong-password\"}";
+            mockMvc.perform(fromAddress(json("/api/v1/auth/login", good), "203.0.113.7")).andExpect(status().isOk());
+            mockMvc.perform(fromAddress(json("/api/v1/auth/login", good), "203.0.113.7")).andExpect(status().isOk());
+
+            mockMvc.perform(fromAddress(json("/api/v1/auth/login", bad), "203.0.113.7"))
+                    .andExpect(status().isUnauthorized());
+        } finally {
+            userRepository.delete(user);
+        }
     }
 
     @Test
@@ -200,7 +271,7 @@ class RateLimitIntegrationTest {
     void loginIsLimitedPerUsername() throws Exception {
         String body = "{\"username\":\"Victim-User\",\"password\":\"wrong-password\"}";
         for (int i = 0; i < 5; i++) {
-            mockMvc.perform(fromAddress(json("/api/v1/auth/login", body), "198.51.100." + i))
+            mockMvc.perform(fromAddress(json("/api/v1/auth/login", body), "198.51.100." + (i / 2)))
                     .andExpect(status().isUnauthorized());
         }
 
