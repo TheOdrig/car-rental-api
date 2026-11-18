@@ -72,10 +72,9 @@ public class PenaltyPaymentServiceImpl implements PenaltyPaymentService {
         log.debug("Handling failed penalty payment: paymentId={}", paymentId);
 
         log.warn("[ADMIN NOTIFICATION] Failed penalty payment requires manual processing: " +
-                "Payment ID={}, Rental ID={}, Customer Email={}, Failure Reason: {}", 
+                "Payment ID={}, Rental ID={}, Failure Reason: {}",
                 paymentId,
                 rentalId,
-                userEmail,
                 failureReason);
 
         log.info("Marked penalty payment as PENDING for manual processing: ID={}", paymentId);

@@ -55,6 +55,9 @@ class RentalControllerAuthorizationTest {
     private ObjectMapper objectMapper;
 
     @Autowired
+    private com.akif.payment.api.PaymentService paymentService;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -276,6 +279,8 @@ class RentalControllerAuthorizationTest {
         mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
                         .header("Authorization", adminToken))
                 .andExpect(status().isOk());
+
+        paymentService.createOrGetIntentForRental(rentalId);
 
         return rentalId;
     }
