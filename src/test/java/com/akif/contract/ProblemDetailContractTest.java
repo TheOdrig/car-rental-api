@@ -100,10 +100,10 @@ class ProblemDetailContractTest {
     @Test
     @DisplayName("an invalid body lists field errors with real field names")
     void validationErrors() throws Exception {
-        assertProblem(mockMvc.perform(post("/api/v1/rentals/request")
+        assertProblem(mockMvc.perform(post("/api/v1/cars/availability/search")
                 .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER")))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"carId\":1,\"startDate\":\"2030-01-10\",\"endDate\":\"2030-01-05\"}")),
+                .content("{\"startDate\":\"2030-01-10\",\"endDate\":\"2030-01-05\"}")),
                 400, "VALIDATION_FAILED")
                 .andExpect(jsonPath("$.errors[*].field").value(hasItem("endDate")))
                 .andExpect(jsonPath("$.errors[?(@.field == 'endDate')].message")

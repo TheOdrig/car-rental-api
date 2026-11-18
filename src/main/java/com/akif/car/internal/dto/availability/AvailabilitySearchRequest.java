@@ -21,7 +21,6 @@ import java.time.LocalDate;
 public class AvailabilitySearchRequest {
 
     @NotNull(message = "Start date cannot be null")
-    @FutureOrPresent(message = "Start date must be today or in the future")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
 

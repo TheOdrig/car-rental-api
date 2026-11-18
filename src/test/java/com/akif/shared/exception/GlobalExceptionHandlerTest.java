@@ -6,7 +6,7 @@ import com.akif.car.internal.exception.CarAlreadyExistsException;
 import com.akif.car.internal.exception.CarNotFoundException;
 import com.akif.car.internal.exception.CarValidationException;
 import com.akif.payment.api.PaymentFailedException;
-import com.akif.rental.api.RentalRequest;
+import com.akif.car.internal.dto.availability.AvailabilitySearchRequest;
 import com.akif.rental.internal.exception.PaymentWindowNotOpenException;
 import com.akif.rental.internal.exception.RentalNotFoundException;
 import com.akif.shared.handler.FieldProblem;
@@ -226,14 +226,16 @@ class GlobalExceptionHandlerTest {
         @DisplayName("Should report method level rules under the field they concern")
         @SuppressWarnings("unchecked")
         void shouldMapAssertTrueMethodsToFields() throws Exception {
-            RentalRequest target = new RentalRequest(1L, LocalDate.of(2026, 3, 10), LocalDate.of(2026, 3, 1),
-                    null);
-            BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(target, "rentalRequest");
-            bindingResult.addError(new FieldError("rentalRequest", "endDateAfterStartDate",
+            AvailabilitySearchRequest target = AvailabilitySearchRequest.builder()
+                    .startDate(LocalDate.of(2026, 3, 10))
+                    .endDate(LocalDate.of(2026, 3, 1))
+                    .build();
+            BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(target, "availabilitySearchRequest");
+            bindingResult.addError(new FieldError("availabilitySearchRequest", "endDateAfterStartDate",
                     "End date must be after start date"));
-            bindingResult.addError(new FieldError("rentalRequest", "withinMaxLeadTime",
-                    "Start date cannot be more than 180 days ahead"));
-            bindingResult.addError(new FieldError("rentalRequest", "carId", "Car id is required"));
+            bindingResult.addError(new FieldError("availabilitySearchRequest", "maxPriceGreaterThanMinPrice",
+                    "Maximum price must be greater than minimum price"));
+            bindingResult.addError(new FieldError("availabilitySearchRequest", "startDate", "Start date is required"));
             Method method = GlobalExceptionHandlerTest.class.getDeclaredMethod("setUp");
             MethodArgumentNotValidException exception =
                     new MethodArgumentNotValidException(new MethodParameter(method, -1), bindingResult);
@@ -244,9 +246,9 @@ class GlobalExceptionHandlerTest {
             assertThat(code(response)).isEqualTo("VALIDATION_FAILED");
             List<FieldProblem> errors = (List<FieldProblem>) problem(response).getProperties().get("errors");
             assertThat(errors).containsExactly(
-                    new FieldProblem("carId", "Car id is required"),
                     new FieldProblem("endDate", "End date must be after start date"),
-                    new FieldProblem("startDate", "Start date cannot be more than 180 days ahead"));
+                    new FieldProblem("maxPrice", "Maximum price must be greater than minimum price"),
+                    new FieldProblem("startDate", "Start date is required"));
         }
     }
 

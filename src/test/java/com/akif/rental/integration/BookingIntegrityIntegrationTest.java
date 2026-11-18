@@ -114,6 +114,18 @@ class BookingIntegrityIntegrationTest {
     }
 
     @Test
+    @DisplayName("date rules come from the service: a past start answers RENTAL_VALIDATION_FAILED")
+    void pastStartIsRejectedByTheServiceRule() throws Exception {
+        Car car = carRepository.save(TestDataBuilder.createAvailableCar());
+        String token = tokenFor(userRepository.save(TestDataBuilder.createTestUser("renter")));
+
+        MvcResult result = book(token, car.getId(), LocalDate.now().minusDays(2), LocalDate.now().plusDays(1));
+
+        assertThat(result.getResponse().getStatus()).isEqualTo(400);
+        assertThat(errorCode(result)).isEqualTo("RENTAL_VALIDATION_FAILED");
+    }
+
+    @Test
     @DisplayName("parallel requests for the same car and dates produce exactly one booking")
     void parallelRequestsProduceExactlyOneBooking() throws Exception {
         Car car = carRepository.save(TestDataBuilder.createAvailableCar());
@@ -178,7 +190,7 @@ class BookingIntegrityIntegrationTest {
     }
 
     @Test
-    @DisplayName("a rental longer than 30 days is rejected by validation")
+    @DisplayName("a rental longer than 30 days is rejected by the rental date rules")
     void overlongRentalRejected() throws Exception {
         Car car = carRepository.save(TestDataBuilder.createAvailableCar());
         String token = tokenFor(userRepository.save(TestDataBuilder.createTestUser("long-renter")));
@@ -186,12 +198,12 @@ class BookingIntegrityIntegrationTest {
         MvcResult result = book(token, car.getId(), start, start.plusDays(30));
 
         assertThat(result.getResponse().getStatus()).isEqualTo(400);
-        assertThat(errorCode(result)).isEqualTo("VALIDATION_FAILED");
+        assertThat(errorCode(result)).isEqualTo("RENTAL_VALIDATION_FAILED");
         assertThat(book(token, car.getId(), start, start.plusDays(29)).getResponse().getStatus()).isEqualTo(201);
     }
 
     @Test
-    @DisplayName("a start date more than 180 days ahead is rejected by validation")
+    @DisplayName("a start date more than 180 days ahead is rejected by the rental date rules")
     void farFutureRentalRejected() throws Exception {
         Car car = carRepository.save(TestDataBuilder.createAvailableCar());
         String token = tokenFor(userRepository.save(TestDataBuilder.createTestUser("planner")));
@@ -200,7 +212,7 @@ class BookingIntegrityIntegrationTest {
         MvcResult result = book(token, car.getId(), far, far.plusDays(2));
 
         assertThat(result.getResponse().getStatus()).isEqualTo(400);
-        assertThat(errorCode(result)).isEqualTo("VALIDATION_FAILED");
+        assertThat(errorCode(result)).isEqualTo("RENTAL_VALIDATION_FAILED");
     }
 
     @Test

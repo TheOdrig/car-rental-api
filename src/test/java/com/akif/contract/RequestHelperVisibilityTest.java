@@ -45,14 +45,11 @@ class RequestHelperVisibilityTest {
     }
 
     @Test
-    @DisplayName("still run as validation rules")
+    @DisplayName("still run as validation rules, and rental dates are left to the domain policy")
     void stillValidated() {
-        assertThat(violatedProperties(new RentalRequest(1L, START, END_BEFORE_START, null)))
-                .contains("endDateAfterStartDate");
-        assertThat(violatedProperties(new RentalRequest(1L, START, START.plusDays(40), null)))
-                .contains("withinMaxRentalLength");
-        assertThat(violatedProperties(new RentalRequest(1L, LocalDate.now().plusDays(200),
-                LocalDate.now().plusDays(201), null))).contains("withinMaxLeadTime");
+        assertThat(violatedProperties(new RentalRequest(1L, START, END_BEFORE_START, null))).isEmpty();
+        assertThat(violatedProperties(new RentalRequest(1L, LocalDate.now().minusDays(3), START.plusDays(40), null)))
+                .isEmpty();
         assertThat(violatedProperties(new PricingRequest(1L, START, END_BEFORE_START)))
                 .contains("endDateAfterStartDate");
 

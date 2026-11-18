@@ -32,6 +32,7 @@ import com.akif.rental.api.RentalConfirmedEvent;
 import com.akif.rental.api.RentalRequest;
 import com.akif.rental.internal.mapper.RentalMapper;
 import com.akif.rental.domain.model.Rental;
+import com.akif.rental.domain.model.RentalDatePolicy;
 import com.akif.car.api.CarCatalog;
 import com.akif.auth.api.UserLookup;
 import com.akif.auth.api.UserDto;
@@ -174,21 +175,8 @@ public class RentalServiceImpl implements RentalService {
     }
 
     private void validateRentalDates(LocalDate startDate, LocalDate endDate) {
-        LocalDate today = LocalDate.now(clock);
-        if (startDate.isBefore(today)) {
-            throw new RentalValidationException("Start date cannot be in the past");
-        }
-        if (!endDate.isAfter(startDate)) {
-            throw new RentalValidationException("End date must be after start date");
-        }
-        if (startDate.isAfter(today.plusDays(rentalProperties.getMaxLeadDays()))) {
-            throw new RentalValidationException(
-                    "Start date cannot be more than " + rentalProperties.getMaxLeadDays() + " days ahead");
-        }
-        if (calculateDays(startDate, endDate) > rentalProperties.getMaxRentalDays()) {
-            throw new RentalValidationException(
-                    "Rental cannot be longer than " + rentalProperties.getMaxRentalDays() + " days");
-        }
+        new RentalDatePolicy(rentalProperties.getMaxLeadDays(), rentalProperties.getMaxRentalDays())
+                .validate(startDate, endDate, LocalDate.now(clock));
     }
 
     private void checkOpenRequestLimit(Long userId) {
@@ -228,10 +216,6 @@ public class RentalServiceImpl implements RentalService {
             }
         }
         return false;
-    }
-
-    private int calculateDays(LocalDate startDate, LocalDate endDate) {
-        return (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
     }
 
     @Override
