@@ -187,6 +187,7 @@ public class RentalServiceImpl implements RentalService {
     }
 
     private void checkOpenRequestLimit(Long userId) {
+        rentalRepository.acquireAdvisoryTransactionLock("rental-open-requests:" + userId);
         long open = rentalRepository.countByUserIdAndStatusAndIsDeletedFalse(userId, RentalStatus.REQUESTED);
         if (open >= rentalProperties.getMaxOpenRequestsPerUser()) {
             throw new OpenRentalRequestLimitException(rentalProperties.getMaxOpenRequestsPerUser());

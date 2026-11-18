@@ -235,6 +235,9 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
         int countByUserIdAndStatusAndIsDeletedFalse(Long userId, RentalStatus status);
 
+        @Query(value = "SELECT 1 FROM (SELECT pg_advisory_xact_lock(hashtextextended(:lockKey, 0))) AS acquired", nativeQuery = true)
+        int acquireAdvisoryTransactionLock(@Param("lockKey") String lockKey);
+
         @Query("""
                         SELECT COALESCE(SUM(r.totalPrice), 0) FROM Rental r
                         WHERE r.userId = :userId

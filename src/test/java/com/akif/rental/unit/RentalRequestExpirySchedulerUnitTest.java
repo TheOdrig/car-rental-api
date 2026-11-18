@@ -28,8 +28,10 @@ class RentalRequestExpirySchedulerUnitTest {
     private final Clock clock = Clock.fixed(Instant.parse("2026-11-18T12:00:00Z"), ZoneOffset.UTC);
     private final RentalRepository repository = mock(RentalRepository.class);
     private final RentalProperties properties = new RentalProperties();
+    private final org.springframework.context.ApplicationEventPublisher publisher =
+            mock(org.springframework.context.ApplicationEventPublisher.class);
     private final RentalRequestExpiryScheduler scheduler =
-            new RentalRequestExpiryScheduler(clock, repository, properties);
+            new RentalRequestExpiryScheduler(clock, repository, properties, publisher);
 
     @Test
     @DisplayName("derives the cutoff from the injected clock and the configured hours")
@@ -65,5 +67,38 @@ class RentalRequestExpirySchedulerUnitTest {
 
         assertThat(scheduler.expireStaleRequests()).isZero();
         verify(repository, never()).save(any());
+        verify(publisher, never()).publishEvent(any(Object.class));
+    }
+
+    @Test
+    @DisplayName("publishes the normal cancellation event for every expired request so the customer is notified")
+    void publishesCancellationEvent() {
+        Rental stale = Rental.builder().status(RentalStatus.REQUESTED).userEmail("customer@example.com").build();
+        stale.setId(77L);
+        when(repository.findStaleRequests(any(), any())).thenReturn(List.of(stale));
+
+        scheduler.expireStaleRequests();
+
+        ArgumentCaptor<com.akif.rental.api.RentalCancelledEvent> event =
+                ArgumentCaptor.forClass(com.akif.rental.api.RentalCancelledEvent.class);
+        verify(publisher).publishEvent(event.capture());
+        assertThat(event.getValue().rentalId()).isEqualTo(77L);
+        assertThat(event.getValue().customerEmail()).isEqualTo("customer@example.com");
+        assertThat(event.getValue().cancellationReason()).contains("Request expired without approval");
+        assertThat(event.getValue().refundProcessed()).isFalse();
+        assertThat(event.getValue().refundAmount()).isEqualByComparingTo("0");
+        assertThat(event.getValue().occurredAt()).isEqualTo(LocalDateTime.of(2026, 11, 18, 12, 0));
+    }
+
+    @Test
+    @DisplayName("publishes one event per expired request")
+    void publishesOneEventPerRequest() {
+        Rental first = Rental.builder().status(RentalStatus.REQUESTED).build();
+        Rental second = Rental.builder().status(RentalStatus.REQUESTED).build();
+        when(repository.findStaleRequests(any(), any())).thenReturn(List.of(first, second));
+
+        scheduler.expireStaleRequests();
+
+        verify(publisher, org.mockito.Mockito.times(2)).publishEvent(any(com.akif.rental.api.RentalCancelledEvent.class));
     }
 }
