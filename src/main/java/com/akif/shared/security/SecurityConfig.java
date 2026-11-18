@@ -1,6 +1,13 @@
 package com.akif.shared.security;
 
+import com.akif.shared.security.ratelimit.ClientIpResolver;
+import com.akif.shared.security.ratelimit.RateLimitEndpointClassifier;
+import com.akif.shared.security.ratelimit.RateLimitFilter;
+import com.akif.shared.security.ratelimit.RateLimitProperties;
+import com.akif.shared.security.ratelimit.RateLimitService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -28,6 +35,7 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@EnableConfigurationProperties(RateLimitProperties.class)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -37,6 +45,11 @@ public class SecurityConfig {
     private final JwtUserAuthenticationConverter jwtUserAuthenticationConverter;
     private final JsonAuthenticationEntryPoint authenticationEntryPoint;
     private final JsonAccessDeniedHandler accessDeniedHandler;
+    private final RateLimitProperties rateLimitProperties;
+    private final RateLimitEndpointClassifier rateLimitClassifier;
+    private final ClientIpResolver clientIpResolver;
+    private final RateLimitService rateLimitService;
+    private final ApiErrorWriter apiErrorWriter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource)
@@ -105,7 +118,9 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler)
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtUserAuthenticationConverter)))
-                .addFilterBefore(correlationIdFilter, SecurityContextHolderFilter.class);
+                .addFilterBefore(correlationIdFilter, SecurityContextHolderFilter.class)
+                .addFilterBefore(new RateLimitFilter(rateLimitProperties, rateLimitClassifier, clientIpResolver,
+                        rateLimitService, apiErrorWriter), BearerTokenAuthenticationFilter.class);
 
         return http.build();
     }

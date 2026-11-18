@@ -1,0 +1,9 @@
+package com.akif.shared.security.ratelimit;
+
+public enum RateLimitCategory {
+    LOGIN,
+    REGISTER,
+    REFRESH,
+    PASSWORD_RESET,
+    OAUTH2_CALLBACK
+}
