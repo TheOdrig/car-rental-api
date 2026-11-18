@@ -1,6 +1,7 @@
 package com.akif.rental.unit;
 
 import com.akif.auth.api.UserLookup;
+import com.akif.auth.api.UserRentalStatisticsDto;
 import com.akif.auth.api.UserDto;
 import com.akif.car.api.CarDto;
 import com.akif.car.api.CarCatalog;
@@ -536,6 +537,33 @@ class RentalServiceTest {
             RentalResponse result = rentalService.returnRental(1L, "Return notes");
 
             assertThat(result).isNotNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("User statistics")
+    class UserStatisticsTests {
+
+        @Test
+        @DisplayName("spending is reported per currency and never summed across currencies")
+        void spendingIsGroupedByCurrency() {
+            when(rentalRepository.sumTotalPriceByCurrencyForReturnedRentals(1L)).thenReturn(List.of(
+                    new Object[] { CurrencyType.EUR, 1L, new BigDecimal("100.00") },
+                    new Object[] { CurrencyType.TRY, 2L, new BigDecimal("900.00") }));
+
+            UserRentalStatisticsDto stats = rentalService.getUserStatistics(1L);
+
+            assertThat(stats.spentByCurrency()).containsExactly(
+                    new UserRentalStatisticsDto.CurrencyTotals(CurrencyType.EUR, 1L, new BigDecimal("100.00")),
+                    new UserRentalStatisticsDto.CurrencyTotals(CurrencyType.TRY, 2L, new BigDecimal("900.00")));
+        }
+
+        @Test
+        @DisplayName("a user with no returned rentals has no spending entries")
+        void noSpendingMeansNoEntries() {
+            when(rentalRepository.sumTotalPriceByCurrencyForReturnedRentals(1L)).thenReturn(List.of());
+
+            assertThat(rentalService.getUserStatistics(1L).spentByCurrency()).isEmpty();
         }
     }
 

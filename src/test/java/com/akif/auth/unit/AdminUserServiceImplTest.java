@@ -131,7 +131,9 @@ class AdminUserServiceImplTest {
             assertThat(stats.completedRentals()).isEqualTo(12);
             assertThat(stats.cancelledRentals()).isEqualTo(2);
             assertThat(stats.activeRentals()).isEqualTo(1);
-            assertThat(stats.totalSpent()).isEqualByComparingTo(new BigDecimal("4500.00"));
+            assertThat(stats.spentByCurrency()).extracting(UserRentalStatisticsDto.CurrencyTotals::currency)
+                    .containsExactly(CurrencyType.EUR, CurrencyType.TRY);
+            assertThat(stats.spentByCurrency().get(1).totalSpent()).isEqualByComparingTo("3000.00");
             assertThat(stats.averageRentalDuration()).isEqualTo(5.2);
             assertThat(stats.lateReturns()).isEqualTo(2);
             assertThat(stats.totalDamageReports()).isEqualTo(3);
@@ -175,7 +177,7 @@ class AdminUserServiceImplTest {
         @Test
         @DisplayName("Should handle user with zero rentals")
         void shouldHandleUserWithZeroRentals() {
-            UserRentalStatisticsDto zeroRentalStats = new UserRentalStatisticsDto(0, 0, 0, 0, BigDecimal.ZERO, 0.0, 0);
+            UserRentalStatisticsDto zeroRentalStats = new UserRentalStatisticsDto(0, 0, 0, 0, List.of(), 0.0, 0);
             UserDamageStatisticsDto zeroDamageStats = new UserDamageStatisticsDto(0, List.of());
 
             when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
@@ -186,7 +188,7 @@ class AdminUserServiceImplTest {
 
             assertThat(result.statistics().totalRentals()).isZero();
             assertThat(result.statistics().completedRentals()).isZero();
-            assertThat(result.statistics().totalSpent()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(result.statistics().spentByCurrency()).isEmpty();
             assertThat(result.statistics().totalDamageReports()).isZero();
             assertThat(result.statistics().damageCostByCurrency()).isEmpty();
         }
@@ -328,7 +330,9 @@ class AdminUserServiceImplTest {
     }
 
     private UserRentalStatisticsDto createRentalStatistics() {
-        return new UserRentalStatisticsDto(15, 12, 2, 1, new BigDecimal("4500.00"), 5.2, 2);
+        return new UserRentalStatisticsDto(15, 12, 2, 1, List.of(
+                new UserRentalStatisticsDto.CurrencyTotals(CurrencyType.EUR, 4, new BigDecimal("1500.00")),
+                new UserRentalStatisticsDto.CurrencyTotals(CurrencyType.TRY, 8, new BigDecimal("3000.00"))), 5.2, 2);
     }
 
     private UserDamageStatisticsDto createDamageStatistics() {

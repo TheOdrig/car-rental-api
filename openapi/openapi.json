@@ -2605,6 +2605,13 @@
             "format" : "int32",
             "type" : "integer"
           },
+          "spentByCurrency" : {
+            "description" : "Amount spent on returned rentals, grouped by rental currency; amounts of different currencies are never summed together.",
+            "items" : {
+              "$ref" : "#/components/schemas/CurrencyTotals"
+            },
+            "type" : "array"
+          },
           "totalDamageReports" : {
             "format" : "int32",
             "type" : "integer"
@@ -2612,9 +2619,6 @@
           "totalRentals" : {
             "format" : "int32",
             "type" : "integer"
-          },
-          "totalSpent" : {
-            "type" : "number"
           }
         },
         "type" : "object"

@@ -59,6 +59,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.sql.SQLException;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -788,10 +789,11 @@ public class RentalServiceImpl implements RentalService {
         int cancelledRentals = rentalRepository.countByUserIdAndStatusAndIsDeletedFalse(userId, RentalStatus.CANCELLED);
         int activeRentals = rentalRepository.countByUserIdAndStatusAndIsDeletedFalse(userId, RentalStatus.IN_USE);
 
-        BigDecimal totalSpent = rentalRepository.sumTotalPriceByUserIdAndStatusReturned(userId);
-        if (totalSpent == null) {
-            totalSpent = BigDecimal.ZERO;
-        }
+        List<UserRentalStatisticsDto.CurrencyTotals> spentByCurrency =
+                rentalRepository.sumTotalPriceByCurrencyForReturnedRentals(userId).stream()
+                        .map(row -> new UserRentalStatisticsDto.CurrencyTotals(
+                                (CurrencyType) row[0], (Long) row[1], (BigDecimal) row[2]))
+                        .toList();
 
         Double avgDuration = rentalRepository.averageRentalDurationByUserId(userId);
         double averageRentalDuration = avgDuration != null ? avgDuration : 0.0;
@@ -800,7 +802,7 @@ public class RentalServiceImpl implements RentalService {
 
         log.info(
                 "User {} statistics: total={}, completed={}, cancelled={}, active={}, spent={}, avgDuration={}, lateReturns={}",
-                userId, totalRentals, completedRentals, cancelledRentals, activeRentals, totalSpent,
+                userId, totalRentals, completedRentals, cancelledRentals, activeRentals, spentByCurrency,
                 averageRentalDuration, lateReturns);
 
         return new UserRentalStatisticsDto(
@@ -808,7 +810,7 @@ public class RentalServiceImpl implements RentalService {
                 completedRentals,
                 cancelledRentals,
                 activeRentals,
-                totalSpent,
+                spentByCurrency,
                 averageRentalDuration,
                 lateReturns);
     }

@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
@@ -115,6 +117,23 @@ class EndpointInventoryTest {
                 .map(Enum::name).collect(Collectors.toSet());
         assertThat(methods).as("%s must declare an HTTP method", handler).isNotEmpty();
         return patterns.stream().flatMap(pattern -> methods.stream()
-                .map(method -> new Endpoint(method, pattern, ApiAccessPolicy.resolveTemplate(method, pattern))));
+                .map(method -> new Endpoint(method, pattern,
+                        effectiveAccess(ApiAccessPolicy.resolveTemplate(method, pattern), handler))));
+    }
+
+    private static Access effectiveAccess(Access urlAccess, HandlerMethod handler) {
+        PreAuthorize methodRule = handler.getMethodAnnotation(PreAuthorize.class);
+        PreAuthorize rule = methodRule != null ? methodRule
+                : AnnotatedElementUtils.findMergedAnnotation(handler.getBeanType(), PreAuthorize.class);
+        if (rule == null || urlAccess == Access.PUBLIC) {
+            return urlAccess;
+        }
+        if (rule.value().contains("hasRole('ADMIN')")) {
+            return Access.ADMIN;
+        }
+        if (rule.value().contains("hasRole('USER')") && urlAccess == Access.AUTHENTICATED) {
+            return Access.USER;
+        }
+        return urlAccess;
     }
 }

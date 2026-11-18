@@ -69,7 +69,7 @@ DELETE /api/v1/cars/{id} ADMIN
 GET /api/v1/cars/{id} PUBLIC
 PUT /api/v1/cars/{id} ADMIN
 GET /api/v1/cars/{id}/availability/calendar PUBLIC
-POST /api/v1/cars/{id}/restore AUTHENTICATED
+POST /api/v1/cars/{id}/restore ADMIN
 GET /api/v1/cars/{id}/similar PUBLIC
 DELETE /api/v1/cars/{id}/soft ADMIN
 GET /api/v1/damages/me AUTHENTICATED
