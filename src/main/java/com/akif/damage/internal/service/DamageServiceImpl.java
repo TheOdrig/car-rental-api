@@ -82,9 +82,9 @@ public class DamageServiceImpl implements DamageService {
 
         int totalDamageReports = damageReportRepository.countByCustomerUserIdAndIsDeletedFalse(userId);
 
-        List<UserDamageStatisticsDto.CurrencyTotals> byCurrency = damageReportRepository
+        List<UserDamageStatisticsDto.DamageCostTotals> byCurrency = damageReportRepository
                 .customerLiabilityByCurrency(userId).stream()
-                .map(row -> new UserDamageStatisticsDto.CurrencyTotals(
+                .map(row -> new UserDamageStatisticsDto.DamageCostTotals(
                         (CurrencyType) row[0], (Long) row[1], (BigDecimal) row[2]))
                 .toList();
 

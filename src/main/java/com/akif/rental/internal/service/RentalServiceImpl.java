@@ -796,9 +796,9 @@ public class RentalServiceImpl implements RentalService {
         int cancelledRentals = rentalRepository.countByUserIdAndStatusAndIsDeletedFalse(userId, RentalStatus.CANCELLED);
         int activeRentals = rentalRepository.countByUserIdAndStatusAndIsDeletedFalse(userId, RentalStatus.IN_USE);
 
-        List<UserRentalStatisticsDto.CurrencyTotals> spentByCurrency =
+        List<UserRentalStatisticsDto.RentalSpendTotals> spentByCurrency =
                 rentalRepository.sumTotalPriceByCurrencyForReturnedRentals(userId).stream()
-                        .map(row -> new UserRentalStatisticsDto.CurrencyTotals(
+                        .map(row -> new UserRentalStatisticsDto.RentalSpendTotals(
                                 (CurrencyType) row[0], (Long) row[1], (BigDecimal) row[2]))
                         .toList();
 

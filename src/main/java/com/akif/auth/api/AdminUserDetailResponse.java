@@ -36,11 +36,11 @@ public record AdminUserDetailResponse(
             int cancelledRentals,
             int activeRentals,
             @Schema(description = "Amount spent on returned rentals, grouped by rental currency; amounts of different currencies are never summed together.")
-            List<UserRentalStatisticsDto.CurrencyTotals> spentByCurrency,
+            List<UserRentalStatisticsDto.RentalSpendTotals> spentByCurrency,
             double averageRentalDuration,
             int totalDamageReports,
             @Schema(description = "Customer damage liability grouped by assessment currency; amounts of different currencies are never summed together.")
-            List<UserDamageStatisticsDto.CurrencyTotals> damageCostByCurrency,
+            List<UserDamageStatisticsDto.DamageCostTotals> damageCostByCurrency,
             int lateReturns,
             int customerSinceDays) {
     }

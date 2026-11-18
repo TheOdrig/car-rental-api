@@ -597,8 +597,8 @@ class RentalServiceTest {
             UserRentalStatisticsDto stats = rentalService.getUserStatistics(1L);
 
             assertThat(stats.spentByCurrency()).containsExactly(
-                    new UserRentalStatisticsDto.CurrencyTotals(CurrencyType.EUR, 1L, new BigDecimal("100.00")),
-                    new UserRentalStatisticsDto.CurrencyTotals(CurrencyType.TRY, 2L, new BigDecimal("900.00")));
+                    new UserRentalStatisticsDto.RentalSpendTotals(CurrencyType.EUR, 1L, new BigDecimal("100.00")),
+                    new UserRentalStatisticsDto.RentalSpendTotals(CurrencyType.TRY, 2L, new BigDecimal("900.00")));
         }
 
         @Test

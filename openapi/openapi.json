@@ -897,22 +897,6 @@
         "required" : [ "amount", "fromCurrency", "toCurrency" ],
         "type" : "object"
       },
-      "CurrencyTotals" : {
-        "properties" : {
-          "assessedCount" : {
-            "format" : "int64",
-            "type" : "integer"
-          },
-          "currency" : {
-            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
-            "type" : "string"
-          },
-          "totalCustomerLiability" : {
-            "type" : "number"
-          }
-        },
-        "type" : "object"
-      },
       "DailyRevenueDto" : {
         "properties" : {
           "date" : {
@@ -1030,6 +1014,22 @@
           "severity" : {
             "enum" : [ "MINOR", "MODERATE", "MAJOR", "TOTAL_LOSS" ],
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "DamageCostTotals" : {
+        "properties" : {
+          "assessedCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "currency" : {
+            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
+            "type" : "string"
+          },
+          "totalCustomerLiability" : {
+            "type" : "number"
           }
         },
         "type" : "object"
@@ -2222,6 +2222,39 @@
         },
         "type" : "object"
       },
+      "QuickApproveRequest" : {
+        "description" : "Request for approving a rental",
+        "properties" : {
+          "notes" : {
+            "description" : "Optional notes for approval",
+            "example" : "Approved for premium customer",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "QuickPickupRequest" : {
+        "description" : "Request for processing pickup",
+        "properties" : {
+          "notes" : {
+            "description" : "Notes about car condition at pickup",
+            "example" : "Front left tire slightly worn",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "QuickReturnRequest" : {
+        "description" : "Request for processing return",
+        "properties" : {
+          "notes" : {
+            "description" : "Notes about car condition at return",
+            "example" : "Clean and full tank",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "RefreshTokenRequest" : {
         "properties" : {
           "refreshToken" : {
@@ -2387,6 +2420,22 @@
           },
           "userSummary" : {
             "$ref" : "#/components/schemas/UserSummaryResponse"
+          }
+        },
+        "type" : "object"
+      },
+      "RentalSpendTotals" : {
+        "properties" : {
+          "currency" : {
+            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
+            "type" : "string"
+          },
+          "rentalCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalSpent" : {
+            "type" : "number"
           }
         },
         "type" : "object"
@@ -2597,7 +2646,7 @@
           "damageCostByCurrency" : {
             "description" : "Customer damage liability grouped by assessment currency; amounts of different currencies are never summed together.",
             "items" : {
-              "$ref" : "#/components/schemas/CurrencyTotals"
+              "$ref" : "#/components/schemas/DamageCostTotals"
             },
             "type" : "array"
           },
@@ -2608,7 +2657,7 @@
           "spentByCurrency" : {
             "description" : "Amount spent on returned rentals, grouped by rental currency; amounts of different currencies are never summed together.",
             "items" : {
-              "$ref" : "#/components/schemas/CurrencyTotals"
+              "$ref" : "#/components/schemas/RentalSpendTotals"
             },
             "type" : "array"
           },
@@ -4872,7 +4921,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/ApproveRequest"
+                "$ref" : "#/components/schemas/QuickApproveRequest"
               }
             }
           }
@@ -4961,7 +5010,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PickupRequest"
+                "$ref" : "#/components/schemas/QuickPickupRequest"
               }
             }
           }
@@ -5140,7 +5189,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/ReturnRequest"
+                "$ref" : "#/components/schemas/QuickReturnRequest"
               }
             }
           }

@@ -9,9 +9,9 @@ import java.util.List;
 public record UserDamageStatisticsDto(
         int totalDamageReports,
         @Schema(description = "Customer liability grouped by the currency each report was assessed in; amounts of different currencies are never summed together. Reports not yet assessed carry no currency and are not listed.")
-        List<CurrencyTotals> byCurrency) {
+        List<DamageCostTotals> byCurrency) {
 
-    public record CurrencyTotals(
+    public record DamageCostTotals(
             CurrencyType currency,
             long assessedCount,
             BigDecimal totalCustomerLiability) {

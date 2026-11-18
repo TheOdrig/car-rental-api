@@ -2,10 +2,10 @@ package com.akif.dashboard.web;
 
 import com.akif.dashboard.api.QuickActionService;
 import com.akif.dashboard.api.dto.QuickActionResultDto;
-import com.akif.dashboard.internal.dto.request.ApproveRequest;
-import com.akif.dashboard.internal.dto.request.PickupRequest;
+import com.akif.dashboard.internal.dto.request.QuickApproveRequest;
+import com.akif.dashboard.internal.dto.request.QuickPickupRequest;
 import com.akif.dashboard.internal.dto.request.RejectRequest;
-import com.akif.dashboard.internal.dto.request.ReturnRequest;
+import com.akif.dashboard.internal.dto.request.QuickReturnRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,7 +39,7 @@ public class QuickActionController {
         })
         public ResponseEntity<QuickActionResultDto> approveRental(
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
-                        @Valid @RequestBody(required = false) ApproveRequest request) {
+                        @Valid @RequestBody(required = false) QuickApproveRequest request) {
 
                 log.info("POST /api/v1/admin/quick-actions/rentals/{}/approve", id);
                 String notes = request != null ? request.notes() : null;
@@ -76,7 +76,7 @@ public class QuickActionController {
         })
         public ResponseEntity<QuickActionResultDto> processPickup(
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
-                        @Valid @RequestBody(required = false) PickupRequest request) {
+                        @Valid @RequestBody(required = false) QuickPickupRequest request) {
 
                 log.info("POST /api/v1/admin/quick-actions/rentals/{}/pickup", id);
                 String notes = request != null ? request.notes() : "Processed via admin dashboard";
@@ -95,7 +95,7 @@ public class QuickActionController {
         })
         public ResponseEntity<QuickActionResultDto> processReturn(
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
-                        @Valid @RequestBody(required = false) ReturnRequest request) {
+                        @Valid @RequestBody(required = false) QuickReturnRequest request) {
 
                 log.info("POST /api/v1/admin/quick-actions/rentals/{}/return", id);
                 String notes = request != null ? request.notes() : "Processed via admin dashboard";

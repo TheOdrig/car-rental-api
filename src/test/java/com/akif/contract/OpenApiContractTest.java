@@ -133,6 +133,19 @@ class OpenApiContractTest {
     }
 
     @Test
+    @DisplayName("spentByCurrency items expose currency, rentalCount and totalSpent")
+    void spentByCurrencyItemSchema() throws Exception {
+        JsonNode schemas = mapper.readTree(generate()).path("components").path("schemas");
+        String ref = schemas.path("UserStatistics").path("properties").path("spentByCurrency")
+                .path("items").path("$ref").asString("");
+        String name = ref.substring(ref.lastIndexOf('/') + 1);
+        List<String> properties = new ArrayList<>();
+        schemas.path(name).path("properties").properties().forEach(entry -> properties.add(entry.getKey()));
+
+        assertThat(properties).containsExactlyInAnyOrder("currency", "rentalCount", "totalSpent");
+    }
+
+    @Test
     @DisplayName("the ProblemDetail code property enumerates exactly the ErrorCode values")
     void problemCodeEnumMatchesErrorCodes() throws Exception {
         JsonNode codes = mapper.readTree(generate()).path("components").path("schemas").path("ProblemDetail")

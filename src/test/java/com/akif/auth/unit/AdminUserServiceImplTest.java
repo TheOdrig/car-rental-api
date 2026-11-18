@@ -131,13 +131,13 @@ class AdminUserServiceImplTest {
             assertThat(stats.completedRentals()).isEqualTo(12);
             assertThat(stats.cancelledRentals()).isEqualTo(2);
             assertThat(stats.activeRentals()).isEqualTo(1);
-            assertThat(stats.spentByCurrency()).extracting(UserRentalStatisticsDto.CurrencyTotals::currency)
+            assertThat(stats.spentByCurrency()).extracting(UserRentalStatisticsDto.RentalSpendTotals::currency)
                     .containsExactly(CurrencyType.EUR, CurrencyType.TRY);
             assertThat(stats.spentByCurrency().get(1).totalSpent()).isEqualByComparingTo("3000.00");
             assertThat(stats.averageRentalDuration()).isEqualTo(5.2);
             assertThat(stats.lateReturns()).isEqualTo(2);
             assertThat(stats.totalDamageReports()).isEqualTo(3);
-            assertThat(stats.damageCostByCurrency()).extracting(UserDamageStatisticsDto.CurrencyTotals::currency)
+            assertThat(stats.damageCostByCurrency()).extracting(UserDamageStatisticsDto.DamageCostTotals::currency)
                     .containsExactly(CurrencyType.EUR, CurrencyType.TRY);
             assertThat(stats.damageCostByCurrency().get(1).totalCustomerLiability()).isEqualByComparingTo("300.00");
         }
@@ -331,13 +331,13 @@ class AdminUserServiceImplTest {
 
     private UserRentalStatisticsDto createRentalStatistics() {
         return new UserRentalStatisticsDto(15, 12, 2, 1, List.of(
-                new UserRentalStatisticsDto.CurrencyTotals(CurrencyType.EUR, 4, new BigDecimal("1500.00")),
-                new UserRentalStatisticsDto.CurrencyTotals(CurrencyType.TRY, 8, new BigDecimal("3000.00"))), 5.2, 2);
+                new UserRentalStatisticsDto.RentalSpendTotals(CurrencyType.EUR, 4, new BigDecimal("1500.00")),
+                new UserRentalStatisticsDto.RentalSpendTotals(CurrencyType.TRY, 8, new BigDecimal("3000.00"))), 5.2, 2);
     }
 
     private UserDamageStatisticsDto createDamageStatistics() {
         return new UserDamageStatisticsDto(3, List.of(
-                new UserDamageStatisticsDto.CurrencyTotals(CurrencyType.EUR, 1, new BigDecimal("50.00")),
-                new UserDamageStatisticsDto.CurrencyTotals(CurrencyType.TRY, 2, new BigDecimal("300.00"))));
+                new UserDamageStatisticsDto.DamageCostTotals(CurrencyType.EUR, 1, new BigDecimal("50.00")),
+                new UserDamageStatisticsDto.DamageCostTotals(CurrencyType.TRY, 2, new BigDecimal("300.00"))));
     }
 }

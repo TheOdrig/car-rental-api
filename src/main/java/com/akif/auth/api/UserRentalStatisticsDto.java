@@ -12,11 +12,11 @@ public record UserRentalStatisticsDto(
         int cancelledRentals,
         int activeRentals,
         @Schema(description = "Amount spent on returned rentals, grouped by rental currency; amounts of different currencies are never summed together.")
-        List<CurrencyTotals> spentByCurrency,
+        List<RentalSpendTotals> spentByCurrency,
         double averageRentalDuration,
         int lateReturns) {
 
-    public record CurrencyTotals(
+    public record RentalSpendTotals(
             CurrencyType currency,
             long rentalCount,
             BigDecimal totalSpent) {
