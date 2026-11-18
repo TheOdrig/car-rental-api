@@ -62,6 +62,13 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/logout")
+    @Operation(summary = "Log out", description = "Revoke the refresh token and its whole token family")
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+        authService.logout(refreshTokenRequest.refreshToken());
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/forgot-password")
     @Operation(summary = "Request password reset", description = "Send password reset email to the user")
     public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {

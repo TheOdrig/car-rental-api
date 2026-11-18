@@ -16,6 +16,7 @@ import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.LinkedAccountRepository;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.shared.security.JwtTokenService;
+import com.akif.auth.internal.service.RefreshTokenService;
 import com.akif.auth.internal.service.oauth2.OAuth2AuthService;
 import com.akif.auth.internal.service.oauth2.OAuth2ProviderService;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
     private final UserRepository userRepository;
     private final LinkedAccountRepository linkedAccountRepository;
     private final JwtTokenService jwtTokenService;
+    private final RefreshTokenService refreshTokenService;
     private final Clock clock;
     private final Map<String, OAuth2ProviderService> providerServices;
 
@@ -54,6 +56,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
             UserRepository userRepository,
             LinkedAccountRepository linkedAccountRepository,
             JwtTokenService jwtTokenService,
+            RefreshTokenService refreshTokenService,
             Clock clock,
             List<OAuth2ProviderService> providerServiceList) {
         this.oAuth2Properties = oAuth2Properties;
@@ -61,6 +64,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
         this.userRepository = userRepository;
         this.linkedAccountRepository = linkedAccountRepository;
         this.jwtTokenService = jwtTokenService;
+        this.refreshTokenService = refreshTokenService;
         this.clock = clock;
         this.providerServices = providerServiceList.stream()
                 .collect(Collectors.toMap(OAuth2ProviderService::getProviderName, Function.identity()));
@@ -127,7 +131,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
                 null, authorities);
 
         String accessToken = jwtTokenService.generateAccessToken(authentication, user.getId());
-        String refreshToken = jwtTokenService.generateRefreshToken(authentication);
+        String refreshToken = refreshTokenService.issue(user.getId());
         long expiresIn = jwtTokenService.accessTokenTtl().toSeconds();
 
         log.info("Generated JWT tokens for user: {}", user.getUsername());

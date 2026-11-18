@@ -1,16 +1,18 @@
 package com.akif.shared.security;
 
-import com.akif.shared.exception.InvalidTokenException;
-import com.akif.shared.exception.TokenExpiredException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -34,6 +36,7 @@ class JwtTokenServiceTest {
     private Clock clock;
     private JwtConfig config;
     private SecretKey key;
+    private JwtEncoder encoder;
     private JwtTokenService service;
     private JwtDecoder accessDecoder;
     private UsernamePasswordAuthenticationToken authentication;
@@ -44,11 +47,16 @@ class JwtTokenServiceTest {
         clock = Clock.fixed(NOW, ZoneOffset.UTC);
         config = new JwtConfig();
         key = config.jwtSigningKey(properties);
-        JwtEncoder encoder = config.jwtEncoder(key);
-        service = new JwtTokenService(encoder, config.refreshJwtDecoder(key, properties, clock), properties, clock);
+        encoder = config.jwtEncoder(key);
+        service = new JwtTokenService(encoder, properties, clock);
         accessDecoder = config.jwtDecoder(key, properties, clock);
         authentication = new UsernamePasswordAuthenticationToken("alice", null,
                 List.of(new SimpleGrantedAuthority("ROLE_USER"), new SimpleGrantedAuthority("ROLE_ADMIN")));
+    }
+
+    private String encode(JwtClaimsSet claims) {
+        Jwt jwt = encoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims));
+        return jwt.getTokenValue();
     }
 
     @Test
@@ -66,9 +74,15 @@ class JwtTokenServiceTest {
     }
 
     @Test
-    @DisplayName("a refresh token is rejected when used as an access token")
+    @DisplayName("a token marked as a refresh token is rejected as an access token")
     void refreshTokenRejectedAsAccessToken() {
-        String refreshToken = service.generateRefreshToken(authentication);
+        String refreshToken = encode(JwtClaimsSet.builder()
+                .issuer("car-rental-api")
+                .subject("alice")
+                .issuedAt(NOW)
+                .expiresAt(NOW.plus(Duration.ofDays(7)))
+                .claim(TokenUse.CLAIM, TokenUse.REFRESH.claimValue())
+                .build());
 
         assertThatThrownBy(() -> accessDecoder.decode(refreshToken))
                 .isInstanceOf(JwtException.class)
@@ -76,19 +90,16 @@ class JwtTokenServiceTest {
     }
 
     @Test
-    @DisplayName("an access token is rejected when used as a refresh token")
-    void accessTokenRejectedAsRefreshToken() {
-        String accessToken = service.generateAccessToken(authentication, 42L);
+    @DisplayName("a token without a token use claim is rejected")
+    void tokenWithoutUseRejected() {
+        String token = encode(JwtClaimsSet.builder()
+                .issuer("car-rental-api")
+                .subject("alice")
+                .issuedAt(NOW)
+                .expiresAt(NOW.plus(Duration.ofMinutes(5)))
+                .build());
 
-        assertThatThrownBy(() -> service.usernameFromRefreshToken(accessToken))
-                .isInstanceOf(InvalidTokenException.class);
-    }
-
-    @Test
-    @DisplayName("a refresh token resolves to its subject")
-    void refreshTokenResolvesSubject() {
-        assertThat(service.usernameFromRefreshToken(service.generateRefreshToken(authentication)))
-                .isEqualTo("alice");
+        assertThatThrownBy(() -> accessDecoder.decode(token)).isInstanceOf(JwtException.class);
     }
 
     @Test
@@ -102,24 +113,13 @@ class JwtTokenServiceTest {
     }
 
     @Test
-    @DisplayName("an expired refresh token raises TokenExpiredException")
-    void expiredRefreshTokenRaisesExpired() {
-        String token = service.generateRefreshToken(authentication);
-        JwtTokenService later = new JwtTokenService(config.jwtEncoder(key),
-                config.refreshJwtDecoder(key, properties, Clock.fixed(NOW.plus(Duration.ofDays(8)), ZoneOffset.UTC)),
-                properties, clock);
-
-        assertThatThrownBy(() -> later.usernameFromRefreshToken(token)).isInstanceOf(TokenExpiredException.class);
-    }
-
-    @Test
     @DisplayName("a token signed with another key is rejected")
     void foreignSignatureRejected() {
         JwtProperties other = new JwtProperties("Zq9Wx8Ec7Rv6Tb5Yn4Um3Ij2Ok1Pl0AaSs", 900_000L, 604_800_000L,
                 "car-rental-api");
         JwtConfig otherConfig = new JwtConfig();
         JwtTokenService foreign = new JwtTokenService(otherConfig.jwtEncoder(otherConfig.jwtSigningKey(other)),
-                config.refreshJwtDecoder(key, properties, clock), other, clock);
+                other, clock);
 
         String forged = foreign.generateAccessToken(authentication, 1L);
 
@@ -129,9 +129,9 @@ class JwtTokenServiceTest {
     @Test
     @DisplayName("an unsigned token is rejected")
     void unsignedTokenRejected() {
-        Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
-        String header = encoder.encodeToString("{\"alg\":\"none\"}".getBytes(StandardCharsets.UTF_8));
-        String payload = encoder.encodeToString(
+        Base64.Encoder base64 = Base64.getUrlEncoder().withoutPadding();
+        String header = base64.encodeToString("{\"alg\":\"none\"}".getBytes(StandardCharsets.UTF_8));
+        String payload = base64.encodeToString(
                 ("{\"sub\":\"alice\",\"iss\":\"car-rental-api\",\"token_use\":\"access\",\"exp\":"
                         + NOW.plusSeconds(600).getEpochSecond() + "}").getBytes(StandardCharsets.UTF_8));
 
@@ -143,8 +143,7 @@ class JwtTokenServiceTest {
     @DisplayName("a token from another issuer is rejected")
     void foreignIssuerRejected() {
         JwtProperties otherIssuer = new JwtProperties(SECRET, 900_000L, 604_800_000L, "someone-else");
-        JwtTokenService foreign = new JwtTokenService(config.jwtEncoder(key),
-                config.refreshJwtDecoder(key, properties, clock), otherIssuer, clock);
+        JwtTokenService foreign = new JwtTokenService(encoder, otherIssuer, clock);
 
         String token = foreign.generateAccessToken(authentication, 1L);
 

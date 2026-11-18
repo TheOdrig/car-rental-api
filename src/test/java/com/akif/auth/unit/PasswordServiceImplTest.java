@@ -4,6 +4,7 @@ import com.akif.auth.domain.User;
 import com.akif.auth.internal.exception.InvalidPasswordException;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.auth.internal.service.PasswordServiceImpl;
+import com.akif.auth.internal.service.RefreshTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -30,6 +31,9 @@ class PasswordServiceImplTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private RefreshTokenService refreshTokenService;
 
     @InjectMocks
     private PasswordServiceImpl passwordService;

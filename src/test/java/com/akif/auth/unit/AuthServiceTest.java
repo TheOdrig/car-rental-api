@@ -13,6 +13,7 @@ import com.akif.shared.enums.Role;
 import com.akif.shared.exception.InvalidTokenException;
 import com.akif.shared.exception.TokenExpiredException;
 import com.akif.shared.security.JwtTokenService;
+import com.akif.auth.internal.service.RefreshTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -53,6 +54,9 @@ class AuthServiceTest {
 
     @Mock
     private UserMapper userMapper;
+
+    @Mock
+    private RefreshTokenService refreshTokenService;
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -102,7 +106,7 @@ class AuthServiceTest {
                     .thenReturn(authentication);
             when(tokenProvider.generateAccessToken(any(Authentication.class), any(Long.class)))
                     .thenReturn("access.token");
-            when(tokenProvider.generateRefreshToken(authentication)).thenReturn("refresh.token");
+            when(refreshTokenService.issue(1L)).thenReturn("refresh.token");
             when(tokenProvider.accessTokenTtl()).thenReturn(java.time.Duration.ofMillis(900000L));
 
             AuthResponse response = authService.register(registerRequest);
@@ -163,7 +167,7 @@ class AuthServiceTest {
                     .thenReturn(authentication);
             when(tokenProvider.generateAccessToken(any(Authentication.class), any(Long.class)))
                     .thenReturn("access.token");
-            when(tokenProvider.generateRefreshToken(authentication)).thenReturn("refresh.token");
+            when(refreshTokenService.issue(1L)).thenReturn("refresh.token");
             when(tokenProvider.accessTokenTtl()).thenReturn(java.time.Duration.ofMillis(900000L));
 
             AuthResponse response = authService.login(loginRequest);
@@ -176,7 +180,7 @@ class AuthServiceTest {
 
             verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
             verify(tokenProvider).generateAccessToken(any(Authentication.class), any(Long.class));
-            verify(tokenProvider).generateRefreshToken(authentication);
+            verify(refreshTokenService).issue(1L);
             verify(userRepository, times(2)).findByUsername("testuser");
         }
 
@@ -201,70 +205,84 @@ class AuthServiceTest {
     class RefreshTokenTests {
 
         @Test
-        @DisplayName("Should refresh token successfully")
+        @DisplayName("Should rotate the refresh token and issue a new access token")
         void shouldRefreshTokenSuccessfully() {
-            when(tokenProvider.usernameFromRefreshToken("valid.refresh.token")).thenReturn("testuser");
-            when(userRepository.findByUsername("testuser")).thenReturn(java.util.Optional.of(testUser));
+            when(refreshTokenService.rotate("valid.refresh.token"))
+                    .thenReturn(new RefreshTokenService.Rotation(1L, "new.refresh.token"));
+            when(userRepository.findWithRolesById(1L)).thenReturn(java.util.Optional.of(testUser));
             when(tokenProvider.generateAccessToken(any(Authentication.class), any(Long.class)))
                     .thenReturn("new.access.token");
-            when(tokenProvider.generateRefreshToken(any(Authentication.class))).thenReturn("new.refresh.token");
             when(tokenProvider.accessTokenTtl()).thenReturn(java.time.Duration.ofMillis(900000L));
 
             AuthResponse response = authService.refreshToken(refreshTokenRequest);
 
-            assertThat(response).isNotNull();
             assertThat(response.username()).isEqualTo("testuser");
             assertThat(response.accessToken()).isEqualTo("new.access.token");
             assertThat(response.refreshToken()).isEqualTo("new.refresh.token");
             assertThat(response.tokenType()).isEqualTo("Bearer");
-
-            verify(tokenProvider).usernameFromRefreshToken("valid.refresh.token");
-
-            verify(userRepository, times(2)).findByUsername("testuser");
+            assertThat(response.expiresIn()).isEqualTo(900L);
+            verify(refreshTokenService).rotate("valid.refresh.token");
         }
 
         @Test
-        @DisplayName("Should throw exception for invalid refresh token")
+        @DisplayName("Should propagate an invalid refresh token")
         void shouldThrowExceptionForInvalidRefreshToken() {
-            RefreshTokenRequest invalidRefreshRequest = new RefreshTokenRequest("invalid.refresh.token");
-            when(tokenProvider.usernameFromRefreshToken("invalid.refresh.token"))
+            when(refreshTokenService.rotate("invalid.refresh.token"))
                     .thenThrow(new InvalidTokenException("Invalid refresh token"));
 
-            assertThatThrownBy(() -> authService.refreshToken(invalidRefreshRequest))
+            assertThatThrownBy(() -> authService.refreshToken(new RefreshTokenRequest("invalid.refresh.token")))
                     .isInstanceOf(InvalidTokenException.class)
                     .hasMessage("Invalid refresh token");
 
-            verify(tokenProvider).usernameFromRefreshToken("invalid.refresh.token");
-            verify(userRepository, never()).findByUsername(anyString());
+            verify(userRepository, never()).findWithRolesById(any());
         }
 
         @Test
-        @DisplayName("Should throw exception for expired refresh token")
+        @DisplayName("Should propagate an expired refresh token")
         void shouldThrowExceptionForExpiredRefreshToken() {
-            RefreshTokenRequest expiredRefreshRequest = new RefreshTokenRequest("expired.refresh.token");
-            when(tokenProvider.usernameFromRefreshToken("expired.refresh.token"))
+            when(refreshTokenService.rotate("expired.refresh.token"))
                     .thenThrow(new TokenExpiredException("Refresh token has expired"));
 
-            assertThatThrownBy(() -> authService.refreshToken(expiredRefreshRequest))
+            assertThatThrownBy(() -> authService.refreshToken(new RefreshTokenRequest("expired.refresh.token")))
                     .isInstanceOf(TokenExpiredException.class)
                     .hasMessage("Refresh token has expired");
 
-            verify(tokenProvider).usernameFromRefreshToken("expired.refresh.token");
-            verify(userRepository, never()).findByUsername(anyString());
+            verify(userRepository, never()).findWithRolesById(any());
         }
 
         @Test
-        @DisplayName("Should throw exception when user not found during refresh")
+        @DisplayName("Should reject the refresh when the user no longer exists")
         void shouldThrowExceptionWhenUserNotFoundDuringRefresh() {
-            when(tokenProvider.usernameFromRefreshToken("valid.refresh.token")).thenReturn("nonexistent");
-            when(userRepository.findByUsername("nonexistent")).thenReturn(java.util.Optional.empty());
+            when(refreshTokenService.rotate("valid.refresh.token"))
+                    .thenReturn(new RefreshTokenService.Rotation(99L, "new.refresh.token"));
+            when(userRepository.findWithRolesById(99L)).thenReturn(java.util.Optional.empty());
 
             assertThatThrownBy(() -> authService.refreshToken(refreshTokenRequest))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessage("User not found");
+                    .isInstanceOf(InvalidTokenException.class);
+        }
 
-            verify(tokenProvider).usernameFromRefreshToken("valid.refresh.token");
-            verify(userRepository).findByUsername("nonexistent");
+        @Test
+        @DisplayName("Should revoke every token and reject the refresh when the user is disabled")
+        void shouldRevokeAllTokensWhenUserDisabled() {
+            User disabled = User.builder().id(1L).username("testuser").email("test@example.com")
+                    .roles(Set.of(Role.USER)).enabled(false).build();
+            when(refreshTokenService.rotate("valid.refresh.token"))
+                    .thenReturn(new RefreshTokenService.Rotation(1L, "new.refresh.token"));
+            when(userRepository.findWithRolesById(1L)).thenReturn(java.util.Optional.of(disabled));
+
+            assertThatThrownBy(() -> authService.refreshToken(refreshTokenRequest))
+                    .isInstanceOf(InvalidTokenException.class);
+
+            verify(refreshTokenService).revokeAllForUser(1L);
+            verify(tokenProvider, never()).generateAccessToken(any(Authentication.class), any(Long.class));
+        }
+
+        @Test
+        @DisplayName("Should revoke the refresh token on logout")
+        void shouldRevokeOnLogout() {
+            authService.logout("valid.refresh.token");
+
+            verify(refreshTokenService).revoke("valid.refresh.token");
         }
     }
 

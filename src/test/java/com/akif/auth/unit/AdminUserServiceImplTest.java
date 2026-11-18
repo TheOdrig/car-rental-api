@@ -12,6 +12,7 @@ import com.akif.auth.api.UserDamageStatisticsDto;
 import com.akif.rental.api.RentalService;
 import com.akif.auth.api.UserRentalStatisticsDto;
 import com.akif.shared.enums.Role;
+import com.akif.auth.internal.service.RefreshTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -51,6 +52,9 @@ class AdminUserServiceImplTest {
 
     @Spy
     private Clock clock = Clock.systemDefaultZone();
+
+    @Mock
+    private RefreshTokenService refreshTokenService;
 
     @InjectMocks
     private AdminUserServiceImpl adminUserService;

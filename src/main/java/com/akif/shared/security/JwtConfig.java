@@ -47,15 +47,10 @@ public class JwtConfig {
     @Bean
     @Primary
     JwtDecoder jwtDecoder(SecretKey jwtSigningKey, JwtProperties properties, Clock clock) {
-        return decoder(jwtSigningKey, properties, clock, TokenUse.ACCESS);
+        return decoder(jwtSigningKey, properties, clock);
     }
 
-    @Bean
-    JwtDecoder refreshJwtDecoder(SecretKey jwtSigningKey, JwtProperties properties, Clock clock) {
-        return decoder(jwtSigningKey, properties, clock, TokenUse.REFRESH);
-    }
-
-    private JwtDecoder decoder(SecretKey key, JwtProperties properties, Clock clock, TokenUse expectedUse) {
+    private JwtDecoder decoder(SecretKey key, JwtProperties properties, Clock clock) {
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(key)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
@@ -64,14 +59,14 @@ public class JwtConfig {
         decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
                 timestampValidator,
                 new JwtIssuerValidator(properties.issuer()),
-                tokenUseValidator(expectedUse)));
+                tokenUseValidator()));
         return decoder;
     }
 
-    private OAuth2TokenValidator<Jwt> tokenUseValidator(TokenUse expectedUse) {
-        return jwt -> expectedUse.claimValue().equals(jwt.getClaimAsString(TokenUse.CLAIM))
+    private OAuth2TokenValidator<Jwt> tokenUseValidator() {
+        return jwt -> TokenUse.ACCESS.claimValue().equals(jwt.getClaimAsString(TokenUse.CLAIM))
                 ? OAuth2TokenValidatorResult.success()
                 : OAuth2TokenValidatorResult.failure(
-                        new OAuth2Error("invalid_token", "Token is not an " + expectedUse.claimValue() + " token", null));
+                        new OAuth2Error("invalid_token", "Token is not an access token", null));
     }
 }

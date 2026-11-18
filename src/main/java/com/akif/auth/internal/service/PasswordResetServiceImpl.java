@@ -33,6 +33,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     private final PasswordResetTokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final PasswordService passwordService;
+    private final RefreshTokenService refreshTokenService;
     private final ApplicationEventPublisher eventPublisher;
 
     @Value("${app.password-reset.base-url:http://localhost:3000}")
@@ -85,6 +86,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
         user.changePassword(passwordService.hashPassword(newPassword));
         userRepository.save(user);
+        refreshTokenService.revokeAllForUser(user.getId());
 
         resetToken.markAsUsed();
         tokenRepository.save(resetToken);

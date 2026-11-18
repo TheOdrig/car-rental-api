@@ -14,6 +14,11 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -44,6 +49,9 @@ class BearerAuthenticationIntegrationTest {
 
     @Autowired
     private JwtTokenService tokenService;
+
+    @Autowired
+    private JwtEncoder jwtEncoder;
 
     private User user;
 
@@ -77,7 +85,17 @@ class BearerAuthenticationIntegrationTest {
     @Test
     @DisplayName("a refresh token is rejected as an access token")
     void refreshTokenRejectedAsAccessToken() throws Exception {
-        String refreshToken = tokenService.generateRefreshToken(principal("ROLE_USER"));
+        java.time.Instant now = java.time.Instant.now();
+        String refreshToken = jwtEncoder.encode(JwtEncoderParameters.from(
+                        JwsHeader.with(MacAlgorithm.HS256).build(),
+                        JwtClaimsSet.builder()
+                                .issuer("car-rental-api")
+                                .subject("bearer-user")
+                                .issuedAt(now)
+                                .expiresAt(now.plusSeconds(600))
+                                .claim(TokenUse.CLAIM, TokenUse.REFRESH.claimValue())
+                                .build()))
+                .getTokenValue();
 
         mockMvc.perform(get("/api/users/me/profile").header("Authorization", "Bearer " + refreshToken))
                 .andExpect(status().isUnauthorized())

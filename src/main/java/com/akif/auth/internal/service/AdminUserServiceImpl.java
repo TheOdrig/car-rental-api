@@ -42,6 +42,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     private final UserRepository userRepository;
     private final AdminNoteRepository adminNoteRepository;
+    private final RefreshTokenService refreshTokenService;
     private final UserRentalStatisticsProvider rentalStatisticsProvider;
     private final UserDamageStatisticsProvider damageStatisticsProvider;
 
@@ -185,6 +186,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         user.ban(reason, adminId, LocalDateTime.now(clock));
 
         userRepository.save(user);
+        refreshTokenService.revokeAllForUser(userId);
         log.info("User {} has been banned by admin {}", userId, adminId);
     }
 

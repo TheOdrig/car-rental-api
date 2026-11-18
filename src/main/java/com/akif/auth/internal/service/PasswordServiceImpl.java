@@ -18,6 +18,7 @@ public class PasswordServiceImpl implements PasswordService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     @Transactional
@@ -38,6 +39,7 @@ public class PasswordServiceImpl implements PasswordService {
 
         user.changePassword(hashPassword(newPassword));
         userRepository.save(user);
+        refreshTokenService.revokeAllForUser(user.getId());
 
         log.info("Password changed successfully for user: {}", username);
     }

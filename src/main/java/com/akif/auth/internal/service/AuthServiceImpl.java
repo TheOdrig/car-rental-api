@@ -14,6 +14,9 @@ import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.shared.security.JwtTokenService;
 import com.akif.auth.api.AuthService;
+import com.akif.shared.exception.InvalidTokenException;
+import com.akif.shared.exception.TokenExpiredException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,6 +40,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenService tokenService;
+    private final RefreshTokenService refreshTokenService;
     private final UserMapper userMapper;
 
     
@@ -96,6 +100,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public AuthResponse login(LoginRequest loginRequest) {
         log.info("User attempting to login with username: {}", loginRequest.username());
 
@@ -135,36 +140,48 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
+    @Transactional(noRollbackFor = {InvalidTokenException.class, TokenExpiredException.class})
     public AuthResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
         log.info("Refreshing token");
 
-        String username = tokenService.usernameFromRefreshToken(refreshTokenRequest.refreshToken());
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        RefreshTokenService.Rotation rotation = refreshTokenService.rotate(refreshTokenRequest.refreshToken());
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                user.getUsername(), null, user.getRoles().stream()
-                        .map(role -> new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role.name()))
-                        .toList()
-        );
+        User user = userRepository.findWithRolesById(rotation.userId())
+                .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
 
-        return generateTokenResponse(authentication);
+        if (!user.getEnabled() || user.isDeleted()) {
+            refreshTokenService.revokeAllForUser(user.getId());
+            throw new InvalidTokenException("Invalid refresh token");
+        }
+
+        return buildResponse(user, rotation.refreshToken());
+    }
+
+    @Override
+    @Transactional
+    public void logout(String refreshToken) {
+        refreshTokenService.revoke(refreshToken);
     }
 
     private AuthResponse generateTokenResponse(Authentication authentication) {
         User user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String accessToken = tokenService.generateAccessToken(authentication, user.getId());
-        String refreshToken = tokenService.generateRefreshToken(authentication);
-        Long expiresIn = tokenService.accessTokenTtl().toSeconds();
+        return buildResponse(user, refreshTokenService.issue(user.getId()));
+    }
+
+    private AuthResponse buildResponse(User user, String refreshToken) {
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                user.getUsername(), null, user.getRoles().stream()
+                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                        .toList());
 
         return AuthResponse.builder()
-                .accessToken(accessToken)
+                .accessToken(tokenService.generateAccessToken(authentication, user.getId()))
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
-                .expiresIn(expiresIn)
-                .username(authentication.getName())
+                .expiresIn(tokenService.accessTokenTtl().toSeconds())
+                .username(user.getUsername())
                 .build();
     }
 }
