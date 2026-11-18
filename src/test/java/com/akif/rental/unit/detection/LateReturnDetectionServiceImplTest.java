@@ -3,7 +3,7 @@ package com.akif.rental.unit.detection;
 import com.akif.auth.domain.User;
 import com.akif.car.domain.Car;
 import com.akif.rental.domain.enums.LateReturnStatus;
-import com.akif.rental.domain.enums.RentalStatus;
+import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.config.PenaltyConfig;
 import com.akif.rental.internal.dto.penalty.PenaltyResult;

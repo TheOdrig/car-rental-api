@@ -4,7 +4,7 @@ import com.akif.auth.api.AuthService;
 import com.akif.auth.api.UserDto;
 import com.akif.damage.api.DamageReportDto;
 import com.akif.damage.domain.enums.DamageCategory;
-import com.akif.damage.domain.enums.DamageSeverity;
+import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.domain.enums.DamageStatus;
 import com.akif.damage.internal.service.damage.DamageHistoryService;
 import com.akif.damage.internal.dto.damage.request.DamageSearchFilterDto;

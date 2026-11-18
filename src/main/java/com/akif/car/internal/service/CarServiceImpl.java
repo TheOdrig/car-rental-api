@@ -13,7 +13,7 @@ import com.akif.car.internal.dto.pricing.CarPriceUpdateRequest;
 import com.akif.car.internal.dto.request.CarSearchRequest;
 import com.akif.car.internal.dto.request.CarStatusUpdateRequest;
 import com.akif.car.api.CarResponse;
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import com.akif.car.domain.Car;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.shared.exception.InvalidStatusTransitionException;

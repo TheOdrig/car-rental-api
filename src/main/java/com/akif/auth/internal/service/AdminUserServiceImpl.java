@@ -14,10 +14,10 @@ import com.akif.auth.domain.User;
 import com.akif.auth.internal.exception.UserNotFoundException;
 import com.akif.auth.internal.repository.AdminNoteRepository;
 import com.akif.auth.internal.repository.UserRepository;
-import com.akif.damage.api.DamageService;
-import com.akif.damage.api.UserDamageStatisticsDto;
-import com.akif.rental.api.RentalService;
-import com.akif.rental.api.UserRentalStatisticsDto;
+import com.akif.auth.api.UserDamageStatisticsDto;
+import com.akif.auth.api.UserDamageStatisticsProvider;
+import com.akif.auth.api.UserRentalStatisticsProvider;
+import com.akif.auth.api.UserRentalStatisticsDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -42,8 +42,8 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     private final UserRepository userRepository;
     private final AdminNoteRepository adminNoteRepository;
-    private final RentalService rentalService;
-    private final DamageService damageService;
+    private final UserRentalStatisticsProvider rentalStatisticsProvider;
+    private final UserDamageStatisticsProvider damageStatisticsProvider;
 
     @Override
     public Page<AdminUserListItem> getAllUsers(String role, String status, String search, Pageable pageable) {
@@ -126,8 +126,8 @@ public class AdminUserServiceImpl implements AdminUserService {
     }
 
     private UserStatistics calculateUserStatistics(Long userId, User user) {
-        UserRentalStatisticsDto rentalStats = rentalService.getUserStatistics(userId);
-        UserDamageStatisticsDto damageStats = damageService.getUserDamageStatistics(userId);
+        UserRentalStatisticsDto rentalStats = rentalStatisticsProvider.getUserStatistics(userId);
+        UserDamageStatisticsDto damageStats = damageStatisticsProvider.getUserDamageStatistics(userId);
 
         int customerSinceDays = 0;
         if (user.getCreateTime() != null) {

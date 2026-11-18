@@ -3,8 +3,8 @@ package com.akif.rental.web;
 import com.akif.rental.internal.dto.penalty.PenaltyWaiverRequest;
 import com.akif.rental.internal.dto.penalty.PenaltyWaiverResponse;
 import com.akif.rental.domain.model.PenaltyWaiver;
-import com.akif.auth.domain.User;
-import com.akif.auth.internal.repository.UserRepository;
+import com.akif.auth.api.AuthService;
+import com.akif.auth.api.UserDto;
 import com.akif.rental.internal.service.penalty.PenaltyWaiverService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class PenaltyWaiverController {
 
     private final PenaltyWaiverService penaltyWaiverService;
-    private final UserRepository userRepository;
+    private final AuthService authService;
 
     @PostMapping("/{id}/penalty/waive")
     @Operation(summary = "Waive penalty",
@@ -54,16 +54,15 @@ public class PenaltyWaiverController {
         String username = authentication.getName();
         log.info("POST /api/admin/rentals/{}/penalty/waive - Admin: {}", id, username);
 
-        User admin = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Admin user not found"));
+        UserDto admin = authService.getUserByUsername(username);
 
         PenaltyWaiver waiver;
         if (Boolean.TRUE.equals(request.fullWaiver())) {
-            waiver = penaltyWaiverService.waiveFullPenalty(id, request.reason(), admin.getId());
+            waiver = penaltyWaiverService.waiveFullPenalty(id, request.reason(), admin.id());
             log.info("Full penalty waived for rental: {}", id);
         } else {
             waiver = penaltyWaiverService.waivePenalty(id, request.waiverAmount(), 
-                    request.reason(), admin.getId());
+                    request.reason(), admin.id());
             log.info("Partial penalty waived for rental: {}, amount: {}", id, request.waiverAmount());
         }
 

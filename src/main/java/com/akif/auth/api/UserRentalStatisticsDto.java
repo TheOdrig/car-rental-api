@@ -1,4 +1,4 @@
-package com.akif.rental.api;
+package com.akif.auth.api;
 
 import java.math.BigDecimal;
 

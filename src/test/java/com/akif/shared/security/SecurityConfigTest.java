@@ -1,7 +1,7 @@
 package com.akif.shared.security;
 
 import com.akif.CarRentalApplication;
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.shared.enums.Role;
 import com.akif.car.domain.Car;

@@ -1,4 +1,4 @@
-package com.akif.car.internal.dto.pricing;
+package com.akif.car.api;
 
 import java.math.BigDecimal;
 

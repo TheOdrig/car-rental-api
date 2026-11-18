@@ -10,20 +10,19 @@ import com.akif.car.internal.dto.availability.*;
 import com.akif.car.internal.dto.availability.AvailabilitySearchRequest;
 import com.akif.currency.api.ConversionResult;
 import com.akif.car.domain.enums.AvailabilityStatus;
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import com.akif.shared.enums.CurrencyType;
-import com.akif.rental.domain.enums.RentalStatus;
 import com.akif.car.internal.exception.CarNotFoundException;
-import com.akif.rental.internal.exception.RentalValidationException;
+import com.akif.car.internal.exception.AvailabilityValidationException;
 import com.akif.car.domain.Car;
-import com.akif.rental.domain.model.Rental;
 import com.akif.car.internal.repository.CarRepository;
-import com.akif.rental.internal.repository.RentalRepository;
+import com.akif.car.api.BookedPeriod;
+import com.akif.car.api.CarBookingCalendar;
 import com.akif.car.internal.service.availability.CarAvailabilityService;
 import com.akif.currency.api.CurrencyConversionService;
-import com.akif.car.internal.service.pricing.DynamicPricingService;
-import com.akif.car.internal.dto.pricing.PriceModifier;
-import com.akif.car.internal.dto.pricing.PricingResult;
+import com.akif.car.api.DynamicPricingService;
+import com.akif.car.api.PriceModifier;
+import com.akif.car.api.PricingResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -40,6 +39,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +50,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
     private final Clock clock;
 
     private final CarRepository carRepository;
-    private final RentalRepository rentalRepository;
+    private final CarBookingCalendar bookingCalendar;
     private final DynamicPricingService dynamicPricingService;
     private final CurrencyConversionService currencyConversionService;
 
@@ -66,9 +66,10 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
 
         List<CarStatusType> blockingStatuses = Arrays.asList(CarStatusType.getUnavailableStatuses());
 
+        Set<Long> bookedCarIds = bookingCalendar.findBookedCarIds(request.getStartDate(), request.getEndDate());
+
         Page<Car> availableCars = carRepository.findAvailableCarsForDateRange(
-                request.getStartDate(),
-                request.getEndDate(),
+                bookedCarIds,
                 blockingStatuses,
                 request.getBrand() != null ? request.getBrand().toLowerCase() : null,
                 request.getModel() != null ? request.getModel().toLowerCase() : null,
@@ -117,7 +118,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
             return false;
         }
 
-        long overlappingCount = rentalRepository.countOverlappingRentals(carId, startDate, endDate);
+        long overlappingCount = bookingCalendar.countActiveBookings(carId, startDate, endDate);
         boolean available = overlappingCount == 0;
 
         log.debug("Car {} availability: {} (overlapping rentals: {})", carId, available, overlappingCount);
@@ -139,11 +140,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
         LocalDate monthStart = month.atDay(1);
         LocalDate monthEnd = month.atEndOfMonth();
 
-        List<Rental> rentals = rentalRepository.findOverlappingRentalsForCar(
-                carId,
-                monthStart,
-                monthEnd,
-                Arrays.asList(RentalStatus.CONFIRMED, RentalStatus.IN_USE));
+        List<BookedPeriod> rentals = bookingCalendar.findBookedPeriods(carId, monthStart, monthEnd);
 
         List<DayAvailabilityDto> days = new ArrayList<>();
         for (int day = 1; day <= month.lengthOfMonth(); day++) {
@@ -156,8 +153,8 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
                         AvailabilityStatus.UNAVAILABLE,
                         null);
             } else {
-                Rental overlappingRental = rentals.stream()
-                        .filter(r -> !date.isBefore(r.getStartDate()) && !date.isAfter(r.getEndDate()))
+                BookedPeriod overlappingRental = rentals.stream()
+                        .filter(r -> !date.isBefore(r.startDate()) && !date.isAfter(r.endDate()))
                         .findFirst()
                         .orElse(null);
 
@@ -165,7 +162,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
                     dayDto = new DayAvailabilityDto(
                             date,
                             AvailabilityStatus.UNAVAILABLE,
-                            overlappingRental.getId());
+                            overlappingRental.bookingId());
                 } else {
                     dayDto = new DayAvailabilityDto(
                             date,
@@ -207,15 +204,11 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
             return unavailableDates;
         }
 
-        List<Rental> rentals = rentalRepository.findOverlappingRentalsForCar(
-                carId,
-                startDate,
-                endDate,
-                Arrays.asList(RentalStatus.CONFIRMED, RentalStatus.IN_USE));
+        List<BookedPeriod> rentals = bookingCalendar.findBookedPeriods(carId, startDate, endDate);
 
-        for (Rental rental : rentals) {
-            LocalDate rentalStart = rental.getStartDate().isBefore(startDate) ? startDate : rental.getStartDate();
-            LocalDate rentalEnd = rental.getEndDate().isAfter(endDate) ? endDate : rental.getEndDate();
+        for (BookedPeriod rental : rentals) {
+            LocalDate rentalStart = rental.startDate().isBefore(startDate) ? startDate : rental.startDate();
+            LocalDate rentalEnd = rental.endDate().isAfter(endDate) ? endDate : rental.endDate();
 
             LocalDate current = rentalStart;
             while (!current.isAfter(rentalEnd)) {
@@ -232,24 +225,24 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
 
     private void validateRentalDates(LocalDate startDate, LocalDate endDate) {
         if (startDate.isBefore(LocalDate.now(clock))) {
-            throw new RentalValidationException("Start date cannot be in the past");
+            throw new AvailabilityValidationException("Start date cannot be in the past");
         }
         if (endDate.isBefore(startDate)) {
-            throw new RentalValidationException("End date must be after start date");
+            throw new AvailabilityValidationException("End date must be after start date");
         }
         if (startDate.isAfter(endDate)) {
-            throw new RentalValidationException("Invalid date range");
+            throw new AvailabilityValidationException("Invalid date range");
         }
 
         long days = ChronoUnit.DAYS.between(startDate, endDate);
         if (days > 90) {
-            throw new RentalValidationException("Rental period cannot exceed 90 days");
+            throw new AvailabilityValidationException("Rental period cannot exceed 90 days");
         }
     }
 
     private void validatePageSize(Integer size) {
         if (size != null && (size < 1 || size > 100)) {
-            throw new RentalValidationException("Page size must be between 1 and 100");
+            throw new AvailabilityValidationException("Page size must be between 1 and 100");
         }
     }
 
@@ -258,10 +251,10 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
         YearMonth maxMonth = currentMonth.plusMonths(3);
 
         if (month.isBefore(currentMonth)) {
-            throw new RentalValidationException("Calendar month cannot be in the past");
+            throw new AvailabilityValidationException("Calendar month cannot be in the past");
         }
         if (month.isAfter(maxMonth)) {
-            throw new RentalValidationException("Calendar only available up to 3 months in advance");
+            throw new AvailabilityValidationException("Calendar only available up to 3 months in advance");
         }
     }
 

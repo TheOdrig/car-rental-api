@@ -2,7 +2,7 @@ package com.akif.e2e.infrastructure;
 
 import com.akif.auth.domain.User;
 import com.akif.rental.api.RentalResponse;
-import com.akif.rental.internal.dto.request.RentalRequest;
+import com.akif.rental.api.RentalRequest;
 import com.akif.rental.internal.scheduler.ReminderScheduler;
 import com.akif.shared.enums.Role;
 import com.akif.shared.security.JwtTokenProvider;

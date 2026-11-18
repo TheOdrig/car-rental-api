@@ -1,13 +1,14 @@
 package com.akif.car.internal.service.pricing.impl;
 
+import com.akif.car.api.DynamicPricingService;
 import java.time.Clock;
 
-import com.akif.car.internal.dto.pricing.PriceModifier;
+import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.dto.pricing.PricingContext;
-import com.akif.car.internal.dto.pricing.PricingResult;
+import com.akif.car.api.PricingResult;
 import com.akif.car.internal.dto.pricing.*;
 import com.akif.car.internal.service.pricing.*;
-import com.akif.rental.internal.config.PricingConfig;
+import com.akif.car.internal.config.PricingConfig;
 import com.akif.car.internal.exception.CarNotFoundException;
 import com.akif.car.domain.Car;
 import com.akif.car.internal.repository.CarRepository;
@@ -26,7 +27,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DynamicPricingServiceImpl implements DynamicPricingService {
+public class DynamicPricingServiceImpl implements DynamicPricingService, PricingStrategyCatalog {
 
     private final Clock clock;
 

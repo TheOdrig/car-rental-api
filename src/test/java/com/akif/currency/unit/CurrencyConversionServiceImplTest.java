@@ -3,7 +3,7 @@ package com.akif.currency.unit;
 import com.akif.currency.api.ConversionResult;
 import com.akif.currency.api.ExchangeRate;
 import com.akif.currency.api.ExchangeRatesResponse;
-import com.akif.currency.domain.RateSource;
+import com.akif.currency.api.RateSource;
 import com.akif.currency.internal.dto.exchangeRate.ExchangeRateResponse;
 import com.akif.currency.internal.service.CurrencyConversionServiceImpl;
 import com.akif.currency.internal.service.exchangeRate.ExchangeRateCacheService;

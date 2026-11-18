@@ -28,6 +28,11 @@ class ModularityTests {
     }
 
     @Test
+    void verifiesModularStructure() {
+        modules.verify();
+    }
+
+    @Test
     void createsModuleDocumentation() {
         new Documenter(modules)
                 .writeDocumentation()

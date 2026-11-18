@@ -8,7 +8,7 @@ import com.akif.car.api.CarService;
 import com.akif.car.api.CarDto;
 import com.akif.damage.internal.config.DamageConfig;
 import com.akif.damage.api.DamageReportedEvent;
-import com.akif.damage.domain.enums.DamageSeverity;
+import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.domain.enums.DamageStatus;
 import com.akif.damage.domain.model.DamagePhoto;
 import com.akif.damage.domain.model.DamageReport;

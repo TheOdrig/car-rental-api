@@ -1,5 +1,4 @@
 @org.springframework.modulith.ApplicationModule(
-    allowedDependencies = {"shared", "rental", "car", "payment", "damage"}
+    allowedDependencies = {"shared", "car::api", "damage::api", "payment::api", "rental::api"}
 )
 package com.akif.dashboard;
-

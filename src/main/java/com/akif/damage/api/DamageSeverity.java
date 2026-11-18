@@ -1,4 +1,4 @@
-package com.akif.damage.domain.enums;
+package com.akif.damage.api;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

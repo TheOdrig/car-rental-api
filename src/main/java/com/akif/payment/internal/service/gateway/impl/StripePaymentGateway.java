@@ -4,7 +4,7 @@ import java.time.Clock;
 
 import com.akif.payment.internal.config.StripeConfig;
 import com.akif.shared.enums.CurrencyType;
-import com.akif.payment.internal.exception.PaymentFailedException;
+import com.akif.payment.api.PaymentFailedException;
 import com.akif.payment.api.CheckoutSessionResult;
 import com.akif.payment.internal.service.gateway.IdempotencyKeyGenerator;
 import com.akif.payment.internal.service.gateway.PaymentGateway;
@@ -104,7 +104,6 @@ public class StripePaymentGateway implements PaymentGateway {
 
         }, "createCheckoutSession");
     }
-
 
     @Override
     public PaymentResult authorize(BigDecimal amount, CurrencyType currency, String customerId) {

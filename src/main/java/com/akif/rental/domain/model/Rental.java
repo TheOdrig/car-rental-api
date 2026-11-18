@@ -2,7 +2,7 @@ package com.akif.rental.domain.model;
 
 import com.akif.shared.enums.CurrencyType;
 import com.akif.rental.domain.enums.LateReturnStatus;
-import com.akif.rental.domain.enums.RentalStatus;
+import com.akif.rental.api.RentalStatus;
 import com.akif.shared.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

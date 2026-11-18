@@ -1,6 +1,6 @@
 package com.akif.damage.api;
 
-import com.akif.damage.domain.enums.DamageSeverity;
+import com.akif.damage.api.DamageSeverity;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 

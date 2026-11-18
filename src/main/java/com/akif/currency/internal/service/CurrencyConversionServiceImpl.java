@@ -8,7 +8,7 @@ import com.akif.currency.internal.dto.exchangeRate.ExchangeRateResponse;
 import com.akif.currency.api.ExchangeRatesResponse;
 import com.akif.currency.internal.service.exchangeRate.ExchangeRateCacheService;
 import com.akif.shared.enums.CurrencyType;
-import com.akif.currency.domain.RateSource;
+import com.akif.currency.api.RateSource;
 import com.akif.currency.api.CurrencyConversionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

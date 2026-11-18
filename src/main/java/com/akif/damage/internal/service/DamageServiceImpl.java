@@ -4,11 +4,10 @@ import java.time.Clock;
 
 import com.akif.damage.api.DamageService;
 import com.akif.damage.api.DamageReportDto;
-import com.akif.damage.api.UserDamageStatisticsDto;
+import com.akif.auth.api.UserDamageStatisticsDto;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.mapper.DamageMapper;
 import com.akif.damage.internal.repository.DamageReportRepository;
-import com.akif.damage.internal.exception.DamageReportException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

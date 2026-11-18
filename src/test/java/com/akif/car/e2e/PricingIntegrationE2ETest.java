@@ -8,7 +8,7 @@ import com.akif.car.internal.repository.CarRepository;
 import com.akif.e2e.infrastructure.E2ETestBase;
 import com.akif.e2e.infrastructure.TestDataBuilder;
 import com.akif.rental.api.RentalResponse;
-import com.akif.rental.internal.dto.request.RentalRequest;
+import com.akif.rental.api.RentalRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

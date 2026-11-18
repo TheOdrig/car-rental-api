@@ -1,4 +1,4 @@
-package com.akif.payment.internal.exception;
+package com.akif.payment.api;
 
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;

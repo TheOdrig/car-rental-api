@@ -1,14 +1,15 @@
 package com.akif.rental.api;
 
-import com.akif.rental.domain.enums.RentalStatus;
-import com.akif.rental.internal.dto.request.RentalRequest;
+import com.akif.auth.api.UserRentalStatisticsProvider;
+import com.akif.rental.api.RentalStatus;
+import com.akif.rental.api.RentalRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public interface RentalService {
+public interface RentalService extends UserRentalStatisticsProvider {
 
     RentalResponse requestRental(RentalRequest request, String username);
 
@@ -49,8 +50,6 @@ public interface RentalService {
     BigDecimal sumCollectedPenaltyRevenue(LocalDate startDate, LocalDate endDate);
 
     BigDecimal getAverageRentalDurationDays(LocalDate startDate, LocalDate endDate);
-
-    UserRentalStatisticsDto getUserStatistics(Long userId);
 
     Page<RentalResponse> getUserRentals(Long userId, RentalStatus status, Pageable pageable);
 

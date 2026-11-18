@@ -1,6 +1,6 @@
 package com.akif.rental.internal.repository;
 
-import com.akif.rental.domain.enums.RentalStatus;
+import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.domain.enums.LateReturnStatus;
 import org.springframework.data.domain.Page;
@@ -30,7 +30,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
         @Query("SELECT COUNT(r) FROM Rental r " +
                         "WHERE r.carId = :carId " +
-                        "AND r.status IN (com.akif.rental.domain.enums.RentalStatus.CONFIRMED, com.akif.rental.domain.enums.RentalStatus.IN_USE) "
+                        "AND r.status IN (com.akif.rental.api.RentalStatus.CONFIRMED, com.akif.rental.api.RentalStatus.IN_USE) "
                         +
                         "AND r.isDeleted = false " +
                         "AND ((r.startDate <= :endDate AND r.endDate >= :startDate))")
@@ -68,8 +68,18 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
                         @Param("endDate") LocalDate endDate,
                         @Param("statuses") List<RentalStatus> statuses);
 
+        @Query("SELECT DISTINCT r.carId FROM Rental r WHERE " +
+                        "r.status IN :statuses AND " +
+                        "r.isDeleted = false AND " +
+                        "r.startDate <= :endDate AND " +
+                        "r.endDate >= :startDate")
+        List<Long> findBookedCarIds(
+                        @Param("statuses") List<RentalStatus> statuses,
+                        @Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate);
+
         @Query("SELECT r FROM Rental r " +
-                        "WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE " +
+                        "WHERE r.status = com.akif.rental.api.RentalStatus.IN_USE " +
                         "AND r.endDate < :currentDate " +
                         "AND r.isDeleted = false")
         Page<Rental> findOverdueRentals(@Param("currentDate") LocalDate currentDate,
@@ -134,7 +144,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
         @Query("SELECT COUNT(r) FROM Rental r " +
                         "WHERE (CAST(:startDate AS java.time.LocalDate) IS NULL OR r.endDate >= :startDate) " +
                         "AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR r.endDate <= :endDate) " +
-                        "AND r.status = com.akif.rental.domain.enums.RentalStatus.RETURNED " +
+                        "AND r.status = com.akif.rental.api.RentalStatus.RETURNED " +
                         "AND r.isDeleted = false")
         long countTotalReturns(@Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate);
@@ -143,7 +153,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
         @Query("""
                         SELECT COUNT(r) FROM Rental r
-                        WHERE r.status = com.akif.rental.domain.enums.RentalStatus.CONFIRMED
+                        WHERE r.status = com.akif.rental.api.RentalStatus.CONFIRMED
                         AND r.startDate = :today
                         AND r.isDeleted = false
                         """)
@@ -151,7 +161,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
         @Query("""
                         SELECT COUNT(r) FROM Rental r
-                        WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE
+                        WHERE r.status = com.akif.rental.api.RentalStatus.IN_USE
                         AND r.endDate = :today
                         AND r.isDeleted = false
                         """)
@@ -159,7 +169,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
         @Query("""
                         SELECT COUNT(r) FROM Rental r
-                        WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE
+                        WHERE r.status = com.akif.rental.api.RentalStatus.IN_USE
                         AND r.endDate < :today
                         AND r.isDeleted = false
                         """)
@@ -167,7 +177,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
         @Query("""
                         SELECT r FROM Rental r
-                        WHERE r.status = com.akif.rental.domain.enums.RentalStatus.REQUESTED
+                        WHERE r.status = com.akif.rental.api.RentalStatus.REQUESTED
                         AND r.isDeleted = false
                         ORDER BY r.createTime ASC
                         """)
@@ -175,7 +185,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
         @Query("""
                         SELECT r FROM Rental r
-                        WHERE r.status = com.akif.rental.domain.enums.RentalStatus.CONFIRMED
+                        WHERE r.status = com.akif.rental.api.RentalStatus.CONFIRMED
                         AND r.startDate = :today
                         AND r.isDeleted = false
                         ORDER BY r.startDate ASC
@@ -184,7 +194,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
         @Query("""
                         SELECT r FROM Rental r
-                        WHERE r.status = com.akif.rental.domain.enums.RentalStatus.IN_USE
+                        WHERE r.status = com.akif.rental.api.RentalStatus.IN_USE
                         AND r.endDate = :today
                         AND r.isDeleted = false
                         ORDER BY r.endDate ASC
@@ -193,7 +203,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
         @Query("""
                         SELECT COALESCE(AVG(r.days), 0.0) FROM Rental r
-                        WHERE r.status = com.akif.rental.domain.enums.RentalStatus.RETURNED
+                        WHERE r.status = com.akif.rental.api.RentalStatus.RETURNED
                         AND (CAST(:startDate AS java.time.LocalDate) IS NULL OR r.endDate >= :startDate)
                         AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR r.endDate <= :endDate)
                         AND r.isDeleted = false
@@ -208,7 +218,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
         @Query("""
                         SELECT COALESCE(SUM(r.totalPrice), 0) FROM Rental r
                         WHERE r.userId = :userId
-                        AND r.status = com.akif.rental.domain.enums.RentalStatus.RETURNED
+                        AND r.status = com.akif.rental.api.RentalStatus.RETURNED
                         AND r.isDeleted = false
                         """)
         BigDecimal sumTotalPriceByUserIdAndStatusReturned(@Param("userId") Long userId);
@@ -216,7 +226,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
         @Query("""
                         SELECT COALESCE(AVG(r.days), 0.0) FROM Rental r
                         WHERE r.userId = :userId
-                        AND r.status = com.akif.rental.domain.enums.RentalStatus.RETURNED
+                        AND r.status = com.akif.rental.api.RentalStatus.RETURNED
                         AND r.isDeleted = false
                         """)
         Double averageRentalDurationByUserId(@Param("userId") Long userId);
@@ -224,7 +234,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
         @Query("""
                         SELECT COUNT(r) FROM Rental r
                         WHERE r.userId = :userId
-                        AND r.status = com.akif.rental.domain.enums.RentalStatus.RETURNED
+                        AND r.status = com.akif.rental.api.RentalStatus.RETURNED
                         AND r.lateReturnStatus IN (com.akif.rental.domain.enums.LateReturnStatus.LATE, com.akif.rental.domain.enums.LateReturnStatus.SEVERELY_LATE)
                         AND r.isDeleted = false
                         """)

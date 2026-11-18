@@ -1,2 +1,4 @@
-@org.springframework.modulith.ApplicationModule(allowedDependencies = { "currency", "shared", "rental::api" })
+@org.springframework.modulith.ApplicationModule(
+    allowedDependencies = {"shared", "currency::api"}
+)
 package com.akif.car;

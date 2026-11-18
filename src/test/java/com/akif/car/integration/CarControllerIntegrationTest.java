@@ -2,7 +2,7 @@ package com.akif.car.integration;
 
 import com.akif.CarRentalApplication;
 import com.akif.car.domain.Car;
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import com.akif.car.internal.dto.request.CarRequest;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.shared.enums.CurrencyType;

@@ -1,4 +1,4 @@
-package com.akif.rental.internal.dto.request;
+package com.akif.rental.api;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;

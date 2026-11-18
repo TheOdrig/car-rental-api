@@ -1,6 +1,6 @@
 package com.akif.car.internal.dto.request;
 
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import jakarta.validation.constraints.NotNull;
 
 public record CarStatusUpdateRequest(

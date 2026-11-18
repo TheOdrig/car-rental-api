@@ -10,7 +10,7 @@ import com.akif.currency.internal.service.exchangeRate.ExchangeRateClient;
 import com.akif.e2e.infrastructure.E2ETestBase;
 import com.akif.e2e.infrastructure.TestDataBuilder;
 import com.akif.rental.api.RentalResponse;
-import com.akif.rental.internal.dto.request.RentalRequest;
+import com.akif.rental.api.RentalRequest;
 import com.akif.shared.enums.CurrencyType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

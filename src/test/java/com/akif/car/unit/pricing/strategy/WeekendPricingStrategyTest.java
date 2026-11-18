@@ -1,9 +1,9 @@
 package com.akif.car.unit.pricing.strategy;
 
-import com.akif.car.internal.dto.pricing.PriceModifier;
+import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.service.pricing.strategy.WeekendPricingStrategy;
-import com.akif.rental.internal.config.PricingConfig;
+import com.akif.car.internal.config.PricingConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -4,8 +4,9 @@ import java.time.Clock;
 
 import com.akif.car.internal.dto.response.PricingResponse;
 import com.akif.car.internal.dto.pricing.PricingRequest;
-import com.akif.car.internal.service.pricing.DynamicPricingService;
-import com.akif.car.internal.dto.pricing.PricingResult;
+import com.akif.car.api.DynamicPricingService;
+import com.akif.car.internal.service.pricing.PricingStrategyCatalog;
+import com.akif.car.api.PricingResult;
 import com.akif.car.internal.service.pricing.PricingStrategy;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +20,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-
 @Slf4j
 @RestController
 @RequestMapping("/api/pricing")
@@ -30,6 +30,7 @@ public class PricingController {
     private final Clock clock;
 
     private final DynamicPricingService dynamicPricingService;
+    private final PricingStrategyCatalog pricingStrategyCatalog;
 
     @PostMapping("/calculate")
     @Operation(summary = "Calculate rental price", 
@@ -78,7 +79,7 @@ public class PricingController {
     public ResponseEntity<List<Map<String, Object>>> getEnabledStrategies() {
         log.info("Fetching enabled pricing strategies");
 
-        List<PricingStrategy> strategies = dynamicPricingService.getEnabledStrategies();
+        List<PricingStrategy> strategies = pricingStrategyCatalog.getEnabledStrategies();
         
         List<Map<String, Object>> response = strategies.stream()
             .map(strategy -> Map.of(

@@ -1,6 +1,6 @@
 package com.akif.car.internal.repository;
 
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.car.domain.Car;
 import org.springframework.data.domain.Page;
@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -151,17 +151,9 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             "(:maxPrice IS NULL OR c.price <= :maxPrice) AND " +
             "(:minProductionYear IS NULL OR c.productionYear >= :minProductionYear) AND " +
             "(:maxProductionYear IS NULL OR c.productionYear <= :maxProductionYear) AND " +
-            "NOT EXISTS (" +
-            "   SELECT r FROM Rental r WHERE " +
-            "   r.carId = c.id AND " +
-            "   r.status IN (com.akif.rental.domain.enums.RentalStatus.CONFIRMED, com.akif.rental.domain.enums.RentalStatus.IN_USE) AND "
-            +
-            "   r.isDeleted = false AND " +
-            "   r.startDate <= :endDate AND r.endDate >= :startDate" +
-            ")")
+            "c.id NOT IN :bookedCarIds")
     Page<Car> findAvailableCarsForDateRange(
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
+            @Param("bookedCarIds") Collection<Long> bookedCarIds,
             @Param("blockingStatuses") List<CarStatusType> blockingStatuses,
             @Param("brand") String brand,
             @Param("model") String model,

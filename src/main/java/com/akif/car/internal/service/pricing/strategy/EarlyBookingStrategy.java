@@ -1,7 +1,7 @@
 package com.akif.car.internal.service.pricing.strategy;
 
-import com.akif.rental.internal.config.PricingConfig;
-import com.akif.car.internal.dto.pricing.PriceModifier;
+import com.akif.car.internal.config.PricingConfig;
+import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.service.pricing.PricingStrategy;
 import lombok.RequiredArgsConstructor;

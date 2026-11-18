@@ -1,2 +1,4 @@
-@org.springframework.modulith.ApplicationModule(allowedDependencies = { "shared", "rental::api", "damage::api" })
+@org.springframework.modulith.ApplicationModule(
+    allowedDependencies = {"shared"}
+)
 package com.akif.auth;

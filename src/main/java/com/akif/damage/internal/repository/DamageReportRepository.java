@@ -1,7 +1,7 @@
 package com.akif.damage.internal.repository;
 
 import com.akif.damage.domain.enums.DamageCategory;
-import com.akif.damage.domain.enums.DamageSeverity;
+import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.domain.enums.DamageStatus;
 import com.akif.damage.domain.model.DamageReport;
 import org.springframework.data.domain.Page;

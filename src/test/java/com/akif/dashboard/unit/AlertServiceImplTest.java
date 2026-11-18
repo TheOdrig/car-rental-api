@@ -2,7 +2,7 @@ package com.akif.dashboard.unit;
 
 import com.akif.car.api.CarService;
 import com.akif.car.api.CarSummaryResponse;
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import com.akif.damage.api.DamageService;
 import com.akif.dashboard.api.dto.AlertDto;
 import com.akif.dashboard.domain.enums.AlertSeverity;
@@ -15,7 +15,7 @@ import com.akif.dashboard.internal.service.AlertServiceImpl;
 import com.akif.payment.api.PaymentService;
 import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalService;
-import com.akif.rental.internal.dto.response.UserSummaryResponse;
+import com.akif.rental.api.UserSummaryResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

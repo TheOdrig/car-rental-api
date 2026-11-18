@@ -1,7 +1,7 @@
 package com.akif.car.internal.service.availability.impl;
 
 import com.akif.car.internal.dto.availability.SimilarCarDto;
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import com.akif.car.internal.exception.CarNotFoundException;
 import com.akif.car.domain.Car;
 import com.akif.car.internal.repository.CarRepository;

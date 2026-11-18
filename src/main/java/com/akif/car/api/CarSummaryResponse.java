@@ -1,6 +1,6 @@
 package com.akif.car.api;
 
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import com.akif.shared.enums.CurrencyType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 

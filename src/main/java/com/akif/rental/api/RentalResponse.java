@@ -1,8 +1,8 @@
 package com.akif.rental.api;
 
 import com.akif.car.api.CarSummaryResponse;
-import com.akif.rental.domain.enums.RentalStatus;
-import com.akif.rental.internal.dto.response.UserSummaryResponse;
+import com.akif.rental.api.RentalStatus;
+import com.akif.rental.api.UserSummaryResponse;
 import com.akif.shared.enums.CurrencyType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;

@@ -12,8 +12,8 @@ import com.akif.payment.domain.Payment;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.internal.repository.PaymentRepository;
 import com.akif.payment.internal.service.gateway.PaymentGateway;
-import com.akif.rental.domain.enums.RentalStatus;
-import com.akif.rental.internal.dto.request.RentalRequest;
+import com.akif.rental.api.RentalStatus;
+import com.akif.rental.api.RentalRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -110,7 +110,6 @@ class PaymentGatewayE2ETest extends E2ETestBase {
 
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
-
 
             mockMvc.perform(post("/api/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))

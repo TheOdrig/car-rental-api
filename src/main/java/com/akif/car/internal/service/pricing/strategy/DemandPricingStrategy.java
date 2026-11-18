@@ -1,8 +1,8 @@
 package com.akif.car.internal.service.pricing.strategy;
 
-import com.akif.rental.internal.config.PricingConfig;
-import com.akif.rental.internal.repository.RentalRepository;
-import com.akif.car.internal.dto.pricing.PriceModifier;
+import com.akif.car.internal.config.PricingConfig;
+import com.akif.car.api.CarBookingCalendar;
+import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.service.pricing.PricingStrategy;
 import lombok.RequiredArgsConstructor;
@@ -15,12 +15,12 @@ import org.springframework.stereotype.Component;
 public class DemandPricingStrategy implements PricingStrategy {
 
     private final PricingConfig config;
-    private final RentalRepository rentalRepository;
+    private final CarBookingCalendar bookingCalendar;
 
     @Override
     public PriceModifier calculate(PricingContext context) {
 
-        long overlappingRentals = rentalRepository.countOverlappingRentals(
+        long overlappingRentals = bookingCalendar.countActiveBookings(
             context.carId(),
             context.startDate(),
             context.endDate()

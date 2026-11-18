@@ -3,22 +3,20 @@ package com.akif.car.unit.availability;
 import com.akif.car.api.DayAvailabilityDto;
 import com.akif.car.domain.Car;
 import com.akif.car.domain.enums.AvailabilityStatus;
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import com.akif.car.internal.dto.availability.*;
-import com.akif.car.internal.dto.pricing.PriceModifier;
-import com.akif.car.internal.dto.pricing.PricingResult;
+import com.akif.car.api.PriceModifier;
+import com.akif.car.api.PricingResult;
 import com.akif.car.internal.exception.CarNotFoundException;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.car.internal.service.availability.impl.CarAvailabilityServiceImpl;
-import com.akif.car.internal.service.pricing.DynamicPricingService;
+import com.akif.car.api.DynamicPricingService;
 import com.akif.currency.api.ConversionResult;
 import com.akif.currency.api.CurrencyConversionService;
-import com.akif.currency.domain.RateSource;
-import com.akif.rental.domain.enums.RentalStatus;
-import com.akif.rental.domain.model.Rental;
-import com.akif.rental.internal.exception.RentalValidationException;
-import com.akif.rental.internal.repository.RentalRepository;
-import com.akif.auth.domain.User;
+import com.akif.currency.api.RateSource;
+import com.akif.car.internal.exception.AvailabilityValidationException;
+import com.akif.car.api.BookedPeriod;
+import com.akif.car.api.CarBookingCalendar;
 import com.akif.shared.enums.CurrencyType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -54,7 +52,7 @@ class CarAvailabilityServiceImplTest {
         private CarRepository carRepository;
 
         @Mock
-        private RentalRepository rentalRepository;
+        private CarBookingCalendar bookingCalendar;
 
         @Mock
         private DynamicPricingService dynamicPricingService;
@@ -120,7 +118,7 @@ class CarAvailabilityServiceImplTest {
                 void shouldReturnAvailableCarsWhenValidDateRangeProvided() {
                         Page<Car> carPage = new PageImpl<>(List.of(testCar));
                         when(carRepository.findAvailableCarsForDateRange(
-                                        any(LocalDate.class), any(LocalDate.class), anyList(),
+                                        anyCollection(), anyList(),
                                         isNull(), isNull(), isNull(), isNull(), isNull(), isNull(),
                                         isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
                                         .thenReturn(carPage);
@@ -138,7 +136,7 @@ class CarAvailabilityServiceImplTest {
                         assertThat(result.searchEndDate()).isEqualTo(searchRequest.getEndDate());
 
                         verify(carRepository).findAvailableCarsForDateRange(
-                                        any(LocalDate.class), any(LocalDate.class), anyList(),
+                                        anyCollection(), anyList(),
                                         isNull(), isNull(), isNull(), isNull(), isNull(), isNull(),
                                         isNull(), isNull(), isNull(), isNull(), any(Pageable.class));
                         verify(dynamicPricingService).calculatePrice(anyLong(), any(LocalDate.class),
@@ -156,7 +154,7 @@ class CarAvailabilityServiceImplTest {
 
                         Page<Car> carPage = new PageImpl<>(List.of(testCar));
                         when(carRepository.findAvailableCarsForDateRange(
-                                        any(LocalDate.class), any(LocalDate.class), anyList(),
+                                        anyCollection(), anyList(),
                                         anyString(), anyString(), any(), any(), anyString(), any(),
                                         any(BigDecimal.class), any(BigDecimal.class), any(), any(),
                                         any(Pageable.class)))
@@ -171,7 +169,7 @@ class CarAvailabilityServiceImplTest {
                         assertThat(result.cars()).hasSize(1);
 
                         verify(carRepository).findAvailableCarsForDateRange(
-                                        any(LocalDate.class), any(LocalDate.class), anyList(),
+                                        anyCollection(), anyList(),
                                         anyString(), anyString(), any(), any(), anyString(), any(),
                                         any(BigDecimal.class), any(BigDecimal.class), any(), any(),
                                         any(Pageable.class));
@@ -193,7 +191,7 @@ class CarAvailabilityServiceImplTest {
                                         new BigDecimal("0.033"), LocalDateTime.now(), RateSource.LIVE);
 
                         when(carRepository.findAvailableCarsForDateRange(
-                                        any(LocalDate.class), any(LocalDate.class), anyList(),
+                                        anyCollection(), anyList(),
                                         isNull(), isNull(), isNull(), isNull(), isNull(), isNull(),
                                         isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
                                         .thenReturn(carPage);
@@ -225,7 +223,7 @@ class CarAvailabilityServiceImplTest {
                                         org.springframework.data.domain.PageRequest.of(1, 10), 25);
 
                         when(carRepository.findAvailableCarsForDateRange(
-                                        any(LocalDate.class), any(LocalDate.class), anyList(),
+                                        anyCollection(), anyList(),
                                         isNull(), isNull(), isNull(), isNull(), isNull(), isNull(),
                                         isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
                                         .thenReturn(carPage);
@@ -252,12 +250,12 @@ class CarAvailabilityServiceImplTest {
                         searchRequest.setStartDate(LocalDate.now().minusDays(1));
 
                         assertThatThrownBy(() -> carAvailabilityService.searchAvailableCars(searchRequest))
-                                        .isInstanceOf(RentalValidationException.class)
+                                        .isInstanceOf(AvailabilityValidationException.class)
                                         .hasMessageContaining("Start date cannot be in the past");
 
                         verify(carRepository, never()).findAvailableCarsForDateRange(
                                         any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                                        any(), any(), any(), any(), any());
+                                        any(), any(), any(), any());
                 }
 
                 @Test
@@ -267,7 +265,7 @@ class CarAvailabilityServiceImplTest {
                         searchRequest.setEndDate(LocalDate.now().plusDays(1));
 
                         assertThatThrownBy(() -> carAvailabilityService.searchAvailableCars(searchRequest))
-                                        .isInstanceOf(RentalValidationException.class)
+                                        .isInstanceOf(AvailabilityValidationException.class)
                                         .hasMessageContaining("End date must be after start date");
                 }
 
@@ -278,7 +276,7 @@ class CarAvailabilityServiceImplTest {
                         searchRequest.setEndDate(LocalDate.now().plusDays(92));
 
                         assertThatThrownBy(() -> carAvailabilityService.searchAvailableCars(searchRequest))
-                                        .isInstanceOf(RentalValidationException.class)
+                                        .isInstanceOf(AvailabilityValidationException.class)
                                         .hasMessageContaining("Rental period cannot exceed 90 days");
                 }
 
@@ -288,7 +286,7 @@ class CarAvailabilityServiceImplTest {
                         searchRequest.setSize(0);
 
                         assertThatThrownBy(() -> carAvailabilityService.searchAvailableCars(searchRequest))
-                                        .isInstanceOf(RentalValidationException.class)
+                                        .isInstanceOf(AvailabilityValidationException.class)
                                         .hasMessageContaining("Page size must be between 1 and 100");
                 }
 
@@ -298,7 +296,7 @@ class CarAvailabilityServiceImplTest {
                         searchRequest.setSize(101);
 
                         assertThatThrownBy(() -> carAvailabilityService.searchAvailableCars(searchRequest))
-                                        .isInstanceOf(RentalValidationException.class)
+                                        .isInstanceOf(AvailabilityValidationException.class)
                                         .hasMessageContaining("Page size must be between 1 and 100");
                 }
         }
@@ -314,13 +312,13 @@ class CarAvailabilityServiceImplTest {
                         LocalDate endDate = LocalDate.now().plusDays(5);
 
                         when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
-                        when(rentalRepository.countOverlappingRentals(1L, startDate, endDate)).thenReturn(0L);
+                        when(bookingCalendar.countActiveBookings(1L, startDate, endDate)).thenReturn(0L);
 
                         boolean result = carAvailabilityService.isCarAvailable(1L, startDate, endDate);
 
                         assertThat(result).isTrue();
                         verify(carRepository).findByIdAndIsDeletedFalse(1L);
-                        verify(rentalRepository).countOverlappingRentals(1L, startDate, endDate);
+                        verify(bookingCalendar).countActiveBookings(1L, startDate, endDate);
                 }
 
                 @Test
@@ -336,7 +334,7 @@ class CarAvailabilityServiceImplTest {
 
                         assertThat(result).isFalse();
                         verify(carRepository).findByIdAndIsDeletedFalse(1L);
-                        verify(rentalRepository, never()).countOverlappingRentals(any(), any(), any());
+                        verify(bookingCalendar, never()).countActiveBookings(any(), any(), any());
                 }
 
                 @Test
@@ -346,12 +344,12 @@ class CarAvailabilityServiceImplTest {
                         LocalDate endDate = LocalDate.now().plusDays(5);
 
                         when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
-                        when(rentalRepository.countOverlappingRentals(1L, startDate, endDate)).thenReturn(2L);
+                        when(bookingCalendar.countActiveBookings(1L, startDate, endDate)).thenReturn(2L);
 
                         boolean result = carAvailabilityService.isCarAvailable(1L, startDate, endDate);
 
                         assertThat(result).isFalse();
-                        verify(rentalRepository).countOverlappingRentals(1L, startDate, endDate);
+                        verify(bookingCalendar).countActiveBookings(1L, startDate, endDate);
                 }
 
                 @Test
@@ -378,8 +376,8 @@ class CarAvailabilityServiceImplTest {
                 void shouldGenerateCalendarWithAllDaysInMonth() {
                         YearMonth month = YearMonth.now().plusMonths(1);
                         when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
-                        when(rentalRepository.findOverlappingRentalsForCar(
-                                        anyLong(), any(LocalDate.class), any(LocalDate.class), anyList()))
+                        when(bookingCalendar.findBookedPeriods(
+                                        anyLong(), any(LocalDate.class), any(LocalDate.class)))
                                         .thenReturn(List.of());
 
                         CarAvailabilityCalendarDto result = carAvailabilityService.getCarAvailabilityCalendar(1L,
@@ -393,8 +391,8 @@ class CarAvailabilityServiceImplTest {
                         assertThat(result.blockReason()).isNull();
 
                         verify(carRepository).findByIdAndIsDeletedFalse(1L);
-                        verify(rentalRepository).findOverlappingRentalsForCar(
-                                        anyLong(), any(LocalDate.class), any(LocalDate.class), anyList());
+                        verify(bookingCalendar).findBookedPeriods(
+                                        anyLong(), any(LocalDate.class), any(LocalDate.class));
                 }
 
                 @Test
@@ -404,25 +402,10 @@ class CarAvailabilityServiceImplTest {
                         LocalDate rentalStart = month.atDay(10);
                         LocalDate rentalEnd = month.atDay(15);
 
-                        User testUser = User.builder().id(1L).email("test@test.com").build();
-                        Rental rental = Rental.builder()
-                                        .id(1L)
-                                        .carId(testCar.getId())
-                                        .carBrand(testCar.getBrand())
-                                        .carModel(testCar.getModel())
-                                        .carLicensePlate(testCar.getLicensePlate())
-                                        .userId(testUser.getId())
-                                        .userEmail(testUser.getEmail())
-                                        .userFullName("Test User")
-                                        .startDate(rentalStart)
-                                        .endDate(rentalEnd)
-                                        .status(RentalStatus.CONFIRMED)
-                                        .build();
-
                         when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
-                        when(rentalRepository.findOverlappingRentalsForCar(
-                                        anyLong(), any(LocalDate.class), any(LocalDate.class), anyList()))
-                                        .thenReturn(List.of(rental));
+                        when(bookingCalendar.findBookedPeriods(
+                                        anyLong(), any(LocalDate.class), any(LocalDate.class)))
+                                        .thenReturn(List.of(new BookedPeriod(1L, rentalStart, rentalEnd)));
 
                         CarAvailabilityCalendarDto result = carAvailabilityService.getCarAvailabilityCalendar(1L,
                                         month);
@@ -449,8 +432,8 @@ class CarAvailabilityServiceImplTest {
                         YearMonth month = YearMonth.now().plusMonths(1);
 
                         when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
-                        when(rentalRepository.findOverlappingRentalsForCar(
-                                        anyLong(), any(LocalDate.class), any(LocalDate.class), anyList()))
+                        when(bookingCalendar.findBookedPeriods(
+                                        anyLong(), any(LocalDate.class), any(LocalDate.class)))
                                         .thenReturn(List.of());
 
                         CarAvailabilityCalendarDto result = carAvailabilityService.getCarAvailabilityCalendar(1L,
@@ -467,7 +450,7 @@ class CarAvailabilityServiceImplTest {
                         YearMonth pastMonth = YearMonth.now().minusMonths(1);
 
                         assertThatThrownBy(() -> carAvailabilityService.getCarAvailabilityCalendar(1L, pastMonth))
-                                        .isInstanceOf(RentalValidationException.class)
+                                        .isInstanceOf(AvailabilityValidationException.class)
                                         .hasMessageContaining("Calendar month cannot be in the past");
 
                         verify(carRepository, never()).findByIdAndIsDeletedFalse(any());
@@ -479,7 +462,7 @@ class CarAvailabilityServiceImplTest {
                         YearMonth futureMonth = YearMonth.now().plusMonths(4);
 
                         assertThatThrownBy(() -> carAvailabilityService.getCarAvailabilityCalendar(1L, futureMonth))
-                                        .isInstanceOf(RentalValidationException.class)
+                                        .isInstanceOf(AvailabilityValidationException.class)
                                         .hasMessageContaining("Calendar only available up to 3 months in advance");
 
                         verify(carRepository, never()).findByIdAndIsDeletedFalse(any());
@@ -495,7 +478,7 @@ class CarAvailabilityServiceImplTest {
                 void shouldIncludePricingInformationInSearchResults() {
                         Page<Car> carPage = new PageImpl<>(List.of(testCar));
                         when(carRepository.findAvailableCarsForDateRange(
-                                        any(LocalDate.class), any(LocalDate.class), anyList(),
+                                        anyCollection(), anyList(),
                                         isNull(), isNull(), isNull(), isNull(), isNull(), isNull(),
                                         isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
                                         .thenReturn(carPage);
@@ -522,7 +505,7 @@ class CarAvailabilityServiceImplTest {
                 void shouldUseDynamicPricingServiceForPriceCalculation() {
                         Page<Car> carPage = new PageImpl<>(List.of(testCar));
                         when(carRepository.findAvailableCarsForDateRange(
-                                        any(LocalDate.class), any(LocalDate.class), anyList(),
+                                        anyCollection(), anyList(),
                                         isNull(), isNull(), isNull(), isNull(), isNull(), isNull(),
                                         isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
                                         .thenReturn(carPage);

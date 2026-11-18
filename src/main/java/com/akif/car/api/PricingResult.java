@@ -1,5 +1,6 @@
-package com.akif.car.internal.dto.pricing;
+package com.akif.car.api;
 
+import com.akif.car.api.PriceModifier;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;

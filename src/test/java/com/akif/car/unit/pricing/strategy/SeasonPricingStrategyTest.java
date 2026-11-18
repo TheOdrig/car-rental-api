@@ -1,9 +1,9 @@
 package com.akif.car.unit.pricing.strategy;
 
-import com.akif.car.internal.dto.pricing.PriceModifier;
+import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.service.pricing.strategy.SeasonPricingStrategy;
-import com.akif.rental.internal.config.PricingConfig;
+import com.akif.car.internal.config.PricingConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -199,7 +199,6 @@ class SeasonPricingStrategyTest {
             );
 
             PriceModifier result = strategy.calculate(context);
-
 
             assertThat(result.multiplier()).isGreaterThan(BigDecimal.ONE);
             assertThat(result.multiplier()).isLessThan(new BigDecimal("1.25"));

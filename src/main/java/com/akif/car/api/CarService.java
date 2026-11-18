@@ -5,7 +5,7 @@ import com.akif.car.internal.dto.request.CarRequest;
 import com.akif.car.internal.dto.pricing.CarPriceUpdateRequest;
 import com.akif.car.internal.dto.request.CarSearchRequest;
 import com.akif.car.internal.dto.request.CarStatusUpdateRequest;
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

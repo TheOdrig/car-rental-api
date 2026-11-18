@@ -1,10 +1,10 @@
 package com.akif.car.unit.pricing.strategy;
 
-import com.akif.car.internal.dto.pricing.PriceModifier;
+import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.service.pricing.strategy.DemandPricingStrategy;
-import com.akif.rental.internal.config.PricingConfig;
-import com.akif.rental.internal.repository.RentalRepository;
+import com.akif.car.internal.config.PricingConfig;
+import com.akif.car.api.CarBookingCalendar;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -31,7 +31,7 @@ class DemandPricingStrategyTest {
     private PricingConfig config;
 
     @Mock
-    private RentalRepository rentalRepository;
+    private CarBookingCalendar bookingCalendar;
 
     @InjectMocks
     private DemandPricingStrategy strategy;
@@ -77,7 +77,7 @@ class DemandPricingStrategyTest {
                 "SUV"
             );
 
-            when(rentalRepository.countOverlappingRentals(
+            when(bookingCalendar.countActiveBookings(
                 eq(1L),
                 any(LocalDate.class),
                 any(LocalDate.class)
@@ -106,7 +106,7 @@ class DemandPricingStrategyTest {
                 "SUV"
             );
 
-            when(rentalRepository.countOverlappingRentals(
+            when(bookingCalendar.countActiveBookings(
                 eq(1L),
                 any(LocalDate.class),
                 any(LocalDate.class)
@@ -136,7 +136,7 @@ class DemandPricingStrategyTest {
                 "SUV"
             );
 
-            when(rentalRepository.countOverlappingRentals(
+            when(bookingCalendar.countActiveBookings(
                 eq(1L),
                 any(LocalDate.class),
                 any(LocalDate.class)
@@ -164,7 +164,7 @@ class DemandPricingStrategyTest {
                 "SUV"
             );
 
-            when(rentalRepository.countOverlappingRentals(
+            when(bookingCalendar.countActiveBookings(
                 eq(1L),
                 any(LocalDate.class),
                 any(LocalDate.class)
@@ -189,7 +189,7 @@ class DemandPricingStrategyTest {
                 "SUV"
             );
 
-            when(rentalRepository.countOverlappingRentals(
+            when(bookingCalendar.countActiveBookings(
                 eq(1L),
                 any(LocalDate.class),
                 any(LocalDate.class)
@@ -219,7 +219,7 @@ class DemandPricingStrategyTest {
                 "SUV"
             );
 
-            when(rentalRepository.countOverlappingRentals(
+            when(bookingCalendar.countActiveBookings(
                 eq(1L),
                 any(LocalDate.class),
                 any(LocalDate.class)
@@ -247,7 +247,7 @@ class DemandPricingStrategyTest {
                 "SUV"
             );
 
-            when(rentalRepository.countOverlappingRentals(
+            when(bookingCalendar.countActiveBookings(
                 eq(1L),
                 any(LocalDate.class),
                 any(LocalDate.class)

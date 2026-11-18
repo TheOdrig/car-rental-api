@@ -1,4 +1,4 @@
-package com.akif.rental.internal.dto.response;
+package com.akif.rental.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

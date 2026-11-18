@@ -1,6 +1,6 @@
 package com.akif.car.internal.dto.response;
 
-import com.akif.car.internal.dto.pricing.PricingResult;
+import com.akif.car.api.PricingResult;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
-
 
 @Data
 @Builder

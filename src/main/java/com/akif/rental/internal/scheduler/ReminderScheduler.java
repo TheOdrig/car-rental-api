@@ -2,7 +2,7 @@ package com.akif.rental.internal.scheduler;
 
 import java.time.Clock;
 
-import com.akif.rental.domain.enums.RentalStatus;
+import com.akif.rental.api.RentalStatus;
 import com.akif.rental.api.PickupReminderEvent;
 import com.akif.rental.api.ReturnReminderEvent;
 import com.akif.rental.domain.model.Rental;

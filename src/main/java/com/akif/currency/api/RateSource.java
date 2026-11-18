@@ -1,4 +1,4 @@
-package com.akif.currency.domain;
+package com.akif.currency.api;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonValue;

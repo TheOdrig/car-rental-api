@@ -1,14 +1,14 @@
 package com.akif.car.unit.pricing.impl;
 
 import com.akif.car.domain.Car;
-import com.akif.car.internal.dto.pricing.PriceModifier;
+import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.dto.pricing.PricingContext;
-import com.akif.car.internal.dto.pricing.PricingResult;
+import com.akif.car.api.PricingResult;
 import com.akif.car.internal.exception.CarNotFoundException;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.car.internal.service.pricing.PricingStrategy;
 import com.akif.car.internal.service.pricing.impl.DynamicPricingServiceImpl;
-import com.akif.rental.internal.config.PricingConfig;
+import com.akif.car.internal.config.PricingConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

@@ -1,6 +1,6 @@
 package com.akif.shared.enums;
 
-import com.akif.rental.domain.enums.RentalStatus;
+import com.akif.rental.api.RentalStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

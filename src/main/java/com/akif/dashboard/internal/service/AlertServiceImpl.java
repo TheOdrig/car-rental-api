@@ -3,7 +3,7 @@ package com.akif.dashboard.internal.service;
 import java.time.Clock;
 
 import com.akif.car.api.CarService;
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import com.akif.damage.api.DamageService;
 import com.akif.dashboard.api.AlertService;
 import com.akif.dashboard.api.dto.AlertDto;

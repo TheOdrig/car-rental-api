@@ -6,7 +6,7 @@ import com.akif.dashboard.internal.service.DashboardQueryService;
 import com.akif.dashboard.internal.service.QuickActionServiceImpl;
 import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalService;
-import com.akif.rental.domain.enums.RentalStatus;
+import com.akif.rental.api.RentalStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -118,7 +118,6 @@ class QuickActionServiceImplTest {
             Long rentalId = 1L;
             String reason = "Insufficient balance";
             RentalResponse cancelledResponse = createRentalResponse(RentalStatus.CANCELLED);
-
 
             Authentication auth = org.mockito.Mockito
                     .mock(Authentication.class);

@@ -1,4 +1,4 @@
-package com.akif.rental.internal.config;
+package com.akif.car.internal.config;
 
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
@@ -58,7 +58,6 @@ public class PricingConfig {
             }
         }
     }
-
 
     @Getter
     @Setter

@@ -3,7 +3,7 @@ package com.akif.dashboard.internal.service;
 import java.time.Clock;
 
 import com.akif.car.api.CarService;
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import com.akif.damage.api.DamageService;
 import com.akif.dashboard.api.dto.DailySummaryDto;
 import com.akif.dashboard.api.dto.DailyRevenueDto;
@@ -16,7 +16,7 @@ import com.akif.dashboard.api.dto.RevenueBreakdownDto;
 import com.akif.payment.api.PaymentService;
 import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalService;
-import com.akif.rental.domain.enums.RentalStatus;
+import com.akif.rental.api.RentalStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

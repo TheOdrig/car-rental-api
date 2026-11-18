@@ -4,9 +4,6 @@ import com.akif.auth.api.*;
 import com.akif.auth.internal.dto.AddNoteRequest;
 import com.akif.auth.internal.dto.BanUserRequest;
 import com.akif.auth.internal.dto.UnbanUserRequest;
-import com.akif.rental.api.RentalResponse;
-import com.akif.rental.api.RentalService;
-import com.akif.rental.domain.enums.RentalStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -43,7 +40,6 @@ import java.util.List;
 public class AdminUserController {
 
     private final AdminUserService adminUserService;
-    private final RentalService rentalService;
     private final AuthService authService;
 
     @GetMapping("/stats")
@@ -102,30 +98,6 @@ public class AdminUserController {
         AdminUserDetailResponse userDetail = adminUserService.getUserDetailForAdmin(id);
 
         return ResponseEntity.ok(userDetail);
-    }
-
-    @GetMapping("/{id}/rentals")
-    @Operation(summary = "Get user rental history (Admin)", description = "Returns paginated rental history for a specific user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Rental history retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required"),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-            @ApiResponse(responseCode = "404", description = "User not found")
-    })
-    public ResponseEntity<Page<RentalResponse>> getUserRentals(
-            @Parameter(description = "User ID", required = true) @PathVariable Long id,
-            @Parameter(description = "Filter by rental status") @RequestParam(required = false) RentalStatus status,
-            @PageableDefault(size = 10, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable,
-            @AuthenticationPrincipal UserDetails adminUser) {
-
-        log.info("GET /api/admin/users/{}/rentals - Admin: {}, Status: {}", id, adminUser.getUsername(),
-                status);
-
-        adminUserService.getUserDetailForAdmin(id);
-
-        Page<RentalResponse> rentals = rentalService.getUserRentals(id, status, pageable);
-
-        return ResponseEntity.ok(rentals);
     }
 
     @PostMapping("/{id}/ban")

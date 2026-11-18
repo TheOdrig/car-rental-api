@@ -1,4 +1,4 @@
-package com.akif.car.internal.exception;
+package com.akif.car.api;
 
 import com.akif.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;

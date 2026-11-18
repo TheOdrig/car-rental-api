@@ -1,4 +1,4 @@
-package com.akif.rental.domain.enums;
+package com.akif.rental.api;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -30,7 +30,6 @@ public enum RentalStatus {
         return this == REQUESTED;
     }
 
-
     public boolean canPickup() {
         return this == CONFIRMED;
     }
@@ -38,7 +37,6 @@ public enum RentalStatus {
     public boolean canReturn() {
         return this == IN_USE;
     }
-
 
     public boolean canCancel() {
         return this == REQUESTED || this == CONFIRMED || this == IN_USE;

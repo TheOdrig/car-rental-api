@@ -7,7 +7,7 @@ import com.akif.auth.api.UserDto;
 import com.akif.car.api.CarService;
 import com.akif.damage.internal.config.DamageConfig;
 import com.akif.damage.api.DamageAssessedEvent;
-import com.akif.damage.domain.enums.DamageSeverity;
+import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.domain.enums.DamageStatus;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.service.damage.DamageAssessmentService;

@@ -3,7 +3,7 @@ package com.akif.car.web;
 import com.akif.car.api.CarResponse;
 import com.akif.car.internal.dto.request.CarSearchRequest;
 import com.akif.car.internal.dto.response.CarListResponse;
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import com.akif.car.api.CarService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

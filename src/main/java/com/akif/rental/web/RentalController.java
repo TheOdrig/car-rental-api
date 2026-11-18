@@ -5,7 +5,7 @@ import com.akif.rental.api.RentalResponse;
 import com.akif.rental.internal.dto.request.ApproveRequest;
 import com.akif.rental.internal.dto.request.CancelRequest;
 import com.akif.rental.internal.dto.request.PickupRequest;
-import com.akif.rental.internal.dto.request.RentalRequest;
+import com.akif.rental.api.RentalRequest;
 import com.akif.rental.internal.dto.request.ReturnRequest;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.rental.api.RentalService;

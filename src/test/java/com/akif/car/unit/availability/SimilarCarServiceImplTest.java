@@ -1,15 +1,15 @@
 package com.akif.car.unit.availability;
 
 import com.akif.car.domain.Car;
-import com.akif.car.domain.enums.CarStatusType;
+import com.akif.car.api.CarStatusType;
 import com.akif.car.internal.dto.availability.SimilarCarDto;
-import com.akif.car.internal.dto.pricing.PriceModifier;
-import com.akif.car.internal.dto.pricing.PricingResult;
+import com.akif.car.api.PriceModifier;
+import com.akif.car.api.PricingResult;
 import com.akif.car.internal.exception.CarNotFoundException;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.car.internal.service.availability.CarAvailabilityService;
 import com.akif.car.internal.service.availability.impl.SimilarCarServiceImpl;
-import com.akif.car.internal.service.pricing.DynamicPricingService;
+import com.akif.car.api.DynamicPricingService;
 import com.akif.shared.enums.CurrencyType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

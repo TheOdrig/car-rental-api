@@ -1,7 +1,7 @@
 package com.akif.damage.domain.model;
 
 import com.akif.damage.domain.enums.DamageCategory;
-import com.akif.damage.domain.enums.DamageSeverity;
+import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.domain.enums.DamageStatus;
 import com.akif.shared.domain.BaseEntity;
 import jakarta.persistence.*;
@@ -62,7 +62,6 @@ public class DamageReport extends BaseEntity {
     @Column(name = "customer_user_id", nullable = false)
     private Long customerUserId;
 
-
     @Column(name = "description", nullable = false, length = 1000)
     private String description;
 
@@ -88,7 +87,6 @@ public class DamageReport extends BaseEntity {
     @Column(name = "reported_at", nullable = false)
     private LocalDateTime reportedAt;
 
-
     @Column(name = "assessed_by")
     private Long assessedBy;
 
@@ -110,7 +108,6 @@ public class DamageReport extends BaseEntity {
     @Column(name = "assessment_notes", length = 1000)
     private String assessmentNotes;
 
-
     @Column(name = "payment_id")
     private Long paymentId;
 
@@ -119,7 +116,6 @@ public class DamageReport extends BaseEntity {
 
     @Column(name = "transaction_id", length = 100)
     private String transactionId;
-
 
     @Column(name = "dispute_reason", length = 500)
     private String disputeReason;
@@ -133,7 +129,6 @@ public class DamageReport extends BaseEntity {
     @Column(name = "disputed_at")
     private LocalDateTime disputedAt;
 
-
     @Column(name = "resolution_notes", length = 1000)
     private String resolutionNotes;
 
@@ -143,11 +138,9 @@ public class DamageReport extends BaseEntity {
     @Column(name = "resolved_at")
     private LocalDateTime resolvedAt;
 
-
     @OneToMany(mappedBy = "damageReport", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<DamagePhoto> photos = new ArrayList<>();
-
 
     public void updateStatus(DamageStatus newStatus) {
         this.status = newStatus;

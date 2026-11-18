@@ -2,10 +2,10 @@ package com.akif.e2e.infrastructure;
 
 import com.akif.auth.domain.User;
 import com.akif.car.domain.Car;
-import com.akif.car.domain.enums.CarStatusType;
-import com.akif.rental.domain.enums.RentalStatus;
+import com.akif.car.api.CarStatusType;
+import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
-import com.akif.rental.internal.dto.request.RentalRequest;
+import com.akif.rental.api.RentalRequest;
 import com.akif.auth.domain.enums.AuthProvider;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.shared.enums.Role;

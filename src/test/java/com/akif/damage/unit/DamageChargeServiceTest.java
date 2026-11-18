@@ -2,7 +2,7 @@ package com.akif.damage.unit;
 
 import com.akif.damage.api.DamageChargedEvent;
 import com.akif.damage.domain.enums.DamageCategory;
-import com.akif.damage.domain.enums.DamageSeverity;
+import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.domain.enums.DamageStatus;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.exception.DamageAssessmentException;
@@ -12,13 +12,11 @@ import com.akif.payment.api.PaymentResult;
 import com.akif.payment.api.PaymentService;
 import com.akif.rental.api.RentalService;
 import com.akif.rental.api.RentalSummaryDto;
-import com.akif.shared.enums.CurrencyType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import java.time.Clock;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
@@ -27,7 +25,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
