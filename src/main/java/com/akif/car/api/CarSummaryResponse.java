@@ -20,10 +20,7 @@ public record CarSummaryResponse(
     String color,
     Long kilometer,
     String thumbnailUrl,
-    Boolean isFeatured,
     BigDecimal rating,
-    Long viewCount,
-    Long likeCount,
 
     Integer age,
     String fullName,

@@ -340,7 +340,7 @@ class AlertServiceImplTest {
         CarSummaryResponse carSummary = new CarSummaryResponse(
                 1L, "34ABC123", "Toyota", "Corolla", 2023,
                 "1000 TL", null, CarStatusType.RESERVED, "White", 50000L,
-                null, false, null, 100L, 50L, 2, "Toyota Corolla", "Toyota Corolla 2023", false, false);
+                null, null, 2, "Toyota Corolla", "Toyota Corolla 2023", false, false);
 
         return new RentalResponse(
                 id, carSummary, userSummary,

@@ -16,7 +16,6 @@ public class CarStatusTypeTest {
     void isAvailable_ShouldReturnTrueOnlyForAvailable() {
 
         assertThat(CarStatusType.AVAILABLE.isAvailable()).isTrue();
-        assertThat(CarStatusType.SOLD.isAvailable()).isFalse();
         assertThat(CarStatusType.MAINTENANCE.isAvailable()).isFalse();
         assertThat(CarStatusType.RESERVED.isAvailable()).isFalse();
         assertThat(CarStatusType.DAMAGED.isAvailable()).isFalse();
@@ -24,23 +23,10 @@ public class CarStatusTypeTest {
     }
 
     @Test
-    @DisplayName("canBeSold should return true for AVAILABLE and RESERVED statuses")
-    void canBeSold_ShouldReturnTrueForAvailableAndReserved() {
-
-        assertThat(CarStatusType.AVAILABLE.canBeSold()).isTrue();
-        assertThat(CarStatusType.RESERVED.canBeSold()).isTrue();
-        assertThat(CarStatusType.SOLD.canBeSold()).isFalse();
-        assertThat(CarStatusType.MAINTENANCE.canBeSold()).isFalse();
-        assertThat(CarStatusType.DAMAGED.canBeSold()).isFalse();
-        assertThat(CarStatusType.INSPECTION.canBeSold()).isFalse();
-    }
-
-    @Test
     @DisplayName("canBeReserved should return true only for AVAILABLE status")
     void canBeReserved_ShouldReturnTrueOnlyForAvailable() {
 
         assertThat(CarStatusType.AVAILABLE.canBeReserved()).isTrue();
-        assertThat(CarStatusType.SOLD.canBeReserved()).isFalse();
         assertThat(CarStatusType.MAINTENANCE.canBeReserved()).isFalse();
         assertThat(CarStatusType.RESERVED.canBeReserved()).isFalse();
         assertThat(CarStatusType.DAMAGED.canBeReserved()).isFalse();
@@ -48,22 +34,9 @@ public class CarStatusTypeTest {
     }
 
     @Test
-    @DisplayName("isSold should return true only for SOLD status")
-    void isSold_ShouldReturnTrueOnlyForSold() {
+    @DisplayName("isInactive should return true for MAINTENANCE and RENTED statuses")
+    void isInactive_ShouldReturnTrueForMaintenanceAndRented() {
 
-        assertThat(CarStatusType.SOLD.isSold()).isTrue();
-        assertThat(CarStatusType.AVAILABLE.isSold()).isFalse();
-        assertThat(CarStatusType.MAINTENANCE.isSold()).isFalse();
-        assertThat(CarStatusType.RESERVED.isSold()).isFalse();
-        assertThat(CarStatusType.DAMAGED.isSold()).isFalse();
-        assertThat(CarStatusType.INSPECTION.isSold()).isFalse();
-    }
-
-    @Test
-    @DisplayName("isInactive should return true for SOLD, MAINTENANCE and RENTED statuses")
-    void isInactive_ShouldReturnTrueForSoldMaintenanceAndRented() {
-
-        assertThat(CarStatusType.SOLD.isInactive()).isTrue();
         assertThat(CarStatusType.MAINTENANCE.isInactive()).isTrue();
         assertThat(CarStatusType.RENTED.isInactive()).isTrue();
         assertThat(CarStatusType.AVAILABLE.isInactive()).isFalse();
@@ -79,7 +52,6 @@ public class CarStatusTypeTest {
         assertThat(CarStatusType.DAMAGED.requiresAttention()).isTrue();
         assertThat(CarStatusType.INSPECTION.requiresAttention()).isTrue();
         assertThat(CarStatusType.AVAILABLE.requiresAttention()).isFalse();
-        assertThat(CarStatusType.SOLD.requiresAttention()).isFalse();
         assertThat(CarStatusType.MAINTENANCE.requiresAttention()).isFalse();
         assertThat(CarStatusType.RESERVED.requiresAttention()).isFalse();
     }
@@ -90,9 +62,8 @@ public class CarStatusTypeTest {
 
         CarStatusType[] unavailableStatuses = CarStatusType.getUnavailableStatuses();
 
-        assertThat(unavailableStatuses).hasSize(5);
+        assertThat(unavailableStatuses).hasSize(4);
         assertThat(unavailableStatuses).containsExactlyInAnyOrder(
-                CarStatusType.SOLD,
                 CarStatusType.RENTED,
                 CarStatusType.MAINTENANCE,
                 CarStatusType.DAMAGED,
@@ -100,7 +71,7 @@ public class CarStatusTypeTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "AVAILABLE", " available ", " Available", "SOLD", " sold ", " Sold" })
+    @ValueSource(strings = { "AVAILABLE", " available ", " Available", "RENTED", " rented ", " Rented" })
     @DisplayName("fromString should parse valid status string")
     void fromString_WithValidString_ShouldReturnCorrectEnum(String statusString) {
 
@@ -136,7 +107,6 @@ public class CarStatusTypeTest {
     void toString_ShouldReturnDisplayName() {
 
         assertThat(CarStatusType.AVAILABLE.toString()).isEqualTo("Available");
-        assertThat(CarStatusType.SOLD.toString()).isEqualTo("Sold");
         assertThat(CarStatusType.MAINTENANCE.toString()).isEqualTo("Maintenance");
     }
 
@@ -145,7 +115,6 @@ public class CarStatusTypeTest {
     void getDisplayName_ShouldReturnCorrectDisplayName() {
 
         assertThat(CarStatusType.AVAILABLE.getDisplayName()).isEqualTo("Available");
-        assertThat(CarStatusType.SOLD.getDisplayName()).isEqualTo("Sold");
         assertThat(CarStatusType.MAINTENANCE.getDisplayName()).isEqualTo("Maintenance");
     }
 }

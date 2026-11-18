@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -46,20 +45,12 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     Page<Car> findByProductionYearGreaterThanEqualAndIsDeletedFalse(Integer yearThreshold, Pageable pageable);
 
-    Page<Car> findByIsFeaturedTrueAndCarStatusTypeAndIsDeletedFalse(CarStatusType carStatusType, Pageable pageable);
-
-    Page<Car> findByIsTestDriveAvailableTrueAndIsDeletedFalse(Pageable pageable);
-
     @EntityGraph(attributePaths = {})
     Page<Car> findByIsDeletedFalse(Pageable pageable);
 
     long countByIsDeletedFalse();
 
     Optional<Car> findByIdAndIsDeletedFalse(Long id);
-
-    Page<Car> findByIsDeletedFalseOrderByViewCountDesc(Pageable pageable);
-
-    Page<Car> findByIsDeletedFalseOrderByLikeCountDesc(Pageable pageable);
 
     @Query(value = "SELECT * FROM car_rental.car c WHERE " +
             "(CAST(:searchTerm AS VARCHAR) IS NULL OR " +
@@ -197,18 +188,6 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             @Param("excludeCarId") Long excludeCarId,
             @Param("blockingStatuses") List<CarStatusType> blockingStatuses,
             Pageable pageable);
-
-    @Modifying
-    @Query("UPDATE Car c SET c.viewCount = c.viewCount + 1, c.updateTime = CURRENT_TIMESTAMP WHERE c.id = :id")
-    void incrementViewCount(@Param("id") Long id);
-
-    @Modifying
-    @Query("UPDATE Car c SET c.likeCount = c.likeCount + 1, c.updateTime = CURRENT_TIMESTAMP WHERE c.id = :id")
-    void incrementLikeCount(@Param("id") Long id);
-
-    @Modifying
-    @Query("UPDATE Car c SET c.likeCount = CASE WHEN c.likeCount > 0 THEN c.likeCount - 1 ELSE 0 END, c.updateTime = CURRENT_TIMESTAMP WHERE c.id = :id")
-    void decrementLikeCount(@Param("id") Long id);
 
     @Query("SELECT DISTINCT c.brand FROM Car c WHERE c.isDeleted = false AND c.brand IS NOT NULL ORDER BY c.brand")
     List<String> findDistinctBrands();

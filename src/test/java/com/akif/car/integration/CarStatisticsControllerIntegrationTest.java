@@ -38,7 +38,7 @@ class CarStatisticsControllerIntegrationTest {
 
         createTestCar("34ABC123", "Toyota", "Corolla", new BigDecimal("250000"), CarStatusType.AVAILABLE);
         createTestCar("34XYZ456", "Toyota", "Camry", new BigDecimal("350000"), CarStatusType.AVAILABLE);
-        createTestCar("34DEF789", "Honda", "Civic", new BigDecimal("280000"), CarStatusType.SOLD);
+        createTestCar("34DEF789", "Honda", "Civic", new BigDecimal("280000"), CarStatusType.MAINTENANCE);
         createTestCar("34GHI012", "BMW", "320i", new BigDecimal("450000"), CarStatusType.RESERVED);
     }
 
@@ -58,8 +58,6 @@ class CarStatisticsControllerIntegrationTest {
         car.setCurrencyType(CurrencyType.TRY);
         car.setDamagePrice(BigDecimal.ZERO);
         car.setCarStatusType(status);
-        car.setIsFeatured(false);
-        car.setIsTestDriveAvailable(true);
         carRepository.save(car);
     }
 
@@ -81,7 +79,7 @@ class CarStatisticsControllerIntegrationTest {
         mockMvc.perform(get("/api/cars/statistics/status-counts"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.AVAILABLE").value(2))
-                .andExpect(jsonPath("$.SOLD").value(1))
+                .andExpect(jsonPath("$.MAINTENANCE").value(1))
                 .andExpect(jsonPath("$.RESERVED").value(1));
     }
 

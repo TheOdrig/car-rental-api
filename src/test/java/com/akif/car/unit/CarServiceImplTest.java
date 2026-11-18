@@ -55,7 +55,6 @@ class CarServiceImplTest {
     private CarRequest testCarRequest;
     private CarResponse testCarResponse;
 
-
     @BeforeEach
     void setUp() {
 
@@ -70,10 +69,6 @@ class CarServiceImplTest {
                 .currencyType(CurrencyType.TRY)
                 .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .isFeatured(true)
-                .isTestDriveAvailable(true)
-                .viewCount(10L)
-                .likeCount(5L)
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
                 .build();
@@ -89,10 +84,6 @@ class CarServiceImplTest {
                 .currencyType(CurrencyType.TRY)
                 .damagePrice(new BigDecimal("5000"))
                 .carStatusType(CarStatusType.AVAILABLE)
-                .isFeatured(false)
-                .isTestDriveAvailable(false)
-                .viewCount(5L)
-                .likeCount(2L)
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
                 .build();
@@ -106,9 +97,7 @@ class CarServiceImplTest {
                 .price(new BigDecimal("1500000"))
                 .currencyType(CurrencyType.TRY)
                 .damagePrice(BigDecimal.ZERO)
-                .carStatusType(CarStatusType.SOLD)
-                .isFeatured(true)
-                .isTestDriveAvailable(false)
+                .carStatusType(CarStatusType.MAINTENANCE)
                 .build();
 
         testCarResponse = CarResponse.builder()
@@ -122,13 +111,8 @@ class CarServiceImplTest {
                 .currencyType(CurrencyType.TRY)
                 .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .isFeatured(true)
-                .isTestDriveAvailable(true)
-                .viewCount(10L)
-                .likeCount(5L)
                 .build();
     }
-
 
     @Nested
     @DisplayName("Create Car Operations")
@@ -382,57 +366,13 @@ class CarServiceImplTest {
     class BusinessLogicOperations {
 
         @Test
-        @DisplayName("Should call atomic incrementViewCount in repository")
-        void shouldCallAtomicIncrementViewCount() {
-            carService.incrementViewCount(1L);
-
-            verify(carRepository).incrementViewCount(1L);
-            verify(carRepository, never()).findById(any());
-            verify(carRepository, never()).save(any());
-        }
-
-        @Test
-        @DisplayName("Should call atomic incrementLikeCount in repository")
-        void shouldCallAtomicIncrementLikeCount() {
-            carService.incrementLikeCount(1L);
-
-            verify(carRepository).incrementLikeCount(1L);
-            verify(carRepository, never()).findById(any());
-            verify(carRepository, never()).save(any());
-        }
-
-        @Test
-        @DisplayName("Should call atomic decrementLikeCount in repository")
-        void shouldCallAtomicDecrementLikeCount() {
-            carService.decrementLikeCount(1L);
-
-            verify(carRepository).decrementLikeCount(1L);
-            verify(carRepository, never()).findById(any());
-            verify(carRepository, never()).save(any());
-        }
-
-        @Test
-        @DisplayName("Should throw exception when incrementing view count on null id")
-        void shouldThrowExceptionWhenIncrementingViewCountOnNullId() {
-            assertThatThrownBy(() -> carService.incrementViewCount(null))
-                    .isInstanceOf(IllegalArgumentException.class);
-        }
-
-        @Test
-        @DisplayName("Should throw exception when incrementing like count on null id")
-        void shouldThrowExceptionWhenIncrementingLikeCountOnNullId() {
-            assertThatThrownBy(() -> carService.incrementLikeCount(null))
-                    .isInstanceOf(IllegalArgumentException.class);
-        }
-
-        @Test
         @DisplayName("Should change car status when updating status")
         void shouldChangeCarStatusWhenUpdatingStatus() {
 
             CarStatusUpdateRequest statusUpdateRequest = new CarStatusUpdateRequest(
-                    CarStatusType.SOLD,
-                    "Car sold to customer",
-                    "Payment completed"
+                    CarStatusType.MAINTENANCE,
+                    "Scheduled service",
+                    "Workshop booking confirmed"
             );
 
             when(carRepository.findById(1L)).thenReturn(Optional.of(testCar1));
@@ -442,7 +382,7 @@ class CarServiceImplTest {
             CarResponse result = carService.updateCarStatus(1L, statusUpdateRequest);
 
             assertThat(result).isNotNull();
-            assertThat(testCar1.getCarStatusType()).isEqualTo(CarStatusType.SOLD);
+            assertThat(testCar1.getCarStatusType()).isEqualTo(CarStatusType.MAINTENANCE);
 
             verify(carRepository).findById(1L);
             verify(carRepository).save(testCar1);

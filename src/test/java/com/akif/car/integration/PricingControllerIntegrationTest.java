@@ -62,10 +62,6 @@ class PricingControllerIntegrationTest {
                 .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
                 .bodyType("Sedan")
-                .isFeatured(false)
-                .isTestDriveAvailable(false)
-                .viewCount(0L)
-                .likeCount(0L)
                 .build();
         testCar = carRepository.save(testCar);
     }

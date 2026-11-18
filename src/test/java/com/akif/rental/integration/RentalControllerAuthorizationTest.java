@@ -107,10 +107,6 @@ class RentalControllerAuthorizationTest {
                 .price(new BigDecimal("500.00"))
                 .currencyType(CurrencyType.TRY)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .isFeatured(false)
-                .isTestDriveAvailable(true)
-                .viewCount(0L)
-                .likeCount(0L)
                 .build();
         testCar = carRepository.save(testCar);
 

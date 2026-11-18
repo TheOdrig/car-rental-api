@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -56,11 +55,7 @@ public class CarResponse {
     private String notes;
     private String imageUrl;
     private String thumbnailUrl;
-    private Boolean isFeatured;
-    private Boolean isTestDriveAvailable;
     private BigDecimal rating;
-    private Long viewCount;
-    private Long likeCount;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
     private LocalDateTime createTime;
@@ -69,9 +64,7 @@ public class CarResponse {
     private LocalDateTime updateTime;
     private Long version;
 
-
     private Boolean isAvailable;
-    private Boolean canBeSold;
     private Boolean canBeReserved;
     private Boolean requiresAttention;
     private String formattedPrice;

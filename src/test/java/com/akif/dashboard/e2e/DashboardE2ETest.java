@@ -506,10 +506,6 @@ class DashboardE2ETest extends E2ETestBase {
                                         .price(new BigDecimal("600.00"))
                                         .currencyType(CurrencyType.TRY)
                                         .carStatusType(CarStatusType.RENTED)
-                                        .isFeatured(false)
-                                        .isTestDriveAvailable(true)
-                                        .viewCount(0L)
-                                        .likeCount(0L)
                                         .build();
                         carRepository.save(rentedCar);
 
@@ -521,10 +517,6 @@ class DashboardE2ETest extends E2ETestBase {
                                         .price(new BigDecimal("450.00"))
                                         .currencyType(CurrencyType.TRY)
                                         .carStatusType(CarStatusType.MAINTENANCE)
-                                        .isFeatured(false)
-                                        .isTestDriveAvailable(false)
-                                        .viewCount(0L)
-                                        .likeCount(0L)
                                         .build();
                         carRepository.save(maintenanceCar);
 

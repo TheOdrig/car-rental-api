@@ -22,8 +22,6 @@ public class CacheConfig {
     public static final String CAR_STATUS_COUNTS_CACHE = "car-status-counts";
     public static final String CAR_BRAND_COUNTS_CACHE = "car-brand-counts";
     public static final String CAR_AVERAGE_PRICES_CACHE = "car-average-prices";
-    public static final String MOST_VIEWED_CARS_CACHE = "most-viewed-cars";
-    public static final String MOST_LIKED_CARS_CACHE = "most-liked-cars";
 
     public static final String DAILY_SUMMARY_CACHE = "dailySummary";
     public static final String FLEET_STATUS_CACHE = "fleetStatus";
@@ -37,8 +35,6 @@ public class CacheConfig {
             Map.entry(CAR_STATUS_COUNTS_CACHE, 30),
             Map.entry(CAR_BRAND_COUNTS_CACHE, 30),
             Map.entry(CAR_AVERAGE_PRICES_CACHE, 30),
-            Map.entry(MOST_VIEWED_CARS_CACHE, 15),
-            Map.entry(MOST_LIKED_CARS_CACHE, 15),
 
             Map.entry(DAILY_SUMMARY_CACHE, 5),
             Map.entry(FLEET_STATUS_CACHE, 5),

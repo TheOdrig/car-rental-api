@@ -93,10 +93,6 @@ class LateReturnControllerIntegrationTest {
                 .currencyType(CurrencyType.TRY)
                 .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .isFeatured(false)
-                .isTestDriveAvailable(true)
-                .viewCount(0L)
-                .likeCount(0L)
                 .build();
         testCar = carRepository.save(testCar);
 

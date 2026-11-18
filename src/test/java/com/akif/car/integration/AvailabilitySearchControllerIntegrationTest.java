@@ -101,10 +101,6 @@ class AvailabilitySearchControllerIntegrationTest {
                 .kilometer(10000L)
                 .doors(4)
                 .seats(5)
-                .isFeatured(false)
-                .isTestDriveAvailable(true)
-                .viewCount(0L)
-                .likeCount(0L)
                 .isDeleted(false)
                 .build();
         availableCar = carRepository.save(availableCar);
@@ -126,10 +122,6 @@ class AvailabilitySearchControllerIntegrationTest {
                 .kilometer(5000L)
                 .doors(4)
                 .seats(5)
-                .isFeatured(false)
-                .isTestDriveAvailable(true)
-                .viewCount(0L)
-                .likeCount(0L)
                 .isDeleted(false)
                 .build();
         unavailableCar = carRepository.save(unavailableCar);
@@ -170,10 +162,6 @@ class AvailabilitySearchControllerIntegrationTest {
                 .kilometer(2000L)
                 .doors(4)
                 .seats(5)
-                .isFeatured(false)
-                .isTestDriveAvailable(false)
-                .viewCount(0L)
-                .likeCount(0L)
                 .isDeleted(false)
                 .build();
         maintenanceCar = carRepository.save(maintenanceCar);
@@ -420,10 +408,6 @@ class AvailabilitySearchControllerIntegrationTest {
                     .kilometer(8000L)
                     .doors(4)
                     .seats(5)
-                    .isFeatured(false)
-                    .isTestDriveAvailable(true)
-                    .viewCount(0L)
-                    .likeCount(0L)
                     .isDeleted(false)
                     .build();
             carRepository.save(similarCar);
@@ -458,10 +442,6 @@ class AvailabilitySearchControllerIntegrationTest {
                     .kilometer(1000L)
                     .doors(4)
                     .seats(5)
-                    .isFeatured(true)
-                    .isTestDriveAvailable(true)
-                    .viewCount(0L)
-                    .likeCount(0L)
                     .isDeleted(false)
                     .build();
             carRepository.save(differentCar);

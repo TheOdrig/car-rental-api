@@ -28,20 +28,6 @@ public class CarBusinessController {
 
     private final CarService carService;
 
-    @PostMapping(value = "/{id}/sell")
-    @Operation(summary = "Sell car", description = "Mark a car as sold")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Car sold successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Car not found"),
-            @ApiResponse(responseCode = "400", description = "Car cannot be sold")
-    })
-    public ResponseEntity<CarResponse> sellCar(
-            @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        CarResponse car = carService.sellCar(id);
-        return ResponseEntity.ok(car);
-    }
-
     @PostMapping(value = "/{id}/reserve")
     @Operation(summary = "Reserve car", description = "Reserve a car for a customer")
     @ApiResponses(value = {
@@ -126,60 +112,6 @@ public class CarBusinessController {
             @Parameter(description = "Price update data", required = true) @Valid @RequestBody CarPriceUpdateRequest priceUpdateRequest) {
         CarResponse car = carService.updateCarPrice(id, priceUpdateRequest);
         return ResponseEntity.ok(car);
-    }
-
-    @PostMapping(value = "/{id}/view")
-    @Operation(summary = "Increment view count", description = "Increment view count for a car")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "View count incremented successfully"),
-            @ApiResponse(responseCode = "404", description = "Car not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid car ID")
-    })
-    public ResponseEntity<Void> incrementViewCount(
-            @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        carService.incrementViewCount(id);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping(value = "/{id}/like")
-    @Operation(summary = "Increment like count", description = "Increment like count for a car")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Like count incremented successfully"),
-            @ApiResponse(responseCode = "404", description = "Car not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid car ID")
-    })
-    public ResponseEntity<Void> incrementLikeCount(
-            @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        carService.incrementLikeCount(id);
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping(value = "/{id}/like")
-    @Operation(summary = "Decrement like count", description = "Decrement like count for a car")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Like count decremented successfully"),
-            @ApiResponse(responseCode = "404", description = "Car not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid car ID")
-    })
-    public ResponseEntity<Void> decrementLikeCount(
-            @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        carService.decrementLikeCount(id);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping(value = "/{id}/can-sell")
-    @Operation(summary = "Check if car can be sold", description = "Check if car can be sold")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Check completed",
-                    content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "Car not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid car ID")
-    })
-    public ResponseEntity<Map<String, Boolean>> canCarBeSold(
-            @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        log.info("GET /api/cars/business/{}/can-sell", id);
-        boolean canBeSold = carService.canCarBeSold(id);
-        return ResponseEntity.ok(Map.of("canBeSold", canBeSold));
     }
 
     @GetMapping(value = "/{id}/can-reserve")

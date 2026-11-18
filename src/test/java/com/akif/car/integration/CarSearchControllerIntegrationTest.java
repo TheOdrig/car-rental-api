@@ -61,8 +61,6 @@ class CarSearchControllerIntegrationTest {
         car.setCurrencyType(CurrencyType.TRY);
         car.setDamagePrice(BigDecimal.ZERO);
         car.setCarStatusType(status);
-        car.setIsFeatured(false);
-        car.setIsTestDriveAvailable(true);
         carRepository.save(car);
     }
 
@@ -106,16 +104,6 @@ class CarSearchControllerIntegrationTest {
     @DisplayName("Should get new cars")
     void shouldGetNewCars() throws Exception {
         mockMvc.perform(get("/api/cars/search/new")
-                .param("page", "0")
-                .param("size", "10"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray());
-    }
-
-    @Test
-    @DisplayName("Should get featured cars")
-    void shouldGetFeaturedCars() throws Exception {
-        mockMvc.perform(get("/api/cars/search/featured")
                 .param("page", "0")
                 .param("size", "10"))
                 .andExpect(status().isOk())

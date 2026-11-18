@@ -1,7 +1,6 @@
 package com.akif.car.web;
 
 import com.akif.car.api.CarResponse;
-import com.akif.car.api.CarSummaryResponse;
 import com.akif.car.internal.dto.request.CarSearchRequest;
 import com.akif.car.internal.dto.response.CarListResponse;
 import com.akif.car.domain.enums.CarStatusType;
@@ -23,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/cars/search")
@@ -92,19 +90,6 @@ public class CarSearchController {
         return ResponseEntity.ok(cars);
     }
 
-    @GetMapping(value = "/featured")
-    @Operation(summary = "Get featured cars", description = "Retrieve featured cars")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Featured cars retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters")
-    })
-    public ResponseEntity<Page<CarResponse>> getFeaturedCars(
-            @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable) {
-        Page<CarResponse> cars = carService.getFeaturedCars(pageable);
-        return ResponseEntity.ok(cars);
-    }
-
     @GetMapping(value = "/new")
     @Operation(summary = "Get new cars", description = "Retrieve new cars (less than 1 year old)")
     @ApiResponses(value = {
@@ -115,19 +100,6 @@ public class CarSearchController {
     public ResponseEntity<Page<CarResponse>> getNewCars(
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable) {
         Page<CarResponse> cars = carService.getNewCars(pageable);
-        return ResponseEntity.ok(cars);
-    }
-
-    @GetMapping(value = "/test-drive")
-    @Operation(summary = "Get cars available for test drive", description = "Retrieve cars available for test drive")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Cars available for test drive retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters")
-    })
-    public ResponseEntity<Page<CarResponse>> getCarsAvailableForTestDrive(
-            @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable) {
-        Page<CarResponse> cars = carService.getCarsAvailableForTestDrive(pageable);
         return ResponseEntity.ok(cars);
     }
 
@@ -150,29 +122,4 @@ public class CarSearchController {
         return ResponseEntity.ok(cars);
     }
 
-    @GetMapping(value = "/most-viewed")
-    @Operation(summary = "Get most viewed cars", description = "Retrieve most viewed cars")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Most viewed cars retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid limit parameter")
-    })
-    public ResponseEntity<List<CarSummaryResponse>> getMostViewedCars(
-            @Parameter(description = "Number of cars to return", required = true) @RequestParam(defaultValue = "10") int limit) {
-        List<CarSummaryResponse> cars = carService.getMostViewedCars(limit);
-        return ResponseEntity.ok(cars);
-    }
-
-    @GetMapping(value = "/most-liked")
-    @Operation(summary = "Get most liked cars", description = "Retrieve most liked cars")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Most liked cars retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid limit parameter")
-    })
-    public ResponseEntity<List<CarSummaryResponse>> getMostLikedCars(
-            @Parameter(description = "Number of cars to return", required = true) @RequestParam(defaultValue = "10") int limit) {
-        List<CarSummaryResponse> cars = carService.getMostLikedCars(limit);
-        return ResponseEntity.ok(cars);
-    }
 }

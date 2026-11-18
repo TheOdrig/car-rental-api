@@ -111,28 +111,11 @@ public class Car extends BaseEntity {
     @Column(name = "thumbnail_url", length = 500)
     private String thumbnailUrl;
 
-    @Column(name = "is_featured", nullable = false)
-    private Boolean isFeatured = false;
-
-    @Column(name = "is_test_drive_available", nullable = false)
-    private Boolean isTestDriveAvailable = true;
-
     @Column(name = "rating", precision = 2, scale = 1)
     private BigDecimal rating;
 
-    @Column(name = "view_count", nullable = false)
-    private Long viewCount = 0L;
-
-    @Column(name = "like_count", nullable = false)
-    private Long likeCount = 0L;
-
-
     public boolean isAvailable() {
         return carStatusType != null && carStatusType.isAvailable();
-    }
-
-    public boolean canBeSold() {
-        return carStatusType != null && carStatusType.canBeSold();
     }
 
     public boolean canBeReserved() {
@@ -225,33 +208,6 @@ public class Car extends BaseEntity {
         return isInsuranceExpiredOn(today) || isInspectionExpiredOn(today);
     }
 
-
-    public void incrementViewCount() {
-        if (viewCount == null) {
-            viewCount = 0L;
-        }
-        viewCount++;
-    }
-
-    public void incrementLikeCount() {
-        if (likeCount == null) {
-            likeCount = 0L;
-        }
-        likeCount++;
-    }
-
-    public void decrementLikeCount() {
-        if (likeCount == null || likeCount <= 0) {
-            likeCount = 0L;
-        } else {
-            likeCount--;
-        }
-    }
-
-    public void markAsSold() {
-        this.carStatusType = CarStatusType.SOLD;
-    }
-
     public void markAsAvailable() {
         this.carStatusType = CarStatusType.AVAILABLE;
     }
@@ -272,7 +228,6 @@ public class Car extends BaseEntity {
         this.carStatusType = CarStatusType.INSPECTION;
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -285,7 +240,6 @@ public class Car extends BaseEntity {
     public int hashCode() {
         return Objects.hash(this.vinNumber);
     }
-
 
     @Override
     public String toString() {

@@ -117,10 +117,6 @@ class DamageAssessmentControllerIntegrationTest {
                 .price(new BigDecimal("800.00"))
                 .currencyType(CurrencyType.TRY)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .isFeatured(false)
-                .isTestDriveAvailable(true)
-                .viewCount(0L)
-                .likeCount(0L)
                 .build();
         testCar = carRepository.save(testCar);
 

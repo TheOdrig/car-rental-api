@@ -19,7 +19,7 @@ class InvalidStatusTransitionExceptionTest {
         @DisplayName("Should create exception with message and BAD_REQUEST status")
         void shouldCreateExceptionWithMessageAndBadRequestStatus() {
 
-            String message = "Invalid status transition from AVAILABLE to SOLD";
+            String message = "Invalid status transition from AVAILABLE to MAINTENANCE";
 
             InvalidStatusTransitionException exception = new InvalidStatusTransitionException(message);
 

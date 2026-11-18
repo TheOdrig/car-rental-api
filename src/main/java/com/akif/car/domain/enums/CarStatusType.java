@@ -8,26 +8,19 @@ import lombok.Getter;
 @JsonFormat(shape=JsonFormat.Shape.STRING)
 public enum CarStatusType {
 
-    AVAILABLE("Available", "Car is available for sale", true, false),
-    SOLD("Sold", "Car has been sold to a customer", false, true),
-    RENTED("Rented", "Car is currently rented out", false, false),
-    MAINTENANCE("Maintenance", "Car is under maintenance", false, false),
-    RESERVED("Reserved", "Car is reserved for a customer", false, false),
-    DAMAGED("Damaged", "Car is damaged and needs repair", false, false),
-    INSPECTION("Inspection", "Car is being inspected", false, false);
+    AVAILABLE("Available", "Car is available for rental"),
+    RENTED("Rented", "Car is currently rented out"),
+    MAINTENANCE("Maintenance", "Car is under maintenance"),
+    RESERVED("Reserved", "Car is reserved for a customer"),
+    DAMAGED("Damaged", "Car is damaged and needs repair"),
+    INSPECTION("Inspection", "Car is being inspected");
 
     private final String displayName;
     private final String description;
-    private final boolean availableForSale;
-    private final boolean sold;
-
-    CarStatusType(String displayName, String description, boolean availableForSale, boolean sold) {
+    CarStatusType(String displayName, String description) {
         this.displayName = displayName;
         this.description = description;
-        this.availableForSale = availableForSale;
-        this.sold = sold;
     }
-
 
     @JsonValue
     public String getDisplayName() {
@@ -36,10 +29,6 @@ public enum CarStatusType {
 
     public boolean isAvailable() {
         return this == AVAILABLE;
-    }
-
-    public boolean canBeSold() {
-        return this == AVAILABLE || this == RESERVED;
     }
 
     public boolean canBeReserved() {
@@ -51,18 +40,16 @@ public enum CarStatusType {
     }
 
     public boolean isInactive() {
-        return this == SOLD || this == MAINTENANCE || this == RENTED;
+        return this == MAINTENANCE || this == RENTED;
     }
 
     public boolean requiresAttention() {
         return this == DAMAGED || this == INSPECTION;
     }
 
-
     public static CarStatusType[] getUnavailableStatuses() {
-        return new CarStatusType[]{SOLD, RENTED, MAINTENANCE, DAMAGED, INSPECTION};
+        return new CarStatusType[]{RENTED, MAINTENANCE, DAMAGED, INSPECTION};
     }
-
 
     public static CarStatusType fromString(String status) {
         if (status == null || status.trim().isEmpty()) {

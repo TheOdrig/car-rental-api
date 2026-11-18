@@ -71,7 +71,6 @@ public class DashboardQueryService {
         int maintenanceCars = carService.countByStatus(CarStatusType.MAINTENANCE);
         int inspectionCars = carService.countByStatus(CarStatusType.INSPECTION);
         int damagedCars = carService.countByStatus(CarStatusType.DAMAGED);
-        int soldCars = carService.countByStatus(CarStatusType.SOLD);
 
         BigDecimal occupancyRate = calculateOccupancyRate(rentedCars + reservedCars, totalCars);
 
@@ -83,7 +82,6 @@ public class DashboardQueryService {
                 maintenanceCars,
                 inspectionCars,
                 damagedCars,
-                soldCars,
                 occupancyRate,
                 LocalDateTime.now(clock));
     }

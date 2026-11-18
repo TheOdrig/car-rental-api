@@ -6,7 +6,6 @@ import com.akif.car.api.CarDto;
 import com.akif.car.api.CarService;
 import com.akif.car.api.FilterOptionsResponse;
 import com.akif.car.internal.dto.response.CarListResponse;
-import com.akif.car.api.CarSummaryResponse;
 import com.akif.car.internal.dto.request.CarRequest;
 import com.akif.car.internal.exception.*;
 import com.akif.car.internal.mapper.CarMapper;
@@ -105,8 +104,6 @@ public class CarServiceImpl implements CarService {
         Car car = carMapper.toEntity(carRequest);
         car.setCreateTime(LocalDateTime.now(clock));
         car.setIsDeleted(false);
-        car.setViewCount(0L);
-        car.setLikeCount(0L);
 
         Car savedCar = carRepository.save(car);
         CarResponse result = carMapper.toDto(savedCar);
@@ -336,31 +333,6 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
-    @Cacheable(value = "cars", key = "'featured:' + #pageable.pageNumber + ':' + #pageable.pageSize")
-    public Page<CarResponse> getFeaturedCars(Pageable pageable) {
-        log.debug("Getting featured cars");
-
-        Page<Car> cars = carRepository.findByIsFeaturedTrueAndCarStatusTypeAndIsDeletedFalse(
-                CarStatusType.AVAILABLE, pageable);
-        Page<CarResponse> result = cars.map(carMapper::toDto);
-
-        logPagedRetrievalSuccess("featured cars", result);
-        return result;
-    }
-
-    @Override
-    @Cacheable(value = "cars", key = "'testdrive:' + #pageable.pageNumber + ':' + #pageable.pageSize")
-    public Page<CarResponse> getCarsAvailableForTestDrive(Pageable pageable) {
-        log.debug("Getting cars available for test drive");
-
-        Page<Car> cars = carRepository.findByIsTestDriveAvailableTrueAndIsDeletedFalse(pageable);
-        Page<CarResponse> result = cars.map(carMapper::toDto);
-
-        logPagedRetrievalSuccess("cars available for test drive", result);
-        return result;
-    }
-
-    @Override
     @Cacheable(value = "cars", key = "'active:' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort")
     public Page<CarResponse> getAllActiveCars(Pageable pageable) {
         log.debug("Getting all active cars with pageable: {}", pageable);
@@ -375,34 +347,6 @@ public class CarServiceImpl implements CarService {
     @Override
     public long getActiveCarCount() {
         return carRepository.countByIsDeletedFalse();
-    }
-
-    @Override
-    @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "cars", allEntries = true),
-            @CacheEvict(value = "car-status-counts", allEntries = true),
-            @CacheEvict(value = "car-statistics", allEntries = true)
-    })
-    public CarResponse sellCar(Long id) {
-        log.debug("Selling car with id: {}", id);
-        validateCarId(id);
-
-        Car car = findCarById(id);
-
-        if (!car.canBeSold()) {
-            log.warn("Car {} cannot be sold, current status: {}", car.getId(), car.getCarStatusType());
-            throw new CarCannotBeSoldException("Car cannot be sold, current status: " + car.getCarStatusType());
-        }
-
-        car.markAsSold();
-        car.setUpdateTime(LocalDateTime.now(clock));
-
-        Car savedCar = carRepository.save(car);
-        CarResponse result = carMapper.toDto(savedCar);
-
-        log.info("Successfully sold car: ID={}, License Plate={}", result.getId(), result.getLicensePlate());
-        return result;
     }
 
     @Override
@@ -662,76 +606,8 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
-    @Cacheable(value = "most-viewed-cars", key = "#limit")
-    public List<CarSummaryResponse> getMostViewedCars(int limit) {
-        log.debug("Getting most viewed cars with limit: {}", limit);
-
-        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "viewCount"));
-        Page<Car> cars = carRepository.findByIsDeletedFalseOrderByViewCountDesc(pageable);
-
-        List<CarSummaryResponse> result = cars.getContent().stream()
-                .map(carMapper::toSummaryDto)
-                .collect(Collectors.toList());
-
-        log.info("Successfully retrieved {} most viewed cars", result.size());
-        return result;
-    }
-
-    @Override
-    @Cacheable(value = "most-liked-cars", key = "#limit")
-    public List<CarSummaryResponse> getMostLikedCars(int limit) {
-        log.debug("Getting most liked cars with limit: {}", limit);
-
-        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "likeCount"));
-        Page<Car> cars = carRepository.findByIsDeletedFalseOrderByLikeCountDesc(pageable);
-
-        List<CarSummaryResponse> result = cars.getContent().stream()
-                .map(carMapper::toSummaryDto)
-                .collect(Collectors.toList());
-
-        log.info("Successfully retrieved {} most liked cars", result.size());
-        return result;
-    }
-
-    @Override
     public boolean existsByLicensePlate(String licensePlate) {
         return carRepository.existsByLicensePlate(licensePlate);
-    }
-
-    @Override
-    @Transactional
-    @CacheEvict(value = "cars", key = "#id")
-    public void incrementViewCount(Long id) {
-        log.debug("Incrementing view count for car id: {}", id);
-        validateCarId(id);
-
-        carRepository.incrementViewCount(id);
-
-        log.info("Successfully incremented view count for car: ID={}", id);
-    }
-
-    @Override
-    @Transactional
-    @CacheEvict(value = "cars", key = "#id")
-    public void incrementLikeCount(Long id) {
-        log.debug("Incrementing like count for car id: {}", id);
-        validateCarId(id);
-
-        carRepository.incrementLikeCount(id);
-
-        log.info("Successfully incremented like count for car: ID={}", id);
-    }
-
-    @Override
-    @Transactional
-    @CacheEvict(value = "cars", key = "#id")
-    public void decrementLikeCount(Long id) {
-        log.debug("Decrementing like count for car id: {}", id);
-        validateCarId(id);
-
-        carRepository.decrementLikeCount(id);
-
-        log.info("Successfully decremented like count for car: ID={}", id);
     }
 
     @Override
@@ -775,12 +651,6 @@ public class CarServiceImpl implements CarService {
         }
 
         return errors;
-    }
-
-    @Override
-    public boolean canCarBeSold(Long id) {
-        Car car = findCarById(id);
-        return car.canBeSold();
     }
 
     @Override
@@ -895,10 +765,10 @@ public class CarServiceImpl implements CarService {
         Map<CarStatusType, Set<CarStatusType>> validTransitions = Map.of(
                 CarStatusType.AVAILABLE,
                 Set.of(CarStatusType.RESERVED, CarStatusType.RENTED, CarStatusType.MAINTENANCE,
-                        CarStatusType.DAMAGED, CarStatusType.INSPECTION, CarStatusType.SOLD),
+                        CarStatusType.DAMAGED, CarStatusType.INSPECTION),
                 CarStatusType.RESERVED,
                 Set.of(CarStatusType.AVAILABLE, CarStatusType.RENTED, CarStatusType.MAINTENANCE,
-                        CarStatusType.DAMAGED, CarStatusType.SOLD),
+                        CarStatusType.DAMAGED),
                 CarStatusType.RENTED,
                 Set.of(CarStatusType.AVAILABLE, CarStatusType.MAINTENANCE, CarStatusType.DAMAGED,
                         CarStatusType.INSPECTION),
@@ -907,8 +777,7 @@ public class CarServiceImpl implements CarService {
                 CarStatusType.DAMAGED,
                 Set.of(CarStatusType.AVAILABLE, CarStatusType.MAINTENANCE, CarStatusType.INSPECTION),
                 CarStatusType.INSPECTION,
-                Set.of(CarStatusType.AVAILABLE, CarStatusType.MAINTENANCE, CarStatusType.DAMAGED),
-                CarStatusType.SOLD, Set.of());
+                Set.of(CarStatusType.AVAILABLE, CarStatusType.MAINTENANCE, CarStatusType.DAMAGED));
 
         Set<CarStatusType> allowedTransitions = validTransitions.get(currentStatus);
         if (allowedTransitions == null || !allowedTransitions.contains(newStatus)) {

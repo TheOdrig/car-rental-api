@@ -60,11 +60,7 @@ class CarControllerAuthorizationTest {
                 .currencyType(CurrencyType.TRY)
                 .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .isFeatured(true)
-                .isTestDriveAvailable(true)
                 .isDeleted(false)
-                .viewCount(0L)
-                .likeCount(0L)
                 .build();
         testCar = carRepository.save(testCar);
     }
@@ -92,8 +88,6 @@ class CarControllerAuthorizationTest {
                     .currencyType(CurrencyType.TRY)
                     .damagePrice(BigDecimal.ZERO)
                     .carStatusType(CarStatusType.AVAILABLE)
-                    .isFeatured(false)
-                    .isTestDriveAvailable(true)
                     .build();
 
             mockMvc.perform(post("/api/cars")

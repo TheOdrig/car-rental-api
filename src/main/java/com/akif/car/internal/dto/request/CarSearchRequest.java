@@ -79,15 +79,12 @@ public class CarSearchRequest {
     @DecimalMax(value = "5.0", message = "Maximum rating cannot exceed 5.0")
     private BigDecimal maxRating;
 
-    private Boolean isFeatured;
-    private Boolean isTestDriveAvailable;
     private Boolean isNew;
     private Boolean hasDamage;
     private Boolean needsService;
     private Boolean hasExpiredDocuments;
 
-
-    @Pattern(regexp = "^(id|licensePlate|brand|model|productionYear|price|createTime|viewCount|likeCount|rating)$",
+    @Pattern(regexp = "^(id|licensePlate|brand|model|productionYear|price|createTime|rating)$",
             message = "Invalid sort field")
     private String sortBy;
 

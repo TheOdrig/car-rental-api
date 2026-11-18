@@ -59,8 +59,6 @@ class CarBusinessControllerIntegrationTest {
         car.setCurrencyType(CurrencyType.TRY);
         car.setDamagePrice(BigDecimal.ZERO);
         car.setCarStatusType(CarStatusType.AVAILABLE);
-        car.setIsFeatured(true);
-        car.setIsTestDriveAvailable(true);
         
         testCarId = carRepository.save(car).getId();
     }
@@ -68,16 +66,6 @@ class CarBusinessControllerIntegrationTest {
     @AfterEach
     void tearDown() {
         carRepository.deleteAll();
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    @DisplayName("Should sell car successfully")
-    void shouldSellCar() throws Exception {
-        mockMvc.perform(post("/api/cars/business/{id}/sell", testCarId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(testCarId))
-                .andExpect(jsonPath("$.carStatusType").value("Sold"));
     }
 
     @Test
@@ -130,23 +118,6 @@ class CarBusinessControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("Should increment view count successfully")
-    void shouldIncrementViewCount() throws Exception {
-        mockMvc.perform(post("/api/cars/business/{id}/view", testCarId))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    @DisplayName("Should check if car can be sold")
-    void shouldCheckCanBeSold() throws Exception {
-        mockMvc.perform(get("/api/cars/business/{id}/can-sell", testCarId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.canBeSold").value(true));
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should check if car can be reserved")
     void shouldCheckCanBeReserved() throws Exception {
         mockMvc.perform(get("/api/cars/business/{id}/can-reserve", testCarId))
@@ -158,7 +129,7 @@ class CarBusinessControllerIntegrationTest {
     @WithMockUser(roles = "USER")
     @DisplayName("Should deny access to business endpoints for non-admin users")
     void shouldDenyAccessForNonAdmin() throws Exception {
-        mockMvc.perform(post("/api/cars/business/{id}/sell", testCarId))
+        mockMvc.perform(post("/api/cars/business/{id}/reserve", testCarId))
                 .andExpect(status().isForbidden());
     }
 }

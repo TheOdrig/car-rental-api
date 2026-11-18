@@ -38,7 +38,6 @@ public class CarController {
     private final CarService carService;
     private final CurrencyConversionService currencyConversionService;
 
-
     @GetMapping("/{id}")
     @Operation(summary = "Get car by ID", description = "Retrieve a car by its unique identifier with optional currency conversion")
     @ApiResponses(value = {
@@ -157,7 +156,6 @@ public class CarController {
         return ResponseEntity.noContent().build();
     }
 
-
     @DeleteMapping("/{id}/soft")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Soft delete car", description = "Soft delete a car (mark as deleted)")
@@ -189,7 +187,6 @@ public class CarController {
         return ResponseEntity.ok(car);
     }
 
-
     @GetMapping
     @Operation(summary = "Get all cars", description = "Retrieve all cars with pagination and optional currency conversion")
     @ApiResponses(value = {
@@ -212,7 +209,7 @@ public class CarController {
     @GetMapping(value = "/active")
     @Operation(summary = "Get active cars", 
                description = "Retrieve all active (not deleted) cars with pagination, sorting, and optional currency conversion. " +
-                       "Supported sort fields: price, brand, model, productionYear, viewCount, likeCount, rating, createTime. " +
+                       "Supported sort fields: price, brand, model, productionYear, rating, createTime. " +
                        "Example: ?sort=price,asc or ?sort=createTime,desc")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Active cars retrieved successfully",
@@ -230,25 +227,6 @@ public class CarController {
             cars.forEach(car -> applyPriceConversion(car, currency));
         }
         log.info("Successfully retrieved {} active cars", cars.getTotalElements());
-        return ResponseEntity.ok(cars);
-    }
-
-    @GetMapping(value = "/featured")
-    @Operation(summary = "Get featured cars", description = "Retrieve featured cars with pagination and optional currency conversion")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Featured cars retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters or currency")
-    })
-    public ResponseEntity<Page<CarResponse>> getFeaturedCars(
-            @Parameter(description = "Pagination information") @PageableDefault(size = 20) Pageable pageable,
-            @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
-        log.debug("GET /api/cars/featured - Getting featured cars with page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
-        Page<CarResponse> cars = carService.getFeaturedCars(pageable);
-        if (currency != null) {
-            cars.forEach(car -> applyPriceConversion(car, currency));
-        }
-        log.info("Successfully retrieved {} featured cars", cars.getTotalElements());
         return ResponseEntity.ok(cars);
     }
 

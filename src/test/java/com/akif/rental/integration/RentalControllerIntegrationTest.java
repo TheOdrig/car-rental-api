@@ -110,10 +110,6 @@ class RentalControllerIntegrationTest {
                                 .price(new BigDecimal("500.00"))
                                 .currencyType(CurrencyType.TRY)
                                 .carStatusType(CarStatusType.AVAILABLE)
-                                .isFeatured(false)
-                                .isTestDriveAvailable(true)
-                                .viewCount(0L)
-                                .likeCount(0L)
                                 .build();
                 testCar = carRepository.save(testCar);
 
@@ -172,7 +168,7 @@ class RentalControllerIntegrationTest {
                 @Test
                 @DisplayName("Should return 400 when car not available")
                 void shouldReturn400WhenCarNotAvailable() throws Exception {
-                        testCar.setCarStatusType(CarStatusType.SOLD);
+                        testCar.setCarStatusType(CarStatusType.MAINTENANCE);
                         carRepository.save(testCar);
 
                         RentalRequest request = new RentalRequest(

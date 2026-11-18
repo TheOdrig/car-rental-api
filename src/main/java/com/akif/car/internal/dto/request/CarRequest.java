@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -18,7 +17,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 public class CarRequest {
-
 
     @NotBlank(message = "licensePlate cannot be blank")
     @Size(min = 7, max = 11, message = "licensePlate must be 7 and 11 characters")
@@ -125,12 +123,6 @@ public class CarRequest {
     @Pattern(regexp = "^(https?://).+$",
             message = "Thumbnail URL format is invalid")
     private String thumbnailUrl;
-
-    @Builder.Default
-    private Boolean isFeatured = false;
-
-    @Builder.Default
-    private Boolean isTestDriveAvailable = true;
 
     @DecimalMin(value = "1.0", message = "Rating must be at least 1.0")
     @DecimalMax(value = "5.0", message = "Rating cannot exceed 5.0")

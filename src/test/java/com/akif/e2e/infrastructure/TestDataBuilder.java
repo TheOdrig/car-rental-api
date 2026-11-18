@@ -73,10 +73,6 @@ public class TestDataBuilder {
                 .kilometer(10000L)
                 .doors(4)
                 .seats(5)
-                .isFeatured(false)
-                .isTestDriveAvailable(true)
-                .viewCount(0L)
-                .likeCount(0L)
                 .isDeleted(false)
                 .build();
     }

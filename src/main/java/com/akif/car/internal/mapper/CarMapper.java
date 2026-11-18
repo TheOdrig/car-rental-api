@@ -1,7 +1,6 @@
 package com.akif.car.internal.mapper;
 
 import com.akif.car.api.CarDto;
-import com.akif.car.api.CarSummaryResponse;
 import com.akif.car.internal.dto.request.CarRequest;
 import com.akif.car.api.CarResponse;
 import com.akif.car.domain.Car;
@@ -31,8 +30,6 @@ public abstract class CarMapper {
     @Mapping(target = "isDeleted", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "viewCount", ignore = true)
-    @Mapping(target = "likeCount", ignore = true)
     public abstract Car toEntity(CarRequest carRequest);
 
     @Mapping(target = "id", ignore = true)
@@ -42,14 +39,7 @@ public abstract class CarMapper {
     @Mapping(target = "isDeleted", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "viewCount", ignore = true)
-    @Mapping(target = "likeCount", ignore = true)
     public abstract void updateEntity(CarRequest carRequest, @MappingTarget Car car);
-
-    @Mapping(target = "age", expression = "java(car.ageAt(LocalDate.now(clock)))")
-    @Mapping(target = "isNew", ignore = true)
-    @Mapping(target = "isAvailable", ignore = true)
-    public abstract CarSummaryResponse toSummaryDto(Car car);
 
     @Mapping(target = "currency", source = "currencyType")
     @Mapping(target = "status", source = "carStatusType")

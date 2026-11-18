@@ -61,10 +61,6 @@ class CarControllerIntegrationTest {
                 .currencyType(CurrencyType.TRY)
                 .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .isFeatured(true)
-                .isTestDriveAvailable(true)
-                .viewCount(0L)
-                .likeCount(0L)
                 .build();
         testCar = carRepository.save(testCar);
     }
@@ -111,8 +107,6 @@ class CarControllerIntegrationTest {
                 .currencyType(CurrencyType.TRY)
                 .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .isFeatured(false)
-                .isTestDriveAvailable(true)
                 .build();
 
         mockMvc.perform(post("/api/cars")
@@ -139,8 +133,6 @@ class CarControllerIntegrationTest {
                 .currencyType(CurrencyType.TRY)
                 .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .isFeatured(true)
-                .isTestDriveAvailable(true)
                 .build();
 
         mockMvc.perform(put("/api/cars/{id}", testCar.getId())
@@ -213,10 +205,6 @@ class CarControllerIntegrationTest {
                 .currencyType(CurrencyType.TRY)
                 .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .isFeatured(false)
-                .isTestDriveAvailable(true)
-                .viewCount(0L)
-                .likeCount(0L)
                 .build();
         carRepository.save(secondCar);
 
@@ -240,10 +228,6 @@ class CarControllerIntegrationTest {
                 .currencyType(CurrencyType.TRY)
                 .damagePrice(BigDecimal.ZERO)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .isFeatured(true)
-                .isTestDriveAvailable(true)
-                .viewCount(0L)
-                .likeCount(0L)
                 .build();
         carRepository.save(expensiveCar);
 
@@ -252,85 +236,6 @@ class CarControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].brand").value("Toyota"))
                 .andExpect(jsonPath("$.content[1].brand").value("Mercedes"));
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("GET /api/cars/active?sort=viewCount,desc - Should sort by view count descending")
-    void shouldSortByViewCountDescending() throws Exception {
-        Car popularCar = Car.builder()
-                .licensePlate("06DEF456")
-                .vinNumber("2HGBH41JXMN109188")
-                .brand("BMW")
-                .model("X5")
-                .productionYear(2022)
-                .price(new BigDecimal("1500000"))
-                .currencyType(CurrencyType.TRY)
-                .damagePrice(BigDecimal.ZERO)
-                .carStatusType(CarStatusType.AVAILABLE)
-                .isFeatured(true)
-                .isTestDriveAvailable(true)
-                .viewCount(1000L)
-                .likeCount(0L)
-                .build();
-        carRepository.save(popularCar);
-
-        mockMvc.perform(get("/api/cars/active")
-                        .param("sort", "viewCount,desc"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].brand").value("BMW"))
-                .andExpect(jsonPath("$.content[0].viewCount").value(1000));
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("GET /api/cars/featured - Should return featured cars")
-    void shouldReturnFeaturedCars() throws Exception {
-        mockMvc.perform(get("/api/cars/featured"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].isFeatured").value(true));
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("GET /api/cars/featured - Should exclude non-featured cars")
-    void shouldExcludeNonFeaturedCars() throws Exception {
-        Car nonFeaturedCar = Car.builder()
-                .licensePlate("06DEF456")
-                .vinNumber("2HGBH41JXMN109188")
-                .brand("Fiat")
-                .model("Egea")
-                .productionYear(2021)
-                .price(new BigDecimal("400000"))
-                .currencyType(CurrencyType.TRY)
-                .damagePrice(BigDecimal.ZERO)
-                .carStatusType(CarStatusType.AVAILABLE)
-                .isFeatured(false)
-                .isTestDriveAvailable(true)
-                .viewCount(0L)
-                .likeCount(0L)
-                .build();
-        carRepository.save(nonFeaturedCar);
-
-        mockMvc.perform(get("/api/cars/featured"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].brand").value("Toyota"));
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("GET /api/cars/featured - Should support pagination")
-    void shouldSupportPaginationOnFeatured() throws Exception {
-        mockMvc.perform(get("/api/cars/featured")
-                        .param("page", "0")
-                        .param("size", "5"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.pageable.pageSize").value(5))
-                .andExpect(jsonPath("$.pageable.pageNumber").value(0));
     }
 
     @Test

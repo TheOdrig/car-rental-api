@@ -11,7 +11,6 @@ public record FleetStatusDto(
         int maintenanceCars,
         int inspectionCars,
         int damagedCars,
-        int soldCars,
         BigDecimal occupancyRate,
         LocalDateTime generatedAt) {
 }

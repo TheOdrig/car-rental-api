@@ -31,7 +31,6 @@ public interface CarService {
 
     CarResponse restoreCar(Long id);
 
-
     CarListResponse searchCars(CarSearchRequest searchRequest);
     Page<CarResponse> getAllCars(Pageable pageable);
 
@@ -44,18 +43,10 @@ public interface CarService {
 
     Page<CarResponse> getNewCars(Pageable pageable);
 
-    Page<CarResponse> getFeaturedCars(Pageable pageable);
-
-    Page<CarResponse> getCarsAvailableForTestDrive(Pageable pageable);
-
     Page<CarResponse> getAllActiveCars(Pageable pageable);
     long getActiveCarCount();
 
-
-    CarResponse sellCar(Long id);
-
     CarResponse reserveCar(Long id);
-
 
     CarResponse releaseCar(Long id);
 
@@ -69,7 +60,6 @@ public interface CarService {
 
     CarResponse updateCarPrice(Long id, CarPriceUpdateRequest priceUpdateRequest);
 
-
     Map<String, Object> getCarStatistics();
 
     Map<String, Long> getCarsCountByStatus();
@@ -78,31 +68,15 @@ public interface CarService {
 
     Map<String, BigDecimal> getAveragePriceByBrand();
 
-    List<CarSummaryResponse> getMostViewedCars(int limit);
-
-    List<CarSummaryResponse> getMostLikedCars(int limit);
-
-
     boolean existsByLicensePlate(String licensePlate);
 
-    void incrementViewCount(Long id);
-
-    void incrementLikeCount(Long id);
-
-    void decrementLikeCount(Long id);
-
-
     List<String> validateCarData(CarRequest carRequest);
-
-    boolean canCarBeSold(Long id);
 
     boolean canCarBeReserved(Long id);
 
     Page<CarResponse> searchCarsByCriteria(String searchTerm, String brand, String model,
                                            BigDecimal minPrice, BigDecimal maxPrice,
                                            CarStatusType status, Pageable pageable);
-
-
 
     int countByStatus(CarStatusType status);
 

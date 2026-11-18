@@ -77,7 +77,6 @@ class DashboardServiceImplTest {
                 5,
                 0,
                 5,
-                0,
                 new BigDecimal("30.00"),
                 now);
 
@@ -208,7 +207,7 @@ class DashboardServiceImplTest {
         @DisplayName("getFleetStatus - should handle zero cars")
         void shouldHandleZeroCars() {
             FleetStatusDto emptyFleet = new FleetStatusDto(
-                    0, 0, 0, 0, 0, 0, 0, 0, BigDecimal.ZERO, LocalDateTime.now());
+                    0, 0, 0, 0, 0, 0, 0, BigDecimal.ZERO, LocalDateTime.now());
             when(queryService.fetchFleetStatus()).thenReturn(emptyFleet);
 
             FleetStatusDto result = dashboardService.getFleetStatus();
