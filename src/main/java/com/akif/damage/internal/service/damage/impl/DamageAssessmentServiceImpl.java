@@ -83,7 +83,6 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
         String carStatusUpdated = updateCarStatusBasedOnSeverity(damageReport.getCarId(), severity);
 
         eventPublisher.publishEvent(new DamageAssessedEvent(
-                this,
                 damageReport.getId(),
                 damageReport.getRentalId(),
                 damageReport.getCarId(),

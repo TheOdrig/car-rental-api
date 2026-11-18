@@ -89,7 +89,6 @@ public class DamageChargeServiceImpl implements DamageChargeService {
             damageReportRepository.save(damageReport);
 
             eventPublisher.publishEvent(new DamageChargedEvent(
-                    this,
                     damageReport.getId(),
                     damageReport.getRentalId(),
                     damageReport.getCustomerEmail(),

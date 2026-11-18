@@ -47,7 +47,6 @@ class EmailTemplateServiceTest {
         @BeforeEach
         void setUp() {
             event = new RentalConfirmedEvent(
-                    this,
                     1L,
                     "customer@example.com",
                     LocalDateTime.now(),
@@ -161,7 +160,6 @@ class EmailTemplateServiceTest {
         @BeforeEach
         void setUp() {
             event = new PaymentCapturedEvent(
-                    this,
                     100L,
                     1L,
                     "customer@example.com",
@@ -254,7 +252,6 @@ class EmailTemplateServiceTest {
         @BeforeEach
         void setUp() {
             event = new PickupReminderEvent(
-                    this,
                     1L,
                     "customer@example.com",
                     LocalDateTime.now(),
@@ -347,7 +344,6 @@ class EmailTemplateServiceTest {
         @BeforeEach
         void setUp() {
             event = new ReturnReminderEvent(
-                    this,
                     1L,
                     "customer@example.com",
                     LocalDateTime.now(),
@@ -439,7 +435,6 @@ class EmailTemplateServiceTest {
         @BeforeEach
         void setUp() {
             eventWithRefund = new RentalCancelledEvent(
-                    this,
                     1L,
                     "customer@example.com",
                     LocalDateTime.now(),
@@ -450,7 +445,6 @@ class EmailTemplateServiceTest {
                     "REFUND-123456");
 
             eventWithoutRefund = new RentalCancelledEvent(
-                    this,
                     2L,
                     "customer@example.com",
                     LocalDateTime.now(),

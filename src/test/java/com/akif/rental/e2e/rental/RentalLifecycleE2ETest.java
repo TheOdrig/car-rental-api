@@ -150,14 +150,14 @@ class RentalLifecycleE2ETest extends E2ETestBase {
             assertThat(confirmedEvents).hasSize(1);
 
             RentalConfirmedEvent event = confirmedEvents.get(0);
-            assertThat(event.getRentalId()).isEqualTo(rentalId);
-            assertThat(event.getCustomerEmail()).isEqualTo(testUser.getEmail());
-            assertThat(event.getCarBrand()).isEqualTo(testCar.getBrand());
-            assertThat(event.getCarModel()).isEqualTo(testCar.getModel());
-            assertThat(event.getPickupDate()).isEqualTo(rentalRequest.startDate());
-            assertThat(event.getReturnDate()).isEqualTo(rentalRequest.endDate());
-            assertThat(event.getTotalPrice()).isNotNull();
-            assertThat(event.getCurrency()).isEqualTo(TestFixtures.DEFAULT_CURRENCY);
+            assertThat(event.rentalId()).isEqualTo(rentalId);
+            assertThat(event.customerEmail()).isEqualTo(testUser.getEmail());
+            assertThat(event.carBrand()).isEqualTo(testCar.getBrand());
+            assertThat(event.carModel()).isEqualTo(testCar.getModel());
+            assertThat(event.pickupDate()).isEqualTo(rentalRequest.startDate());
+            assertThat(event.returnDate()).isEqualTo(rentalRequest.endDate());
+            assertThat(event.totalPrice()).isNotNull();
+            assertThat(event.currency()).isEqualTo(TestFixtures.DEFAULT_CURRENCY);
         }
 
         @Test
@@ -194,12 +194,12 @@ class RentalLifecycleE2ETest extends E2ETestBase {
             assertThat(capturedEvents).hasSize(1);
 
             PaymentCapturedEvent event = capturedEvents.get(0);
-            assertThat(event.getRentalId()).isEqualTo(rentalId);
-            assertThat(event.getCustomerEmail()).isEqualTo(testUser.getEmail());
-            assertThat(event.getAmount()).isNotNull();
-            assertThat(event.getCurrency()).isEqualTo(TestFixtures.DEFAULT_CURRENCY);
-            assertThat(event.getPaymentId()).isNotNull();
-            assertThat(event.getTransactionId()).isNotNull();
+            assertThat(event.rentalId()).isEqualTo(rentalId);
+            assertThat(event.customerEmail()).isEqualTo(testUser.getEmail());
+            assertThat(event.amount()).isNotNull();
+            assertThat(event.currency()).isEqualTo(TestFixtures.DEFAULT_CURRENCY);
+            assertThat(event.paymentId()).isNotNull();
+            assertThat(event.transactionId()).isNotNull();
         }
     }
 }

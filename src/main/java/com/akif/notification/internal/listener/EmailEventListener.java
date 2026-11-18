@@ -22,7 +22,7 @@ public class EmailEventListener {
     @EventListener
     public void handleRentalConfirmed(RentalConfirmedEvent event) {
         log.debug("Received RentalConfirmedEvent. RentalId: {}, CustomerEmail: {}",
-                event.getRentalId(), event.getCustomerEmail());
+                event.rentalId(), event.customerEmail());
         emailNotificationService.sendRentalConfirmation(event);
     }
 
@@ -30,7 +30,7 @@ public class EmailEventListener {
     @EventListener
     public void handlePaymentCaptured(PaymentCapturedEvent event) {
         log.debug("Received PaymentCapturedEvent. PaymentId: {}, RentalId: {}, CustomerEmail: {}",
-                event.getPaymentId(), event.getRentalId(), event.getCustomerEmail());
+                event.paymentId(), event.rentalId(), event.customerEmail());
         emailNotificationService.sendPaymentReceipt(event);
     }
 
@@ -38,7 +38,7 @@ public class EmailEventListener {
     @EventListener
     public void handlePickupReminder(PickupReminderEvent event) {
         log.debug("Received PickupReminderEvent. RentalId: {}, CustomerEmail: {}, PickupDate: {}",
-                event.getRentalId(), event.getCustomerEmail(), event.getPickupDate());
+                event.rentalId(), event.customerEmail(), event.pickupDate());
         emailNotificationService.sendPickupReminder(event);
     }
 
@@ -46,7 +46,7 @@ public class EmailEventListener {
     @EventListener
     public void handleReturnReminder(ReturnReminderEvent event) {
         log.debug("Received ReturnReminderEvent. RentalId: {}, CustomerEmail: {}, ReturnDate: {}",
-                event.getRentalId(), event.getCustomerEmail(), event.getReturnDate());
+                event.rentalId(), event.customerEmail(), event.returnDate());
         emailNotificationService.sendReturnReminder(event);
     }
 
@@ -54,7 +54,7 @@ public class EmailEventListener {
     @EventListener
     public void handleRentalCancelled(RentalCancelledEvent event) {
         log.debug("Received RentalCancelledEvent. RentalId: {}, CustomerEmail: {}, RefundProcessed: {}",
-                event.getRentalId(), event.getCustomerEmail(), event.isRefundProcessed());
+                event.rentalId(), event.customerEmail(), event.refundProcessed());
         emailNotificationService.sendCancellationConfirmation(event);
     }
 
@@ -62,7 +62,7 @@ public class EmailEventListener {
     @EventListener
     public void handleGracePeriodWarning(GracePeriodWarningEvent event) {
         log.debug("Received GracePeriodWarningEvent. RentalId: {}, CustomerEmail: {}, RemainingMinutes: {}",
-                event.getRentalId(), event.getCustomerEmail(), event.getRemainingGraceMinutes());
+                event.rentalId(), event.customerEmail(), event.remainingGraceMinutes());
         emailNotificationService.sendGracePeriodWarning(event);
     }
 
@@ -70,7 +70,7 @@ public class EmailEventListener {
     @EventListener
     public void handleLateReturnNotification(LateReturnNotificationEvent event) {
         log.debug("Received LateReturnNotificationEvent. RentalId: {}, CustomerEmail: {}, LateHours: {}, Penalty: {}",
-                event.getRentalId(), event.getCustomerEmail(), event.getLateHours(), event.getCurrentPenaltyAmount());
+                event.rentalId(), event.customerEmail(), event.lateHours(), event.currentPenaltyAmount());
         emailNotificationService.sendLateReturnNotification(event);
     }
 
@@ -78,7 +78,7 @@ public class EmailEventListener {
     @EventListener
     public void handleSeverelyLateNotification(SeverelyLateNotificationEvent event) {
         log.debug("Received SeverelyLateNotificationEvent. RentalId: {}, CustomerEmail: {}, LateDays: {}, Penalty: {}",
-                event.getRentalId(), event.getCustomerEmail(), event.getLateDays(), event.getCurrentPenaltyAmount());
+                event.rentalId(), event.customerEmail(), event.lateDays(), event.currentPenaltyAmount());
         emailNotificationService.sendSeverelyLateNotification(event);
     }
 
@@ -86,7 +86,7 @@ public class EmailEventListener {
     @EventListener
     public void handlePenaltySummary(PenaltySummaryEvent event) {
         log.debug("Received PenaltySummaryEvent. RentalId: {}, CustomerEmail: {}, FinalPenalty: {}",
-                event.getRentalId(), event.getCustomerEmail(), event.getFinalPenaltyAmount());
+                event.rentalId(), event.customerEmail(), event.finalPenaltyAmount());
         emailNotificationService.sendPenaltySummary(event);
     }
 
@@ -94,7 +94,7 @@ public class EmailEventListener {
     @EventListener
     public void handleDamageReported(DamageReportedEvent event) {
         log.debug("Received DamageReportedEvent. DamageId: {}, RentalId: {}",
-                event.getDamageReportId(), event.getRentalId());
+                event.damageReportId(), event.rentalId());
         emailNotificationService.sendDamageReportedNotification(event);
     }
 
@@ -102,7 +102,7 @@ public class EmailEventListener {
     @EventListener
     public void handleDamageAssessed(DamageAssessedEvent event) {
         log.debug("Received DamageAssessedEvent. DamageId: {}, Severity: {}, Liability: {}",
-                event.getDamageReportId(), event.getSeverity(), event.getCustomerLiability());
+                event.damageReportId(), event.severity(), event.customerLiability());
         emailNotificationService.sendDamageAssessedNotification(event);
     }
 
@@ -110,7 +110,7 @@ public class EmailEventListener {
     @EventListener
     public void handleDamageCharged(DamageChargedEvent event) {
         log.debug("Received DamageChargedEvent. DamageId: {}, TransactionId: {}",
-                event.getDamageReportId(), event.getTransactionId());
+                event.damageReportId(), event.transactionId());
         emailNotificationService.sendDamageChargedNotification(event);
     }
 
@@ -118,7 +118,7 @@ public class EmailEventListener {
     @EventListener
     public void handleDamageDisputed(DamageDisputedEvent event) {
         log.debug("Received DamageDisputedEvent. DamageId: {}, Reason: {}",
-                event.getDamageReportId(), event.getDisputeReason());
+                event.damageReportId(), event.disputeReason());
         emailNotificationService.sendDamageDisputedNotification(event);
     }
 
@@ -126,7 +126,7 @@ public class EmailEventListener {
     @EventListener
     public void handleDamageResolved(DamageResolvedEvent event) {
         log.debug("Received DamageResolvedEvent. DamageId: {}, RefundAmount: {}",
-                event.getDamageReportId(), event.getRefundAmount());
+                event.damageReportId(), event.refundAmount());
         emailNotificationService.sendDamageResolvedNotification(event);
     }
 
@@ -134,7 +134,7 @@ public class EmailEventListener {
     @EventListener
     public void handleDamageChargeFailed(DamageChargeFailedEvent event) {
         log.debug("Received DamageChargeFailedEvent. DamageId: {}, Reason: {}",
-                event.getDamageReportId(), event.getFailureReason());
+                event.damageReportId(), event.failureReason());
         emailNotificationService.sendDamageChargeFailedNotification(event);
     }
 

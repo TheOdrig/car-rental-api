@@ -112,7 +112,6 @@ public class ReminderScheduler {
 
     private void publishPickupReminderEvent(Rental rental) {
         PickupReminderEvent event = new PickupReminderEvent(
-                this,
                 rental.getId(),
                 rental.getUserEmail(),
                 LocalDateTime.now(clock),
@@ -126,7 +125,6 @@ public class ReminderScheduler {
 
     private void publishReturnReminderEvent(Rental rental) {
         ReturnReminderEvent event = new ReturnReminderEvent(
-                this,
                 rental.getId(),
                 rental.getUserEmail(),
                 LocalDateTime.now(clock),

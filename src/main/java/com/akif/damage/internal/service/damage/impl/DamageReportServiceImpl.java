@@ -91,7 +91,6 @@ public class DamageReportServiceImpl implements DamageReportService {
         }
 
         eventPublisher.publishEvent(new DamageReportedEvent(
-                this,
                 damageReport.getId(),
                 damageReport.getRentalId(),
                 damageReport.getCarId(),

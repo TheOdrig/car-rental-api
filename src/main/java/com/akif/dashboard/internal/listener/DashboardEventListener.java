@@ -10,8 +10,6 @@ import org.springframework.cache.CacheManager;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
-
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -27,7 +25,7 @@ public class DashboardEventListener {
     @EventListener
     public void handleRentalConfirmed(RentalConfirmedEvent event) {
         log.debug("Received RentalConfirmedEvent for rental: {}. Evicting dailySummary and fleetStatus caches.",
-                event.getRentalId());
+                event.rentalId());
         evictCache(DAILY_SUMMARY_CACHE);
         evictCache(FLEET_STATUS_CACHE);
     }
@@ -35,7 +33,7 @@ public class DashboardEventListener {
     @EventListener
     public void handleRentalCancelled(RentalCancelledEvent event) {
         log.debug("Received RentalCancelledEvent for rental: {}. Evicting dailySummary, fleetStatus, and monthlyMetrics caches.",
-                event.getRentalId());
+                event.rentalId());
         evictCache(DAILY_SUMMARY_CACHE);
         evictCache(FLEET_STATUS_CACHE);
         evictCache(MONTHLY_METRICS_CACHE);
@@ -44,7 +42,7 @@ public class DashboardEventListener {
     @EventListener
     public void handlePaymentCaptured(PaymentCapturedEvent event) {
         log.debug("Received PaymentCapturedEvent for payment: {}, rental: {}. Evicting revenueAnalytics and monthlyMetrics caches.",
-                event.getPaymentId(), event.getRentalId());
+                event.paymentId(), event.rentalId());
         evictCache(REVENUE_ANALYTICS_CACHE);
         evictCache(MONTHLY_METRICS_CACHE);
     }
@@ -52,7 +50,7 @@ public class DashboardEventListener {
     @EventListener
     public void handleDamageReported(DamageReportedEvent event) {
         log.debug("Received DamageReportedEvent for damage: {}, rental: {}. Evicting dailySummary cache.",
-                event.getDamageReportId(), event.getRentalId());
+                event.damageReportId(), event.rentalId());
         evictCache(DAILY_SUMMARY_CACHE);
     }
 

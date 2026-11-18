@@ -119,7 +119,7 @@ class PasswordResetServiceImplTest {
             passwordResetService.requestPasswordReset("nonexistent@example.com");
 
             verify(tokenRepository, never()).save(any());
-            verify(eventPublisher, never()).publishEvent(any());
+            verify(eventPublisher, never()).publishEvent(any(Object.class));
         }
     }
 

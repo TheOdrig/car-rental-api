@@ -198,7 +198,7 @@ class DamageDisputeServiceTest {
             assertThatThrownBy(() -> damageDisputeService.createDispute(999L, testDisputeRequest, "customer"))
                     .isInstanceOf(DamageReportException.class);
 
-            verify(eventPublisher, never()).publishEvent(any());
+            verify(eventPublisher, never()).publishEvent(any(Object.class));
         }
 
         @Test
@@ -241,7 +241,7 @@ class DamageDisputeServiceTest {
             verify(eventPublisher).publishEvent(eventCaptor.capture());
 
             DamageDisputedEvent event = eventCaptor.getValue();
-            assertThat(event.getDamageReportId()).isNotNull();
+            assertThat(event.damageReportId()).isNotNull();
         }
     }
 
@@ -341,8 +341,8 @@ class DamageDisputeServiceTest {
             verify(eventPublisher).publishEvent(eventCaptor.capture());
 
             DamageResolvedEvent event = eventCaptor.getValue();
-            assertThat(event.getDamageReportId()).isNotNull();
-            assertThat(event.getRefundAmount()).isEqualTo(new BigDecimal("250.00"));
+            assertThat(event.damageReportId()).isNotNull();
+            assertThat(event.refundAmount()).isEqualTo(new BigDecimal("250.00"));
         }
     }
 

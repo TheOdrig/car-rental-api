@@ -42,7 +42,6 @@ class EmailEventListenerTest {
         @BeforeEach
         void setUp() {
             event = new RentalConfirmedEvent(
-                    this,
                     1L,
                     "customer@example.com",
                     LocalDateTime.now(),
@@ -74,7 +73,6 @@ class EmailEventListenerTest {
         @BeforeEach
         void setUp() {
             event = new PaymentCapturedEvent(
-                    this,
                     100L,
                     1L,
                     "customer@example.com",
@@ -102,7 +100,6 @@ class EmailEventListenerTest {
         @BeforeEach
         void setUp() {
             event = new PickupReminderEvent(
-                    this,
                     1L,
                     "customer@example.com",
                     LocalDateTime.now(),
@@ -130,7 +127,6 @@ class EmailEventListenerTest {
         @BeforeEach
         void setUp() {
             event = new ReturnReminderEvent(
-                    this,
                     1L,
                     "customer@example.com",
                     LocalDateTime.now(),
@@ -156,7 +152,6 @@ class EmailEventListenerTest {
         @BeforeEach
         void setUp() {
             event = new RentalCancelledEvent(
-                    this,
                     1L,
                     "customer@example.com",
                     LocalDateTime.now(),
@@ -185,7 +180,6 @@ class EmailEventListenerTest {
         @DisplayName("Should handle multiple events independently")
         void shouldHandleMultipleEventsIndependently() {
             RentalConfirmedEvent confirmedEvent = new RentalConfirmedEvent(
-                    this,
                     1L,
                     "customer@example.com",
                     LocalDateTime.now(),
@@ -199,7 +193,6 @@ class EmailEventListenerTest {
                     null);
 
             PaymentCapturedEvent paymentEvent = new PaymentCapturedEvent(
-                    this,
                     100L,
                     1L,
                     "customer@example.com",

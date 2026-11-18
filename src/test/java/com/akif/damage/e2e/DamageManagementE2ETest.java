@@ -122,7 +122,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                         List<DamageReportedEvent> reportedEvents = eventCaptor
                                         .getEventsOfType(DamageReportedEvent.class);
                         assertThat(reportedEvents).hasSize(1);
-                        assertThat(reportedEvents.get(0).getDamageReportId()).isEqualTo(damageId);
+                        assertThat(reportedEvents.get(0).damageReportId()).isEqualTo(damageId);
 
                         MockMultipartFile photo1 = new MockMultipartFile(
                                         "photos",
@@ -173,7 +173,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                         List<DamageAssessedEvent> assessedEvents = eventCaptor
                                         .getEventsOfType(DamageAssessedEvent.class);
                         assertThat(assessedEvents).hasSize(1);
-                        assertThat(assessedEvents.get(0).getDamageReportId()).isEqualTo(damageId);
+                        assertThat(assessedEvents.get(0).damageReportId()).isEqualTo(damageId);
 
                         DamageReport damageReport = damageReportRepository.findById(damageId).orElseThrow();
                         assertThat(damageReport.getStatus()).isEqualTo(DamageStatus.ASSESSED);
@@ -200,7 +200,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                         List<DamageDisputedEvent> disputedEvents = eventCaptor
                                         .getEventsOfType(DamageDisputedEvent.class);
                         assertThat(disputedEvents).hasSize(1);
-                        assertThat(disputedEvents.get(0).getDamageReportId()).isEqualTo(damageId);
+                        assertThat(disputedEvents.get(0).damageReportId()).isEqualTo(damageId);
 
                         eventCaptor.clear();
 
@@ -222,8 +222,8 @@ class DamageManagementE2ETest extends E2ETestBase {
                         List<DamageResolvedEvent> resolvedEvents = eventCaptor
                                         .getEventsOfType(DamageResolvedEvent.class);
                         assertThat(resolvedEvents).hasSize(1);
-                        assertThat(resolvedEvents.get(0).getDamageReportId()).isEqualTo(damageId);
-                        assertThat(resolvedEvents.get(0).getRefundAmount())
+                        assertThat(resolvedEvents.get(0).damageReportId()).isEqualTo(damageId);
+                        assertThat(resolvedEvents.get(0).refundAmount())
                                         .isEqualByComparingTo(new BigDecimal("750.00"));
 
                         mockMvc.perform(get("/api/admin/damages/{id}", damageId)

@@ -71,7 +71,6 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
         damageReport = damageReportRepository.save(damageReport);
 
         eventPublisher.publishEvent(new DamageDisputedEvent(
-                this,
                 damageReport.getId(),
                 damageReport.getRentalId(),
                 damageReport.getCustomerEmail(),
@@ -113,7 +112,6 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
         damageReport = damageReportRepository.save(damageReport);
 
         eventPublisher.publishEvent(new DamageResolvedEvent(
-                this,
                 damageReport.getId(),
                 damageReport.getRentalId(),
                 damageReport.getCustomerEmail(),

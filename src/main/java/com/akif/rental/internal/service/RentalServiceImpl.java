@@ -232,7 +232,6 @@ public class RentalServiceImpl implements RentalService {
         RentalResponse result = rentalMapper.toDto(updatedRental);
 
         RentalConfirmedEvent event = new RentalConfirmedEvent(
-                this,
                 updatedRental.getId(),
                 updatedRental.getUserEmail(),
                 LocalDateTime.now(clock),
@@ -292,7 +291,6 @@ public class RentalServiceImpl implements RentalService {
         RentalResponse result = rentalMapper.toDto(updatedRental);
 
         PaymentCapturedEvent event = new PaymentCapturedEvent(
-                this,
                 savedPayment.id(),
                 updatedRental.getId(),
                 updatedRental.getUserEmail(),
@@ -382,7 +380,6 @@ public class RentalServiceImpl implements RentalService {
         RentalResponse result = rentalMapper.toDto(updatedRental);
 
         RentalCancelledEvent event = new RentalCancelledEvent(
-                this,
                 updatedRental.getId(),
                 updatedRental.getUserEmail(),
                 LocalDateTime.now(clock),
@@ -592,7 +589,6 @@ public class RentalServiceImpl implements RentalService {
         LocalDateTime scheduledReturnTime = rental.getEndDate().atTime(23, 59, 59);
 
         PenaltySummaryEvent event = new PenaltySummaryEvent(
-                this,
                 rental.getId(),
                 rental.getUserEmail(),
                 LocalDateTime.now(clock),

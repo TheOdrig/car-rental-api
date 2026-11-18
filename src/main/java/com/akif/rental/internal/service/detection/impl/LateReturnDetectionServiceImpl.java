@@ -196,7 +196,6 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
         }
 
         GracePeriodWarningEvent event = new GracePeriodWarningEvent(
-                this,
                 rental.getId(),
                 rental.getUserEmail(),
                 currentTime,
@@ -219,7 +218,6 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
         PenaltyResult penaltyResult = penaltyCalculationService.calculatePenalty(rental, currentTime);
 
         LateReturnNotificationEvent event = new LateReturnNotificationEvent(
-                this,
                 rental.getId(),
                 rental.getUserEmail(),
                 currentTime,
@@ -248,7 +246,6 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
                 "to avoid further penalties and potential legal action.";
 
         SeverelyLateNotificationEvent event = new SeverelyLateNotificationEvent(
-                this,
                 rental.getId(),
                 rental.getUserEmail(),
                 currentTime,

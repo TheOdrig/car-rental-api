@@ -53,7 +53,6 @@ class EmailEventListenerIntegrationTest {
         @DisplayName("Should send rental confirmation email when RentalConfirmedEvent is published")
         void shouldSendRentalConfirmationEmail() {
             RentalConfirmedEvent event = new RentalConfirmedEvent(
-                    this,
                     1L,
                     "customer@example.com",
                     LocalDateTime.now(),
@@ -94,7 +93,6 @@ class EmailEventListenerIntegrationTest {
         @DisplayName("Should send payment receipt email when PaymentCapturedEvent is published")
         void shouldSendPaymentReceiptEmail() {
             PaymentCapturedEvent event = new PaymentCapturedEvent(
-                    this,
                     100L,
                     1L,
                     "customer@example.com",
@@ -132,7 +130,6 @@ class EmailEventListenerIntegrationTest {
         @DisplayName("Should send pickup reminder email when PickupReminderEvent is published")
         void shouldSendPickupReminderEmail() {
             PickupReminderEvent event = new PickupReminderEvent(
-                    this,
                     1L,
                     "customer@example.com",
                     LocalDateTime.now(),
@@ -171,7 +168,6 @@ class EmailEventListenerIntegrationTest {
         @DisplayName("Should send return reminder email when ReturnReminderEvent is published")
         void shouldSendReturnReminderEmail() {
             ReturnReminderEvent event = new ReturnReminderEvent(
-                    this,
                     1L,
                     "customer@example.com",
                     LocalDateTime.now(),
@@ -208,7 +204,6 @@ class EmailEventListenerIntegrationTest {
         @DisplayName("Should send cancellation confirmation email when RentalCancelledEvent is published")
         void shouldSendCancellationConfirmationEmail() {
             RentalCancelledEvent event = new RentalCancelledEvent(
-                    this,
                     1L,
                     "customer@example.com",
                     LocalDateTime.now(),
@@ -242,7 +237,6 @@ class EmailEventListenerIntegrationTest {
         @DisplayName("Should send cancellation email without refund details when no refund processed")
         void shouldSendCancellationEmailWithoutRefund() {
             RentalCancelledEvent event = new RentalCancelledEvent(
-                    this,
                     2L,
                     "customer@example.com",
                     LocalDateTime.now(),

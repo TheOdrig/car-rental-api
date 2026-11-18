@@ -126,11 +126,11 @@ class CancellationRefundE2ETest extends E2ETestBase {
             assertThat(cancelledEvents).hasSize(1);
 
             RentalCancelledEvent event = cancelledEvents.get(0);
-            assertThat(event.getRentalId()).isEqualTo(rentalId);
-            assertThat(event.getCustomerEmail()).isEqualTo(testUser.getEmail());
-            assertThat(event.isRefundProcessed()).isTrue();
-            assertThat(event.getRefundAmount()).isNotNull();
-            assertThat(event.getRefundTransactionId()).isNotNull();
+            assertThat(event.rentalId()).isEqualTo(rentalId);
+            assertThat(event.customerEmail()).isEqualTo(testUser.getEmail());
+            assertThat(event.refundProcessed()).isTrue();
+            assertThat(event.refundAmount()).isNotNull();
+            assertThat(event.refundTransactionId()).isNotNull();
 
             log.info("Successfully cancelled CONFIRMED rental with refund");
         }
@@ -190,13 +190,13 @@ class CancellationRefundE2ETest extends E2ETestBase {
             assertThat(cancelledEvents).hasSize(1);
 
             RentalCancelledEvent event = cancelledEvents.get(0);
-            assertThat(event.getRentalId()).isEqualTo(rentalId);
-            assertThat(event.getCustomerEmail()).isEqualTo(testUser.getEmail());
-            assertThat(event.isRefundProcessed()).isTrue();
-            assertThat(event.getRefundAmount()).isNotNull();
+            assertThat(event.rentalId()).isEqualTo(rentalId);
+            assertThat(event.customerEmail()).isEqualTo(testUser.getEmail());
+            assertThat(event.refundProcessed()).isTrue();
+            assertThat(event.refundAmount()).isNotNull();
 
-            assertThat(event.getRefundAmount()).isLessThanOrEqualTo(originalAmount);
-            assertThat(event.getRefundTransactionId()).isNotNull();
+            assertThat(event.refundAmount()).isLessThanOrEqualTo(originalAmount);
+            assertThat(event.refundTransactionId()).isNotNull();
 
             log.info("Successfully cancelled IN_USE rental with partial refund");
         }

@@ -191,7 +191,7 @@ class DamageAssessmentServiceTest {
             assertThatThrownBy(() -> damageAssessmentService.assessDamage(999L, testAssessmentRequest, "admin"))
                     .isInstanceOf(DamageReportException.class);
 
-            verify(eventPublisher, never()).publishEvent(any());
+            verify(eventPublisher, never()).publishEvent(any(Object.class));
         }
 
         @Test
@@ -242,7 +242,7 @@ class DamageAssessmentServiceTest {
             verify(eventPublisher).publishEvent(eventCaptor.capture());
 
             DamageAssessedEvent event = eventCaptor.getValue();
-            assertThat(event.getDamageReportId()).isNotNull();
+            assertThat(event.damageReportId()).isNotNull();
         }
     }
 

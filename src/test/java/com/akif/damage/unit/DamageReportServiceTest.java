@@ -228,7 +228,7 @@ class DamageReportServiceTest {
                     .hasMessageContaining("Rental not found");
 
             verify(damageReportRepository, never()).save(any());
-            verify(eventPublisher, never()).publishEvent(any());
+            verify(eventPublisher, never()).publishEvent(any(Object.class));
         }
 
         @Test
@@ -260,7 +260,7 @@ class DamageReportServiceTest {
             verify(eventPublisher).publishEvent(eventCaptor.capture());
 
             DamageReportedEvent event = eventCaptor.getValue();
-            assertThat(event.getDamageReportId()).isEqualTo(testDamageReport.getId());
+            assertThat(event.damageReportId()).isEqualTo(testDamageReport.getId());
         }
 
         @Test

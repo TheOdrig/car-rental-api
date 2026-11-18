@@ -274,7 +274,7 @@ class RentalServiceTest {
             verify(paymentService).authorize(any(), any(), any());
             verify(paymentService).createPayment(any());
             verify(carService).reserveCar(1L);
-            verify(eventPublisher).publishEvent(any());
+            verify(eventPublisher).publishEvent(any(Object.class));
         }
 
         @Test
@@ -310,7 +310,7 @@ class RentalServiceTest {
 
             assertThat(result).isNotNull();
             verify(paymentService, never()).refundPayment(anyLong(), any());
-            verify(eventPublisher).publishEvent(any());
+            verify(eventPublisher).publishEvent(any(Object.class));
         }
 
         @Test
@@ -350,7 +350,7 @@ class RentalServiceTest {
 
             assertThat(result).isNotNull();
             verify(paymentService).capture(any(), any());
-            verify(eventPublisher).publishEvent(any());
+            verify(eventPublisher).publishEvent(any(Object.class));
         }
 
         @Test
