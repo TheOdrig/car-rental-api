@@ -130,7 +130,9 @@ public class ProdConfigurationValidator {
             } else {
                 for (String cidr : cidrs.split(",")) {
                     String trimmed = cidr.trim();
-                    if (trimmed.isEmpty() || !isCidr(trimmed)) {
+                    if (trimmed.endsWith("/0")) {
+                        problems.add(CIDRS_KEY + " must not trust every address, found: " + trimmed);
+                    } else if (trimmed.isEmpty() || !isCidr(trimmed)) {
                         problems.add(CIDRS_KEY + " must list valid CIDR ranges, found: " + trimmed);
                     }
                 }

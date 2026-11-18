@@ -140,6 +140,19 @@ class ProdConfigurationValidatorTest {
     }
 
     @Test
+    @DisplayName("rejects trusted proxy CIDRs that cover every address")
+    void failsWhenCidrsTrustEverything() {
+        for (String cidrs : new String[] {"0.0.0.0/0", "::/0", "172.16.0.0/12,0.0.0.0/0"}) {
+            MockEnvironment environment = validEnvironment();
+            environment.withProperty("security.rate-limit.trusted-proxy-cidrs", cidrs);
+
+            assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("must not trust every address");
+        }
+    }
+
+    @Test
     @DisplayName("requires trusted proxy CIDRs when forwarded headers are trusted")
     void failsWhenCidrsMissingWithForwardedTrust() {
         MockEnvironment environment = validEnvironment();
