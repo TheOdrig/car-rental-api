@@ -1,246 +1,91 @@
-# 🚗 Car Rental API
+# Car Rental API
 
-A REST API for car rental management, built with **Spring Boot** and **Spring Modulith** modular architecture.
+A car rental backend: catalogue and availability search, rental requests with a payment step, damage and late-return handling, an admin dashboard and e-mail notifications. It is a portfolio project, built to show how a modular Spring service is structured and verified; it is not a deployed product. Stripe runs in test mode only.
 
-[![Java](https://img.shields.io/badge/Java-17-orange)](https://openjdk.org/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-green)](https://spring.io/projects/spring-boot)
-[![Tests](https://img.shields.io/badge/Tests-Maven%20verify-blue)](#-testing)
-[![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
+The web client lives in [TheOdrig/car-rental-web](https://github.com/TheOdrig/car-rental-web).
 
-## ✨ Features
+## Stack
 
-| Feature | Description |
-|---------|-------------|
-| **Modular Architecture** | 9 Spring Modulith modules with enforced boundaries |
-| **Admin Dashboard** | Real-time metrics, alerts, quick actions, revenue analytics |
-| **Rental Lifecycle** | Request → Confirm → Pickup → Return workflow |
-| **Payment Processing** | Stripe integration with webhooks and reconciliation |
-| **Dynamic Pricing** | 5 strategies: season, early booking, duration, weekend, demand |
-| **Late Return System** | Automated detection, grace period, penalty calculation |
-| **Damage Management** | Photo evidence, assessment, disputes, resolution |
-| **Email Notifications** | Event-driven with async processing and retry logic |
-| **OAuth2 Login** | Google and GitHub social authentication |
-| **Currency Conversion** | Real-time exchange rates with fallback |
-| **Availability Search** | Date-based search with similar car recommendations |
+| Area | Choice |
+| --- | --- |
+| Language / framework | Java 21, Spring Boot 4.1.2 ([`pom.xml`](pom.xml)) |
+| Modularity | Spring Modulith 2.1.2 |
+| Database | PostgreSQL 18, Flyway migrations, Hibernate with `ddl-auto=validate` |
+| Security | Spring Security OAuth2 resource server (JWT), Bucket4j 8.10.1 rate limiting |
+| Payments | Stripe Java SDK 26.3.0 (test mode) |
+| API docs / metrics | springdoc-openapi 3.1.1, Actuator with Micrometer Prometheus |
+| Tests | JUnit 5, Testcontainers (PostgreSQL), JaCoCo |
 
-## 🏛️ Architecture
+## Architecture
 
-This project uses **Spring Modulith** for modular monolith architecture with clear module boundaries.
-
-<details>
-<summary>📊 <b>View Module Dependency Diagram</b></summary>
+A modular monolith with nine Spring Modulith modules under [`src/main/java/com/akif`](src/main/java/com/akif). Each module's `package-info.java` declares which other modules it may use, and only through their `api` packages; `shared` is an open module. [`ModularityTests`](src/test/java/com/akif/ModularityTests.java) asserts the exact module set, runs `modules.verify()` and writes the Modulith documentation. The graph below is the dependency set that run reports.
 
 ```mermaid
-graph TD
-    subgraph Core
-        shared[🔧 shared]
-    end
-    
-    subgraph Business Modules
-        auth[🔐 auth]
-        car[🚗 car]
-        currency[💱 currency]
-        rental[📋 rental]
-        damage[🔨 damage]
-        payment[💳 payment]
-        dashboard[📊 dashboard]
-        notification[📧 notification]
-    end
-    
-    auth --> shared
-    currency --> shared
+graph LR
+    rental --> auth & car & currency & payment
     car --> currency
-    car --> shared
-    payment --> shared
-    rental --> car
-    rental --> auth
-    rental --> currency
-    rental --> payment
-    damage --> rental
-    damage --> car
-    damage --> payment
-    dashboard --> rental
-    dashboard --> car
-    dashboard --> payment
-    dashboard --> damage
-    notification -.->|events| rental
-    notification -.->|events| damage
-    notification -.->|events| dashboard
+    damage --> auth & car & rental & payment
+    dashboard --> car & damage & payment & rental
+    notification -.listens.-> auth & damage & payment & rental
+    dashboard -.listens.-> damage & payment & rental
+    rental -.listens.-> payment
 ```
 
-</details>
+Every module also depends on `shared` (security, error handling, configuration), which is left out of the diagram. Solid arrows are API calls, dotted arrows are application events.
 
-### Modules
+## Engineering notes
 
-| Module | Responsibility | Dependencies |
-|--------|----------------|--------------|
-| `shared` | Cross-cutting: security, exceptions, base classes | - |
-| `auth` | JWT authentication, OAuth2, user management | `shared` |
-| `currency` | Exchange rates, currency conversion | `shared` |
-| `car` | Vehicle catalog, availability, pricing | `currency`, `shared` |
-| `payment` | Stripe gateway, webhooks, reconciliation | `shared` |
-| `rental` | Rental lifecycle, late returns, penalties | `car`, `auth`, `currency`, `payment` |
-| `damage` | Damage reports, assessment, disputes | `rental`, `car`, `payment` |
-| `dashboard` | Admin metrics, alerts, quick actions | `rental`, `car`, `payment`, `damage` |
-| `notification` | Event-driven email notifications | *(events only)* |
+- **Booking integrity.** Overlapping rentals of one car are prevented by the database, not by a check-then-insert: a `btree_gist` exclusion constraint over car and date range ([`V4__rental_overlap_exclusion.sql`](src/main/resources/db/migration/V4__rental_overlap_exclusion.sql)). It is exercised in [`RentalOverlapConstraintTest`](src/test/java/com/akif/rental/integration/RentalOverlapConstraintTest.java), and competing requests in [`ConcurrencyE2ETest`](src/test/java/com/akif/e2e/edgecases/ConcurrencyE2ETest.java).
+- **Authentication.** Stateless JWT via the Spring Security resource server ([`JwtConfig`](src/main/java/com/akif/shared/security/JwtConfig.java)). Tokens carry a `token_use` claim ([`TokenUse`](src/main/java/com/akif/shared/security/TokenUse.java)), so a refresh token is rejected as a bearer token. Refresh tokens are stored only as hashes and rotate on every use; presenting an already-rotated token outside a short grace window revokes its whole token family ([`RefreshTokenService`](src/main/java/com/akif/auth/internal/service/RefreshTokenService.java), [`RefreshTokenIntegrationTest`](src/test/java/com/akif/auth/integration/RefreshTokenIntegrationTest.java)).
+- **Rate limiting.** Per-category token buckets for login, register, refresh, password reset, OAuth2 callback, rental requests and payment intents, configured under `security.rate-limit.*` ([`RateLimitFilter`](src/main/java/com/akif/shared/security/ratelimit/RateLimitFilter.java), [`RateLimitIntegrationTest`](src/test/java/com/akif/shared/security/ratelimit/RateLimitIntegrationTest.java)). Forwarded headers are trusted only when explicitly configured.
+- **Payments.** Stripe PaymentIntents with manual capture ([`StripePaymentGateway`](src/main/java/com/akif/payment/internal/service/gateway/impl/StripePaymentGateway.java)). Idempotency keys are derived from rental, payment and attempt ([`IdempotencyKeyGenerator`](src/main/java/com/akif/payment/internal/service/gateway/IdempotencyKeyGenerator.java)). Webhooks are signature-verified and replay-safe ([`StripeWebhookController`](src/main/java/com/akif/payment/web/StripeWebhookController.java), [`StripeWebhookSignedIntegrationTest`](src/test/java/com/akif/payment/integration/StripeWebhookSignedIntegrationTest.java)). The `dev` and `test` profiles use a [stub gateway](src/main/java/com/akif/payment/internal/service/gateway/impl/StubPaymentGateway.java); only `prod` talks to Stripe.
+- **Event publication registry.** Cross-module events go through Spring Modulith's JPA-backed registry, with `@ApplicationModuleListener` as the trigger and outstanding events republished on restart ([`application.properties`](src/main/resources/application.properties), [`V6__event_publication.sql`](src/main/resources/db/migration/V6__event_publication.sql), [`EventPublicationRegistryIntegrationTest`](src/test/java/com/akif/notification/integration/EventPublicationRegistryIntegrationTest.java)).
+- **Errors.** Failures are RFC 9457 problem details with stable error codes ([`GlobalExceptionHandler`](src/main/java/com/akif/shared/handler/GlobalExceptionHandler.java), [`ProblemDetailContractTest`](src/test/java/com/akif/contract/ProblemDetailContractTest.java)).
+- **API contract.** The committed [`openapi/openapi.json`](openapi/openapi.json) and the [endpoint inventory](openapi/endpoint-inventory.txt) (method, path, required role) are compared with what the application generates, so drift fails the build ([`OpenApiContractTest`](src/test/java/com/akif/contract/OpenApiContractTest.java), [`EndpointInventoryTest`](src/test/java/com/akif/contract/EndpointInventoryTest.java)). Regenerate with [`scripts/update-contract.sh`](scripts/update-contract.sh).
+- **Operations.** Actuator health (liveness and readiness probes), info and Prometheus metrics are served on a separate management port, 8081, not on the API port ([`ManagementEndpointsTest`](src/test/java/com/akif/contract/ManagementEndpointsTest.java)).
+- **Time.** A single UTC `Clock` bean is injected where time matters, and the JVM, Hibernate and the database session are set to UTC ([`ClockConfig`](src/main/java/com/akif/shared/config/ClockConfig.java), [`ClockConfigTest`](src/test/java/com/akif/shared/config/ClockConfigTest.java)).
 
-Module boundaries are enforced with Spring Modulith.
+## Quick start
 
-## 🛠️ Tech Stack
-
-| Category | Technology |
-|----------|------------|
-| Framework | Spring Boot 3.5, Spring Modulith |
-| Security | Spring Security, JWT, OAuth2 |
-| Database | PostgreSQL, Flyway migrations |
-| Payment | Stripe API |
-| Email | SendGrid SMTP, Thymeleaf templates |
-| Cache | Caffeine |
-| Testing | JUnit 5, Mockito, Spring Boot Test |
-| Docs | Swagger/OpenAPI |
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Java 17+
-- PostgreSQL 15+
-- Maven 3.8+
-
-### Setup
+Docker Compose, one command, no `.env` needed:
 
 ```bash
-# Clone
-git clone https://github.com/TheOdrig/car-rental-api.git
-cd car-rental-api
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your credentials
-
-# Run
-mvn spring-boot:run
+docker compose up --build
 ```
 
-### Access
-- **API:** `http://localhost:8082`
-- **Swagger UI:** `http://localhost:8082/swagger-ui.html`
+This starts PostgreSQL 18 and the API with the `dev` profile ([`docker-compose.yml`](docker-compose.yml)). Flyway applies the migrations and loads sample data (users, cars, rentals, payments, damages) from `src/main/resources/db/seed`. Payments use the stub gateway, e-mail sending is off, and no Stripe or OAuth credentials are needed.
 
-## 📚 API Overview
+| What | Where |
+| --- | --- |
+| API | http://localhost:8082/api/v1, for example `GET /api/v1/cars` |
+| Swagger UI (dev only) | http://localhost:8082/swagger-ui/index.html |
+| Health, metrics | http://localhost:8081/actuator/health and `/actuator/prometheus` |
 
-### Authentication
-```http
-POST /api/v1/auth/register     # Register user
-POST /api/v1/auth/login        # Login, get JWT
-GET  /api/v1/oauth2/authorize/{provider}  # OAuth2 login
-```
+Remove everything, data included, with `docker compose down -v`.
 
-### Cars
-```http
-GET  /api/v1/cars              # List all cars
-GET  /api/v1/cars/{id}         # Get car details
-POST /api/v1/cars/availability/search  # Search by date range
-GET  /api/v1/cars/{id}/similar # Similar car recommendations
-```
-
-### Rentals
-```http
-POST /api/v1/rentals/request   # Request rental
-GET  /api/v1/rentals/me        # My rentals
-POST /api/v1/rentals/{id}/confirm  # Admin: confirm
-POST /api/v1/rentals/{id}/return   # Admin: complete return
-```
-
-### Admin Operations
-```http
-GET  /api/v1/admin/dashboard/summary   # Daily summary
-GET  /api/v1/admin/dashboard/fleet     # Fleet status
-GET  /api/v1/admin/dashboard/metrics   # Monthly metrics
-GET  /api/v1/admin/dashboard/revenue   # Revenue analytics
-GET  /api/v1/admin/alerts              # Active alerts
-POST /api/v1/admin/alerts/{id}/acknowledge  # Acknowledge alert
-POST /api/v1/admin/quick-actions/rentals/{id}/approve  # Approve rental
-POST /api/v1/admin/quick-actions/rentals/{id}/pickup   # Process pickup
-POST /api/v1/admin/quick-actions/rentals/{id}/return   # Process return
-GET  /api/v1/admin/late-returns        # Late return report
-POST /api/v1/admin/damages             # Create damage report
-POST /api/v1/admin/damages/{id}/assess # Assess damage
-```
-
-📖 Full API documentation available at `/swagger-ui.html`
-
-## 🧪 Testing
+To run the API from Maven instead, start only the database (published on port 5433) and use Java 21:
 
 ```bash
-# Run all tests
-mvn test
-
-# Run modularity verification
-mvn test -Dtest=ModularityTests
-
-# Generate coverage report
-mvn jacoco:report
+docker compose up -d db
+DATABASE_URL=jdbc:postgresql://localhost:5433/car_rental SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
 ```
 
-**Test Coverage:**
-- Large automated suite (run `./mvnw verify` for current results)
-- Unit, integration, and E2E tests
-- Module boundary verification
-- Complete rental lifecycle coverage
+## Verify
 
-## 📁 Project Structure
-
-```
-src/main/java/com/akif/
-├── auth/           # Authentication module
-├── car/            # Car management module
-├── currency/       # Currency conversion module
-├── damage/         # Damage management module
-├── dashboard/      # Admin dashboard module
-├── notification/   # Email notification module
-├── payment/        # Payment processing module
-├── rental/         # Rental operations module
-├── shared/         # Shared kernel
-└── starter/        # Application entry point
+```bash
+bash scripts/verify.sh
 ```
 
-## 🔧 Configuration
+The script checks that no AI or planning files are tracked ([`scripts/check-no-ai-files.sh`](scripts/check-no-ai-files.sh)), requires the OpenAPI artifacts to exist, then runs `./mvnw -B verify`: the full suite of about 1,380 tests against a real PostgreSQL 18 started by Testcontainers (Docker must be running), followed by JaCoCo gates of 80% line and 63% branch coverage. On Windows use `scripts/verify.ps1`. [`scripts/setup-hooks.sh`](scripts/setup-hooks.sh) installs a pre-push hook that runs it. There is no hosted CI; this local gate is the check.
 
-Configuration options include:
-- Database setup
-- Stripe integration
-- Email configuration
-- Pricing strategies
-- OAuth2 providers
+## API documentation
 
-## 📊 Technical Highlights
+[`openapi/openapi.json`](openapi/openapi.json) is the versioned contract for the `/api/v1` surface. Swagger UI and `/v3/api-docs` are enabled in `dev` and disabled in `prod`.
 
-- **Modular Monolith** with Spring Modulith (9 modules, enforced boundaries)
-- **Admin Dashboard** with real-time metrics, 5-level alert system, event-driven cache invalidation
-- **Event-Driven Architecture** for decoupled module communication
-- **ID Reference + Denormalization** pattern for cross-module entities
-- **Automated test suite** with unit, integration and E2E tests
-- **Local verification gate** (`scripts/verify`, pre-push hook)
-- **5 ADRs** documenting architectural decisions
+## Configuration
 
-## 🤝 Contributing
+Profiles are `dev`, `test` and `prod`. [`.env.example`](.env.example) lists every variable. `prod` has no defaults for its secrets and endpoints, so these must be set: `DATABASE_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `CORS_ORIGINS`, `TRUST_FORWARDED_HEADERS`, `TRUSTED_PROXY_HOPS`, `APP_BASE_URL`, `OAUTH2_STATE_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `EXCHANGE_RATE_API_KEY`, `STRIPE_API_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_METADATA_ENVIRONMENT`, `EMAIL_FROM`, `SENDGRID_API_KEY` and the `R2_*` storage settings. `prod` accepts only Stripe test-mode keys; a live key fails startup ([`ProdConfigurationValidator`](src/main/java/com/akif/shared/config/ProdConfigurationValidator.java)).
 
-Contributions are welcome.
+## License
 
-Quick steps:
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Run tests (`mvn test`)
-4. Commit changes using [Conventional Commits](https://www.conventionalcommits.org/)
-5. Push and open Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👤 Author
-
-**Mehmet Akif Uludag**
-
-[![GitHub](https://img.shields.io/badge/GitHub-TheOdrig-black?logo=github)](https://github.com/TheOdrig)
-
----
+[MIT](LICENSE)
