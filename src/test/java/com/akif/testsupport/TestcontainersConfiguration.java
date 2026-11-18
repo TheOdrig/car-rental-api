@@ -1,7 +1,7 @@
 package com.akif.testsupport;
 
+import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -19,9 +19,24 @@ public class TestcontainersConfiguration {
         return POSTGRES;
     }
 
-    @Bean(destroyMethod = "")
-    @ServiceConnection
-    PostgreSQLContainer<?> postgresContainer() {
-        return POSTGRES;
+    @Bean
+    JdbcConnectionDetails postgresConnectionDetails() {
+        return new JdbcConnectionDetails() {
+
+            @Override
+            public String getUsername() {
+                return POSTGRES.getUsername();
+            }
+
+            @Override
+            public String getPassword() {
+                return POSTGRES.getPassword();
+            }
+
+            @Override
+            public String getJdbcUrl() {
+                return POSTGRES.getJdbcUrl();
+            }
+        };
     }
 }

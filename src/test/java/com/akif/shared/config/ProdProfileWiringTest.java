@@ -28,7 +28,6 @@ import static org.assertj.core.api.Assertions.assertThat;
         "stripe.api.key=sk_test_51Habcdefghijklmnop",
         "stripe.webhook.secret=whsec_abcdefghijklmnop",
         "stripe.metadata.environment=prod",
-        "spring.datasource.hikari.connection-timeout=250",
         "r2.endpoint=https://acc.r2.cloudflarestorage.com",
         "r2.bucket-name=bucket",
         "r2.access-key-id=id",
