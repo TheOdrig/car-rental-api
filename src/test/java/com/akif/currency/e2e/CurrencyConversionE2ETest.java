@@ -12,6 +12,7 @@ import com.akif.rental.api.RentalResponse;
 import com.akif.rental.internal.dto.request.RentalRequest;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.starter.CarGalleryProjectApplication;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,14 @@ class CurrencyConversionE2ETest extends E2ETestBase {
 
     @Autowired
     private CarRepository carRepository;
+
+    @MockitoBean
+    private ExchangeRateClient exchangeRateClient;
+
+    @BeforeEach
+    void stubRatesApiUnavailable() {
+        when(exchangeRateClient.fetchRates(any())).thenThrow(new ExchangeRateApiException("API unavailable"));
+    }
 
     @Nested
     @DisplayName("USD Conversion Tests")
@@ -165,9 +174,6 @@ class CurrencyConversionE2ETest extends E2ETestBase {
     @DisplayName("Fallback Rates Tests")
     class FallbackRatesTests {
 
-        @MockitoBean
-        private ExchangeRateClient exchangeRateClient;
-
         @Test
         @DisplayName("Should use fallback rates when exchange rate API is unavailable")
         void shouldUseFallbackRates_whenExchangeRateApiUnavailable() throws Exception {
@@ -180,9 +186,6 @@ class CurrencyConversionE2ETest extends E2ETestBase {
 
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
-
-            when(exchangeRateClient.fetchRates(any()))
-                    .thenThrow(new ExchangeRateApiException("API unavailable"));
 
             String responseJson = mockMvc.perform(get("/api/rentals/{id}", rentalId)
                     .header("Authorization", "Bearer " + userToken)
@@ -220,9 +223,6 @@ class CurrencyConversionE2ETest extends E2ETestBase {
 
             RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
-
-            when(exchangeRateClient.fetchRates(any()))
-                    .thenThrow(new ExchangeRateApiException("API unavailable"));
 
             String responseJson = mockMvc.perform(get("/api/rentals/{id}", rentalId)
                     .header("Authorization", "Bearer " + userToken)
