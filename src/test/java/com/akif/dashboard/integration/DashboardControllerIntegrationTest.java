@@ -394,6 +394,26 @@ class DashboardControllerIntegrationTest {
         }
 
         @Test
+        @DisplayName("Should return 200 with late hours for stale approvals and overdue rentals")
+        void shouldReturnOkForStaleRentalsOnAllPendingEndpoints() throws Exception {
+            createTestRental(RentalStatus.REQUESTED, LocalDate.now().minusDays(6), LocalDate.now().minusDays(3));
+            createTestRental(RentalStatus.IN_USE, LocalDate.now().minusDays(2), LocalDate.now().minusDays(1));
+
+            for (String path : new String[] {"approvals", "pickups", "returns", "overdue"}) {
+                mockMvc.perform(get("/api/v1/admin/dashboard/pending/" + path)
+                                .header("Authorization", adminToken))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.content").isArray());
+            }
+
+            mockMvc.perform(get("/api/v1/admin/dashboard/pending/overdue")
+                            .header("Authorization", adminToken))
+                    .andExpect(jsonPath("$.content[0].lateHours").isNumber());
+            mockMvc.perform(get("/api/v1/admin/dashboard/pending/approvals")
+                            .header("Authorization", adminToken))
+                    .andExpect(jsonPath("$.content[0].lateHours").isNumber());
+        }
+        @Test
         @DisplayName("Should return 403 when user tries to access pending items")
         void shouldReturn403WhenUserTriesToAccessPendingItems() throws Exception {
             mockMvc.perform(get("/api/v1/admin/dashboard/pending/approvals")

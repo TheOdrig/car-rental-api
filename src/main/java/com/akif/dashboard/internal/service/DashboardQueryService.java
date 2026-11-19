@@ -293,7 +293,7 @@ public class DashboardQueryService {
             return null;
         }
         return java.time.temporal.ChronoUnit.HOURS.between(
-                endDate.atStartOfDay(),
+                UtcDates.startOfDay(endDate),
                 Instant.now(clock));
     }
 }
