@@ -87,7 +87,9 @@ class DamageChargeServiceTest {
                 java.time.LocalDate.now().plusDays(7),
                 false,
                 0,
-                CurrencyType.USD
+                CurrencyType.USD,
+                com.akif.rental.api.RentalStatus.RETURNED,
+                java.time.Instant.now()
         );
     }
 

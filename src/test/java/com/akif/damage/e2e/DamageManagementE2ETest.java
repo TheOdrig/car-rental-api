@@ -170,6 +170,23 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .andExpect(jsonPath("$.photos").exists())
                                         .andExpect(jsonPath("$.photos.length()").value(2));
 
+                        mockMvc.perform(get("/api/v1/damages/{id}", damageId)
+                                        .header("Authorization", "Bearer " + customerToken))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.photos.length()").value(2))
+                                        .andExpect(jsonPath("$.photos[0].secureUrl").value(
+                                                        org.hamcrest.Matchers.startsWith("/api/v1/files/damage-photos/")));
+
+                        mockMvc.perform(get("/api/v1/damages/me")
+                                        .header("Authorization", "Bearer " + customerToken))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.content[0].photos.length()").value(2));
+
+                        User stranger = userRepository.save(TestDataBuilder.createTestUser());
+                        mockMvc.perform(get("/api/v1/damages/{id}", damageId)
+                                        .header("Authorization", "Bearer " + generateUserToken(stranger)))
+                                        .andExpect(status().isNotFound());
+
                         eventCaptor.clear();
 
                         DamageAssessmentRequest assessmentRequest = new DamageAssessmentRequest(
@@ -469,6 +486,24 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(damageRequest)))
                                         .andExpect(status().isForbidden());
+
+                        mockMvc.perform(post("/api/v1/admin/damages")
+                                        .header("Authorization", "Bearer " + adminToken)
+                                        .param("rentalId", rentalId.toString())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(objectMapper.writeValueAsString(damageRequest)))
+                                        .andExpect(status().isBadRequest())
+                                        .andExpect(jsonPath("$.code").value("DAMAGE_REPORT_ERROR"))
+                                        .andExpect(jsonPath("$.detail").value(
+                                                        org.hamcrest.Matchers.containsString("picked up")));
+
+                        payRental(rentalId);
+                        moveStartToToday(rentalId);
+                        mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
+                                        .header("Authorization", "Bearer " + adminToken)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content("{}"))
+                                        .andExpect(status().isOk());
 
                         mockMvc.perform(post("/api/v1/admin/damages")
                                         .header("Authorization", "Bearer " + adminToken)

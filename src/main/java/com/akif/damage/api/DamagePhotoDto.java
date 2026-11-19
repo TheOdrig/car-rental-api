@@ -1,4 +1,4 @@
-package com.akif.damage.internal.dto.damage.response;
+package com.akif.damage.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

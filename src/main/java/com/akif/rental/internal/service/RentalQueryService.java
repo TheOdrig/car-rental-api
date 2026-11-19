@@ -130,7 +130,9 @@ public class RentalQueryService {
                 rental.getEndDate(),
                 Boolean.TRUE.equals(rental.getHasDamageReports()),
                 rental.getDamageReportsCount() != null ? rental.getDamageReportsCount() : 0,
-                rental.getCurrency());
+                rental.getCurrency(),
+                rental.getStatus(),
+                rental.getActualReturnTime());
     }
 
 

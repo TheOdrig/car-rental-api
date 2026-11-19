@@ -1259,6 +1259,12 @@
           "pending" : {
             "type" : "boolean"
           },
+          "photos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/DamagePhotoDto"
+            },
+            "type" : "array"
+          },
           "rentalId" : {
             "format" : "int64",
             "type" : "integer"
@@ -9858,6 +9864,76 @@
         },
         "summary" : "Get photo URL",
         "tags" : [ "Damage Report" ]
+      }
+    },
+    "/api/v1/damages/{id}" : {
+      "get" : {
+        "description" : "Get one of the current user's damage reports, with its photos",
+        "operationId" : "getMyDamage",
+        "parameters" : [ {
+          "description" : "Damage ID",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DamageReportDto"
+                }
+              }
+            },
+            "description" : "Damage report retrieved"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Invalid request"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Unauthorized"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Damage report not found"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Unexpected error"
+          }
+        },
+        "summary" : "Get my damage report",
+        "tags" : [ "Damage History" ]
       }
     },
     "/api/v1/damages/{id}/dispute" : {

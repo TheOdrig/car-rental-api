@@ -7,6 +7,7 @@ import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record DamageReportDto(
@@ -28,7 +29,8 @@ public record DamageReportDto(
     CurrencyType currency,
     CarSummaryResponse carSummary,
     String assessmentNotes,
-    BigDecimal insuranceDeductible
+    BigDecimal insuranceDeductible,
+    List<DamagePhotoDto> photos
 ) {
 
     public DamageReportDto(
@@ -48,7 +50,13 @@ public record DamageReportDto(
             Instant reportedAt,
             Instant assessedAt) {
         this(id, rentalId, carId, carLicensePlate, customerName, description, damageLocation, severity, category,
-                status, repairCostEstimate, customerLiability, insuranceCoverage, reportedAt, assessedAt, null, null, null, null);
+                status, repairCostEstimate, customerLiability, insuranceCoverage, reportedAt, assessedAt, null, null, null, null, null);
+    }
+
+    public DamageReportDto withPhotos(List<DamagePhotoDto> photos) {
+        return new DamageReportDto(id, rentalId, carId, carLicensePlate, customerName, description, damageLocation,
+                severity, category, status, repairCostEstimate, customerLiability, insuranceCoverage, reportedAt,
+                assessedAt, currency, carSummary, assessmentNotes, insuranceDeductible, photos);
     }
 
     public boolean isPending() {

@@ -14,7 +14,7 @@ import com.akif.damage.domain.model.DamagePhoto;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.config.DamageConfig;
 import com.akif.damage.internal.dto.damage.request.DamageReportRequest;
-import com.akif.damage.internal.dto.damage.response.DamagePhotoDto;
+import com.akif.damage.api.DamagePhotoDto;
 import com.akif.damage.internal.dto.damage.response.DamageReportResponse;
 import com.akif.damage.internal.exception.DamageReportException;
 import com.akif.damage.internal.repository.DamagePhotoRepository;
@@ -142,7 +142,9 @@ class DamageReportServiceTest {
                 LocalDate.now().plusDays(2),
                 false,
                 0,
-                CurrencyType.TRY);
+                CurrencyType.TRY,
+                com.akif.rental.api.RentalStatus.IN_USE,
+                null);
 
         testDamageReport = DamageReport.builder()
                 .id(1L)
@@ -221,6 +223,67 @@ class DamageReportServiceTest {
             damageReportService.createDamageReport(1L, testRequestDto, 1L);
 
             verify(rentalService).incrementDamageReportCount(1L);
+        }
+
+        private RentalSummaryDto rentalWith(com.akif.rental.api.RentalStatus status, java.time.Instant returnedAt) {
+            return new RentalSummaryDto(
+                    testRental.id(), testRental.carId(), testRental.userId(), testRental.carBrand(),
+                    testRental.carModel(), testRental.carLicensePlate(), testRental.userEmail(),
+                    testRental.userFullName(), testRental.startDate(), testRental.endDate(), false, 0,
+                    testRental.currency(), status, returnedAt);
+        }
+
+        private void stubHappyPath() {
+            when(damageConfig.getReportWindowDaysAfterReturn()).thenReturn(7);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
+            when(carCatalog.getCarDtoById(testCar.id())).thenReturn(testCar);
+            when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
+            when(damagePhotoRepository.findByDamageReportIdAndIsDeletedFalse(any())).thenReturn(List.of());
+        }
+
+        @Test
+        @DisplayName("Should reject a rental that was never picked up")
+        void shouldRejectRentalNeverPickedUp() {
+            when(damageConfig.getReportWindowDaysAfterReturn()).thenReturn(7);
+            for (com.akif.rental.api.RentalStatus status : List.of(
+                    com.akif.rental.api.RentalStatus.REQUESTED,
+                    com.akif.rental.api.RentalStatus.CONFIRMED,
+                    com.akif.rental.api.RentalStatus.CANCELLED)) {
+                when(rentalService.getRentalSummaryById(1L)).thenReturn(rentalWith(status, null));
+
+                assertThatThrownBy(() -> damageReportService.createDamageReport(1L, testRequestDto, 1L))
+                        .isInstanceOf(com.akif.damage.internal.exception.DamageReportException.class)
+                        .hasMessageContaining("picked up");
+            }
+            verify(damageReportRepository, never()).save(any(DamageReport.class));
+        }
+
+        @Test
+        @DisplayName("Should accept a report on a rental returned two days ago")
+        void shouldAcceptReportShortlyAfterReturn() {
+            stubHappyPath();
+            java.time.Instant returned = java.time.Instant.now(clock).minus(java.time.Duration.ofDays(2));
+            when(rentalService.getRentalSummaryById(1L)).thenReturn(rentalWith(
+                    com.akif.rental.api.RentalStatus.RETURNED, returned));
+
+            DamageReportResponse result = damageReportService.createDamageReport(1L, testRequestDto, 1L);
+
+            assertThat(result).isNotNull();
+            verify(damageReportRepository).save(any(DamageReport.class));
+        }
+
+        @Test
+        @DisplayName("Should reject a report on a rental returned more than seven days ago")
+        void shouldRejectReportAfterTheWindow() {
+            when(damageConfig.getReportWindowDaysAfterReturn()).thenReturn(7);
+            java.time.Instant returned = java.time.Instant.now(clock).minus(java.time.Duration.ofDays(8));
+            when(rentalService.getRentalSummaryById(1L)).thenReturn(rentalWith(
+                    com.akif.rental.api.RentalStatus.RETURNED, returned));
+
+            assertThatThrownBy(() -> damageReportService.createDamageReport(1L, testRequestDto, 1L))
+                    .isInstanceOf(com.akif.damage.internal.exception.DamageReportException.class)
+                    .hasMessageContaining("7 days after the vehicle was returned");
+            verify(damageReportRepository, never()).save(any(DamageReport.class));
         }
 
         @Test

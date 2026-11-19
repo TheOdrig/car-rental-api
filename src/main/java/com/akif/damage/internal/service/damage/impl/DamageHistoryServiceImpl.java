@@ -2,6 +2,9 @@ package com.akif.damage.internal.service.damage.impl;
 
 import com.akif.shared.web.Pageables;
 import com.akif.damage.api.DamageReportDto;
+import com.akif.damage.api.DamagePhotoDto;
+import com.akif.damage.domain.model.DamageReport;
+import com.akif.damage.internal.exception.DamageReportException;
 import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.api.DamageStatus;
 import com.akif.damage.internal.service.damage.DamageHistoryService;
@@ -22,6 +25,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +35,7 @@ public class DamageHistoryServiceImpl implements DamageHistoryService {
 
     private final DamageReportRepository damageReportRepository;
     private final DamageMapper damageMapper;
+    private final DamagePhotoAssembler damagePhotoAssembler;
 
     @Override
     public Page<DamageReportDto> getDamagesByVehicle(Long carId, Pageable pageable) {
@@ -40,8 +45,22 @@ public class DamageHistoryServiceImpl implements DamageHistoryService {
 
     @Override
     public Page<DamageReportDto> getDamagesByCustomer(Long userId, Pageable pageable) {
-        return damageReportRepository.findByCustomerUserIdAndIsDeletedFalse(userId, Pageables.stable(pageable))
-                .map(damageMapper::toPublicDto);
+        Page<DamageReport> reports = damageReportRepository
+                .findByCustomerUserIdAndIsDeletedFalse(userId, Pageables.stable(pageable));
+        Map<Long, List<DamagePhotoDto>> photos = damagePhotoAssembler.byReport(
+                reports.getContent().stream().map(DamageReport::getId).toList());
+        return reports.map(report -> damageMapper.toPublicDto(report)
+                .withPhotos(photos.getOrDefault(report.getId(), List.of())));
+    }
+
+    @Override
+    public DamageReportDto getCustomerDamage(Long damageId, Long userId) {
+        DamageReport report = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
+                .filter(found -> userId.equals(found.getCustomerUserId()))
+                .orElseThrow(() -> DamageReportException.notFound(damageId));
+        return damageMapper.toPublicDto(report)
+                .withPhotos(damagePhotoAssembler.byReport(List.of(report.getId()))
+                        .getOrDefault(report.getId(), List.of()));
     }
 
     @Override

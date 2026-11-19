@@ -14,6 +14,8 @@ public interface DamageHistoryService {
 
     Page<DamageReportDto> getDamagesByCustomer(Long userId, Pageable pageable);
 
+    DamageReportDto getCustomerDamage(Long damageId, Long userId);
+
     Page<DamageReportDto> searchDamages(DamageSearchFilterDto filter, Pageable pageable);
 
     DamageStatisticsDto getDamageStatistics(LocalDate startDate, LocalDate endDate);

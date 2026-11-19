@@ -1,7 +1,7 @@
 package com.akif.damage.internal.service.damage;
 
 import com.akif.damage.internal.dto.damage.request.DamageReportRequest;
-import com.akif.damage.internal.dto.damage.response.DamagePhotoDto;
+import com.akif.damage.api.DamagePhotoDto;
 import com.akif.damage.internal.dto.damage.response.DamageReportResponse;
 import org.springframework.web.multipart.MultipartFile;
 

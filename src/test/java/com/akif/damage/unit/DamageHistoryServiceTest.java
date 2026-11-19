@@ -49,6 +49,9 @@ class DamageHistoryServiceTest {
     @Mock
     private DamageMapper damageMapper;
 
+    @Mock
+    private com.akif.damage.internal.service.damage.impl.DamagePhotoAssembler damagePhotoAssembler;
+
     @InjectMocks
     private DamageHistoryServiceImpl damageHistoryService;
 
@@ -376,6 +379,51 @@ class DamageHistoryServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.totalDamages()).isZero();
             assertThat(result.byCurrency()).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("Customer Photos")
+    class CustomerPhotos {
+
+        @Test
+        @DisplayName("Should attach the photos of each report to the customer list")
+        void shouldAttachPhotosToList() {
+            com.akif.damage.api.DamagePhotoDto photo = new com.akif.damage.api.DamagePhotoDto(
+                    7L, "p.png", "/api/v1/files/damage-photos/p.png", 10L, Instant.now());
+            when(damageReportRepository.findByCustomerUserIdAndIsDeletedFalse(
+                    TEST_USER_ID, com.akif.shared.web.Pageables.stable(pageable)))
+                    .thenReturn(new PageImpl<>(List.of(testDamageReport1)));
+            when(damagePhotoAssembler.byReport(List.of(testDamageReport1.getId())))
+                    .thenReturn(java.util.Map.of(testDamageReport1.getId(), List.of(photo)));
+
+            Page<DamageReportDto> result = damageHistoryService.getDamagesByCustomer(TEST_USER_ID, pageable);
+
+            assertThat(result.getContent().get(0).photos()).containsExactly(photo);
+        }
+
+        @Test
+        @DisplayName("Should return one of my reports with its photos")
+        void shouldReturnOwnReportWithPhotos() {
+            com.akif.damage.api.DamagePhotoDto photo = new com.akif.damage.api.DamagePhotoDto(
+                    7L, "p.png", "/api/v1/files/damage-photos/p.png", 10L, Instant.now());
+            when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(java.util.Optional.of(testDamageReport1));
+            when(damagePhotoAssembler.byReport(List.of(testDamageReport1.getId())))
+                    .thenReturn(java.util.Map.of(testDamageReport1.getId(), List.of(photo)));
+
+            DamageReportDto result = damageHistoryService.getCustomerDamage(1L, TEST_USER_ID);
+
+            assertThat(result.photos()).containsExactly(photo);
+        }
+
+        @Test
+        @DisplayName("Should hide a report that belongs to someone else")
+        void shouldHideForeignReport() {
+            when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(java.util.Optional.of(testDamageReport1));
+
+            org.assertj.core.api.Assertions.assertThatThrownBy(
+                            () -> damageHistoryService.getCustomerDamage(1L, TEST_USER_ID + 1))
+                    .isInstanceOf(com.akif.damage.internal.exception.DamageReportException.class);
         }
     }
 }

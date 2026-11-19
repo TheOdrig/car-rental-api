@@ -119,7 +119,7 @@ class DamageAssessmentServiceTest {
         when(rentalService.getRentalSummaryById(any())).thenReturn(new com.akif.rental.api.RentalSummaryDto(
                 1L, 1L, 1L, "Toyota", "Corolla", "34ABC123", "c@example.com", "C U",
                 java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(3), false, 0,
-                com.akif.shared.enums.CurrencyType.TRY));
+                com.akif.shared.enums.CurrencyType.TRY, com.akif.rental.api.RentalStatus.RETURNED, java.time.Instant.now()));
 
         testAssessmentRequest = new DamageAssessmentRequest(
                 DamageSeverity.MINOR,
@@ -169,7 +169,7 @@ class DamageAssessmentServiceTest {
             when(rentalService.getRentalSummaryById(any())).thenReturn(new com.akif.rental.api.RentalSummaryDto(
                     1L, 1L, 1L, "Toyota", "Corolla", "34ABC123", "c@example.com", "C U",
                     java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(3), false, 0,
-                    com.akif.shared.enums.CurrencyType.JPY));
+                    com.akif.shared.enums.CurrencyType.JPY, com.akif.rental.api.RentalStatus.RETURNED, java.time.Instant.now()));
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserById(2L)).thenReturn(testUser);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
@@ -190,7 +190,7 @@ class DamageAssessmentServiceTest {
             when(rentalService.getRentalSummaryById(any())).thenReturn(new com.akif.rental.api.RentalSummaryDto(
                     1L, 1L, 1L, "Toyota", "Corolla", "34ABC123", "c@example.com", "C U",
                     java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(3), false, 0,
-                    com.akif.shared.enums.CurrencyType.EUR));
+                    com.akif.shared.enums.CurrencyType.EUR, com.akif.rental.api.RentalStatus.RETURNED, java.time.Instant.now()));
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserById(2L)).thenReturn(testUser);

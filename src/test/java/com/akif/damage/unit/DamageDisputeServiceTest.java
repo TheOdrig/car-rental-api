@@ -118,7 +118,9 @@ class DamageDisputeServiceTest {
                 LocalDate.now().plusDays(2),
                 true,
                 1,
-                CurrencyType.USD);
+                CurrencyType.USD,
+                com.akif.rental.api.RentalStatus.RETURNED,
+                java.time.Instant.now());
 
         testDamageReport = DamageReport.builder()
                 .id(1L)

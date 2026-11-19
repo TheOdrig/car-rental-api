@@ -26,4 +26,6 @@ public class DamageConfig {
 
     private String photoStorageDirectory = "damage-photos";
     private int photoUrlExpirationMinutes = 60;
+
+    private int reportWindowDaysAfterReturn = 7;
 }

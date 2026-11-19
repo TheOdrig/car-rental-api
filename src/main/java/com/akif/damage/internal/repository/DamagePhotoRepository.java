@@ -16,6 +16,8 @@ public interface DamagePhotoRepository extends JpaRepository<DamagePhoto, Long> 
 
     List<DamagePhoto> findByDamageReportIdAndIsDeletedFalse(Long damageReportId);
 
+    List<DamagePhoto> findByDamageReportIdInAndIsDeletedFalseOrderByIdAsc(java.util.Collection<Long> damageReportIds);
+
     int countByDamageReportIdAndIsDeletedFalse(Long damageReportId);
 
     @Query(value = """

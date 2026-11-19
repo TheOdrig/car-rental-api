@@ -84,6 +84,21 @@ public class DamageHistoryController {
         return ResponseEntity.ok(PageResponse.of(damages));
     }
 
+    @GetMapping("/api/v1/damages/{id}")
+    @Operation(summary = "Get my damage report", description = "Get one of the current user's damage reports, with its photos")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Damage report retrieved"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Damage report not found")
+    })
+    public ResponseEntity<DamageReportDto> getMyDamage(
+            @Parameter(description = "Damage ID", required = true)
+            @PathVariable Long id,
+            @AuthenticationPrincipal AuthenticatedUser caller) {
+
+        return ResponseEntity.ok(damageHistoryService.getCustomerDamage(id, caller.id()));
+    }
+
     @AllowedSort({"reportedAt", "createTime", "severity", "status"})
     @GetMapping("/api/v1/admin/damages/search")
     @PreAuthorize("hasRole('ADMIN')")

@@ -2,6 +2,7 @@ package com.akif.rental.api;
 
 import com.akif.shared.enums.CurrencyType;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 public record RentalSummaryDto(
@@ -17,5 +18,7 @@ public record RentalSummaryDto(
     LocalDate endDate,
     boolean hasDamageReports,
     int damageReportsCount,
-    CurrencyType currency
+    CurrencyType currency,
+    RentalStatus status,
+    Instant actualReturnTime
 ) {}

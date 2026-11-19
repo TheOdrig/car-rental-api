@@ -78,6 +78,7 @@ GET /api/v1/cars/{id}/similar PUBLIC
 DELETE /api/v1/cars/{id}/soft ADMIN
 GET /api/v1/damages/me AUTHENTICATED
 GET /api/v1/damages/photos/{photoId}/url AUTHENTICATED
+GET /api/v1/damages/{id} AUTHENTICATED
 POST /api/v1/damages/{id}/dispute AUTHENTICATED
 GET /api/v1/exchange-rates PUBLIC
 POST /api/v1/exchange-rates/convert PUBLIC

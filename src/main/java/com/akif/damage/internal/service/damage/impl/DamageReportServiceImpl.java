@@ -17,12 +17,13 @@ import com.akif.damage.internal.service.damage.DamageReportService;
 import com.akif.damage.internal.dto.damage.response.DamageReportResponse;
 import com.akif.shared.infrastructure.FileUploadService;
 import com.akif.damage.internal.dto.damage.request.DamageReportRequest;
-import com.akif.damage.internal.dto.damage.response.DamagePhotoDto;
+import com.akif.damage.api.DamagePhotoDto;
 import com.akif.damage.internal.repository.DamagePhotoRepository;
 import com.akif.damage.internal.repository.DamageReportRepository;
 import com.akif.damage.internal.exception.DamageReportException;
 import com.akif.shared.exception.FileUploadException;
 import com.akif.rental.api.RentalService;
+import com.akif.rental.api.RentalStatus;
 import com.akif.rental.api.RentalSummaryDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +61,7 @@ public class DamageReportServiceImpl implements DamageReportService {
     @Transactional
     public DamageReportResponse createDamageReport(Long rentalId, DamageReportRequest request, Long userId) {
         RentalSummaryDto rental = rentalService.getRentalSummaryById(rentalId);
+        ensureReportable(rental);
 
         UserDto user = userLookup.getUserById(userId);
 
@@ -212,6 +215,24 @@ public class DamageReportServiceImpl implements DamageReportService {
                     "File size exceeds maximum allowed: " + damageConfig.getMaxPhotoSizeBytes() + " bytes"
             );
         }
+    }
+
+    private void ensureReportable(RentalSummaryDto rental) {
+        if (rental.status() == RentalStatus.IN_USE) {
+            return;
+        }
+        int windowDays = damageConfig.getReportWindowDaysAfterReturn();
+        if (rental.status() == RentalStatus.RETURNED) {
+            Instant returnedAt = rental.actualReturnTime();
+            if (returnedAt == null || !Instant.now(clock).isAfter(returnedAt.plus(Duration.ofDays(windowDays)))) {
+                return;
+            }
+            throw new DamageReportException(
+                    "Damage can only be reported up to " + windowDays + " days after the vehicle was returned");
+        }
+        throw new DamageReportException(
+                "Damage can only be reported on a rental that was picked up (in use, or returned within "
+                        + windowDays + " days)");
     }
 
     private DamageReportResponse mapToResponseDto(DamageReport damageReport) {

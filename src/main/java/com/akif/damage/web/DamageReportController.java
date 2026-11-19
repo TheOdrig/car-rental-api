@@ -2,7 +2,7 @@ package com.akif.damage.web;
 
 import com.akif.shared.security.AuthenticatedUser;
 import com.akif.damage.internal.dto.damage.request.DamageReportRequest;
-import com.akif.damage.internal.dto.damage.response.DamagePhotoDto;
+import com.akif.damage.api.DamagePhotoDto;
 import com.akif.damage.internal.dto.damage.response.DamageReportResponse;
 import com.akif.damage.internal.service.damage.DamageReportService;
 import io.swagger.v3.oas.annotations.Operation;

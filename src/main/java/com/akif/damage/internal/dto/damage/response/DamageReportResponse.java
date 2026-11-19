@@ -4,6 +4,7 @@ import com.akif.car.api.CarSummaryResponse;
 import com.akif.damage.api.DamageCategory;
 import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.api.DamageStatus;
+import com.akif.damage.api.DamagePhotoDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import com.akif.shared.enums.CurrencyType;
