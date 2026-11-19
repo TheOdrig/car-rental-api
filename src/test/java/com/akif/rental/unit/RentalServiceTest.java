@@ -582,7 +582,7 @@ class RentalServiceTest {
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
             when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(captured));
-            when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any())).thenReturn(
+            when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any(), any())).thenReturn(
                     PricingResult.builder().basePrice(new BigDecimal("500.00")).rentalDays(3)
                             .appliedModifiers(Collections.emptyList()).combinedMultiplier(BigDecimal.ONE)
                             .finalPrice(new BigDecimal("1500.00")).build());
@@ -593,7 +593,7 @@ class RentalServiceTest {
 
             verify(dynamicPricingService).calculatePrice(
                     org.mockito.ArgumentMatchers.eq(testCar.id()), org.mockito.ArgumentMatchers.eq(today.minusDays(2)),
-                    org.mockito.ArgumentMatchers.eq(today), any());
+                    org.mockito.ArgumentMatchers.eq(today), any(), org.mockito.ArgumentMatchers.eq(1L));
             ArgumentCaptor<BigDecimal> amount = ArgumentCaptor.forClass(BigDecimal.class);
             verify(paymentService).refundPayment(anyLong(), amount.capture(), any());
             assertThat(amount.getValue()).isEqualByComparingTo("11250.00");
@@ -614,7 +614,7 @@ class RentalServiceTest {
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
             when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(captured));
-            when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any())).thenReturn(
+            when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any(), any())).thenReturn(
                     PricingResult.builder().basePrice(new BigDecimal("500.00")).rentalDays(2)
                             .appliedModifiers(Collections.emptyList()).combinedMultiplier(BigDecimal.ONE)
                             .finalPrice(new BigDecimal("1200.00")).build());

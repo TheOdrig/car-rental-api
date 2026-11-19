@@ -48,7 +48,7 @@ public class RentalBookingCalendar implements CarBookingCalendar {
     @Override
     public List<CarBooking> findCommittedBookings(LocalDate startDate, LocalDate endDate) {
         return rentalRepository.findCommittedBookings(COMMITTED_STATUSES, startDate, endDate).stream()
-                .map(row -> new CarBooking((Long) row[0], (LocalDate) row[1], (LocalDate) row[2]))
+                .map(row -> new CarBooking((Long) row[0], (Long) row[1], (LocalDate) row[2], (LocalDate) row[3]))
                 .toList();
     }
 }

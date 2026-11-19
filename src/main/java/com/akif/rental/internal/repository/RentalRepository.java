@@ -97,7 +97,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
                         @Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate);
 
-        @Query("SELECT r.carId, r.startDate, r.endDate FROM Rental r WHERE " +
+        @Query("SELECT r.id, r.carId, r.startDate, r.endDate FROM Rental r WHERE " +
                         "r.status IN :statuses AND " +
                         "r.isDeleted = false AND " +
                         "r.startDate <= :endDate AND " +

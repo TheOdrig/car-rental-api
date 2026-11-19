@@ -681,7 +681,7 @@ class PaymentCommittedTransactionsIntegrationTest {
         payment.capture();
         paymentRepository.saveAndFlush(payment);
         BigDecimal usedDays = dynamicPricingService.calculatePrice(
-                car.getId(), rental.getStartDate(), rental.getStartDate().plusDays(1), LocalDate.now()).finalPrice();
+                car.getId(), rental.getStartDate(), rental.getStartDate().plusDays(1), LocalDate.now(), rental.getId()).finalPrice();
         assertThat(usedDays.scale()).isEqualTo(2);
 
         rentalService.earlyReturnRental(rental.getId(), "returned early");

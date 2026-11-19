@@ -12,8 +12,21 @@ public record PricingContext(
     LocalDate bookingDate,
     int rentalDays,
     int leadTimeDays,
-    String carCategory
+    String carCategory,
+    Long excludedBookingId
 ) {
+
+    public PricingContext(
+            Long carId,
+            BigDecimal basePrice,
+            LocalDate startDate,
+            LocalDate endDate,
+            LocalDate bookingDate,
+            int rentalDays,
+            int leadTimeDays,
+            String carCategory) {
+        this(carId, basePrice, startDate, endDate, bookingDate, rentalDays, leadTimeDays, carCategory, null);
+    }
 
     public static PricingContext create(
             Long carId,
@@ -34,7 +47,8 @@ public record PricingContext(
             bookingDate,
             rentalDays,
             leadTimeDays,
-            carCategory
+            carCategory,
+            null
         );
     }
 }

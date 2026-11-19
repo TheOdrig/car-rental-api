@@ -6,5 +6,8 @@ public interface DynamicPricingService {
 
     PricingResult calculatePrice(Long carId, LocalDate startDate, LocalDate endDate, LocalDate bookingDate);
 
+    PricingResult calculatePrice(Long carId, LocalDate startDate, LocalDate endDate, LocalDate bookingDate,
+                                 Long excludedBookingId);
+
     PricingResult previewPrice(Long carId, LocalDate startDate, LocalDate endDate);
 }

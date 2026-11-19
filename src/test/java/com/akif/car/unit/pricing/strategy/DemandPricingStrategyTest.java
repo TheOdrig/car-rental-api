@@ -204,6 +204,22 @@ class DemandPricingStrategyTest {
         }
 
         @Test
+        @DisplayName("The booking being repriced does not count as demand for itself")
+        void excludesTheBookingBeingRepriced() {
+            when(carRepository.findBookableCarIds(any())).thenReturn(List.of(1L));
+            when(bookingCalendar.findCommittedBookings(eq(START), eq(END)))
+                    .thenReturn(List.of(new CarBooking(77L, 1L, START, END)));
+            PricingContext repricing = new PricingContext(
+                    1L, new BigDecimal("500"), START, END, START.minusDays(10), 6, 10, "SUV", 77L);
+
+            PriceModifier result = strategy.calculate(repricing);
+
+            assertThat(result.multiplier()).isEqualByComparingTo(BigDecimal.ONE);
+            assertThat(result.description()).contains("0%");
+            assertThat(strategy.calculate(context()).description()).contains("100%");
+        }
+
+        @Test
         @DisplayName("Empty fleet is neutral and does not query bookings")
         void emptyFleet() {
             when(carRepository.findBookableCarIds(any())).thenReturn(List.of());

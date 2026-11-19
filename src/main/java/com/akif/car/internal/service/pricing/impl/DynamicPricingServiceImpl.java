@@ -38,13 +38,19 @@ public class DynamicPricingServiceImpl implements DynamicPricingService, Pricing
 
     @Override
     public PricingResult calculatePrice(Long carId, LocalDate startDate, LocalDate endDate, LocalDate bookingDate) {
+        return calculatePrice(carId, startDate, endDate, bookingDate, null);
+    }
+
+    @Override
+    public PricingResult calculatePrice(Long carId, LocalDate startDate, LocalDate endDate, LocalDate bookingDate,
+                                        Long excludedBookingId) {
         log.debug("Calculating price for car: {}, dates: {} to {}, booking: {}", 
             carId, startDate, endDate, bookingDate);
 
         Car car = carRepository.findByIdAndIsDeletedFalse(carId)
             .orElseThrow(() -> new CarNotFoundException(carId));
 
-        PricingContext context = createContext(car, startDate, endDate, bookingDate);
+        PricingContext context = createContext(car, startDate, endDate, bookingDate, excludedBookingId);
         
         return calculatePriceWithContext(context, car.getCurrencyType());
     }
@@ -127,7 +133,8 @@ public class DynamicPricingServiceImpl implements DynamicPricingService, Pricing
         return calculatedPrice;
     }
 
-    private PricingContext createContext(Car car, LocalDate startDate, LocalDate endDate, LocalDate bookingDate) {
+    private PricingContext createContext(Car car, LocalDate startDate, LocalDate endDate, LocalDate bookingDate,
+                                         Long excludedBookingId) {
         int rentalDays = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
         int leadTimeDays = (int) ChronoUnit.DAYS.between(bookingDate, startDate);
 
@@ -139,7 +146,8 @@ public class DynamicPricingServiceImpl implements DynamicPricingService, Pricing
             bookingDate,
             rentalDays,
             leadTimeDays,
-            car.getBodyType() != null ? car.getBodyType() : "UNKNOWN"
+            car.getBodyType() != null ? car.getBodyType() : "UNKNOWN",
+            excludedBookingId
         );
     }
 }

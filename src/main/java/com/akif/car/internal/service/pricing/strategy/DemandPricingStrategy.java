@@ -73,6 +73,7 @@ public class DemandPricingStrategy implements PricingStrategy {
             LocalDate current = day;
             occupiedCarDays += bookings.stream()
                 .filter(booking -> bookable.contains(booking.carId()))
+                .filter(booking -> booking.bookingId() == null || !booking.bookingId().equals(context.excludedBookingId()))
                 .filter(booking -> !current.isBefore(booking.startDate()) && !current.isAfter(booking.endDate()))
                 .map(CarBooking::carId)
                 .distinct()

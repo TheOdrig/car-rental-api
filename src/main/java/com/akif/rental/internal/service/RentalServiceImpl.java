@@ -465,7 +465,8 @@ public class RentalServiceImpl implements RentalService {
                     rental.getCarId(),
                     rental.getStartDate(),
                     rental.getStartDate().plusDays(daysUsed - 1),
-                    bookingDate).finalPrice();
+                    bookingDate,
+                    rental.getId()).finalPrice();
         }
         BigDecimal refundAmount = payment.amount()
                 .subtract(usedPrice)
