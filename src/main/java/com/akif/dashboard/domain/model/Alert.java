@@ -20,8 +20,6 @@ import java.time.Instant;
 @Table(name = "dashboard_alerts",
     indexes = {
         @Index(name = "idx_alert_type", columnList = "type"),
-        @Index(name = "idx_alert_severity", columnList = "severity"),
-        @Index(name = "idx_alert_acknowledged", columnList = "acknowledged"),
         @Index(name = "idx_alert_created", columnList = "create_time")
     })
 @Getter

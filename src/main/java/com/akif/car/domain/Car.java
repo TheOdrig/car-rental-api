@@ -17,13 +17,6 @@ import java.util.Objects;
         uniqueConstraints = {
             @UniqueConstraint(name = "uk_car_license_plate", columnNames = "license_plate"),
             @UniqueConstraint(name = "uk_car_vin", columnNames = "vin_number")
-        },
-        indexes = {
-            @Index(name = "idx_car_brand", columnList = "brand"),
-            @Index(name = "idx_car_status", columnList = "car_status_type"),
-            @Index(name = "idx_car_price", columnList = "price"),
-            @Index(name = "index_car_year", columnList = "production_year"),
-            @Index(name = "index_car_create_time", columnList = "create_time")
         })
 @Getter
 @Setter

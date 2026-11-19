@@ -514,7 +514,7 @@ INSERT INTO car_rental.rentals (
     '2025-05-15', '2025-05-20', 5,
     'USD', 80.00, 400.00,
     'RETURNED', 'GRACE_PERIOD',
-    '2025-05-20 14:30:00', 2, NULL, FALSE
+    '2025-05-20 14:30:00+00'::timestamptz, 2, NULL, FALSE
 )
 ON CONFLICT (id) DO UPDATE SET
     update_time = EXCLUDED.update_time,
@@ -649,7 +649,7 @@ INSERT INTO car_rental.rentals (
     '2025-06-15', '2025-06-22', 7,
     'USD', 90.00, 630.00,
     'RETURNED', 'LATE',
-    '2025-06-23 16:00:00', 16, 90.00, TRUE
+    '2025-06-23 16:00:00+00'::timestamptz, 16, 90.00, TRUE
 )
 ON CONFLICT (id) DO UPDATE SET
     update_time = EXCLUDED.update_time,
@@ -784,7 +784,7 @@ INSERT INTO car_rental.rentals (
     '2025-07-15', '2025-07-22', 7,
     'USD', 85.00, 595.00,
     'RETURNED', 'GRACE_PERIOD',
-    '2025-07-22 11:00:00', 3, NULL, FALSE
+    '2025-07-22 11:00:00+00'::timestamptz, 3, NULL, FALSE
 )
 ON CONFLICT (id) DO UPDATE SET
     update_time = EXCLUDED.update_time,
@@ -874,7 +874,7 @@ INSERT INTO car_rental.rentals (
     '2025-08-05', '2025-08-12', 7,
     'USD', 145.00, 1015.00,
     'RETURNED', 'LATE',
-    '2025-08-13 10:00:00', 10, 145.00, TRUE
+    '2025-08-13 10:00:00+00'::timestamptz, 10, 145.00, TRUE
 )
 ON CONFLICT (id) DO UPDATE SET
     update_time = EXCLUDED.update_time,
@@ -1009,7 +1009,7 @@ INSERT INTO car_rental.rentals (
     '2025-09-20', '2025-09-25', 5,
     'USD', 45.00, 225.00,
     'RETURNED', 'SEVERELY_LATE',
-    '2025-09-27 20:00:00', 44, 180.00, FALSE
+    '2025-09-27 20:00:00+00'::timestamptz, 44, 180.00, FALSE
 )
 ON CONFLICT (id) DO UPDATE SET
     update_time = EXCLUDED.update_time,
