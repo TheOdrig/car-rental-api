@@ -120,6 +120,9 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     @Query("SELECT c.brand, CAST(AVG(c.price) AS BigDecimal) FROM Car c WHERE c.isDeleted = false GROUP BY c.brand ORDER BY AVG(c.price) DESC")
     List<Object[]> getAveragePriceByBrand();
 
+    @Query("SELECT c.id FROM Car c WHERE c.isDeleted = false AND c.carStatusType NOT IN :blockingStatuses")
+    List<Long> findBookableCarIds(@Param("blockingStatuses") List<CarStatusType> blockingStatuses);
+
     @Query("SELECT c.carStatusType, COUNT(c) FROM Car c WHERE c.isDeleted = false GROUP BY c.carStatusType")
     List<Object[]> getCarsCountByStatus();
 
