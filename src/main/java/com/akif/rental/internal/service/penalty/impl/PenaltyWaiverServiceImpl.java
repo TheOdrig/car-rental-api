@@ -72,11 +72,16 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
 
         PenaltyWaiver savedWaiver = penaltyWaiverRepository.save(waiver);
 
+        boolean collected = paymentService.getPenaltyPaymentByRentalId(rentalId).isPresent();
+
         rental.reducePenaltyTo(remainingPenalty);
+        rental.recordPenaltyPayment(collected && remainingPenalty.signum() > 0);
         rentalRepository.save(rental);
 
-        if (Boolean.TRUE.equals(rental.getPenaltyPaid())) {
+        if (collected) {
             processRefundForWaiver(savedWaiver);
+        } else {
+            paymentService.closeOutstandingPenaltyPayments(rentalId);
         }
 
         log.info("Successfully waived penalty for rental: {}, waived amount: {}, remaining: {}",

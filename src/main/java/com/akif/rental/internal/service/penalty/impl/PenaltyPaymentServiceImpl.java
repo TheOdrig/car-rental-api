@@ -4,6 +4,10 @@ import com.akif.payment.api.CreatePaymentRequest;
 import com.akif.payment.api.PaymentDto;
 import com.akif.payment.api.PaymentResult;
 import com.akif.payment.api.PaymentService;
+import com.akif.rental.api.PenaltyChargeFailedEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.service.penalty.PenaltyPaymentService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +23,9 @@ import java.math.BigDecimal;
 @Transactional(readOnly = true)
 public class PenaltyPaymentServiceImpl implements PenaltyPaymentService {
 
+    private final Clock clock;
     private final PaymentService paymentService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -68,16 +74,17 @@ public class PenaltyPaymentServiceImpl implements PenaltyPaymentService {
     }
 
     @Override
-    public void handleFailedPenaltyPayment(Long paymentId, Long rentalId, String userEmail, String failureReason) {
-        log.debug("Handling failed penalty payment: paymentId={}", paymentId);
+    public void handleFailedPenaltyPayment(PaymentDto payment, String failureReason) {
+        log.warn("Penalty payment could not be collected and needs manual follow-up: paymentId={}, rentalId={}, reason={}",
+                payment.id(), payment.rentalId(), failureReason);
 
-        log.warn("[ADMIN NOTIFICATION] Failed penalty payment requires manual processing: " +
-                "Payment ID={}, Rental ID={}, Failure Reason: {}",
-                paymentId,
-                rentalId,
-                failureReason);
-
-        log.info("Marked penalty payment as PENDING for manual processing: ID={}", paymentId);
+        eventPublisher.publishEvent(new PenaltyChargeFailedEvent(
+                payment.rentalId(),
+                payment.id(),
+                payment.userEmail(),
+                LocalDateTime.now(clock),
+                payment.amount(),
+                payment.currency(),
+                failureReason));
     }
 }
-

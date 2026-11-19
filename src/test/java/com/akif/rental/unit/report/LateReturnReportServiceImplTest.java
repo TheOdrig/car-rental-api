@@ -349,7 +349,7 @@ class LateReturnReportServiceImplTest {
             assertThat(dto.carModel()).isEqualTo(TEST_CAR_MODEL);
             assertThat(dto.licensePlate()).isEqualTo(TEST_CAR_LICENSE_PLATE);
             assertThat(dto.lateHours()).isEqualTo(5);
-            assertThat(dto.lateDays()).isEqualTo(0);
+            assertThat(dto.lateDays()).isEqualTo(1);
             assertThat(dto.status()).isEqualTo(LateReturnStatus.LATE);
             assertThat(dto.penaltyAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
             assertThat(dto.currency()).isEqualTo(CurrencyType.TRY);

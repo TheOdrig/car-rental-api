@@ -2,6 +2,7 @@ package com.akif.payment.internal.service;
 
 import com.akif.payment.api.PaymentCancelledEvent;
 import com.akif.payment.api.PaymentCapturedEvent;
+import com.akif.payment.api.PenaltyPaymentCapturedEvent;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.domain.Payment;
 import com.akif.payment.domain.enums.PaymentKind;
@@ -62,6 +63,10 @@ public class PaymentStateService {
         if (transactionId != null && payment.getStripePaymentIntentId() == null) {
             payment.attachIntent(transactionId, payment.getIdempotencyKey());
         }
+        if (!transitioned && payment.getStatus() == PaymentStatus.CANCELLED) {
+            log.error("[AUDIT] Funds were captured for a cancelled payment, a manual refund may be required | Payment: {} | Kind: {}",
+                    payment.getId(), payment.getKind());
+        }
         paymentRepository.save(payment);
         if (transitioned && payment.getKind() == PaymentKind.RENTAL) {
             eventPublisher.publishEvent(new PaymentCapturedEvent(
@@ -71,6 +76,13 @@ public class PaymentStateService {
                     payment.getAmount(),
                     payment.getCurrency(),
                     payment.getTransactionId(),
+                    LocalDateTime.now(clock)));
+        } else if (transitioned && payment.getKind() == PaymentKind.PENALTY) {
+            eventPublisher.publishEvent(new PenaltyPaymentCapturedEvent(
+                    payment.getId(),
+                    payment.getRentalId(),
+                    payment.getAmount(),
+                    payment.getCurrency(),
                     LocalDateTime.now(clock)));
         }
         return transitioned;

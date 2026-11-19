@@ -133,7 +133,7 @@ public class LateReturnReportServiceImpl implements LateReturnReportService {
 
     private LateReturnReportDto mapToReportDto(Rental rental) {
         Integer lateDays = rental.getLateHours() != null
-                ? rental.getLateHours() / 24
+                ? (rental.getLateHours() + 23) / 24
                 : null;
 
         return new LateReturnReportDto(

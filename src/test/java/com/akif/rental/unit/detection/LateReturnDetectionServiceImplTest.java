@@ -23,10 +23,8 @@ import org.mockito.Spy;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -60,6 +58,9 @@ class LateReturnDetectionServiceImplTest {
     @Spy
     private Clock clock = Clock.systemDefaultZone();
 
+    @Mock
+    private PlatformTransactionManager transactionManager;
+
     @InjectMocks
     private LateReturnDetectionServiceImpl service;
 
@@ -67,8 +68,17 @@ class LateReturnDetectionServiceImplTest {
     private Car testCar;
     private User testUser;
 
+    private void overdue(Rental... rentals) {
+        when(rentalRepository.findOverdueRentalIds(any(LocalDate.class)))
+                .thenReturn(Arrays.stream(rentals).map(Rental::getId).toList());
+        for (Rental rental : rentals) {
+            when(rentalRepository.findByIdForUpdate(rental.getId())).thenReturn(java.util.Optional.of(rental));
+        }
+    }
+
     @BeforeEach
     void setUp() {
+        when(transactionManager.getTransaction(any())).thenReturn(mock(TransactionStatus.class));
         when(penaltyConfig.getGracePeriodMinutes()).thenReturn(60);
         when(penaltyConfig.getSeverelyLateThresholdHours()).thenReturn(24);
 
@@ -311,9 +321,7 @@ class LateReturnDetectionServiceImplTest {
                     .lateReturnStatus(LateReturnStatus.ON_TIME)
                     .build();
 
-            Page<Rental> page = new PageImpl<>(Arrays.asList(rental1, rental2));
-            when(rentalRepository.findOverdueRentals(any(LocalDate.class), any(Pageable.class)))
-                    .thenReturn(page);
+            overdue(rental1, rental2);
 
             PenaltyResult penaltyResult = new PenaltyResult(
                     new BigDecimal("100.00"),
@@ -329,65 +337,17 @@ class LateReturnDetectionServiceImplTest {
 
             service.detectLateReturns();
 
-            verify(rentalRepository, times(1)).findOverdueRentals(any(LocalDate.class), any(Pageable.class));
             verify(rentalRepository, times(2)).save(any(Rental.class));
         }
 
         @Test
         @DisplayName("Should handle empty overdue rentals list")
         void shouldHandleEmptyOverdueRentalsList() {
-            Page<Rental> emptyPage = new PageImpl<>(Collections.emptyList());
-            when(rentalRepository.findOverdueRentals(any(LocalDate.class), any(Pageable.class)))
-                    .thenReturn(emptyPage);
+            overdue();
 
             service.detectLateReturns();
 
-            verify(rentalRepository, times(1)).findOverdueRentals(any(LocalDate.class), any(Pageable.class));
             verify(rentalRepository, never()).save(any(Rental.class));
-        }
-
-        @Test
-        @DisplayName("Should handle pagination correctly")
-        void shouldHandlePaginationCorrectly() {
-            Rental rental1 = Rental.builder()
-                    .id(1L)
-                    .userId(testUser.getId())
-                    .userEmail(testUser.getEmail())
-                    .userFullName("Test User")
-                    .carId(testCar.getId())
-                    .carBrand(testCar.getBrand())
-                    .carModel(testCar.getModel())
-                    .carLicensePlate(testCar.getLicensePlate())
-                    .endDate(LocalDate.now().minusDays(1))
-                    .dailyPrice(new BigDecimal("500.00"))
-                    .currency(CurrencyType.TRY)
-                    .status(RentalStatus.IN_USE)
-                    .lateReturnStatus(LateReturnStatus.ON_TIME)
-                    .build();
-
-            Page<Rental> page1 = new PageImpl<>(Collections.singletonList(rental1), PageRequest.of(0, 50), 51);
-            Page<Rental> page2 = new PageImpl<>(Collections.emptyList(), PageRequest.of(1, 50), 51);
-
-            when(rentalRepository.findOverdueRentals(any(LocalDate.class), eq(PageRequest.of(0, 50))))
-                    .thenReturn(page1);
-            when(rentalRepository.findOverdueRentals(any(LocalDate.class), eq(PageRequest.of(1, 50))))
-                    .thenReturn(page2);
-
-            PenaltyResult penaltyResult = new PenaltyResult(
-                    new BigDecimal("100.00"),
-                    new BigDecimal("500.00"),
-                    2,
-                    0,
-                    LateReturnStatus.LATE,
-                    "Test",
-                    false
-            );
-            when(penaltyCalculationService.calculatePenalty(any(Rental.class), any(LocalDateTime.class)))
-                    .thenReturn(penaltyResult);
-
-            service.detectLateReturns();
-
-            verify(rentalRepository, times(2)).findOverdueRentals(any(LocalDate.class), any(Pageable.class));
         }
 
         @Test
@@ -425,9 +385,7 @@ class LateReturnDetectionServiceImplTest {
                     .lateReturnStatus(LateReturnStatus.ON_TIME)
                     .build();
 
-            Page<Rental> page = new PageImpl<>(Arrays.asList(rental1, rental2));
-            when(rentalRepository.findOverdueRentals(any(LocalDate.class), any(Pageable.class)))
-                    .thenReturn(page);
+            overdue(rental1, rental2);
 
             when(rentalRepository.save(rental1)).thenThrow(new RuntimeException("Database error"));
             when(rentalRepository.save(rental2)).thenReturn(rental2);
@@ -447,6 +405,52 @@ class LateReturnDetectionServiceImplTest {
             service.detectLateReturns();
 
             verify(rentalRepository, times(2)).save(any(Rental.class));
+        }
+
+        @Test
+        @DisplayName("Should commit each rental in its own transaction so one failure does not roll back the others")
+        void shouldCommitEachRentalInItsOwnTransaction() {
+            Rental rental1 = lateRental(1L, 1);
+            Rental rental2 = lateRental(2L, 2);
+            overdue(rental1, rental2);
+            when(rentalRepository.save(rental1)).thenThrow(new RuntimeException("flush failed"));
+
+            service.detectLateReturns();
+
+            verify(transactionManager, times(2)).getTransaction(any());
+            verify(transactionManager, times(1)).rollback(any());
+            verify(transactionManager, times(1)).commit(any());
+            assertThat(rental2.getLateReturnStatus()).isNotEqualTo(LateReturnStatus.ON_TIME);
+        }
+
+        @Test
+        @DisplayName("Should skip a rental that was returned after the overdue list was read")
+        void shouldSkipARentalReturnedInTheMeantime() {
+            Rental returned = lateRental(1L, 2);
+            ReflectionTestUtils.setField(returned, "status", RentalStatus.RETURNED);
+            overdue(returned);
+
+            service.detectLateReturns();
+
+            verify(rentalRepository, never()).save(any(Rental.class));
+        }
+
+        private Rental lateRental(Long id, int daysAgo) {
+            return Rental.builder()
+                    .id(id)
+                    .userId(testUser.getId())
+                    .userEmail(testUser.getEmail())
+                    .userFullName("Test User")
+                    .carId(testCar.getId())
+                    .carBrand(testCar.getBrand())
+                    .carModel(testCar.getModel())
+                    .carLicensePlate(testCar.getLicensePlate())
+                    .endDate(LocalDate.now().minusDays(daysAgo))
+                    .dailyPrice(new BigDecimal("500.00"))
+                    .currency(CurrencyType.TRY)
+                    .status(RentalStatus.IN_USE)
+                    .lateReturnStatus(LateReturnStatus.ON_TIME)
+                    .build();
         }
     }
 
@@ -492,9 +496,7 @@ class LateReturnDetectionServiceImplTest {
             ReflectionTestUtils.setField(testRental, "lateDetectedAt", null);
             ReflectionTestUtils.setField(testRental, "lateReturnStatus", LateReturnStatus.ON_TIME);
 
-            Page<Rental> page = new PageImpl<>(Collections.singletonList(testRental));
-            when(rentalRepository.findOverdueRentals(any(LocalDate.class), any(Pageable.class)))
-                    .thenReturn(page);
+            overdue(testRental);
 
             PenaltyResult penaltyResult = new PenaltyResult(
                     new BigDecimal("100.00"),
@@ -521,9 +523,7 @@ class LateReturnDetectionServiceImplTest {
             ReflectionTestUtils.setField(testRental, "lateDetectedAt", originalDetectionTime);
             ReflectionTestUtils.setField(testRental, "lateReturnStatus", LateReturnStatus.LATE);
 
-            Page<Rental> page = new PageImpl<>(Collections.singletonList(testRental));
-            when(rentalRepository.findOverdueRentals(any(LocalDate.class), any(Pageable.class)))
-                    .thenReturn(page);
+            overdue(testRental);
 
             PenaltyResult penaltyResult = new PenaltyResult(
                     new BigDecimal("200.00"),

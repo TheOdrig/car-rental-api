@@ -60,6 +60,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.sql.SQLException;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -335,9 +336,7 @@ public class RentalServiceImpl implements RentalService {
 
         LocalDateTime actualReturnTime = LocalDateTime.now(clock);
 
-        if (rental.getLateReturnStatus() != null &&
-                rental.getLateReturnStatus() != LateReturnStatus.ON_TIME) {
-
+        if (actualReturnTime.isAfter(rental.getEndDate().atTime(23, 59, 59))) {
             log.info("Processing late return penalty for rental: {}", rentalId);
             processPenaltyForLateReturn(rental, actualReturnTime);
         }
@@ -444,27 +443,38 @@ public class RentalServiceImpl implements RentalService {
             return new RefundInfo(false, BigDecimal.ZERO, null);
         }
 
-        LocalDate refundFrom = LocalDate.now(clock);
-        if (refundFrom.isBefore(rental.getStartDate())) {
-            refundFrom = rental.getStartDate();
-        }
-        LocalDate endDate = rental.getEndDate();
-        long remainingDays = Math.min(ChronoUnit.DAYS.between(refundFrom, endDate), rental.getDays());
+        LocalDate today = LocalDate.now(clock);
+        long daysUsed = today.isBefore(rental.getStartDate())
+                ? 0
+                : ChronoUnit.DAYS.between(rental.getStartDate(), today) + 1;
 
-        if (remainingDays <= 0) {
+        if (daysUsed >= rental.getDays()) {
             log.info("No remaining days for refund. RentalId: {}", rental.getId());
             return new RefundInfo(false, BigDecimal.ZERO, null);
         }
 
-        long totalDays = rental.getDays();
-        BigDecimal refundPercentage = BigDecimal.valueOf(remainingDays)
-                .divide(BigDecimal.valueOf(totalDays), 4, RoundingMode.HALF_UP);
+        int places = rental.getCurrency().getDecimalPlaces();
+        BigDecimal usedPrice = BigDecimal.ZERO;
+        if (daysUsed > 0) {
+            LocalDate bookingDate = rental.getCreateTime() != null ? rental.getCreateTime().toLocalDate() : today;
+            usedPrice = dynamicPricingService.calculatePrice(
+                    rental.getCarId(),
+                    rental.getStartDate(),
+                    rental.getStartDate().plusDays(daysUsed - 1),
+                    bookingDate).finalPrice();
+        }
         BigDecimal refundAmount = payment.amount()
-                .multiply(refundPercentage)
-                .setScale(rental.getCurrency().getDecimalPlaces(), RoundingMode.DOWN);
+                .subtract(usedPrice)
+                .max(BigDecimal.ZERO)
+                .min(payment.amount())
+                .setScale(places, RoundingMode.DOWN);
 
-        log.info("Calculating partial refund: totalDays={}, remainingDays={}, percentage={}, amount={}",
-                totalDays, remainingDays, refundPercentage, refundAmount);
+        log.info("Calculating partial refund: totalDays={}, daysUsed={}, usedPrice={}, amount={}",
+                rental.getDays(), daysUsed, usedPrice, refundAmount);
+
+        if (refundAmount.signum() <= 0) {
+            return new RefundInfo(false, BigDecimal.ZERO, null);
+        }
 
         PaymentResult refundResult = paymentService.refundPayment(payment.id(), refundAmount, cancelRefundKey(rental.getId()));
 
@@ -618,6 +628,7 @@ public class RentalServiceImpl implements RentalService {
                     penaltyResult.lateHours(),
                     penaltyResult.lateDays());
 
+            rental.flagLate(penaltyResult.status(), actualReturnTime, penaltyResult.lateHours());
             rental.assessPenalty(penaltyResult.penaltyAmount(), penaltyResult.lateHours());
 
             if (penaltyResult.penaltyAmount() == null ||
@@ -625,6 +636,14 @@ public class RentalServiceImpl implements RentalService {
                 log.info("No penalty to charge for rental {} (within grace period or no late hours)",
                         rental.getId());
                 rental.recordPenaltyPayment(false);
+                return;
+            }
+
+            Optional<PaymentDto> alreadyCollected = paymentService.getPenaltyPaymentByRentalId(rental.getId());
+            if (alreadyCollected.isPresent()) {
+                rental.assessPenalty(alreadyCollected.get().amount(), penaltyResult.lateHours());
+                rental.recordPenaltyPayment(true);
+                log.warn("Penalty of rental {} was already collected, no second charge is made", rental.getId());
                 return;
             }
 
@@ -639,13 +658,7 @@ public class RentalServiceImpl implements RentalService {
                 log.info("Successfully charged penalty for rental: {}", rental.getId());
             } else {
                 rental.recordPenaltyPayment(false);
-                penaltyPaymentService.handleFailedPenaltyPayment(
-                        penaltyPaymentDto.id(),
-                        rental.getId(),
-                        rental.getUserEmail(),
-                        chargeResult.message());
-                log.warn("Failed to charge penalty for rental: {}, Reason: {}",
-                        rental.getId(), chargeResult.message());
+                penaltyPaymentService.handleFailedPenaltyPayment(penaltyPaymentDto, chargeResult.message());
             }
 
             publishPenaltySummaryEvent(rental, penaltyResult, actualReturnTime);

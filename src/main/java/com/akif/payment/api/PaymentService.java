@@ -28,6 +28,8 @@ public interface PaymentService {
 
     PaymentResult chargePayment(Long paymentId);
 
+    int closeOutstandingPenaltyPayments(Long rentalId);
+
     PaymentResult chargeDamage(Long rentalId, Long damageId, BigDecimal amount, CurrencyType currency);
 
     PaymentResult refundPayment(Long paymentId, BigDecimal refundAmount, String operationKey);

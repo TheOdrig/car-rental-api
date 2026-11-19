@@ -136,7 +136,7 @@ class PenaltyCalculationServiceImplTest {
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
             assertThat(result.lateHours()).isEqualTo(9);
-            assertThat(result.lateDays()).isEqualTo(0);
+            assertThat(result.lateDays()).isEqualTo(1);
             assertThat(result.penaltyAmount()).isEqualByComparingTo(new BigDecimal("750.00"));
             assertThat(result.status()).isEqualTo(LateReturnStatus.LATE);
         }
@@ -151,6 +151,18 @@ class PenaltyCalculationServiceImplTest {
             assertThat(result.lateHours()).isEqualTo(24);
             assertThat(result.status()).isEqualTo(LateReturnStatus.SEVERELY_LATE);
             assertThat(result.penaltyAmount()).isEqualByComparingTo(new BigDecimal("750.00"));
+        }
+
+        @Test
+        @DisplayName("Should count a started day as a full day, matching the late return email")
+        void shouldCountAStartedDayAsFullDay() {
+            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(26);
+
+            PenaltyResult result = service.calculatePenalty(testRental, returnTime);
+
+            assertThat(result.lateHours()).isEqualTo(25);
+            assertThat(result.lateDays()).isEqualTo(2);
+            assertThat(result.penaltyAmount()).isEqualByComparingTo(new BigDecimal("1500.00"));
         }
 
         @Test

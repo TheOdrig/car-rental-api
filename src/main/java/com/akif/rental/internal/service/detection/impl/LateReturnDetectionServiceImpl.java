@@ -8,26 +8,26 @@ import com.akif.rental.domain.enums.LateReturnStatus;
 import com.akif.rental.api.GracePeriodWarningEvent;
 import com.akif.rental.api.LateReturnNotificationEvent;
 import com.akif.rental.api.SeverelyLateNotificationEvent;
+import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.rental.internal.service.detection.LateReturnDetectionService;
 import com.akif.rental.internal.service.penalty.PenaltyCalculationService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
 public class LateReturnDetectionServiceImpl implements LateReturnDetectionService {
@@ -38,62 +38,66 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
     private final PenaltyConfig penaltyConfig;
     private final PenaltyCalculationService penaltyCalculationService;
     private final ApplicationEventPublisher eventPublisher;
+    private final TransactionTemplate transactionTemplate;
 
-    private static final int PAGE_SIZE = 50;
-
-    @Override
-    @Transactional
-    public void detectLateReturns() {
-        log.info("Starting late return detection process");
-        
-        LocalDate currentDate = LocalDate.now(clock);
-        LocalDateTime currentTime = LocalDateTime.now(clock);
-        int pageNumber = 0;
-        int totalProcessed = 0;
-        int totalUpdated = 0;
-
-        try {
-            Page<Rental> overdueRentalsPage;
-            do {
-                Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE);
-                overdueRentalsPage = rentalRepository.findOverdueRentals(currentDate, pageable);
-
-                for (Rental rental : overdueRentalsPage.getContent()) {
-                    totalProcessed++;
-                    
-                    try {
-                        LateReturnStatus oldStatus = rental.getLateReturnStatus();
-                        LateReturnStatus newStatus = calculateLateStatus(rental, currentTime);
-
-                        if (oldStatus != newStatus) {
-                            long lateHours = calculateLateHours(rental, currentTime);
-                            rental.flagLate(newStatus, currentTime, (int) lateHours);
-                            
-                            rentalRepository.save(rental);
-                            totalUpdated++;
-                            
-                            log.debug("Updated rental {} to status: {}, late hours: {}", 
-                                    rental.getId(), newStatus, lateHours);
-
-                            publishEventForStatusChange(rental, newStatus, currentTime);
-                        }
-                    } catch (Exception e) {
-                        log.error("Error processing rental {}: {}", rental.getId(), e.getMessage(), e);
-                    }
-                }
-
-                pageNumber++;
-            } while (overdueRentalsPage.hasNext());
-
-            log.info("Late return detection completed. Processed: {}, Updated: {}", 
-                    totalProcessed, totalUpdated);
-            
-        } catch (Exception e) {
-            log.error("Error during late return detection: {}", e.getMessage(), e);
-            throw e;
-        }
+    public LateReturnDetectionServiceImpl(
+            Clock clock,
+            RentalRepository rentalRepository,
+            PenaltyConfig penaltyConfig,
+            PenaltyCalculationService penaltyCalculationService,
+            ApplicationEventPublisher eventPublisher,
+            PlatformTransactionManager transactionManager) {
+        this.clock = clock;
+        this.rentalRepository = rentalRepository;
+        this.penaltyConfig = penaltyConfig;
+        this.penaltyCalculationService = penaltyCalculationService;
+        this.eventPublisher = eventPublisher;
+        this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
+    @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void detectLateReturns() {
+        log.info("Starting late return detection process");
+
+        LocalDate currentDate = LocalDate.now(clock);
+        LocalDateTime currentTime = LocalDateTime.now(clock);
+        List<Long> overdueIds = rentalRepository.findOverdueRentalIds(currentDate);
+        int totalUpdated = 0;
+
+        for (Long rentalId : overdueIds) {
+            try {
+                Boolean updated = transactionTemplate.execute(status -> flagIfStatusChanged(rentalId, currentDate, currentTime));
+                if (Boolean.TRUE.equals(updated)) {
+                    totalUpdated++;
+                }
+            } catch (RuntimeException e) {
+                log.error("Error processing rental {}: {}", rentalId, e.getMessage(), e);
+            }
+        }
+
+        log.info("Late return detection completed. Processed: {}, Updated: {}", overdueIds.size(), totalUpdated);
+    }
+
+    private boolean flagIfStatusChanged(Long rentalId, LocalDate currentDate, LocalDateTime currentTime) {
+        Rental rental = rentalRepository.findByIdForUpdate(rentalId).orElse(null);
+        if (rental == null || rental.getStatus() != RentalStatus.IN_USE || !rental.getEndDate().isBefore(currentDate)) {
+            return false;
+        }
+        LateReturnStatus oldStatus = rental.getLateReturnStatus();
+        LateReturnStatus newStatus = calculateLateStatus(rental, currentTime);
+        if (oldStatus == newStatus) {
+            return false;
+        }
+        long lateHours = calculateLateHours(rental, currentTime);
+        rental.flagLate(newStatus, currentTime, (int) lateHours);
+        rentalRepository.save(rental);
+
+        log.debug("Updated rental {} to status: {}, late hours: {}", rental.getId(), newStatus, lateHours);
+
+        publishEventForStatusChange(rental, newStatus, currentTime);
+        return true;
+    }
     @Override
     public LateReturnStatus calculateLateStatus(Rental rental, LocalDateTime currentTime) {
         if (rental == null || rental.getEndDate() == null) {

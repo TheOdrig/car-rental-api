@@ -12,5 +12,5 @@ public interface PenaltyPaymentService {
 
     PaymentResult chargePenalty(Long paymentId, Long userId);
 
-    void handleFailedPenaltyPayment(Long paymentId, Long rentalId, String userEmail, String failureReason);
+    void handleFailedPenaltyPayment(PaymentDto payment, String failureReason);
 }

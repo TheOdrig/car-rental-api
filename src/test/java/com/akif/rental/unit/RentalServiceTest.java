@@ -567,6 +567,64 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should refund the paid amount minus the days used repriced as a short rental")
+        void shouldRepriceDaysUsedInsteadOfProratingTheDiscountedTotal() {
+            testRental.confirm(null);
+            testRental.pickUp(null);
+            LocalDate today = LocalDate.now(clock);
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", today.minusDays(2));
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "endDate", today.plusDays(27));
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "days", 30);
+            PaymentDto captured = new PaymentDto(1L, 1L, testUser.email(), testCar.licensePlate(),
+                    new BigDecimal("12750.00"), testRental.getCurrency(), PaymentStatus.CAPTURED, "CARD",
+                    "TXN-123", null, null, null);
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
+            when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
+            when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(captured));
+            when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any())).thenReturn(
+                    PricingResult.builder().basePrice(new BigDecimal("500.00")).rentalDays(3)
+                            .appliedModifiers(Collections.emptyList()).combinedMultiplier(BigDecimal.ONE)
+                            .finalPrice(new BigDecimal("1500.00")).build());
+            when(paymentService.refundPayment(anyLong(), any(BigDecimal.class), any()))
+                    .thenReturn(new PaymentResult(true, "re_1", "Refunded"));
+
+            rentalService.earlyReturnRental(1L, null);
+
+            verify(dynamicPricingService).calculatePrice(
+                    org.mockito.ArgumentMatchers.eq(testCar.id()), org.mockito.ArgumentMatchers.eq(today.minusDays(2)),
+                    org.mockito.ArgumentMatchers.eq(today), any());
+            ArgumentCaptor<BigDecimal> amount = ArgumentCaptor.forClass(BigDecimal.class);
+            verify(paymentService).refundPayment(anyLong(), amount.capture(), any());
+            assertThat(amount.getValue()).isEqualByComparingTo("11250.00");
+        }
+
+        @Test
+        @DisplayName("Should refund nothing when the days used cost at least what was paid")
+        void shouldFloorTheRefundAtZero() {
+            testRental.confirm(null);
+            testRental.pickUp(null);
+            LocalDate today = LocalDate.now(clock);
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", today.minusDays(1));
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "endDate", today.plusDays(3));
+            PaymentDto captured = new PaymentDto(1L, 1L, testUser.email(), testCar.licensePlate(),
+                    new BigDecimal("1000.00"), testRental.getCurrency(), PaymentStatus.CAPTURED, "CARD",
+                    "TXN-123", null, null, null);
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
+            when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
+            when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(captured));
+            when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any())).thenReturn(
+                    PricingResult.builder().basePrice(new BigDecimal("500.00")).rentalDays(2)
+                            .appliedModifiers(Collections.emptyList()).combinedMultiplier(BigDecimal.ONE)
+                            .finalPrice(new BigDecimal("1200.00")).build());
+
+            rentalService.earlyReturnRental(1L, null);
+
+            verify(paymentService, never()).refundPayment(anyLong(), any(), any());
+        }
+
+        @Test
         @DisplayName("Should successfully process return")
         void shouldSuccessfullyProcessReturn() {
             testRental.confirm(null);

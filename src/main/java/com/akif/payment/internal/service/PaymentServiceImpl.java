@@ -372,12 +372,35 @@ class PaymentServiceImpl implements PaymentService {
     public PaymentResult chargePayment(Long paymentId) {
         ChargePlan plan = isolated().execute(status -> {
             Payment payment = requirePaymentForUpdate(paymentId);
+            if (payment.getKind() == PaymentKind.PENALTY
+                    && paymentRepository.existsCapturedPenaltyOtherThan(payment.getRentalId(), payment.getId())) {
+                payment.cancel();
+                payment.close();
+                paymentRepository.save(payment);
+                return ChargePlan.done(PaymentResult.failure("A penalty of this rental was already collected"));
+            }
             Optional<Payment> base = paymentRepository
                     .findByRentalIdAndKindAndIsDeletedFalse(payment.getRentalId(), PaymentKind.RENTAL);
             return planCharge(payment, base.orElse(null),
                     "Penalty for rental #" + payment.getRentalId());
         });
         return executeCharge(plan);
+    }
+
+    @Override
+    @Transactional
+    public int closeOutstandingPenaltyPayments(Long rentalId) {
+        int closed = 0;
+        for (Payment payment : paymentRepository.findOpenPenaltyPaymentsForUpdate(rentalId)) {
+            payment.cancel();
+            payment.close();
+            paymentRepository.save(payment);
+            closed++;
+        }
+        if (closed > 0) {
+            log.info("Closed {} outstanding penalty payment(s) of rental {}", closed, rentalId);
+        }
+        return closed;
     }
 
     @Override
@@ -449,7 +472,7 @@ class PaymentServiceImpl implements PaymentService {
                 description);
         String key = payment.getKind() == PaymentKind.DAMAGE
                 ? keys.forDamageCharge(payment.getReferenceId(), payment.getIntentAttempt())
-                : keys.forPenaltyCharge(payment.getRentalId(), payment.getIntentAttempt());
+                : keys.forPenaltyCharge(payment.getRentalId(), payment.getId(), payment.getIntentAttempt());
         return new ChargePlan(null, payment.getId(), command, key, base.getStripeCustomerId(),
                 base.getStripePaymentMethodId());
     }

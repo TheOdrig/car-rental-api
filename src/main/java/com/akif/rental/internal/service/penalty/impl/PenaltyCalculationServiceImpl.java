@@ -50,7 +50,7 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
         }
 
         int lateHours = (int) Math.ceil(minutesAfterGrace / 60.0);
-        int lateDays = lateHours / 24;
+        int lateDays = (lateHours + 23) / 24;
 
         LateReturnStatus status;
         if (lateHours >= penaltyConfig.getSeverelyLateThresholdHours()) {

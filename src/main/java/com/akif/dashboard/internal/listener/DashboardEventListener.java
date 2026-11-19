@@ -1,6 +1,13 @@
 package com.akif.dashboard.internal.listener;
 
+import com.akif.damage.api.DamageChargedEvent;
 import com.akif.damage.api.DamageReportedEvent;
+import com.akif.dashboard.api.AlertSeverity;
+import com.akif.dashboard.api.AlertType;
+import com.akif.dashboard.domain.model.Alert;
+import com.akif.dashboard.internal.repository.AlertRepository;
+import com.akif.payment.api.PenaltyPaymentCapturedEvent;
+import com.akif.rental.api.PenaltyChargeFailedEvent;
 import com.akif.payment.api.PaymentCapturedEvent;
 import com.akif.rental.api.RentalCancelledEvent;
 import com.akif.rental.api.RentalConfirmedEvent;
@@ -21,6 +28,7 @@ public class DashboardEventListener {
     private static final String REVENUE_ANALYTICS_CACHE = "revenueAnalytics";
 
     private final CacheManager cacheManager;
+    private final AlertRepository alertRepository;
 
     @ApplicationModuleListener
     public void handleRentalConfirmed(RentalConfirmedEvent event) {
@@ -45,6 +53,40 @@ public class DashboardEventListener {
                 event.paymentId(), event.rentalId());
         evictCache(REVENUE_ANALYTICS_CACHE);
         evictCache(MONTHLY_METRICS_CACHE);
+    }
+
+    @ApplicationModuleListener
+    public void handlePenaltyCaptured(PenaltyPaymentCapturedEvent event) {
+        evictCache(REVENUE_ANALYTICS_CACHE);
+        evictCache(MONTHLY_METRICS_CACHE);
+    }
+
+    @ApplicationModuleListener
+    public void handleDamageCharged(DamageChargedEvent event) {
+        evictCache(REVENUE_ANALYTICS_CACHE);
+        evictCache(MONTHLY_METRICS_CACHE);
+    }
+
+    @ApplicationModuleListener
+    public void handlePenaltyChargeFailed(PenaltyChargeFailedEvent event) {
+        if (alertRepository.existsByTypeAndReferenceIdAndAcknowledgedFalse(AlertType.FAILED_PAYMENT, event.rentalId())) {
+            return;
+        }
+        String reason = event.reason() != null && event.reason().length() > 300
+                ? event.reason().substring(0, 300)
+                : event.reason();
+        alertRepository.save(Alert.builder()
+                .type(AlertType.FAILED_PAYMENT)
+                .severity(AlertSeverity.HIGH)
+                .title("Late return penalty not collected")
+                .message(String.format(
+                        "The penalty of %s %s for rental #%d could not be charged (%s). Collect it manually or waive it.",
+                        event.amount(), event.currency(), event.rentalId(), reason))
+                .actionUrl("/admin/rentals/" + event.rentalId())
+                .referenceId(event.rentalId())
+                .acknowledged(false)
+                .build());
+        log.info("Created alert for the uncollected penalty of rental {}", event.rentalId());
     }
 
     @ApplicationModuleListener

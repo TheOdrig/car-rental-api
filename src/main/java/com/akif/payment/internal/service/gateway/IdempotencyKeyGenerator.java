@@ -38,8 +38,8 @@ public class IdempotencyKeyGenerator {
         return key(rentalId, paymentId, "cancel", attempt);
     }
 
-    public String forPenaltyCharge(Long rentalId, int attempt) {
-        return String.format("%s:rental-%d:penalty:%d", prefix(), rentalId, attempt);
+    public String forPenaltyCharge(Long rentalId, Long paymentId, int attempt) {
+        return key(rentalId, paymentId, "penalty", attempt);
     }
 
     public String forDamageCharge(Long damageId, int attempt) {

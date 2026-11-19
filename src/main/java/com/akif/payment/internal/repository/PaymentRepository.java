@@ -28,6 +28,24 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             """)
     List<Payment> findCapturedPenaltyPayments(@Param("rentalId") Long rentalId);
 
+    @Query("""
+            SELECT COUNT(p) > 0 FROM Payment p
+            WHERE p.rentalId = :rentalId AND p.id <> :paymentId
+            AND p.kind = com.akif.payment.domain.enums.PaymentKind.PENALTY
+            AND p.status = com.akif.payment.api.PaymentStatus.CAPTURED AND p.isDeleted = false
+            """)
+    boolean existsCapturedPenaltyOtherThan(@Param("rentalId") Long rentalId, @Param("paymentId") Long paymentId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT p FROM Payment p
+            WHERE p.rentalId = :rentalId AND p.kind = com.akif.payment.domain.enums.PaymentKind.PENALTY
+            AND p.status IN (com.akif.payment.api.PaymentStatus.PENDING, com.akif.payment.api.PaymentStatus.FAILED)
+            AND p.closed = false AND p.isDeleted = false
+            ORDER BY p.id
+            """)
+    List<Payment> findOpenPenaltyPaymentsForUpdate(@Param("rentalId") Long rentalId);
+
     Optional<Payment> findByKindAndReferenceIdAndIsDeletedFalse(PaymentKind kind, Long referenceId);
 
     Optional<Payment> findFirstByRentalIdAndKindAndIsDeletedFalseOrderByIdDesc(Long rentalId, PaymentKind kind);

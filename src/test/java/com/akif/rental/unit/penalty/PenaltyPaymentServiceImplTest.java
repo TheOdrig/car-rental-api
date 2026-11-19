@@ -5,7 +5,9 @@ import com.akif.payment.api.PaymentDto;
 import com.akif.payment.api.PaymentResult;
 import com.akif.payment.api.PaymentService;
 import com.akif.payment.api.PaymentStatus;
+import com.akif.rental.api.PenaltyChargeFailedEvent;
 import com.akif.rental.domain.model.Rental;
+import org.springframework.context.ApplicationEventPublisher;
 import com.akif.rental.internal.service.penalty.impl.PenaltyPaymentServiceImpl;
 import com.akif.shared.enums.CurrencyType;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +35,12 @@ class PenaltyPaymentServiceImplTest {
 
     @Mock
     private PaymentService paymentService;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
+    @org.mockito.Spy
+    private java.time.Clock clock = java.time.Clock.systemUTC();
 
     @InjectMocks
     private PenaltyPaymentServiceImpl penaltyPaymentService;
@@ -170,15 +178,21 @@ class PenaltyPaymentServiceImplTest {
     class HandleFailedPaymentTests {
 
         @Test
-        @DisplayName("Should handle failed penalty payment without error")
-        void shouldHandleFailedPenaltyPaymentWithoutError() {
-            penaltyPaymentService.handleFailedPenaltyPayment(
-                    1L,
-                    testRental.getId(),
-                    testRental.getUserEmail(),
-                    "Card declined"
-            );
+        @DisplayName("Should surface a failed penalty payment to the admin through an event")
+        void shouldPublishAnEventForAFailedPenaltyPayment() {
+            PaymentDto failed = new PaymentDto(7L, testRental.getId(), testRental.getUserEmail(), "34ABC123",
+                    new BigDecimal("150.00"), CurrencyType.TRY, PaymentStatus.FAILED, "PENALTY", null, null, null,
+                    "Card declined");
 
+            penaltyPaymentService.handleFailedPenaltyPayment(failed, "Card declined");
+
+            ArgumentCaptor<PenaltyChargeFailedEvent> event = ArgumentCaptor.forClass(PenaltyChargeFailedEvent.class);
+            verify(eventPublisher).publishEvent(event.capture());
+            assertThat(event.getValue().rentalId()).isEqualTo(testRental.getId());
+            assertThat(event.getValue().paymentId()).isEqualTo(7L);
+            assertThat(event.getValue().amount()).isEqualByComparingTo("150.00");
+            assertThat(event.getValue().currency()).isEqualTo(CurrencyType.TRY);
+            assertThat(event.getValue().reason()).isEqualTo("Card declined");
         }
     }
 }
