@@ -33,10 +33,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsernameAndIsDeletedFalse(String username);
 
     @Query(value = """
-                SELECT DISTINCT u.* FROM car_rental.users u
-                LEFT JOIN car_rental.user_roles r ON u.id = r.user_id
+                SELECT u.* FROM car_rental.users u
                 WHERE u.is_deleted = false
-                AND (CAST(:role AS TEXT) IS NULL OR r.role = CAST(:role AS TEXT))
+                AND (CAST(:role AS TEXT) IS NULL OR EXISTS (
+                    SELECT 1 FROM car_rental.user_roles r WHERE r.user_id = u.id AND r.role = CAST(:role AS TEXT)))
                 AND (CAST(:status AS TEXT) IS NULL OR
                     (CAST(:status AS TEXT) = 'ACTIVE' AND u.is_banned = false AND u.enabled = true) OR
                     (CAST(:status AS TEXT) = 'BANNED' AND u.is_banned = true) OR
@@ -44,12 +44,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
                 AND (CAST(:search AS TEXT) IS NULL OR LOWER(u.email) LIKE LOWER('%' || CAST(:search AS TEXT) || '%')
                     OR LOWER(u.first_name) LIKE LOWER('%' || CAST(:search AS TEXT) || '%')
                     OR LOWER(u.last_name) LIKE LOWER('%' || CAST(:search AS TEXT) || '%'))
-                ORDER BY u.create_time DESC
+                ORDER BY u.create_time DESC, u.id DESC
             """, countQuery = """
-                SELECT COUNT(DISTINCT u.id) FROM car_rental.users u
-                LEFT JOIN car_rental.user_roles r ON u.id = r.user_id
+                SELECT COUNT(*) FROM car_rental.users u
                 WHERE u.is_deleted = false
-                AND (CAST(:role AS TEXT) IS NULL OR r.role = CAST(:role AS TEXT))
+                AND (CAST(:role AS TEXT) IS NULL OR EXISTS (
+                    SELECT 1 FROM car_rental.user_roles r WHERE r.user_id = u.id AND r.role = CAST(:role AS TEXT)))
                 AND (CAST(:status AS TEXT) IS NULL OR
                     (CAST(:status AS TEXT) = 'ACTIVE' AND u.is_banned = false AND u.enabled = true) OR
                     (CAST(:status AS TEXT) = 'BANNED' AND u.is_banned = true) OR

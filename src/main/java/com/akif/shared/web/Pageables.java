@@ -14,7 +14,7 @@ public final class Pageables {
             return pageable;
         }
         Sort sort = pageable.getSort();
-        if (sort.getOrderFor("id") != null) {
+        if (sort == null || sort.getOrderFor("id") != null) {
             return pageable;
         }
         Sort.Direction direction = sort.isSorted() ? sort.iterator().next().getDirection() : Sort.Direction.ASC;
