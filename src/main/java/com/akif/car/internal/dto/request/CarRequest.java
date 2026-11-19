@@ -9,7 +9,7 @@ import lombok.Builder;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Builder
+@Builder(toBuilder = true)
 public record CarRequest(
         @NotBlank(message = "licensePlate cannot be blank") @Size(min = 7, max = 11, message = "licensePlate must be 7 and 11 characters") @Pattern(regexp = "^[0-9]{2}[A-Z]{1,3}[0-9]{2,4}$", message = "licensePlate format is invalid") String licensePlate,
         @Size(min = 17, max = 17, message = "VIN number must be exactly 17 characters") @Pattern(regexp = "^[A-HJ-NPR-Z0-9]{17}$", message = "VIN number format is invalid") String vinNumber,
@@ -38,4 +38,35 @@ public record CarRequest(
         @Size(max = 500, message = "Thumbnail URL cannot exceed 500 characters") @Pattern(regexp = "^(https?://).+$", message = "Thumbnail URL format is invalid") String thumbnailUrl,
         @DecimalMin(value = "1.0", message = "Rating must be at least 1.0") @DecimalMax(value = "5.0", message = "Rating cannot exceed 5.0") @Digits(integer = 1, fraction = 1, message = "Rating must have 1 decimal place") BigDecimal rating
 ) {
+
+    public CarRequest normalized() {
+        return toBuilder()
+                .fuelType(canonical(fuelType))
+                .transmissionType(canonical(transmissionType))
+                .bodyType(canonical(bodyType))
+                .build();
+    }
+
+    private static final java.util.Set<String> ACRONYMS = java.util.Set.of("suv", "mpv", "cvt", "lpg", "ev");
+
+    private static String canonical(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim().replaceAll("\s+", " ");
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        String lower = trimmed.toLowerCase(java.util.Locale.ROOT);
+        if (ACRONYMS.contains(lower)) {
+            return lower.toUpperCase(java.util.Locale.ROOT);
+        }
+        StringBuilder result = new StringBuilder(lower.length());
+        boolean startOfWord = true;
+        for (char c : lower.toCharArray()) {
+            result.append(startOfWord ? Character.toUpperCase(c) : c);
+            startOfWord = !Character.isLetterOrDigit(c);
+        }
+        return result.toString();
+    }
 }

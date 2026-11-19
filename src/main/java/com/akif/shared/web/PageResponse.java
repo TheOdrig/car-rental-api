@@ -14,4 +14,8 @@ public record PageResponse<T>(List<T> content, int page, int size, long totalEle
                 source.getTotalElements(),
                 source.getTotalPages());
     }
+
+    public <R> PageResponse<R> map(java.util.function.Function<? super T, ? extends R> mapper) {
+        return new PageResponse<>(content.stream().<R>map(mapper).toList(), page, size, totalElements, totalPages);
+    }
 }

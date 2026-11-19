@@ -52,6 +52,10 @@ public record CarResponse(
         BigDecimal exchangeRate,
         String rateSource) {
 
+    public CarResponse publicView() {
+        return toBuilder().vinNumber(null).build();
+    }
+
     public CarResponse withConversion(CurrencyType currency, BigDecimal converted, BigDecimal rate, String source) {
         return toBuilder()
                 .displayCurrency(currency)

@@ -7,6 +7,7 @@ import com.akif.car.api.CarStatusType;
 import com.akif.car.domain.Car;
 import com.akif.car.internal.dto.request.CarSearchRequest;
 import com.akif.shared.web.PageResponse;
+import com.akif.shared.web.Pageables;
 import com.akif.car.internal.exception.CarValidationException;
 import com.akif.car.internal.mapper.CarMapper;
 import com.akif.car.internal.repository.CarRepository;
@@ -154,16 +155,16 @@ public class CarQueryService implements CarCatalog {
     @Cacheable(value = CacheConfig.CARS_CACHE, key = "'all:' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort")
     public Page<CarResponse> getAllCars(Pageable pageable) {
         log.debug("Getting all cars with pageable: {}", pageable);
-        Page<CarResponse> result = carRepository.findByIsDeletedFalse(pageable).map(carMapper::toDto);
+        Page<CarResponse> result = carRepository.findByIsDeletedFalse(Pageables.stable(pageable)).map(carMapper::toDto);
         logPagedRetrievalSuccess("cars", result);
         return result;
     }
 
-    @Cacheable(value = CacheConfig.CARS_CACHE, key = "'status:' + #status + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
+    @Cacheable(value = CacheConfig.CARS_CACHE, key = "'status:' + #status + ':' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort")
     public Page<CarResponse> getCarsByStatus(String status, Pageable pageable) {
         log.debug("Getting cars by status: {}", status);
         CarStatusType statusType = parseStatus(status);
-        Page<CarResponse> result = carRepository.findByCarStatusTypeAndIsDeletedFalse(statusType, pageable)
+        Page<CarResponse> result = carRepository.findByCarStatusTypeAndIsDeletedFalse(statusType, Pageables.stable(pageable))
                 .map(carMapper::toDto);
         logPagedRetrievalSuccess("cars", result);
         return result;
@@ -173,31 +174,31 @@ public class CarQueryService implements CarCatalog {
         return carRepository.count();
     }
 
-    @Cacheable(value = CacheConfig.CARS_CACHE, key = "'brand:' + #brand + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
+    @Cacheable(value = CacheConfig.CARS_CACHE, key = "'brand:' + #brand + ':' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort")
     public Page<CarResponse> getCarsByBrand(String brand, Pageable pageable) {
         log.debug("Getting cars by brand: {}", brand);
-        Page<CarResponse> result = carRepository.findByBrandIgnoreCaseAndIsDeletedFalse(brand, pageable)
+        Page<CarResponse> result = carRepository.findByBrandIgnoreCaseAndIsDeletedFalse(brand, Pageables.stable(pageable))
                 .map(carMapper::toDto);
         log.info("Successfully retrieved {} cars with brand: {}", result.getTotalElements(), brand);
         return result;
     }
 
-    @Cacheable(value = CacheConfig.CARS_CACHE, key = "'price:' + #minPrice + ':' + #maxPrice + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
+    @Cacheable(value = CacheConfig.CARS_CACHE, key = "'price:' + #minPrice + ':' + #maxPrice + ':' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort")
     public Page<CarResponse> getCarsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
         log.debug("Getting cars by price range: {} - {}", minPrice, maxPrice);
-        Page<CarResponse> result = carRepository.findByPriceBetweenAndIsDeletedFalse(minPrice, maxPrice, pageable)
+        Page<CarResponse> result = carRepository.findByPriceBetweenAndIsDeletedFalse(minPrice, maxPrice, Pageables.stable(pageable))
                 .map(carMapper::toDto);
         log.info("Successfully retrieved {} cars in price range: {} - {}", result.getTotalElements(), minPrice,
                 maxPrice);
         return result;
     }
 
-    @Cacheable(value = CacheConfig.CARS_CACHE, key = "'new:' + #pageable.pageNumber + ':' + #pageable.pageSize")
+    @Cacheable(value = CacheConfig.CARS_CACHE, key = "'new:' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort")
     public Page<CarResponse> getNewCars(Pageable pageable) {
         log.debug("Getting new cars");
         LocalDate oneYearAgo = LocalDate.now(clock).minusYears(1);
         Page<CarResponse> result = carRepository
-                .findByProductionYearGreaterThanEqualAndIsDeletedFalse(oneYearAgo.getYear(), pageable)
+                .findByProductionYearGreaterThanEqualAndIsDeletedFalse(oneYearAgo.getYear(), Pageables.stable(pageable))
                 .map(carMapper::toDto);
         logPagedRetrievalSuccess("new cars", result);
         return result;
@@ -206,7 +207,7 @@ public class CarQueryService implements CarCatalog {
     @Cacheable(value = CacheConfig.CARS_CACHE, key = "'active:' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort")
     public Page<CarResponse> getAllActiveCars(Pageable pageable) {
         log.debug("Getting all active cars with pageable: {}", pageable);
-        Page<CarResponse> result = carRepository.findByIsDeletedFalse(pageable).map(carMapper::toDto);
+        Page<CarResponse> result = carRepository.findByIsDeletedFalse(Pageables.stable(pageable)).map(carMapper::toDto);
         logPagedRetrievalSuccess("active cars", result);
         return result;
     }
@@ -232,6 +233,38 @@ public class CarQueryService implements CarCatalog {
 
         log.info("Found {} cars matching search criteria", result.getTotalElements());
         return result;
+    }
+
+    public Page<CarResponse> searchForAdmin(String search, String brand, CarStatusType status, Pageable pageable) {
+        Pageable sorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), adminSort(pageable.getSort()));
+        return carRepository.findCarsByCriteria(
+                containsPattern(search), exactPattern(brand), null,
+                null, null, null, null, null, null, null, null, null, null, null, null,
+                null, null, null, status != null ? status.name() : null,
+                sorted).map(carMapper::toDto);
+    }
+
+    public CarResponse getCarForAdmin(Long id) {
+        return carMapper.toDto(carLookup.requireActiveById(id));
+    }
+
+    private static Sort adminSort(Sort requested) {
+        if (requested.isUnsorted()) {
+            return defaultSearchSort();
+        }
+        List<Sort.Order> orders = new java.util.ArrayList<>();
+        for (Sort.Order order : requested) {
+            String column = SEARCH_SORT_COLUMNS.get(order.getProperty());
+            if (column == null) {
+                throw new com.akif.shared.exception.InvalidParameterException(
+                        "Cannot sort by '" + order.getProperty() + "'");
+            }
+            orders.add(new Sort.Order(order.getDirection(), column).nullsLast());
+        }
+        if (orders.stream().noneMatch(order -> order.getProperty().equals("id"))) {
+            orders.add(new Sort.Order(orders.get(0).getDirection(), "id"));
+        }
+        return Sort.by(orders);
     }
 
     @Override

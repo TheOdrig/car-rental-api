@@ -1,5 +1,7 @@
 GET /api/v1/admin/alerts ADMIN
 POST /api/v1/admin/alerts/{id}/acknowledge ADMIN
+GET /api/v1/admin/cars ADMIN
+GET /api/v1/admin/cars/{id} ADMIN
 GET /api/v1/admin/cars/{id}/rentals ADMIN
 POST /api/v1/admin/damages ADMIN
 GET /api/v1/admin/damages/customer/{userId} ADMIN

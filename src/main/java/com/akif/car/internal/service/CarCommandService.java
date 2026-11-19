@@ -35,8 +35,9 @@ public class CarCommandService {
     private final CarLookup carLookup;
 
     @EvictCarCaches
-    public CarResponse createCar(CarRequest carRequest) {
-        log.debug("Creating new car with license plate: {}", carRequest.licensePlate());
+    public CarResponse createCar(CarRequest submitted) {
+        CarRequest carRequest = submitted == null ? null : submitted.normalized();
+        log.debug("Creating new car");
 
         validateCarRequest(carRequest);
         checkLicensePlateUniqueness(carRequest.licensePlate());
@@ -53,7 +54,8 @@ public class CarCommandService {
     }
 
     @EvictCarCaches
-    public CarResponse updateCar(Long id, CarRequest carRequest) {
+    public CarResponse updateCar(Long id, CarRequest submitted) {
+        CarRequest carRequest = submitted == null ? null : submitted.normalized();
         log.debug("Updating car with id: {}", id);
 
         carLookup.validateId(id);
@@ -65,7 +67,8 @@ public class CarCommandService {
             checkLicensePlateUniqueness(carRequest.licensePlate());
         }
 
-        if (!Objects.equals(existingCar.getVinNumber(), carRequest.vinNumber())) {
+        if (StringUtils.hasText(carRequest.vinNumber())
+                && !Objects.equals(existingCar.getVinNumber(), carRequest.vinNumber())) {
             checkVinNumberUniqueness(carRequest.vinNumber());
         }
 
@@ -186,6 +189,9 @@ public class CarCommandService {
     }
 
     private void checkVinNumberUniqueness(String vinNumber) {
+        if (!StringUtils.hasText(vinNumber)) {
+            return;
+        }
         if (carRepository.existsByVinNumber(vinNumber)) {
             throw new CarAlreadyExistsException("Car already exists with vinNumber: " + vinNumber);
         }

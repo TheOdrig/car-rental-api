@@ -53,7 +53,7 @@ public class CarController {
     public ResponseEntity<CarResponse> getCarById(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
-        CarResponse car = withDisplayPrice(carQueryService.getCarById(id), currency);
+        CarResponse car = withDisplayPrice(carQueryService.getCarById(id).publicView(), currency);
         return ResponseEntity.ok(car);
     }
 
@@ -67,7 +67,7 @@ public class CarController {
     })
     public ResponseEntity<CarResponse> getCarByLicensePlate(
             @Parameter(description = "License plate number", required = true) @PathVariable String licensePlate) {
-        CarResponse car = carQueryService.getCarByLicensePlate(licensePlate);
+        CarResponse car = carQueryService.getCarByLicensePlate(licensePlate).publicView();
         return ResponseEntity.ok(car);
     }
 
@@ -79,7 +79,7 @@ public class CarController {
     })
     public ResponseEntity<PageResponse<CarResponse>> searchCars(
             @Valid @ParameterObject CarSearchRequest searchRequest) {
-        PageResponse<CarResponse> response = carQueryService.searchCars(searchRequest);
+        PageResponse<CarResponse> response = carQueryService.searchCars(searchRequest).map(CarResponse::publicView);
         return ResponseEntity.ok(response);
     }
 
@@ -185,7 +185,7 @@ public class CarController {
     public ResponseEntity<PageResponse<CarResponse>> getAllCars(
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
-        Page<CarResponse> cars = carQueryService.getAllCars(pageable);
+        Page<CarResponse> cars = carQueryService.getAllCars(pageable).map(CarResponse::publicView);
         if (currency != null) {
             cars = cars.map(car -> withDisplayPrice(car, currency));
         }
@@ -206,7 +206,7 @@ public class CarController {
             @Parameter(description = "Pagination and sorting. Use ?sort=field,direction (e.g., ?sort=price,asc)") 
             @PageableDefault(size = 20, sort = "createTime", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
-        Page<CarResponse> cars = carQueryService.getAllActiveCars(pageable);
+        Page<CarResponse> cars = carQueryService.getAllActiveCars(pageable).map(CarResponse::publicView);
         if (currency != null) {
             cars = cars.map(car -> withDisplayPrice(car, currency));
         }

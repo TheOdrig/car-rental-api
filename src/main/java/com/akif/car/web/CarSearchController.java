@@ -42,7 +42,7 @@ public class CarSearchController {
     public ResponseEntity<PageResponse<CarResponse>> getCarsByStatus(
             @Parameter(description = "Car status", required = true) @PathVariable String status,
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
-        Page<CarResponse> cars = carQueryService.getCarsByStatus(status, pageable);
+        Page<CarResponse> cars = carQueryService.getCarsByStatus(status, pageable).map(CarResponse::publicView);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
@@ -56,7 +56,7 @@ public class CarSearchController {
     public ResponseEntity<PageResponse<CarResponse>> getCarsByBrand(
             @Parameter(description = "Car brand", required = true) @PathVariable String brand,
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
-        Page<CarResponse> cars = carQueryService.getCarsByBrand(brand, pageable);
+        Page<CarResponse> cars = carQueryService.getCarsByBrand(brand, pageable).map(CarResponse::publicView);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
@@ -71,7 +71,7 @@ public class CarSearchController {
             @Parameter(description = "Minimum price", required = true) @RequestParam BigDecimal minPrice,
             @Parameter(description = "Maximum price", required = true) @RequestParam BigDecimal maxPrice,
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
-        Page<CarResponse> cars = carQueryService.getCarsByPriceRange(minPrice, maxPrice, pageable);
+        Page<CarResponse> cars = carQueryService.getCarsByPriceRange(minPrice, maxPrice, pageable).map(CarResponse::publicView);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
@@ -84,7 +84,7 @@ public class CarSearchController {
     })
     public ResponseEntity<PageResponse<CarResponse>> getNewCars(
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
-        Page<CarResponse> cars = carQueryService.getNewCars(pageable);
+        Page<CarResponse> cars = carQueryService.getNewCars(pageable).map(CarResponse::publicView);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
@@ -103,7 +103,7 @@ public class CarSearchController {
             @Parameter(description = "Status") @RequestParam(required = false) CarStatusType status,
             @Parameter(description = "Page number, zero based") @RequestParam(defaultValue = "0") @Min(0) int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        Page<CarResponse> cars = carQueryService.searchCarsByCriteria(searchTerm, brand, model, minPrice, maxPrice, status, page, size);
+        Page<CarResponse> cars = carQueryService.searchCarsByCriteria(searchTerm, brand, model, minPrice, maxPrice, status, page, size).map(CarResponse::publicView);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
