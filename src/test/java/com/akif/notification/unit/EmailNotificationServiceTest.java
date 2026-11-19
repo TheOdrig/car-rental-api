@@ -6,6 +6,11 @@ import com.akif.notification.domain.EmailType;
 import com.akif.notification.internal.dto.EmailMessage;
 import com.akif.notification.internal.exception.EmailSendException;
 import com.akif.notification.internal.service.EmailNotificationServiceImpl;
+import com.akif.notification.internal.service.AccountEmailNotifier;
+import com.akif.notification.internal.service.DamageEmailNotifier;
+import com.akif.notification.internal.service.LateReturnEmailNotifier;
+import com.akif.notification.internal.service.PaymentEmailNotifier;
+import com.akif.notification.internal.service.RentalEmailNotifier;
 import com.akif.notification.internal.service.email.EmailSender;
 import com.akif.notification.internal.service.email.EmailTemplateService;
 import com.akif.payment.api.PaymentCapturedEvent;
@@ -47,8 +52,17 @@ class EmailNotificationServiceTest {
     @Spy
     private Clock clock = Clock.systemDefaultZone();
 
-    @InjectMocks
     private EmailNotificationServiceImpl emailNotificationService;
+
+    @BeforeEach
+    void assemble() {
+        emailNotificationService = new EmailNotificationServiceImpl(
+                new RentalEmailNotifier(clock, templateService, emailSender),
+                new LateReturnEmailNotifier(clock, templateService, emailSender),
+                new DamageEmailNotifier(clock, templateService, emailSender),
+                new PaymentEmailNotifier(clock, templateService, emailSender),
+                new AccountEmailNotifier(clock, templateService, emailSender));
+    }
 
     @Nested
     @DisplayName("Rental Confirmation Email")
