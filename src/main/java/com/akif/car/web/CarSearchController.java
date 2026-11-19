@@ -2,6 +2,7 @@ package com.akif.car.web;
 
 import com.akif.shared.web.AllowedSort;
 import com.akif.car.api.CarResponse;
+import com.akif.car.api.PublicCarResponse;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.internal.service.CarQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,10 +40,10 @@ public class CarSearchController {
             @ApiResponse(responseCode = "200", description = "Cars retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid status or pagination parameters")
     })
-    public ResponseEntity<PageResponse<CarResponse>> getCarsByStatus(
+    public ResponseEntity<PageResponse<PublicCarResponse>> getCarsByStatus(
             @Parameter(description = "Car status", required = true) @PathVariable String status,
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
-        Page<CarResponse> cars = carQueryService.getCarsByStatus(status, pageable).map(CarResponse::publicView);
+        Page<PublicCarResponse> cars = carQueryService.getCarsByStatus(status, pageable).map(CarResponse::publicView);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
@@ -53,10 +54,10 @@ public class CarSearchController {
             @ApiResponse(responseCode = "200", description = "Cars retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid brand or pagination parameters")
     })
-    public ResponseEntity<PageResponse<CarResponse>> getCarsByBrand(
+    public ResponseEntity<PageResponse<PublicCarResponse>> getCarsByBrand(
             @Parameter(description = "Car brand", required = true) @PathVariable String brand,
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
-        Page<CarResponse> cars = carQueryService.getCarsByBrand(brand, pageable).map(CarResponse::publicView);
+        Page<PublicCarResponse> cars = carQueryService.getCarsByBrand(brand, pageable).map(CarResponse::publicView);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
@@ -67,11 +68,11 @@ public class CarSearchController {
             @ApiResponse(responseCode = "200", description = "Cars retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid price range or pagination parameters")
     })
-    public ResponseEntity<PageResponse<CarResponse>> getCarsByPriceRange(
+    public ResponseEntity<PageResponse<PublicCarResponse>> getCarsByPriceRange(
             @Parameter(description = "Minimum price", required = true) @RequestParam BigDecimal minPrice,
             @Parameter(description = "Maximum price", required = true) @RequestParam BigDecimal maxPrice,
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
-        Page<CarResponse> cars = carQueryService.getCarsByPriceRange(minPrice, maxPrice, pageable).map(CarResponse::publicView);
+        Page<PublicCarResponse> cars = carQueryService.getCarsByPriceRange(minPrice, maxPrice, pageable).map(CarResponse::publicView);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
@@ -82,9 +83,9 @@ public class CarSearchController {
             @ApiResponse(responseCode = "200", description = "New cars retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters")
     })
-    public ResponseEntity<PageResponse<CarResponse>> getNewCars(
+    public ResponseEntity<PageResponse<PublicCarResponse>> getNewCars(
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
-        Page<CarResponse> cars = carQueryService.getNewCars(pageable).map(CarResponse::publicView);
+        Page<PublicCarResponse> cars = carQueryService.getNewCars(pageable).map(CarResponse::publicView);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
@@ -94,7 +95,7 @@ public class CarSearchController {
             @ApiResponse(responseCode = "200", description = "Search completed successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid search criteria")
     })
-    public ResponseEntity<PageResponse<CarResponse>> searchCarsByCriteria(
+    public ResponseEntity<PageResponse<PublicCarResponse>> searchCarsByCriteria(
             @Parameter(description = "Search term") @RequestParam(required = false) String searchTerm,
             @Parameter(description = "Brand") @RequestParam(required = false) String brand,
             @Parameter(description = "Model") @RequestParam(required = false) String model,
@@ -103,7 +104,7 @@ public class CarSearchController {
             @Parameter(description = "Status") @RequestParam(required = false) CarStatusType status,
             @Parameter(description = "Page number, zero based") @RequestParam(defaultValue = "0") @Min(0) int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        Page<CarResponse> cars = carQueryService.searchCarsByCriteria(searchTerm, brand, model, minPrice, maxPrice, status, page, size).map(CarResponse::publicView);
+        Page<PublicCarResponse> cars = carQueryService.searchCarsByCriteria(searchTerm, brand, model, minPrice, maxPrice, status, page, size).map(CarResponse::publicView);
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 

@@ -30,8 +30,7 @@ public class DamageDisputeController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Dispute created"),
             @ApiResponse(responseCode = "400", description = "Invalid status"),
-            @ApiResponse(responseCode = "403", description = "Not owner of rental"),
-            @ApiResponse(responseCode = "404", description = "Damage report not found")
+            @ApiResponse(responseCode = "404", description = "Damage report not found or not owned by the caller")
     })
     public ResponseEntity<DamageDisputeResponse> createDispute(
             @Parameter(description = "Damage ID", required = true)

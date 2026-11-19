@@ -2,6 +2,7 @@ package com.akif.car.web;
 
 import com.akif.shared.web.AllowedSort;
 import com.akif.car.api.CarResponse;
+import com.akif.car.api.PublicCarResponse;
 import com.akif.car.api.FilterOptionsResponse;
 import com.akif.car.internal.dto.request.CarRequest;
 import com.akif.car.internal.dto.request.CarSearchRequest;
@@ -46,14 +47,14 @@ public class CarController {
     @Operation(summary = "Get car by ID", description = "Retrieve a car by its unique identifier with optional currency conversion")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Car found successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarResponse.class))),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = PublicCarResponse.class))),
             @ApiResponse(responseCode = "404", description = "Car not found"),
             @ApiResponse(responseCode = "400", description = "Invalid car ID or currency")
     })
-    public ResponseEntity<CarResponse> getCarById(
+    public ResponseEntity<PublicCarResponse> getCarById(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
-        CarResponse car = withDisplayPrice(carQueryService.getCarById(id).publicView(), currency);
+        PublicCarResponse car = withDisplayPrice(carQueryService.getCarById(id).publicView(), currency);
         return ResponseEntity.ok(car);
     }
 
@@ -61,13 +62,13 @@ public class CarController {
     @Operation(summary = "Get car by license plate", description = "Retrieve a car by its license plate number")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Car found successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarResponse.class))),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = PublicCarResponse.class))),
             @ApiResponse(responseCode = "404", description = "Car not found"),
             @ApiResponse(responseCode = "400", description = "Invalid license plate")
     })
-    public ResponseEntity<CarResponse> getCarByLicensePlate(
+    public ResponseEntity<PublicCarResponse> getCarByLicensePlate(
             @Parameter(description = "License plate number", required = true) @PathVariable String licensePlate) {
-        CarResponse car = carQueryService.getCarByLicensePlate(licensePlate).withoutVin();
+        PublicCarResponse car = carQueryService.getCarByLicensePlate(licensePlate).publicView();
         return ResponseEntity.ok(car);
     }
 
@@ -77,9 +78,9 @@ public class CarController {
             @ApiResponse(responseCode = "200", description = "Cars found successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid search parameters")
     })
-    public ResponseEntity<PageResponse<CarResponse>> searchCars(
+    public ResponseEntity<PageResponse<PublicCarResponse>> searchCars(
             @Valid @ParameterObject CarSearchRequest searchRequest) {
-        PageResponse<CarResponse> response = carQueryService.searchCars(searchRequest).map(CarResponse::publicView);
+        PageResponse<PublicCarResponse> response = carQueryService.searchCars(searchRequest).map(CarResponse::publicView);
         return ResponseEntity.ok(response);
     }
 
@@ -182,10 +183,10 @@ public class CarController {
             @ApiResponse(responseCode = "200", description = "Cars retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters or currency")
     })
-    public ResponseEntity<PageResponse<CarResponse>> getAllCars(
+    public ResponseEntity<PageResponse<PublicCarResponse>> getAllCars(
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
-        Page<CarResponse> cars = carQueryService.getAllCars(pageable).map(CarResponse::publicView);
+        Page<PublicCarResponse> cars = carQueryService.getAllCars(pageable).map(CarResponse::publicView);
         if (currency != null) {
             cars = cars.map(car -> withDisplayPrice(car, currency));
         }
@@ -202,18 +203,18 @@ public class CarController {
             @ApiResponse(responseCode = "200", description = "Active cars retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters, sort field, or currency")
     })
-    public ResponseEntity<PageResponse<CarResponse>> getAllActiveCars(
+    public ResponseEntity<PageResponse<PublicCarResponse>> getAllActiveCars(
             @Parameter(description = "Pagination and sorting. Use ?sort=field,direction (e.g., ?sort=price,asc)") 
             @PageableDefault(size = 20, sort = "createTime", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
-        Page<CarResponse> cars = carQueryService.getAllActiveCars(pageable).map(CarResponse::publicView);
+        Page<PublicCarResponse> cars = carQueryService.getAllActiveCars(pageable).map(CarResponse::publicView);
         if (currency != null) {
             cars = cars.map(car -> withDisplayPrice(car, currency));
         }
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
-    private CarResponse withDisplayPrice(CarResponse car, CurrencyType targetCurrency) {
+    private PublicCarResponse withDisplayPrice(PublicCarResponse car, CurrencyType targetCurrency) {
         DisplayPrice price = DisplayPrice.of(currencyConversionService, car.price(), car.currencyType(), targetCurrency);
         if (price == null) {
             return car;

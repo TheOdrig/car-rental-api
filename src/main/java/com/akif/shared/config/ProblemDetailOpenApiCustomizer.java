@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -63,6 +64,10 @@ public class ProblemDetailOpenApiCustomizer implements OpenApiCustomizer {
         if (hasInput) {
             sorted.computeIfAbsent("400", code -> new ApiResponse().description("Invalid request"));
         }
+        if (acceptsJsonBody(operation)) {
+            sorted.computeIfAbsent("413", code -> new ApiResponse()
+                    .description("JSON request body exceeds the size limit (PAYLOAD_TOO_LARGE)"));
+        }
         if (secured) {
             sorted.computeIfAbsent("401", code -> new ApiResponse().description("Authentication required"));
         }
@@ -89,6 +94,13 @@ public class ProblemDetailOpenApiCustomizer implements OpenApiCustomizer {
         if (!secured) {
             operation.setSecurity(new ArrayList<>());
         }
+    }
+
+    private static boolean acceptsJsonBody(Operation operation) {
+        return operation.getRequestBody() != null
+                && operation.getRequestBody().getContent() != null
+                && operation.getRequestBody().getContent().keySet().stream()
+                        .anyMatch(type -> type.toLowerCase(Locale.ROOT).contains("json"));
     }
 
     private static ApiResponse tooManyRequests() {

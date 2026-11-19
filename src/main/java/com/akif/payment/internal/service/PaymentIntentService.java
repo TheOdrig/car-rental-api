@@ -244,7 +244,7 @@ class PaymentIntentService {
         return new PaymentSummary(
                 payment.getId(),
                 payment.getRentalId(),
-                payment.getStatus().name(),
+                payment.getStatus(),
                 payment.getAmount(),
                 payment.getCurrency(),
                 payment.getRefundedAmount(),

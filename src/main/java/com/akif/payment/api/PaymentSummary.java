@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 public record PaymentSummary(
         Long paymentId,
         Long rentalId,
-        String status,
+        PaymentStatus status,
         BigDecimal amount,
         CurrencyType currency,
         BigDecimal refundedAmount,

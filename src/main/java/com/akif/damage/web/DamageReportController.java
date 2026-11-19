@@ -106,8 +106,7 @@ public class DamageReportController {
     @Operation(summary = "Get photo URL", description = "Get secure URL for a damage photo")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "URL generated"),
-            @ApiResponse(responseCode = "403", description = "Photo belongs to another customer"),
-            @ApiResponse(responseCode = "404", description = "Photo not found")
+            @ApiResponse(responseCode = "404", description = "Photo not found or belongs to another customer")
     })
     public ResponseEntity<String> getPhotoUrl(
             @Parameter(description = "Photo ID", required = true)

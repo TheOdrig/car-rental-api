@@ -148,8 +148,7 @@ public class RentalController {
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Rental cancelled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RentalResponse.class))),
                         @ApiResponse(responseCode = "400", description = "Rental cannot be cancelled in its current status (RENTAL_CANCEL_NOT_ALLOWED)"),
-                        @ApiResponse(responseCode = "403", description = "Access denied"),
-                        @ApiResponse(responseCode = "404", description = "Rental not found")
+                        @ApiResponse(responseCode = "404", description = "Rental not found or not owned by the caller")
         })
         public ResponseEntity<RentalResponse> cancelRental(
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
@@ -169,8 +168,7 @@ public class RentalController {
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Payment intent ready", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PaymentIntentResult.class))),
                         @ApiResponse(responseCode = "400", description = "Rental is not confirmed"),
-                        @ApiResponse(responseCode = "403", description = "Not the rental owner"),
-                        @ApiResponse(responseCode = "404", description = "Rental or payment not found"),
+                        @ApiResponse(responseCode = "404", description = "Rental not found or not owned by the caller"),
                         @ApiResponse(responseCode = "409", description = "Payment already settled")
         })
         public ResponseEntity<PaymentIntentResult> createPaymentIntent(
@@ -184,8 +182,7 @@ public class RentalController {
         @Operation(summary = "Get rental payment status", description = "Returns the payment status of a rental (owner or admin). Pending payments are refreshed from Stripe.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Payment status", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PaymentSummary.class))),
-                        @ApiResponse(responseCode = "403", description = "Access denied"),
-                        @ApiResponse(responseCode = "404", description = "Rental or payment not found")
+                        @ApiResponse(responseCode = "404", description = "Rental not found, not owned by the caller or without a payment")
         })
         public ResponseEntity<PaymentSummary> getRentalPayment(
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
@@ -240,8 +237,7 @@ public class RentalController {
         @Operation(summary = "Get rental by ID", description = "Get rental details with optional currency conversion (user can view own, admin can view any)")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Rental found successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RentalResponse.class))),
-                        @ApiResponse(responseCode = "403", description = "Access denied"),
-                        @ApiResponse(responseCode = "404", description = "Rental not found")
+                        @ApiResponse(responseCode = "404", description = "Rental not found or not owned by the caller")
         })
         public ResponseEntity<RentalResponse> getRentalById(
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
