@@ -144,6 +144,8 @@ class PaymentCommittedTransactionsIntegrationTest {
 
     @AfterEach
     void cleanUp() {
+        org.awaitility.Awaitility.await().atMost(java.time.Duration.ofSeconds(10)).untilAsserted(() -> assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM car_rental.event_publication WHERE completion_date IS NULL", Long.class)).isZero());
         rentalProperties.setPaymentWindowDays(originalWindow);
         jdbcTemplate.update("DELETE FROM car_rental.payment_refunds");
         paymentRepository.deleteAll();

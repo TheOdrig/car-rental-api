@@ -580,7 +580,7 @@ class DashboardE2ETest extends E2ETestBase {
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.dailyRevenue").isArray())
                                         .andExpect(jsonPath("$.monthlyRevenue").isArray())
-                                        .andExpect(jsonPath("$.breakdown").exists());
+                                        .andExpect(jsonPath("$.breakdownByCurrency").exists());
                 }
 
                 @Test
@@ -596,7 +596,7 @@ class DashboardE2ETest extends E2ETestBase {
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.startDate").value(startDate.toString()))
                                         .andExpect(jsonPath("$.endDate").value(endDate.toString()))
-                                        .andExpect(jsonPath("$.totalRevenue").exists())
+                                        .andExpect(jsonPath("$.revenueByCurrency").exists())
                                         .andExpect(jsonPath("$.completedRentals").exists())
                                         .andExpect(jsonPath("$.cancelledRentals").exists())
                                         .andExpect(jsonPath("$.generatedAt").exists());

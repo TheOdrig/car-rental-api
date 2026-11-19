@@ -30,9 +30,15 @@ public final class TestDatabase {
         if (targets == null) {
             return;
         }
-        await().atMost(MAX_WAIT)
-                .pollInterval(POLL_INTERVAL)
-                .ignoreException(DataAccessException.class)
-                .untilAsserted(() -> jdbcTemplate.execute("TRUNCATE TABLE " + targets + " RESTART IDENTITY CASCADE"));
+        await().atMost(MAX_WAIT).pollInterval(POLL_INTERVAL).until(() -> truncated(jdbcTemplate, targets));
+    }
+
+    private static boolean truncated(JdbcTemplate jdbcTemplate, String targets) {
+        try {
+            jdbcTemplate.execute("TRUNCATE TABLE " + targets + " RESTART IDENTITY CASCADE");
+            return true;
+        } catch (DataAccessException e) {
+            return false;
+        }
     }
 }

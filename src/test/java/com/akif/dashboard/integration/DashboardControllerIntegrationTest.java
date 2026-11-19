@@ -285,7 +285,7 @@ class DashboardControllerIntegrationTest {
             mockMvc.perform(get("/api/v1/admin/dashboard/metrics")
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.totalRevenue").exists())
+                    .andExpect(jsonPath("$.revenueByCurrency").exists())
                     .andExpect(jsonPath("$.completedRentals").exists())
                     .andExpect(jsonPath("$.cancelledRentals").exists())
                     .andExpect(jsonPath("$.startDate").exists())
@@ -329,7 +329,7 @@ class DashboardControllerIntegrationTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.dailyRevenue").exists())
                     .andExpect(jsonPath("$.monthlyRevenue").exists())
-                    .andExpect(jsonPath("$.breakdown").exists());
+                    .andExpect(jsonPath("$.breakdownByCurrency").exists());
         }
 
         @Test
