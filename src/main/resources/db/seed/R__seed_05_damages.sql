@@ -146,7 +146,7 @@ INSERT INTO car_rental.damage_reports (
     (SELECT id FROM car_rental.users WHERE email = 'gokhan.erdogan@example.com'),
     'Coffee stain on passenger seat. Customer admitted spill during return inspection.',
     'Passenger seat, center',
-    'MINOR', 'INTERIOR', 'RESOLVED',
+    'MINOR', 'INTERIOR_DAMAGE', 'RESOLVED',
     (SELECT id FROM car_rental.users WHERE email = 'admin@example.com'),
     NOW() - INTERVAL '218 days',
     120.00, 60.00,
@@ -266,7 +266,7 @@ INSERT INTO car_rental.damage_reports (
     (SELECT id FROM car_rental.users WHERE email = 'mehmet.demir@example.com'),
     'Tire puncture and rim damage from pothole. Spare tire used during rental.',
     'Front right wheel',
-    'MODERATE', 'TIRE', 'CHARGED',
+    'MODERATE', 'TIRE_DAMAGE', 'CHARGED',
     (SELECT id FROM car_rental.users WHERE email = 'admin@example.com'),
     NOW() - INTERVAL '28 days',
     480.00, 240.00,
@@ -323,7 +323,7 @@ INSERT INTO car_rental.damage_reports (
     (SELECT id FROM car_rental.users WHERE email = 'serkan.yilmaz@example.com'),
     'Side mirror cracked. Unknown cause, discovered during return inspection.',
     'Driver side mirror',
-    'MODERATE', 'GLASS', 'ASSESSED',
+    'MODERATE', 'GLASS_DAMAGE', 'ASSESSED',
     (SELECT id FROM car_rental.users WHERE email = 'admin@example.com'),
     NOW() - INTERVAL '9 days',
     350.00, 175.00,
@@ -379,7 +379,7 @@ INSERT INTO car_rental.damage_reports (
     (SELECT id FROM car_rental.users WHERE email = 'yusuf.karaca@example.com'),
     'Deep scratch on hood. Appears to be from key or sharp object.',
     'Hood, center',
-    'SEVERE', 'SCRATCH', 'DISPUTED',
+    'MAJOR', 'SCRATCH', 'DISPUTED',
     (SELECT id FROM car_rental.users WHERE email = 'admin@example.com'),
     NOW() - INTERVAL '19 days',
     1200.00, 600.00,
@@ -440,7 +440,7 @@ INSERT INTO car_rental.damage_reports (
     (SELECT id FROM car_rental.users WHERE email = 'pinar.sen@example.com'),
     'Unusual engine noise reported. Customer mentioned rough idle during the rental period.',
     'Engine compartment',
-    'SEVERE', 'MECHANICAL', 'UNDER_ASSESSMENT',
+    'MAJOR', 'MECHANICAL_DAMAGE', 'UNDER_ASSESSMENT',
     (SELECT id FROM car_rental.users WHERE email = 'admin@example.com'),
     NOW() - INTERVAL '2 days'
 )
@@ -484,7 +484,7 @@ INSERT INTO car_rental.damage_reports (
     (SELECT id FROM car_rental.users WHERE email = 'ahmet.yilmaz@example.com'),
     'Small chip in windshield. Customer noticed but did not report during rental.',
     'Windshield, passenger side',
-    'MINOR', 'GLASS', 'REPORTED',
+    'MINOR', 'GLASS_DAMAGE', 'REPORTED',
     (SELECT id FROM car_rental.users WHERE email = 'admin@example.com'),
     NOW() - INTERVAL '6 hours'
 )
@@ -528,7 +528,7 @@ INSERT INTO car_rental.damage_reports (
     (SELECT id FROM car_rental.users WHERE email = 'zeynep.kaya@example.com'),
     'Cigarette burn on rear seat fabric. Customer claims pre-existing.',
     'Rear seat, left side',
-    'MINOR', 'INTERIOR', 'REPORTED',
+    'MINOR', 'INTERIOR_DAMAGE', 'REPORTED',
     (SELECT id FROM car_rental.users WHERE email = 'admin@example.com'),
     NOW() - INTERVAL '2 hours'
 )
