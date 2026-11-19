@@ -74,7 +74,7 @@ public class RentalLifecycleService {
                         rental.getCurrency(),
                         CARD_PAYMENT_METHOD));
 
-        rental.confirm(notes);
+        rental.confirm(notes, Instant.now(clock));
 
         Rental updatedRental = rentalRepository.save(rental);
         RentalResponse result = assembler.toResponse(updatedRental, paymentDto.status());

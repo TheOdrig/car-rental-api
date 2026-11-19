@@ -28,7 +28,7 @@ class RentalLifecycleTest {
     void confirmMovesRequestedRental() {
         Rental rental = rentalIn(RentalStatus.REQUESTED);
 
-        rental.confirm("approved by desk");
+        rental.confirm("approved by desk", java.time.Instant.now());
 
         assertThat(rental.getStatus()).isEqualTo(RentalStatus.CONFIRMED);
         assertThat(rental.getApprovalNotes()).isEqualTo("approved by desk");
@@ -37,7 +37,7 @@ class RentalLifecycleTest {
     @Test
     @DisplayName("confirm is rejected unless the rental is REQUESTED")
     void confirmRejectsOtherStatuses() {
-        assertThatThrownBy(() -> rentalIn(RentalStatus.IN_USE).confirm(null))
+        assertThatThrownBy(() -> rentalIn(RentalStatus.IN_USE).confirm(null, java.time.Instant.now()))
                 .isInstanceOf(InvalidStatusTransitionException.class);
     }
 

@@ -3,6 +3,7 @@ package com.akif.rental.internal.service;
 import com.akif.payment.api.PaymentService;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.rental.api.RentalResponse;
+import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.mapper.RentalMapper;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +21,14 @@ public class RentalAssembler {
 
     private final RentalMapper rentalMapper;
     private final PaymentService paymentService;
+    private final PaymentWindow paymentWindow;
 
     public RentalResponse toResponse(Rental rental) {
         return toResponses(List.of(rental)).get(0);
     }
 
     public RentalResponse toResponse(Rental rental, PaymentStatus paymentStatus) {
-        return rentalMapper.toDto(rental).toBuilder().paymentStatus(paymentStatus).build();
+        return assemble(rental, paymentStatus);
     }
 
     public Page<RentalResponse> toPage(Page<Rental> rentals) {
@@ -40,9 +42,17 @@ public class RentalAssembler {
         Map<Long, PaymentStatus> statuses = paymentService.getRentalPaymentStatuses(
                 rentals.stream().map(Rental::getId).toList());
         return rentals.stream()
-                .map(rental -> rentalMapper.toDto(rental).toBuilder()
-                        .paymentStatus(statuses.get(rental.getId()))
-                        .build())
+                .map(rental -> assemble(rental, statuses.get(rental.getId())))
                 .toList();
+    }
+
+    private RentalResponse assemble(Rental rental, PaymentStatus paymentStatus) {
+        boolean awaitingPayment = rental.getStatus() == RentalStatus.CONFIRMED
+                && paymentStatus != PaymentStatus.AUTHORIZED
+                && paymentStatus != PaymentStatus.CAPTURED;
+        return rentalMapper.toDto(rental).toBuilder()
+                .paymentStatus(paymentStatus)
+                .paymentDueBy(awaitingPayment ? paymentWindow.dueBy(rental.getStartDate(), rental.getConfirmedAt()) : null)
+                .build();
     }
 }

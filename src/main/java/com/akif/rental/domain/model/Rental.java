@@ -88,6 +88,9 @@ public class Rental extends BaseEntity {
     @Column(name = "approval_notes", columnDefinition = "TEXT")
     private String approvalNotes;
 
+    @Column(name = "confirmed_at")
+    private Instant confirmedAt;
+
     @Column(name = "cancellation_reason", columnDefinition = "TEXT")
     private String cancellationReason;
 
@@ -127,9 +130,10 @@ public class Rental extends BaseEntity {
     @Builder.Default
     private Integer damageReportsCount = 0;
 
-    public void confirm(String notes) {
+    public void confirm(String notes, Instant confirmedAtTime) {
         requireTransition(status.canConfirm(), RentalStatus.CONFIRMED);
         this.status = RentalStatus.CONFIRMED;
+        this.confirmedAt = confirmedAtTime;
         this.approvalNotes = notes;
     }
 

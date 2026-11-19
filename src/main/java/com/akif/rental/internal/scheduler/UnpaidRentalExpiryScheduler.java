@@ -8,6 +8,7 @@ import com.akif.rental.api.RentalCancelledEvent;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.repository.RentalRepository;
+import com.akif.rental.internal.service.PaymentWindow;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,11 +27,12 @@ import java.util.Optional;
 @Slf4j
 public class UnpaidRentalExpiryScheduler {
 
-    static final String EXPIRY_REASON = "Payment not completed before the start date";
+    static final String EXPIRY_REASON = "Payment not completed before the payment deadline";
 
     private final Clock clock;
     private final RentalRepository rentalRepository;
     private final PaymentService paymentService;
+    private final PaymentWindow paymentWindow;
     private final ApplicationEventPublisher eventPublisher;
     private final TransactionTemplate transactionTemplate;
 
@@ -38,11 +40,13 @@ public class UnpaidRentalExpiryScheduler {
             Clock clock,
             RentalRepository rentalRepository,
             PaymentService paymentService,
+            PaymentWindow paymentWindow,
             ApplicationEventPublisher eventPublisher,
             PlatformTransactionManager transactionManager) {
         this.clock = clock;
         this.rentalRepository = rentalRepository;
         this.paymentService = paymentService;
+        this.paymentWindow = paymentWindow;
         this.eventPublisher = eventPublisher;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
@@ -74,7 +78,8 @@ public class UnpaidRentalExpiryScheduler {
             return false;
         }
         Rental rental = locked.get();
-        if (rental.getStatus() != RentalStatus.CONFIRMED || rental.getStartDate().isAfter(today)) {
+        if (rental.getStatus() != RentalStatus.CONFIRMED || rental.getStartDate().isAfter(today)
+                || !paymentWindow.isOverdue(rental.getStartDate(), rental.getConfirmedAt())) {
             return false;
         }
         Optional<PaymentDto> payment = paymentService.getPaymentByRentalId(rentalId);

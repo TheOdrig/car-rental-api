@@ -21,10 +21,15 @@ public class RentalProperties {
     private int maxOpenRequestsPerUser = 3;
     private int requestExpiryHours = 24;
     private int paymentWindowDays = 5;
+    private int paymentGraceHours = 12;
     private int noShowDays = 1;
 
     @PostConstruct
     public void validate() {
+        if (paymentGraceHours < 1) {
+            log.warn("Invalid rental.payment-grace-hours: {}. It must be at least 1. Using 1", paymentGraceHours);
+            paymentGraceHours = 1;
+        }
         int latestSafeDay = Math.max(1, STRIPE_HOLD_DAYS - 1 - paymentWindowDays);
         if (noShowDays < 1 || noShowDays > latestSafeDay) {
             int clamped = Math.min(Math.max(noShowDays, 1), latestSafeDay);

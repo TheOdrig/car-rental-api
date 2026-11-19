@@ -2653,6 +2653,10 @@
           "originalPrice" : {
             "type" : "number"
           },
+          "paymentDueBy" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
           "paymentOpensOn" : {
             "format" : "date",
             "type" : "string"

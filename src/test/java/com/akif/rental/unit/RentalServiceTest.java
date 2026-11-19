@@ -123,7 +123,8 @@ class RentalServiceTest {
         RentalRefundService refunds = new RentalRefundService(clock, paymentService, dynamicPricingService, lookups);
         RentalLatePenaltyProcessor penalties = new RentalLatePenaltyProcessor(
                 clock, paymentService, eventPublisher, penaltyCalculationService, penaltyPaymentService);
-        RentalAssembler assembler = new RentalAssembler(rentalMapper, paymentService);
+        RentalAssembler assembler = new RentalAssembler(rentalMapper, paymentService,
+                new PaymentWindow(clock, rentalProperties));
         rentalService = new RentalServiceImpl(
                 new RentalBookingService(clock, rentalRepository, assembler, dynamicPricingService,
                         rentalProperties, lookups),
@@ -417,7 +418,7 @@ class RentalServiceTest {
         @Test
         @DisplayName("pickup is rejected when the car is no longer AVAILABLE")
         void pickupRejectedWhenCarUnavailable() {
-            testRental.confirm(null);
+            testRental.confirm(null, java.time.Instant.now());
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now());
             when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(carCatalog.getCarForBooking(1L)).thenReturn(carWithStatus(CarStatusType.DAMAGED));
@@ -431,7 +432,7 @@ class RentalServiceTest {
         @Test
         @DisplayName("pickup is rejected with a conflict while another rental of the car is in use")
         void pickupRejectedWhenAnotherRentalInUse() {
-            testRental.confirm(null);
+            testRental.confirm(null, java.time.Instant.now());
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now());
             when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(carCatalog.getCarForBooking(1L)).thenReturn(carWithStatus(CarStatusType.AVAILABLE));
@@ -529,7 +530,7 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should successfully process pickup and capture payment")
         void shouldSuccessfullyProcessPickupAndCapturePayment() {
-            testRental.confirm(null);
+            testRental.confirm(null, java.time.Instant.now());
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now());
             PaymentDto paymentDto = createTestPaymentDto();
             PaymentResult captureResult = new PaymentResult(true, "TXN-123", "Captured");
@@ -550,7 +551,7 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should refuse pickup once the no-show window has passed, as the sweep releases the booking")
         void shouldRefusePickupAfterTheNoShowWindow() {
-            testRental.confirm(null);
+            testRental.confirm(null, java.time.Instant.now());
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now().minusDays(1));
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "endDate", LocalDate.now().plusDays(3));
             when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
@@ -566,7 +567,7 @@ class RentalServiceTest {
         @DisplayName("Should allow pickup on a later day when the no-show window is longer")
         void shouldAllowPickupWithinALongerNoShowWindow() {
             rentalProperties.setNoShowDays(3);
-            testRental.confirm(null);
+            testRental.confirm(null, java.time.Instant.now());
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now().minusDays(2));
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "endDate", LocalDate.now().plusDays(3));
             PaymentDto paymentDto = createTestPaymentDto();
@@ -583,7 +584,7 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should refuse pickup before the start date")
         void shouldRefusePickupBeforeStartDate() {
-            testRental.confirm(null);
+            testRental.confirm(null, java.time.Instant.now());
             when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
 
             assertThatThrownBy(() -> rentalService.pickupRental(1L, null))
@@ -598,7 +599,7 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should never refund more than the whole price when the rental has not started yet")
         void shouldRefundAtMostTheWholePriceBeforeStart() {
-            testRental.confirm(null);
+            testRental.confirm(null, java.time.Instant.now());
             testRental.pickUp(null);
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now().plusDays(2));
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "endDate", LocalDate.now().plusDays(7));
@@ -622,7 +623,7 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should refund the paid amount minus the days used repriced as a short rental")
         void shouldRepriceDaysUsedInsteadOfProratingTheDiscountedTotal() {
-            testRental.confirm(null);
+            testRental.confirm(null, java.time.Instant.now());
             testRental.pickUp(null);
             LocalDate today = LocalDate.now(clock);
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", today.minusDays(2));
@@ -669,7 +670,7 @@ class RentalServiceTest {
         }
 
         private void givenThirtyDayRentalThreeDaysIn(LocalDate today) {
-            testRental.confirm(null);
+            testRental.confirm(null, java.time.Instant.now());
             testRental.pickUp(null);
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", today.minusDays(2));
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "endDate", today.plusDays(27));
@@ -721,7 +722,7 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should refund nothing when the days used cost at least what was paid")
         void shouldFloorTheRefundAtZero() {
-            testRental.confirm(null);
+            testRental.confirm(null, java.time.Instant.now());
             testRental.pickUp(null);
             LocalDate today = LocalDate.now(clock);
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", today.minusDays(1));
@@ -747,7 +748,7 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should successfully process return")
         void shouldSuccessfullyProcessReturn() {
-            testRental.confirm(null);
+            testRental.confirm(null, java.time.Instant.now());
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now());
             testRental.pickUp(null);
 

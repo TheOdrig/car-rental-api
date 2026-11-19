@@ -586,7 +586,38 @@ class PaymentCommittedTransactionsIntegrationTest {
         assertThat(paymentRepository.findById(payment.getId()).orElseThrow().getStatus()).isEqualTo(PaymentStatus.CANCELLED);
         List<RentalCancelledEvent> events = eventCaptor.getEventsOfType(RentalCancelledEvent.class);
         assertThat(events).hasSize(1);
-        assertThat(events.get(0).cancellationReason()).contains("Payment not completed before the start date");
+        assertThat(events.get(0).cancellationReason()).contains("Payment not completed before the payment deadline");
+    }
+
+    @Test
+    @DisplayName("a same-day rental approved moments ago keeps its grace period")
+    void sameDayRentalKeepsTheGracePeriod() {
+        Rental rental = rental(LocalDate.now(), LocalDate.now().plusDays(3), RentalStatus.CONFIRMED);
+        rentalPayment(rental, PaymentStatus.PENDING);
+        confirmedHoursAgo(rental, 1);
+
+        int expired = expiryScheduler.expireUnpaidRentals();
+
+        assertThat(expired).isZero();
+        assertThat(rentalRepository.findById(rental.getId()).orElseThrow().getStatus()).isEqualTo(RentalStatus.CONFIRMED);
+    }
+
+    @Test
+    @DisplayName("a same-day rental expires once the grace period after approval has passed")
+    void sameDayRentalExpiresAfterTheGracePeriod() {
+        Rental rental = rental(LocalDate.now(), LocalDate.now().plusDays(3), RentalStatus.CONFIRMED);
+        rentalPayment(rental, PaymentStatus.PENDING);
+        confirmedHoursAgo(rental, rentalProperties.getPaymentGraceHours() + 1);
+
+        int expired = expiryScheduler.expireUnpaidRentals();
+
+        assertThat(expired).isEqualTo(1);
+        assertThat(rentalRepository.findById(rental.getId()).orElseThrow().getStatus()).isEqualTo(RentalStatus.CANCELLED);
+    }
+
+    private void confirmedHoursAgo(Rental rental, long hours) {
+        jdbcTemplate.update("UPDATE car_rental.rentals SET confirmed_at = ? WHERE id = ?",
+                java.sql.Timestamp.from(java.time.Instant.now().minus(java.time.Duration.ofHours(hours))), rental.getId());
     }
 
     @Test

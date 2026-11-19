@@ -6,7 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.mapstruct.Named;
 import org.springframework.stereotype.Component;
 
+import com.akif.shared.time.UtcDates;
+
 import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 
 @Component
@@ -21,6 +25,19 @@ public class PaymentWindow {
     @Named(OPENS_ON)
     public LocalDate opensOn(LocalDate startDate) {
         return startDate == null ? null : startDate.minusDays(properties.getPaymentWindowDays());
+    }
+
+    public Instant dueBy(LocalDate startDate, Instant confirmedAt) {
+        Instant startOfStartDay = UtcDates.startOfDay(startDate);
+        if (confirmedAt == null) {
+            return startOfStartDay;
+        }
+        Instant graceEnds = confirmedAt.plus(Duration.ofHours(properties.getPaymentGraceHours()));
+        return graceEnds.isAfter(startOfStartDay) ? graceEnds : startOfStartDay;
+    }
+
+    public boolean isOverdue(LocalDate startDate, Instant confirmedAt) {
+        return !Instant.now(clock).isBefore(dueBy(startDate, confirmedAt));
     }
 
     public boolean hasOpened(LocalDate startDate) {

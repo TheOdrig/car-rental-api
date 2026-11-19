@@ -225,9 +225,16 @@ class RentalControllerIntegrationTest {
                         mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                                         .header("Authorization", adminToken))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.status").value("CONFIRMED"));
+                                        .andExpect(jsonPath("$.status").value("CONFIRMED"))
+                                        .andExpect(jsonPath("$.paymentStatus").value("PENDING"))
+                                        .andExpect(jsonPath("$.paymentDueBy").exists());
 
                         payRental(rentalId);
+                        mockMvc.perform(get("/api/v1/rentals/{id}", rentalId)
+                                        .header("Authorization", adminToken))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.paymentStatus").value("AUTHORIZED"))
+                                        .andExpect(jsonPath("$.paymentDueBy").doesNotExist());
                         startToday(rentalId);
                         mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
                                         .header("Authorization", adminToken)
