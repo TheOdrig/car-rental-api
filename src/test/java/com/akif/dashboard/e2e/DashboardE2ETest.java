@@ -412,7 +412,7 @@ class DashboardE2ETest extends E2ETestBase {
                         mockMvc.perform(get("/api/v1/rentals/{id}", rentalId)
                                         .header("Authorization", "Bearer " + userToken))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.getDisplayName()));
+                                        .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.name()));
                 }
 
                 @Test

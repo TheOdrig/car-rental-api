@@ -72,7 +72,7 @@ class RentalLifecycleE2ETest extends E2ETestBase {
                             .content(objectMapper.writeValueAsString(rentalRequest)))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.id").exists())
-                    .andExpect(jsonPath("$.status").value(RentalStatus.REQUESTED.getDisplayName()))
+                    .andExpect(jsonPath("$.status").value(RentalStatus.REQUESTED.name()))
                     .andReturn()
                     .getResponse()
                     .getContentAsString();
@@ -85,7 +85,7 @@ class RentalLifecycleE2ETest extends E2ETestBase {
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(rentalId))
-                    .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.getDisplayName()));
+                    .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.name()));
 
             Payment payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
@@ -102,7 +102,7 @@ class RentalLifecycleE2ETest extends E2ETestBase {
                             .content("{}"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(rentalId))
-                    .andExpect(jsonPath("$.status").value(RentalStatus.IN_USE.getDisplayName()));
+                    .andExpect(jsonPath("$.status").value(RentalStatus.IN_USE.name()));
 
             payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
@@ -114,7 +114,7 @@ class RentalLifecycleE2ETest extends E2ETestBase {
                             .content("{}"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(rentalId))
-                    .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.getDisplayName()));
+                    .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.name()));
 
             Long carId = testCar.getId();
             Car updatedCar = carRepository.findById(carId)

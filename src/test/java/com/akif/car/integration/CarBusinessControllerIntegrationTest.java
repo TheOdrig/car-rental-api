@@ -82,7 +82,7 @@ class CarBusinessControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(testCarId))
-                .andExpect(jsonPath("$.carStatusType").value("Maintenance"));
+                .andExpect(jsonPath("$.carStatusType").value("MAINTENANCE"));
     }
 
     @Test
@@ -123,10 +123,10 @@ class CarBusinessControllerIntegrationTest {
     void shouldMoveThroughMaintenance() throws Exception {
         mockMvc.perform(post("/api/v1/cars/business/{id}/maintenance", testCarId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.carStatusType").value("Maintenance"));
+                .andExpect(jsonPath("$.carStatusType").value("MAINTENANCE"));
         mockMvc.perform(post("/api/v1/cars/business/{id}/available", testCarId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.carStatusType").value("Available"));
+                .andExpect(jsonPath("$.carStatusType").value("AVAILABLE"));
     }
 
     @Test

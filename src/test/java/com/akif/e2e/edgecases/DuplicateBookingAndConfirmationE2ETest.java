@@ -137,7 +137,7 @@ class DuplicateBookingAndConfirmationE2ETest extends E2ETestBase {
             mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.status").value("Confirmed"));
+                    .andExpect(jsonPath("$.status").value("CONFIRMED"));
 
             mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))

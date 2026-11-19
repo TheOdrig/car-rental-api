@@ -93,7 +93,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
                             .header("Authorization", "Bearer " + userToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(rentalId))
-                    .andExpect(jsonPath("$.status").value(RentalStatus.CANCELLED.getDisplayName()));
+                    .andExpect(jsonPath("$.status").value(RentalStatus.CANCELLED.name()));
 
             paymentOptional = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL);
             assertThat(paymentOptional).isEmpty();
@@ -126,7 +126,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
             mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.getDisplayName()));
+                    .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.name()));
 
             Payment payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
@@ -143,7 +143,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
                             .header("Authorization", "Bearer " + userToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(rentalId))
-                    .andExpect(jsonPath("$.status").value(RentalStatus.CANCELLED.getDisplayName()));
+                    .andExpect(jsonPath("$.status").value(RentalStatus.CANCELLED.name()));
 
             payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
@@ -212,7 +212,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.status").value(RentalStatus.IN_USE.getDisplayName()));
+                    .andExpect(jsonPath("$.status").value(RentalStatus.IN_USE.name()));
             return rentalId;
         }
 
@@ -270,7 +270,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
             mockMvc.perform(post("/api/v1/rentals/{id}/early-return", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.getDisplayName()));
+                    .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.name()));
 
             Payment payment = paymentOf(rentalId);
             assertThat(payment.refundedTotal()).isEqualByComparingTo("500.00");

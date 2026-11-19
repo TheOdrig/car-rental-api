@@ -119,7 +119,7 @@ class DateOverlapE2ETest extends E2ETestBase {
                             .content(objectMapper.writeValueAsString(secondRentalRequest)))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.id").exists())
-                    .andExpect(jsonPath("$.status").value("Requested"));
+                    .andExpect(jsonPath("$.status").value("REQUESTED"));
         }
     }
 
@@ -162,7 +162,7 @@ class DateOverlapE2ETest extends E2ETestBase {
             mockMvc.perform(post("/api/v1/rentals/{id}/confirm", firstRentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.status").value("Confirmed"));
+                    .andExpect(jsonPath("$.status").value("CONFIRMED"));
         }
     }
 }

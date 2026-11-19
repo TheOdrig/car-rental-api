@@ -160,7 +160,7 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
                         .content(objectMapper.writeValueAsString(returnRequest)))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.getDisplayName()));
+                .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.name()));
 
         rental = rentalRepository.findByIdAndIsDeletedFalse(rentalId)
                 .orElseThrow(() -> new AssertionError("Rental not found: " + rentalId));

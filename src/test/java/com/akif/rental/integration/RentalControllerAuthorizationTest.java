@@ -145,7 +145,7 @@ class RentalControllerAuthorizationTest {
             mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", adminToken))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.status").value("Confirmed"));
+                    .andExpect(jsonPath("$.status").value("CONFIRMED"));
         }
 
         @Test
@@ -158,7 +158,7 @@ class RentalControllerAuthorizationTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"notes\": \"Car picked up\"}"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.status").value("In Use"));
+                    .andExpect(jsonPath("$.status").value("IN_USE"));
         }
 
         @Test
@@ -171,7 +171,7 @@ class RentalControllerAuthorizationTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"notes\": \"Car returned\"}"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.status").value("Returned"));
+                    .andExpect(jsonPath("$.status").value("RETURNED"));
         }
     }
 
@@ -252,7 +252,7 @@ class RentalControllerAuthorizationTest {
             mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                             .header("Authorization", userToken))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.status").value("Cancelled"));
+                    .andExpect(jsonPath("$.status").value("CANCELLED"));
         }
     }
 

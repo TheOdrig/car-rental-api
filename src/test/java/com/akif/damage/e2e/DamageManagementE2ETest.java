@@ -82,7 +82,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                         mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.getDisplayName()));
+                                        .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.name()));
 
                         payRental(rentalId);
                         moveStartToToday(rentalId);
@@ -91,14 +91,14 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{}"))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.status").value(RentalStatus.IN_USE.getDisplayName()));
+                                        .andExpect(jsonPath("$.status").value(RentalStatus.IN_USE.name()));
 
                         mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                                         .header("Authorization", "Bearer " + adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{}"))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.getDisplayName()));
+                                        .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.name()));
 
                         eventCaptor.clear();
 

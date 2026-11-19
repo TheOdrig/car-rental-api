@@ -157,7 +157,7 @@ class RentalControllerIntegrationTest {
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isCreated())
                                         .andExpect(jsonPath("$.id").exists())
-                                        .andExpect(jsonPath("$.status").value("Requested"));
+                                        .andExpect(jsonPath("$.status").value("REQUESTED"));
                 }
 
                 @Test
@@ -213,7 +213,7 @@ class RentalControllerIntegrationTest {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isCreated())
-                                        .andExpect(jsonPath("$.status").value("Requested"))
+                                        .andExpect(jsonPath("$.status").value("REQUESTED"))
                                         .andReturn()
                                         .getResponse()
                                         .getContentAsString();
@@ -223,7 +223,7 @@ class RentalControllerIntegrationTest {
                         mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                                         .header("Authorization", adminToken))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.status").value("Confirmed"));
+                                        .andExpect(jsonPath("$.status").value("CONFIRMED"));
 
                         payRental(rentalId);
                         startToday(rentalId);
@@ -232,14 +232,14 @@ class RentalControllerIntegrationTest {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{\"notes\": \"Car picked up\"}"))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.status").value("In Use"));
+                                        .andExpect(jsonPath("$.status").value("IN_USE"));
 
                         mockMvc.perform(post("/api/v1/rentals/{id}/return", rentalId)
                                         .header("Authorization", adminToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{\"notes\": \"Car returned\"}"))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.status").value("Returned"));
+                                        .andExpect(jsonPath("$.status").value("RETURNED"));
                 }
 
                 @Test
@@ -265,7 +265,7 @@ class RentalControllerIntegrationTest {
                         mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                                         .header("Authorization", userToken))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.status").value("Cancelled"));
+                                        .andExpect(jsonPath("$.status").value("CANCELLED"));
                 }
 
                 @Test
@@ -295,7 +295,7 @@ class RentalControllerIntegrationTest {
                         mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                                         .header("Authorization", userToken))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.status").value("Cancelled"));
+                                        .andExpect(jsonPath("$.status").value("CANCELLED"));
                 }
         }
 
