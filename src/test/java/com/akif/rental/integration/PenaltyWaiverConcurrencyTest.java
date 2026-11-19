@@ -100,7 +100,7 @@ class PenaltyWaiverConcurrencyTest {
 
             assertThatThrownBy(() -> waiverService.waivePenalty(rentalId, new BigDecimal("60.00"), "goodwill", 1L))
                     .isInstanceOf(PenaltyWaiverException.class)
-                    .hasMessageContaining("cannot exceed penalty amount");
+                    .hasMessageContaining("cannot exceed the outstanding penalty");
 
             concurrentWaiver.get(10, TimeUnit.SECONDS);
             assertThat(rentalRepository.findById(rentalId).orElseThrow().getPenaltyAmount()).isEqualByComparingTo("40.00");

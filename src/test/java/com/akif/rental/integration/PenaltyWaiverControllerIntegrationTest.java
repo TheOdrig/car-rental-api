@@ -227,6 +227,47 @@ class PenaltyWaiverControllerIntegrationTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
+    @DisplayName("POST /api/v1/admin/rentals/{id}/penalty/waive - Should reject an amount above the outstanding penalty with a field error")
+    void shouldRejectAmountAboveOutstandingPenalty() throws Exception {
+        mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", lateRental.getId())
+                        .with(admin()).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new PenaltyWaiverRequest(
+                                new BigDecimal("1500.01"), "Waiver above the penalty amount", false))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("PENALTY_WAIVER_ERROR"))
+                .andExpect(jsonPath("$.errors[0].field").value("waiverAmount"));
+
+        mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", lateRental.getId())
+                        .with(admin()).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new PenaltyWaiverRequest(
+                                new BigDecimal("500"), "First partial waiver of the penalty", false))))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", lateRental.getId())
+                        .with(admin()).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new PenaltyWaiverRequest(
+                                new BigDecimal("1000.01"), "Second waiver above what is left", false))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("waiverAmount"));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    @DisplayName("POST /api/v1/admin/rentals/{id}/penalty/waive - Should require an amount for a partial waiver")
+    void shouldRequireAmountForPartialWaiver() throws Exception {
+        mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", lateRental.getId())
+                        .with(admin()).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new PenaltyWaiverRequest(
+                                null, "Partial waiver without an amount", false))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("waiverAmount"));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     @DisplayName("POST /api/v1/admin/rentals/{id}/penalty/waive - Should reject short reason")
     void shouldRejectShortReason() throws Exception {
         PenaltyWaiverRequest request = new PenaltyWaiverRequest(

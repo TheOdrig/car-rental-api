@@ -10,6 +10,7 @@ public abstract class BaseException extends RuntimeException {
     private final String errorMessage;
     private final HttpStatus httpStatus;
     private java.util.Map<String, Object> details = java.util.Map.of();
+    private java.util.List<com.akif.shared.handler.FieldProblem> fieldErrors = java.util.List.of();
 
     protected BaseException(String errorCode, String errorMessage) {
         super(errorMessage);
@@ -37,6 +38,10 @@ public abstract class BaseException extends RuntimeException {
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
         this.httpStatus = httpStatus;
+    }
+
+    protected void setFieldError(String field, String message) {
+        this.fieldErrors = java.util.List.of(new com.akif.shared.handler.FieldProblem(field, message));
     }
 
     protected void setDetails(java.util.Map<String, Object> details) {

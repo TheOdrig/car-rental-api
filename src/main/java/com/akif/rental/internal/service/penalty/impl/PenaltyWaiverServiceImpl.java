@@ -113,9 +113,9 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
 
         if (waiverAmount.compareTo(rental.getPenaltyAmount()) > 0) {
             throw new PenaltyWaiverException(
-                    String.format("Waiver amount (%.2f) cannot exceed penalty amount (%.2f)",
-                            waiverAmount, rental.getPenaltyAmount())
-            );
+                    String.format("Waiver amount (%.2f) cannot exceed the outstanding penalty (%.2f)",
+                            waiverAmount, rental.getPenaltyAmount()),
+                    "waiverAmount");
         }
     }
 
@@ -280,7 +280,7 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
         }
 
         if (waiverAmount == null || waiverAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new PenaltyWaiverException("Waiver amount must be positive");
+            throw new PenaltyWaiverException("Waiver amount must be positive", "waiverAmount");
         }
 
         if (reason == null || reason.trim().isEmpty()) {

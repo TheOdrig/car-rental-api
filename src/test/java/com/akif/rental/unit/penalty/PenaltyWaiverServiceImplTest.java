@@ -209,7 +209,7 @@ class PenaltyWaiverServiceImplTest {
 
             assertThatThrownBy(() -> service.waivePenalty(1L, excessiveWaiver, "Reason", 100L))
                     .isInstanceOf(PenaltyWaiverException.class)
-                    .hasMessageContaining("cannot exceed penalty amount");
+                    .hasMessageContaining("cannot exceed the outstanding penalty");
         }
 
         @Test

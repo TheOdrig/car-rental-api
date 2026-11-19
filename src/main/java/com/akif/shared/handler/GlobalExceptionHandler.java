@@ -75,8 +75,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         } else {
             log.warn("[{}] {}", ex.getErrorCode(), ex.getMessage());
         }
-        ProblemDetail problem = problems.create(ex.getHttpStatus(), ex.getErrorCode(), ex.getMessage(),
-                extractPath(request), ex.getDetails());
+        ProblemDetail problem = ex.getFieldErrors().isEmpty()
+                ? problems.create(ex.getHttpStatus(), ex.getErrorCode(), ex.getMessage(),
+                        extractPath(request), ex.getDetails())
+                : problems.create(ex.getHttpStatus(), ex.getErrorCode(), ex.getMessage(),
+                        extractPath(request), ex.getFieldErrors());
         return respond(problem);
     }
 
