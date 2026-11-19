@@ -98,7 +98,9 @@ class AccountStatusIntegrationTest {
     void bannedUserCannotLogin() throws Exception {
         adminUserService.banUser(user.getId(), "abuse", user.getId());
 
-        assertThat(login().getResponse().getStatus()).isEqualTo(401);
+        MvcResult banned = login();
+        assertThat(banned.getResponse().getStatus()).isEqualTo(403);
+        assertThat(banned.getResponse().getContentAsString()).contains("ACCOUNT_BANNED");
     }
 
     @Test

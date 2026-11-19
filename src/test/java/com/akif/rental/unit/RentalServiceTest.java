@@ -498,7 +498,7 @@ class RentalServiceTest {
             when(userLookup.getUserByUsername("otheruser")).thenReturn(otherUser);
 
             assertThatThrownBy(() -> rentalService.cancelRental(1L, "otheruser", null))
-                    .isInstanceOf(AccessDeniedException.class);
+                    .isInstanceOf(com.akif.rental.internal.exception.RentalNotFoundException.class);
         }
     }
 
@@ -781,7 +781,7 @@ class RentalServiceTest {
             Page<Rental> rentalsPage = new PageImpl<>(List.of(testRental));
 
             when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
-            when(rentalRepository.findByUserIdAndIsDeletedFalse(testUser.id(), pageable)).thenReturn(rentalsPage);
+            when(rentalRepository.findByUserIdAndIsDeletedFalse(testUser.id(), com.akif.shared.web.Pageables.stable(pageable))).thenReturn(rentalsPage);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
 
             Page<RentalResponse> result = rentalService.getMyRentals("testuser", pageable);
@@ -797,7 +797,7 @@ class RentalServiceTest {
             Page<Rental> emptyPage = Page.empty();
 
             when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
-            when(rentalRepository.findByUserIdAndIsDeletedFalse(testUser.id(), pageable)).thenReturn(emptyPage);
+            when(rentalRepository.findByUserIdAndIsDeletedFalse(testUser.id(), com.akif.shared.web.Pageables.stable(pageable))).thenReturn(emptyPage);
 
             Page<RentalResponse> result = rentalService.getMyRentals("testuser", pageable);
 

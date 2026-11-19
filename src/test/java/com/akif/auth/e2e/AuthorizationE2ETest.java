@@ -226,8 +226,8 @@ class AuthorizationE2ETest extends E2ETestBase {
     class CrossUserCancellationTests {
 
         @Test
-        @DisplayName("Should return 403 when user attempts to cancel another user's rental")
-        void shouldReturn403WhenUserCancelsAnotherUsersRental() throws Exception {
+        @DisplayName("Should return 404 when user attempts to cancel another user's rental")
+        void shouldReturn404WhenUserCancelsAnotherUsersRental() throws Exception {
             User testUser1 = TestDataBuilder.createTestUser("user1");
             testUser1 = userRepository.save(testUser1);
             String user1Token = generateUserToken(testUser1);
@@ -244,7 +244,7 @@ class AuthorizationE2ETest extends E2ETestBase {
 
             mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                             .header("Authorization", "Bearer " + user2Token))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isNotFound());
         }
     }
 
@@ -253,8 +253,8 @@ class AuthorizationE2ETest extends E2ETestBase {
     class CrossUserViewTests {
 
         @Test
-        @DisplayName("Should return 403 when user attempts to view another user's rental details")
-        void shouldReturn403WhenUserViewsAnotherUsersRental() throws Exception {
+        @DisplayName("Should return 404 when user attempts to view another user's rental details")
+        void shouldReturn404WhenUserViewsAnotherUsersRental() throws Exception {
             User testUser1 = TestDataBuilder.createTestUser("user1");
             testUser1 = userRepository.save(testUser1);
             String user1Token = generateUserToken(testUser1);
@@ -271,7 +271,7 @@ class AuthorizationE2ETest extends E2ETestBase {
 
             mockMvc.perform(get("/api/v1/rentals/{id}", rentalId)
                             .header("Authorization", "Bearer " + user2Token))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isNotFound());
         }
     }
 }

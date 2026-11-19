@@ -2,6 +2,7 @@ package com.akif.shared.exception;
 
 public enum ErrorCode {
     ACCESS_DENIED,
+    ACCOUNT_BANNED,
     ALERT_NOT_FOUND,
     AUTHENTICATION_FAILED,
     BAD_REQUEST,

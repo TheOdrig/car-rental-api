@@ -143,7 +143,6 @@ class CarNullVinAndRestoreTest {
                     .build();
 
             when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar));
-            when(carRepository.existsByVinNumber(null)).thenReturn(false);
             when(carRepository.save(any(Car.class))).thenReturn(testCar);
             when(carMapper.toDto(any(Car.class))).thenReturn(testCarResponse);
 

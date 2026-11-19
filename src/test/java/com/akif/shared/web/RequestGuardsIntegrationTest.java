@@ -103,6 +103,14 @@ class RequestGuardsIntegrationTest {
     }
 
     @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = "ADMIN")
+    @DisplayName("admin action endpoints accept POSTs without a body or content type")
+    void adminActionsAcceptBodilessPosts() throws Exception {
+        mockMvc.perform(post("/api/v1/admin/damages/999999/charge")).andExpect(status().isNotFound());
+        mockMvc.perform(post("/api/v1/rentals/999999/confirm")).andExpect(status().isNotFound());
+    }
+
+    @Test
     @DisplayName("a data access sort error caused by an unknown property maps to 400")
     void propertyReferenceMapsToBadRequest() {
         PropertyReferenceException cause = new PropertyReferenceException("nope",

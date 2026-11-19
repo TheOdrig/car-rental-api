@@ -499,6 +499,7 @@ class DashboardServiceImplTest {
                 startDate,
                 endDate,
                 totalAmount,
+                com.akif.shared.enums.CurrencyType.TRY,
                 status,
                 lateHours,
                 createdAt);

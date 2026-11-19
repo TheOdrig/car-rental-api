@@ -103,6 +103,12 @@ public class DamageReport extends BaseEntity {
     @Column(name = "currency", length = 10)
     private CurrencyType currency;
 
+    @Column(name = "original_liability", precision = 12, scale = 2)
+    private BigDecimal originalLiability;
+
+    @Column(name = "dispute_refund_amount", precision = 12, scale = 2)
+    private BigDecimal disputeRefundAmount;
+
     @Column(name = "insurance_coverage")
     private Boolean insuranceCoverage;
 
@@ -182,8 +188,12 @@ public class DamageReport extends BaseEntity {
         this.status = DamageStatus.DISPUTED;
     }
 
-    public void resolveDispute(BigDecimal adjustedLiability, BigDecimal adjustedRepairCost, String notes,
-                               Long resolverId, LocalDateTime resolvedTime) {
+    public void resolveDispute(BigDecimal adjustedLiability, BigDecimal adjustedRepairCost, BigDecimal refundAmount,
+                               String notes, Long resolverId, LocalDateTime resolvedTime) {
+        if (this.originalLiability == null) {
+            this.originalLiability = this.customerLiability;
+        }
+        this.disputeRefundAmount = refundAmount;
         this.customerLiability = adjustedLiability;
         this.repairCostEstimate = adjustedRepairCost;
         this.resolutionNotes = notes;

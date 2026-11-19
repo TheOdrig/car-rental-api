@@ -29,5 +29,12 @@ public record DamageReportResponse(
         Boolean insuranceCoverage,
         LocalDateTime reportedAt,
         LocalDateTime assessedAt,
+        String disputeReason,
+        String disputeComments,
+        LocalDateTime disputedAt,
+        BigDecimal originalLiability,
+        BigDecimal refundAmount,
+        String resolutionNotes,
+        LocalDateTime resolvedAt,
         List<DamagePhotoDto> photos
 ){ }

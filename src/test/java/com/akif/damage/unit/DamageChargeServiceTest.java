@@ -252,8 +252,8 @@ class DamageChargeServiceTest {
                     .thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> damageChargeService.chargeDamageById(999L))
-                    .isInstanceOf(DamageAssessmentException.class)
-                    .hasMessageContaining("Damage report not found");
+                    .isInstanceOf(com.akif.damage.internal.exception.DamageReportException.class)
+                    .hasMessageContaining("999");
         }
     }
 

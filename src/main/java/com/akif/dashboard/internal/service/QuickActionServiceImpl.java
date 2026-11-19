@@ -33,11 +33,8 @@ public class QuickActionServiceImpl implements QuickActionService {
     }
 
     @Override
-    public QuickActionResultDto rejectRental(Long rentalId, String reason) {
+    public QuickActionResultDto rejectRental(Long rentalId, String reason, String username) {
         log.info("Processing quick action: reject rental {}", rentalId);
-
-        String username = org.springframework.security.core.context.SecurityContextHolder
-                .getContext().getAuthentication().getName();
 
         RentalResponse response = rentalService.cancelRental(rentalId, username, reason);
         DailySummaryDto updatedSummary = dashboardQueryService.fetchDailySummary();

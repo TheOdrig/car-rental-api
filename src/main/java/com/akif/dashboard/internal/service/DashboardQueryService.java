@@ -271,7 +271,7 @@ public class DashboardQueryService {
         return new PendingItemDto(
                 rental.id(),
                 rental.userSummary() != null ? rental.userSummary().id() : null,
-                rental.userSummary() != null ? rental.userSummary().username() : null,
+                rental.userSummary() != null ? rental.userSummary().displayName() : null,
                 rental.userSummary() != null ? rental.userSummary().email() : null,
                 rental.carSummary() != null ? rental.carSummary().id() : null,
                 rental.carSummary() != null ? rental.carSummary().brand() : null,
@@ -281,6 +281,7 @@ public class DashboardQueryService {
                 rental.startDate(),
                 rental.endDate(),
                 rental.totalPrice(),
+                rental.currency(),
                 rental.status() != null ? rental.status().name() : null,
                 lateHours,
                 rental.createTime());

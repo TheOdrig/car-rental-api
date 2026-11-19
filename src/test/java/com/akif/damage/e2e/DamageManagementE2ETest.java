@@ -541,7 +541,7 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .header("Authorization", "Bearer " + otherUserToken)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(disputeRequest)))
-                                        .andExpect(status().isForbidden());
+                                        .andExpect(status().isNotFound());
 
                         mockMvc.perform(post("/api/v1/damages/{id}/dispute", damageId)
                                         .header("Authorization", "Bearer " + customerToken)

@@ -17,5 +17,6 @@ public interface RentalMapper {
     @Mapping(target = "userSummary.id", source = "userId")
     @Mapping(target = "userSummary.username", source = "userEmail")
     @Mapping(target = "userSummary.email", source = "userEmail")
+    @Mapping(target = "userSummary.fullName", source = "userFullName")
     RentalResponse toDto(Rental rental);
 }

@@ -119,18 +119,10 @@ class QuickActionServiceImplTest {
             String reason = "Insufficient balance";
             RentalResponse cancelledResponse = createRentalResponse(RentalStatus.CANCELLED);
 
-            Authentication auth = org.mockito.Mockito
-                    .mock(Authentication.class);
-            when(auth.getName()).thenReturn("admin");
-            SecurityContext securityContext = org.mockito.Mockito
-                    .mock(SecurityContext.class);
-            when(securityContext.getAuthentication()).thenReturn(auth);
-            SecurityContextHolder.setContext(securityContext);
-
             when(rentalService.cancelRental(eq(rentalId), eq("admin"), eq(reason))).thenReturn(cancelledResponse);
             when(dashboardQueryService.fetchDailySummary()).thenReturn(testSummary);
 
-            QuickActionResultDto result = quickActionService.rejectRental(rentalId, reason);
+            QuickActionResultDto result = quickActionService.rejectRental(rentalId, reason, "admin");
 
             assertThat(result.success()).isTrue();
             assertThat(result.message()).isEqualTo("Rental rejected successfully");

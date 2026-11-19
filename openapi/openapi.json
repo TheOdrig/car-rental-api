@@ -897,6 +897,24 @@
         "required" : [ "amount", "fromCurrency", "toCurrency" ],
         "type" : "object"
       },
+      "CurrencyPenaltyTotals" : {
+        "properties" : {
+          "collectedPenaltyAmount" : {
+            "type" : "number"
+          },
+          "currency" : {
+            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
+            "type" : "string"
+          },
+          "pendingPenaltyAmount" : {
+            "type" : "number"
+          },
+          "totalPenaltyAmount" : {
+            "type" : "number"
+          }
+        },
+        "type" : "object"
+      },
       "DailyRevenueDto" : {
         "properties" : {
           "currency" : {
@@ -1309,6 +1327,16 @@
           "description" : {
             "type" : "string"
           },
+          "disputeComments" : {
+            "type" : "string"
+          },
+          "disputeReason" : {
+            "type" : "string"
+          },
+          "disputedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
           "id" : {
             "format" : "int64",
             "type" : "integer"
@@ -1316,11 +1344,17 @@
           "insuranceCoverage" : {
             "type" : "boolean"
           },
+          "originalLiability" : {
+            "type" : "number"
+          },
           "photos" : {
             "items" : {
               "$ref" : "#/components/schemas/DamagePhotoDto"
             },
             "type" : "array"
+          },
+          "refundAmount" : {
+            "type" : "number"
           },
           "rentalId" : {
             "format" : "int64",
@@ -1330,6 +1364,13 @@
             "type" : "number"
           },
           "reportedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "resolutionNotes" : {
+            "type" : "string"
+          },
+          "resolvedAt" : {
             "format" : "date-time",
             "type" : "string"
           },
@@ -1615,15 +1656,15 @@
             "format" : "double",
             "type" : "number"
           },
-          "collectedPenaltyAmount" : {
-            "type" : "number"
-          },
           "lateReturnPercentage" : {
             "format" : "double",
             "type" : "number"
           },
-          "pendingPenaltyAmount" : {
-            "type" : "number"
+          "penaltiesByCurrency" : {
+            "items" : {
+              "$ref" : "#/components/schemas/CurrencyPenaltyTotals"
+            },
+            "type" : "array"
           },
           "severelyLateCount" : {
             "format" : "int32",
@@ -1632,9 +1673,6 @@
           "totalLateReturns" : {
             "format" : "int32",
             "type" : "integer"
-          },
-          "totalPenaltyAmount" : {
-            "type" : "number"
           }
         },
         "type" : "object"
@@ -2064,6 +2102,10 @@
             "format" : "date-time",
             "type" : "string"
           },
+          "currency" : {
+            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
+            "type" : "string"
+          },
           "customerEmail" : {
             "type" : "string"
           },
@@ -2170,7 +2212,7 @@
         "properties" : {
           "code" : {
             "description" : "Stable machine readable error code",
-            "enum" : [ "ACCESS_DENIED", "ALERT_NOT_FOUND", "AUTHENTICATION_FAILED", "BAD_REQUEST", "CAR_ALREADY_EXISTS", "CAR_DATES_UNAVAILABLE", "CAR_NOT_AVAILABLE", "CAR_NOT_FOUND", "CAR_VALIDATION_FAILED", "CONCURRENT_MODIFICATION", "CONSTRAINT_VIOLATION", "DAMAGE_ASSESSMENT_ERROR", "DAMAGE_DISPUTE_ERROR", "DAMAGE_REPORT_ERROR", "DATA_CONFLICT", "EMAIL_SEND_FAILED", "ENDPOINT_NOT_FOUND", "FILE_UPLOAD_ERROR", "INTERNAL_SERVER_ERROR", "INVALID_JSON", "INVALID_MULTIPART_REQUEST", "INVALID_PARAMETER", "INVALID_PARAMETER_TYPE", "INVALID_PASSWORD", "INVALID_PAYMENT_STATE", "INVALID_RENTAL_STATE", "INVALID_STATUS_TRANSITION", "INVALID_TOKEN", "INVALID_USER_STATE", "METHOD_NOT_ALLOWED", "MISSING_PARAMETER", "NOT_ACCEPTABLE", "OAUTH2_ACCOUNT_ALREADY_LINKED", "OAUTH2_AUTHENTICATION_FAILED", "OAUTH2_AUTHORIZATION_DENIED", "OAUTH2_EMAIL_REQUIRED", "OAUTH2_INVALID_STATE", "OAUTH2_INVALID_TOKEN", "OAUTH2_LOCAL_ACCOUNT_UNVERIFIED", "OAUTH2_PROVIDER_NOT_SUPPORTED", "OAUTH2_PROVIDER_UNAVAILABLE", "OAUTH2_SOCIAL_LOGIN_REQUIRED", "OPEN_RENTAL_REQUEST_LIMIT_EXCEEDED", "PAYLOAD_TOO_LARGE", "PAYMENT_FAILED", "PAYMENT_NOT_AUTHORIZED", "PAYMENT_NOT_FOUND", "PAYMENT_WINDOW_NOT_OPEN", "PENALTY_WAIVER_ERROR", "RATE_LIMIT_EXCEEDED", "RECONCILIATION_ERROR", "RENTAL_CANCEL_NOT_ALLOWED", "RENTAL_NOT_FOUND", "RENTAL_VALIDATION_FAILED", "STRIPE_INTEGRATION_ERROR", "TOKEN_EXPIRED", "UNSUPPORTED_MEDIA_TYPE", "USER_ALREADY_EXISTS", "USER_NOT_FOUND", "VALIDATION_FAILED", "WEBHOOK_PAYLOAD_TOO_LARGE", "WEBHOOK_PROCESSING_FAILED", "WEBHOOK_SIGNATURE_INVALID", "WEBHOOK_SIGNATURE_MISSING" ],
+            "enum" : [ "ACCESS_DENIED", "ACCOUNT_BANNED", "ALERT_NOT_FOUND", "AUTHENTICATION_FAILED", "BAD_REQUEST", "CAR_ALREADY_EXISTS", "CAR_DATES_UNAVAILABLE", "CAR_NOT_AVAILABLE", "CAR_NOT_FOUND", "CAR_VALIDATION_FAILED", "CONCURRENT_MODIFICATION", "CONSTRAINT_VIOLATION", "DAMAGE_ASSESSMENT_ERROR", "DAMAGE_DISPUTE_ERROR", "DAMAGE_REPORT_ERROR", "DATA_CONFLICT", "EMAIL_SEND_FAILED", "ENDPOINT_NOT_FOUND", "FILE_UPLOAD_ERROR", "INTERNAL_SERVER_ERROR", "INVALID_JSON", "INVALID_MULTIPART_REQUEST", "INVALID_PARAMETER", "INVALID_PARAMETER_TYPE", "INVALID_PASSWORD", "INVALID_PAYMENT_STATE", "INVALID_RENTAL_STATE", "INVALID_STATUS_TRANSITION", "INVALID_TOKEN", "INVALID_USER_STATE", "METHOD_NOT_ALLOWED", "MISSING_PARAMETER", "NOT_ACCEPTABLE", "OAUTH2_ACCOUNT_ALREADY_LINKED", "OAUTH2_AUTHENTICATION_FAILED", "OAUTH2_AUTHORIZATION_DENIED", "OAUTH2_EMAIL_REQUIRED", "OAUTH2_INVALID_STATE", "OAUTH2_INVALID_TOKEN", "OAUTH2_LOCAL_ACCOUNT_UNVERIFIED", "OAUTH2_PROVIDER_NOT_SUPPORTED", "OAUTH2_PROVIDER_UNAVAILABLE", "OAUTH2_SOCIAL_LOGIN_REQUIRED", "OPEN_RENTAL_REQUEST_LIMIT_EXCEEDED", "PAYLOAD_TOO_LARGE", "PAYMENT_FAILED", "PAYMENT_NOT_AUTHORIZED", "PAYMENT_NOT_FOUND", "PAYMENT_WINDOW_NOT_OPEN", "PENALTY_WAIVER_ERROR", "RATE_LIMIT_EXCEEDED", "RECONCILIATION_ERROR", "RENTAL_CANCEL_NOT_ALLOWED", "RENTAL_NOT_FOUND", "RENTAL_VALIDATION_FAILED", "STRIPE_INTEGRATION_ERROR", "TOKEN_EXPIRED", "UNSUPPORTED_MEDIA_TYPE", "USER_ALREADY_EXISTS", "USER_NOT_FOUND", "VALIDATION_FAILED", "WEBHOOK_PAYLOAD_TOO_LARGE", "WEBHOOK_PROCESSING_FAILED", "WEBHOOK_SIGNATURE_INVALID", "WEBHOOK_SIGNATURE_MISSING" ],
             "type" : "string"
           },
           "detail" : {
@@ -2735,6 +2777,9 @@
       "UserSummaryResponse" : {
         "properties" : {
           "email" : {
+            "type" : "string"
+          },
+          "fullName" : {
             "type" : "string"
           },
           "id" : {

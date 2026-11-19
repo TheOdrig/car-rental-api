@@ -184,13 +184,13 @@ class PaymentFlowE2ETest extends E2ETestBase {
         }
 
         @Test
-        @DisplayName("is forbidden for a customer who does not own the rental")
-        void otherCustomerForbidden() throws Exception {
+        @DisplayName("is not found for a customer who does not own the rental")
+        void otherCustomerGetsNotFound() throws Exception {
             Long rentalId = confirmedRentalId();
 
             mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
                             .header("Authorization", "Bearer " + otherToken))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isNotFound());
 
             verify(paymentGateway, times(0)).createIntent(any(), anyString());
         }
@@ -270,7 +270,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
                     .andExpect(status().isOk());
             mockMvc.perform(get("/api/v1/rentals/{id}/payment", rentalId)
                             .header("Authorization", "Bearer " + otherToken))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isNotFound());
         }
 
         @Test
@@ -516,6 +516,38 @@ class PaymentFlowE2ETest extends E2ETestBase {
             assertThat(damagePayments).hasSize(1);
             assertThat(damagePayments.get(0).getCurrency()).isEqualTo(rental.getCurrency());
             assertThat(damagePayments.get(0).getAmount()).isEqualByComparingTo("300.00");
+        }
+
+        @Test
+        @DisplayName("supersedes a failed damage payment when the liability changes so a new charge can be made")
+        void failedDamagePaymentIsSupersededOnChange() throws Exception {
+            Long rentalId = confirmedRentalId();
+            payRental(rentalId);
+            pickup(rentalId);
+            Payment failed = paymentRepository.save(Payment.builder()
+                    .rentalId(rentalId)
+                    .kind(PaymentKind.DAMAGE)
+                    .referenceId(88L)
+                    .userEmail("damage@example.com")
+                    .carLicensePlate("34ABC123")
+                    .amount(new BigDecimal("300.00"))
+                    .currency(rentalRepository.findById(rentalId).orElseThrow().getCurrency())
+                    .status(PaymentStatus.FAILED)
+                    .paymentMethod("DAMAGE")
+                    .isDeleted(false)
+                    .build());
+
+            PaymentResult result = paymentService.chargeDamage(rentalId, 88L, new BigDecimal("120.00"), null);
+
+            assertThat(result.success()).isTrue();
+            List<Payment> active = paymentRepository.findAll().stream()
+                    .filter(p -> p.getKind() == PaymentKind.DAMAGE && p.getRentalId().equals(rentalId)
+                            && !p.isDeleted())
+                    .toList();
+            assertThat(active).hasSize(1);
+            assertThat(active.get(0).getId()).isNotEqualTo(failed.getId());
+            assertThat(active.get(0).getAmount()).isEqualByComparingTo("120.00");
+            assertThat(paymentRepository.findById(failed.getId()).orElseThrow().isDeleted()).isTrue();
         }
 
         @Test

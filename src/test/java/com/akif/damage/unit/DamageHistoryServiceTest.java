@@ -157,7 +157,7 @@ class DamageHistoryServiceTest {
         void shouldGetDamagesByVehicleSuccessfully() {
             Page<DamageReport> damagePage = new PageImpl<>(List.of(testDamageReport1, testDamageReport2));
 
-            when(damageReportRepository.findByCarIdAndIsDeletedFalse(TEST_CAR_ID, pageable)).thenReturn(damagePage);
+            when(damageReportRepository.findByCarIdAndIsDeletedFalse(TEST_CAR_ID, com.akif.shared.web.Pageables.stable(pageable))).thenReturn(damagePage);
 
             Page<DamageReportDto> result = damageHistoryService.getDamagesByVehicle(TEST_CAR_ID, pageable);
 
@@ -165,7 +165,7 @@ class DamageHistoryServiceTest {
             assertThat(result.getContent()).hasSize(2);
             assertThat(result.getContent().get(0).carLicensePlate()).isEqualTo(TEST_CAR_LICENSE_PLATE);
 
-            verify(damageReportRepository).findByCarIdAndIsDeletedFalse(TEST_CAR_ID, pageable);
+            verify(damageReportRepository).findByCarIdAndIsDeletedFalse(TEST_CAR_ID, com.akif.shared.web.Pageables.stable(pageable));
         }
 
         @Test
@@ -173,7 +173,7 @@ class DamageHistoryServiceTest {
         void shouldReturnEmptyPageWhenNoDamagesFoundForVehicle() {
             Page<DamageReport> emptyPage = new PageImpl<>(List.of());
 
-            when(damageReportRepository.findByCarIdAndIsDeletedFalse(999L, pageable)).thenReturn(emptyPage);
+            when(damageReportRepository.findByCarIdAndIsDeletedFalse(999L, com.akif.shared.web.Pageables.stable(pageable))).thenReturn(emptyPage);
 
             Page<DamageReportDto> result = damageHistoryService.getDamagesByVehicle(999L, pageable);
 
@@ -186,7 +186,7 @@ class DamageHistoryServiceTest {
         void shouldMapDamageReportToDtoCorrectly() {
             Page<DamageReport> damagePage = new PageImpl<>(List.of(testDamageReport1));
 
-            when(damageReportRepository.findByCarIdAndIsDeletedFalse(TEST_CAR_ID, pageable)).thenReturn(damagePage);
+            when(damageReportRepository.findByCarIdAndIsDeletedFalse(TEST_CAR_ID, com.akif.shared.web.Pageables.stable(pageable))).thenReturn(damagePage);
 
             Page<DamageReportDto> result = damageHistoryService.getDamagesByVehicle(TEST_CAR_ID, pageable);
 
@@ -214,7 +214,7 @@ class DamageHistoryServiceTest {
         void shouldGetDamagesByCustomerSuccessfully() {
             Page<DamageReport> damagePage = new PageImpl<>(List.of(testDamageReport1));
 
-            when(damageReportRepository.findByCustomerUserIdAndIsDeletedFalse(TEST_USER_ID, pageable)).thenReturn(damagePage);
+            when(damageReportRepository.findByCustomerUserIdAndIsDeletedFalse(TEST_USER_ID, com.akif.shared.web.Pageables.stable(pageable))).thenReturn(damagePage);
 
             Page<DamageReportDto> result = damageHistoryService.getDamagesByCustomer(TEST_USER_ID, pageable);
 
@@ -222,7 +222,7 @@ class DamageHistoryServiceTest {
             assertThat(result.getContent()).hasSize(1);
             assertThat(result.getContent().get(0).customerName()).isEqualTo(TEST_USER_NAME);
 
-            verify(damageReportRepository).findByCustomerUserIdAndIsDeletedFalse(TEST_USER_ID, pageable);
+            verify(damageReportRepository).findByCustomerUserIdAndIsDeletedFalse(TEST_USER_ID, com.akif.shared.web.Pageables.stable(pageable));
         }
 
         @Test
@@ -230,7 +230,7 @@ class DamageHistoryServiceTest {
         void shouldReturnEmptyPageWhenNoDamagesFoundForCustomer() {
             Page<DamageReport> emptyPage = new PageImpl<>(List.of());
 
-            when(damageReportRepository.findByCustomerUserIdAndIsDeletedFalse(999L, pageable)).thenReturn(emptyPage);
+            when(damageReportRepository.findByCustomerUserIdAndIsDeletedFalse(999L, com.akif.shared.web.Pageables.stable(pageable))).thenReturn(emptyPage);
 
             Page<DamageReportDto> result = damageHistoryService.getDamagesByCustomer(999L, pageable);
 

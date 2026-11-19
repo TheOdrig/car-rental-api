@@ -503,7 +503,7 @@ class DamageReportServiceTest {
             when(userLookup.getUserByUsername("stranger")).thenReturn(stranger);
 
             assertThatThrownBy(() -> damageReportService.getPhotoUrl(1L, "stranger"))
-                    .isInstanceOf(org.springframework.security.access.AccessDeniedException.class);
+                    .isInstanceOf(com.akif.damage.internal.exception.DamageReportException.class);
 
             verify(fileUploadService, never()).generateSecureUrl(anyString(), anyInt());
         }

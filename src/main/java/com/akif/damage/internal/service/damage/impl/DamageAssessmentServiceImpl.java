@@ -139,13 +139,12 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
     }
 
     private CurrencyType resolveCurrency(DamageReport damageReport, DamageAssessmentRequest request) {
-        if (request.currency() != null) {
-            return request.currency();
+        CurrencyType rentalCurrency = rentalService.getRentalSummaryById(damageReport.getRentalId()).currency();
+        if (request.currency() != null && request.currency() != rentalCurrency) {
+            throw new DamageAssessmentException(
+                    "Damage currency must match the rental currency (" + rentalCurrency + ")");
         }
-        if (damageReport.getCurrency() != null) {
-            return damageReport.getCurrency();
-        }
-        return rentalService.getRentalSummaryById(damageReport.getRentalId()).currency();
+        return rentalCurrency;
     }
 
     @Override

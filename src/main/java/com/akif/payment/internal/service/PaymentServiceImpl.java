@@ -470,30 +470,36 @@ class PaymentServiceImpl implements PaymentService {
             Payment rentalPayment = base.get();
             CurrencyType damageCurrency = currency != null ? currency : rentalPayment.getCurrency();
 
+            java.util.function.Supplier<Payment> newDamagePayment = () -> paymentRepository.save(Payment.builder()
+                    .rentalId(rentalId)
+                    .kind(PaymentKind.DAMAGE)
+                    .referenceId(damageId)
+                    .userEmail(rentalPayment.getUserEmail())
+                    .carLicensePlate(rentalPayment.getCarLicensePlate())
+                    .amount(amount)
+                    .currency(damageCurrency)
+                    .status(PaymentStatus.PENDING)
+                    .paymentMethod("DAMAGE")
+                    .isDeleted(false)
+                    .build());
             Payment damagePayment = paymentRepository
                     .findByKindAndReferenceIdAndIsDeletedFalse(PaymentKind.DAMAGE, damageId)
-                    .orElseGet(() -> paymentRepository.save(Payment.builder()
-                            .rentalId(rentalId)
-                            .kind(PaymentKind.DAMAGE)
-                            .referenceId(damageId)
-                            .userEmail(rentalPayment.getUserEmail())
-                            .carLicensePlate(rentalPayment.getCarLicensePlate())
-                            .amount(amount)
-                            .currency(damageCurrency)
-                            .status(PaymentStatus.PENDING)
-                            .paymentMethod("DAMAGE")
-                            .isDeleted(false)
-                            .build()));
+                    .orElseGet(newDamagePayment);
             Payment locked = requirePaymentForUpdate(damagePayment.getId());
 
             if (locked.getStatus() == PaymentStatus.CAPTURED) {
                 return ChargePlan.done(PaymentResult.success(locked.getTransactionId(), "Damage already charged"));
             }
-            if (locked.getAmount().compareTo(amount) != 0) {
-                return ChargePlan.done(PaymentResult.failure("Damage amount changed after the charge was created"));
-            }
-            if (locked.getCurrency() != damageCurrency) {
-                return ChargePlan.done(PaymentResult.failure("Damage currency changed after the charge was created"));
+            if (locked.getAmount().compareTo(amount) != 0 || locked.getCurrency() != damageCurrency) {
+                if (locked.getStatus() != PaymentStatus.FAILED && locked.getStatus() != PaymentStatus.CANCELLED) {
+                    return ChargePlan.done(PaymentResult.failure(
+                            "Damage amount or currency changed while a charge is in progress"));
+                }
+                locked.cancel();
+                locked.close();
+                locked.softDelete();
+                paymentRepository.saveAndFlush(locked);
+                locked = requirePaymentForUpdate(newDamagePayment.get().getId());
             }
             return planCharge(locked, rentalPayment, "Damage report #" + damageId);
         });

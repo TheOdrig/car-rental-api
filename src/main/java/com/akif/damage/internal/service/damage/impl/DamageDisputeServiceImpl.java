@@ -53,16 +53,16 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
 
         UserDto user = userLookup.getUserByUsername(username);
 
-        if (!damageReport.canBeDisputed()) {
-            throw DamageDisputeException.invalidStatus(damageReport.getStatus().name());
-        }
-
         RentalSummaryDto rental = rentalService.getRentalSummaryById(damageReport.getRentalId());
 
         if (!rental.userId().equals(user.id())) {
             log.warn("User {} attempted to dispute damage {} but is not the rental owner (ownerId={})",
                     user.id(), damageId, rental.userId());
-            throw DamageDisputeException.notOwner();
+            throw DamageReportException.notFound(damageId);
+        }
+
+        if (!damageReport.canBeDisputed()) {
+            throw DamageDisputeException.invalidStatus(damageReport.getStatus().name());
         }
 
         damageReport.dispute(request.reason(), request.comments(), user.id(), LocalDateTime.now(clock));
@@ -100,12 +100,17 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
                 : resolution.adjustedRepairCost().setScale(places, java.math.RoundingMode.HALF_UP);
         BigDecimal refundAmount = BigDecimal.ZERO;
 
+        if (adjustedLiability.compareTo(originalLiability) > 0) {
+            throw new DamageDisputeException(
+                    "Adjusted liability cannot exceed the amount that was charged (" + originalLiability + ")");
+        }
+
         if (adjustedLiability.compareTo(originalLiability) < 0) {
             refundAmount = originalLiability.subtract(adjustedLiability);
             processRefundForAdjustment(damageReport, adjustedLiability);
         }
 
-        damageReport.resolveDispute(adjustedLiability, adjustedRepairCost, resolution.resolutionNotes(),
+        damageReport.resolveDispute(adjustedLiability, adjustedRepairCost, refundAmount, resolution.resolutionNotes(),
                 user.id(), LocalDateTime.now(clock));
         damageReport = damageReportRepository.save(damageReport);
 
@@ -160,7 +165,8 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
                 damageReport.getDisputeReason(),
                 damageReport.getDisputeComments(),
                 damageReport.getResolutionNotes(),
-                damageReport.getCustomerLiability(),
+                damageReport.getOriginalLiability() != null
+                        ? damageReport.getOriginalLiability() : damageReport.getCustomerLiability(),
                 damageReport.getCustomerLiability(),
                 refundAmount,
                 damageReport.getDisputedAt(),

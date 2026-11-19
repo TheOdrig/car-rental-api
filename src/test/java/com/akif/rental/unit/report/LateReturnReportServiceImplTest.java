@@ -244,10 +244,9 @@ class LateReturnReportServiceImplTest {
 
             when(rentalRepository.countLateReturns(anyList(), eq(startDate), eq(endDate))).thenReturn(10L);
             when(rentalRepository.countSeverelyLateReturns(eq(startDate), eq(endDate))).thenReturn(3L);
-            when(rentalRepository.sumTotalPenaltyAmount(anyList(), eq(startDate), eq(endDate)))
-                    .thenReturn(new BigDecimal("1000.00"));
-            when(rentalRepository.sumCollectedPenaltyAmount(anyList(), eq(startDate), eq(endDate)))
-                    .thenReturn(new BigDecimal("600.00"));
+            when(rentalRepository.sumPenaltiesByCurrency(anyList(), eq(startDate), eq(endDate)))
+                    .thenReturn(java.util.Collections.singletonList(
+                            new Object[] {CurrencyType.TRY, new BigDecimal("1000.00"), new BigDecimal("600.00")}));
             when(rentalRepository.averageLateHours(anyList(), eq(startDate), eq(endDate))).thenReturn(12.5);
             when(rentalRepository.countTotalReturns(eq(startDate), eq(endDate))).thenReturn(100L);
 
@@ -255,9 +254,11 @@ class LateReturnReportServiceImplTest {
 
             assertThat(result.totalLateReturns()).isEqualTo(10);
             assertThat(result.severelyLateCount()).isEqualTo(3);
-            assertThat(result.totalPenaltyAmount()).isEqualByComparingTo(new BigDecimal("1000.00"));
-            assertThat(result.collectedPenaltyAmount()).isEqualByComparingTo(new BigDecimal("600.00"));
-            assertThat(result.pendingPenaltyAmount()).isEqualByComparingTo(new BigDecimal("400.00"));
+            assertThat(result.penaltiesByCurrency()).hasSize(1);
+            assertThat(result.penaltiesByCurrency().get(0).currency()).isEqualTo(CurrencyType.TRY);
+            assertThat(result.penaltiesByCurrency().get(0).totalPenaltyAmount()).isEqualByComparingTo(new BigDecimal("1000.00"));
+            assertThat(result.penaltiesByCurrency().get(0).collectedPenaltyAmount()).isEqualByComparingTo(new BigDecimal("600.00"));
+            assertThat(result.penaltiesByCurrency().get(0).pendingPenaltyAmount()).isEqualByComparingTo(new BigDecimal("400.00"));
             assertThat(result.averageLateHours()).isEqualTo(12.5);
             assertThat(result.lateReturnPercentage()).isEqualTo(10.0);
         }
@@ -270,10 +271,9 @@ class LateReturnReportServiceImplTest {
 
             when(rentalRepository.countLateReturns(anyList(), eq(startDate), eq(endDate))).thenReturn(0L);
             when(rentalRepository.countSeverelyLateReturns(eq(startDate), eq(endDate))).thenReturn(0L);
-            when(rentalRepository.sumTotalPenaltyAmount(anyList(), eq(startDate), eq(endDate)))
-                    .thenReturn(BigDecimal.ZERO);
-            when(rentalRepository.sumCollectedPenaltyAmount(anyList(), eq(startDate), eq(endDate)))
-                    .thenReturn(BigDecimal.ZERO);
+            when(rentalRepository.sumPenaltiesByCurrency(anyList(), eq(startDate), eq(endDate)))
+                    .thenReturn(java.util.Collections.singletonList(
+                            new Object[] {CurrencyType.TRY, BigDecimal.ZERO, BigDecimal.ZERO}));
             when(rentalRepository.averageLateHours(anyList(), eq(startDate), eq(endDate))).thenReturn(0.0);
             when(rentalRepository.countTotalReturns(eq(startDate), eq(endDate))).thenReturn(0L);
 
@@ -290,16 +290,15 @@ class LateReturnReportServiceImplTest {
 
             when(rentalRepository.countLateReturns(anyList(), eq(startDate), eq(endDate))).thenReturn(5L);
             when(rentalRepository.countSeverelyLateReturns(eq(startDate), eq(endDate))).thenReturn(2L);
-            when(rentalRepository.sumTotalPenaltyAmount(anyList(), eq(startDate), eq(endDate)))
-                    .thenReturn(new BigDecimal("2000.00"));
-            when(rentalRepository.sumCollectedPenaltyAmount(anyList(), eq(startDate), eq(endDate)))
-                    .thenReturn(new BigDecimal("1500.00"));
+            when(rentalRepository.sumPenaltiesByCurrency(anyList(), eq(startDate), eq(endDate)))
+                    .thenReturn(java.util.Collections.singletonList(
+                            new Object[] {CurrencyType.TRY, new BigDecimal("2000.00"), new BigDecimal("1500.00")}));
             when(rentalRepository.averageLateHours(anyList(), eq(startDate), eq(endDate))).thenReturn(15.0);
             when(rentalRepository.countTotalReturns(eq(startDate), eq(endDate))).thenReturn(50L);
 
             LateReturnStatisticsDto result = service.getStatistics(startDate, endDate);
 
-            assertThat(result.pendingPenaltyAmount()).isEqualByComparingTo(new BigDecimal("500.00"));
+            assertThat(result.penaltiesByCurrency().get(0).pendingPenaltyAmount()).isEqualByComparingTo(new BigDecimal("500.00"));
         }
 
         @Test
@@ -310,10 +309,9 @@ class LateReturnReportServiceImplTest {
 
             when(rentalRepository.countLateReturns(anyList(), eq(startDate), eq(endDate))).thenReturn(7L);
             when(rentalRepository.countSeverelyLateReturns(eq(startDate), eq(endDate))).thenReturn(2L);
-            when(rentalRepository.sumTotalPenaltyAmount(anyList(), eq(startDate), eq(endDate)))
-                    .thenReturn(new BigDecimal("500.00"));
-            when(rentalRepository.sumCollectedPenaltyAmount(anyList(), eq(startDate), eq(endDate)))
-                    .thenReturn(new BigDecimal("300.00"));
+            when(rentalRepository.sumPenaltiesByCurrency(anyList(), eq(startDate), eq(endDate)))
+                    .thenReturn(java.util.Collections.singletonList(
+                            new Object[] {CurrencyType.TRY, new BigDecimal("500.00"), new BigDecimal("300.00")}));
             when(rentalRepository.averageLateHours(anyList(), eq(startDate), eq(endDate))).thenReturn(10.0);
             when(rentalRepository.countTotalReturns(eq(startDate), eq(endDate))).thenReturn(30L);
 
@@ -343,7 +341,7 @@ class LateReturnReportServiceImplTest {
 
             LateReturnReportDto dto = result.getContent().get(0);
             assertThat(dto.rentalId()).isEqualTo(1L);
-            assertThat(dto.customerName()).isEqualTo(TEST_USER_EMAIL);
+            assertThat(dto.customerName()).isEqualTo(TEST_USER_NAME);
             assertThat(dto.customerEmail()).isEqualTo(TEST_USER_EMAIL);
             assertThat(dto.carBrand()).isEqualTo(TEST_CAR_BRAND);
             assertThat(dto.carModel()).isEqualTo(TEST_CAR_MODEL);

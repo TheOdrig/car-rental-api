@@ -67,7 +67,7 @@ public class CarController {
     })
     public ResponseEntity<CarResponse> getCarByLicensePlate(
             @Parameter(description = "License plate number", required = true) @PathVariable String licensePlate) {
-        CarResponse car = carQueryService.getCarByLicensePlate(licensePlate).publicView();
+        CarResponse car = carQueryService.getCarByLicensePlate(licensePlate).withoutVin();
         return ResponseEntity.ok(car);
     }
 

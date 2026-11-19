@@ -334,7 +334,7 @@ class CarCrudAndStatusTest {
 
             Pageable pageable = PageRequest.of(0, 10);
             Page<Car> carPage = new PageImpl<>(List.of(testCar1, testCar2));
-            when(carRepository.findByIsDeletedFalse(pageable)).thenReturn(carPage);
+            when(carRepository.findByIsDeletedFalse(com.akif.shared.web.Pageables.stable(pageable))).thenReturn(carPage);
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
             when(carMapper.toDto(testCar2)).thenReturn(testCarResponse);
 
@@ -344,7 +344,7 @@ class CarCrudAndStatusTest {
             assertThat(result.getContent()).hasSize(2);
             assertThat(result.getTotalElements()).isEqualTo(2);
 
-            verify(carRepository).findByIsDeletedFalse(pageable);
+            verify(carRepository).findByIsDeletedFalse(com.akif.shared.web.Pageables.stable(pageable));
             verify(carMapper, times(2)).toDto(any(Car.class));
         }
 
@@ -354,7 +354,7 @@ class CarCrudAndStatusTest {
 
             Pageable pageable = PageRequest.of(0, 10);
             Page<Car> carPage = new PageImpl<>(List.of(testCar1, testCar2));
-            when(carRepository.findByCarStatusTypeAndIsDeletedFalse(CarStatusType.AVAILABLE, pageable)).thenReturn(carPage);
+            when(carRepository.findByCarStatusTypeAndIsDeletedFalse(CarStatusType.AVAILABLE, com.akif.shared.web.Pageables.stable(pageable))).thenReturn(carPage);
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
             when(carMapper.toDto(testCar2)).thenReturn(testCarResponse);
 
@@ -363,7 +363,7 @@ class CarCrudAndStatusTest {
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(2);
 
-            verify(carRepository).findByCarStatusTypeAndIsDeletedFalse(CarStatusType.AVAILABLE, pageable);
+            verify(carRepository).findByCarStatusTypeAndIsDeletedFalse(CarStatusType.AVAILABLE, com.akif.shared.web.Pageables.stable(pageable));
             verify(carMapper, times(2)).toDto(any(Car.class));
         }
     }

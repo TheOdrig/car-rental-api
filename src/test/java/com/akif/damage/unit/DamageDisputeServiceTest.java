@@ -211,6 +211,7 @@ class DamageDisputeServiceTest {
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserByUsername("customer")).thenReturn(testUser);
+            when(rentalService.getRentalSummaryById(testDamageReport.getRentalId())).thenReturn(testRental);
 
             assertThatThrownBy(() -> damageDisputeService.createDispute(1L, testDisputeRequest, "customer"))
                     .isInstanceOf(DamageDisputeException.class);
@@ -227,7 +228,7 @@ class DamageDisputeServiceTest {
             when(rentalService.getRentalSummaryById(testDamageReport.getRentalId())).thenReturn(testRental);
 
             assertThatThrownBy(() -> damageDisputeService.createDispute(1L, testDisputeRequest, "other"))
-                    .isInstanceOf(DamageDisputeException.class);
+                    .isInstanceOf(com.akif.damage.internal.exception.DamageReportException.class);
         }
 
         @Test
@@ -328,6 +329,39 @@ class DamageDisputeServiceTest {
             verify(damageReportRepository, never()).save(any(DamageReport.class));
             verify(eventPublisher, never()).publishEvent(any(Object.class));
             assertThat(testDamageReport.getStatus()).isEqualTo(DamageStatus.DISPUTED);
+        }
+
+        @Test
+        @DisplayName("Should reject an adjusted liability above the charged amount")
+        void shouldRejectAdjustedLiabilityAboveCharged() {
+            DamageDisputeResolutionDto higher = new DamageDisputeResolutionDto(
+                    new BigDecimal("900.00"),
+                    new BigDecimal("900.00"),
+                    "Raise");
+
+            when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
+            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
+
+            assertThatThrownBy(() -> damageDisputeService.resolveDispute(1L, higher, "admin"))
+                    .isInstanceOf(DamageDisputeException.class)
+                    .hasMessageContaining("cannot exceed");
+            verify(damageReportRepository, never()).save(any(DamageReport.class));
+        }
+
+        @Test
+        @DisplayName("Should keep the original liability after resolving")
+        void shouldKeepOriginalLiability() {
+            when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
+            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(paymentService.refund(anyString(), any(BigDecimal.class), anyString()))
+                    .thenReturn(new PaymentResult(true, "refund_123", "Refund successful"));
+            when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
+
+            DamageDisputeResponse result = damageDisputeService.resolveDispute(1L, testResolutionDto, "admin");
+
+            assertThat(result.originalLiability()).isEqualByComparingTo("500.00");
+            assertThat(result.adjustedLiability()).isEqualByComparingTo("250.00");
+            assertThat(testDamageReport.getOriginalLiability()).isEqualByComparingTo("500.00");
         }
 
         @Test

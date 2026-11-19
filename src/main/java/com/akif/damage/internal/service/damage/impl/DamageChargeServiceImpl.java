@@ -73,7 +73,7 @@ public class DamageChargeServiceImpl implements DamageChargeService {
     public DamageChargeResponse charge(Long damageId) {
         PaymentResult result = chargeDamageById(damageId);
         DamageReport report = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
-                .orElseThrow(() -> new DamageAssessmentException("Damage report not found: " + damageId));
+                .orElseThrow(() -> com.akif.damage.internal.exception.DamageReportException.notFound(damageId));
         return new DamageChargeResponse(
                 report.getId(),
                 report.getStatus(),
@@ -88,7 +88,7 @@ public class DamageChargeServiceImpl implements DamageChargeService {
     @Transactional
     public PaymentResult chargeDamageById(Long damageId) {
         DamageReport damageReport = damageReportRepository.findByIdForUpdate(damageId)
-                .orElseThrow(() -> new DamageAssessmentException("Damage report not found: " + damageId));
+                .orElseThrow(() -> com.akif.damage.internal.exception.DamageReportException.notFound(damageId));
 
         if (!damageReport.canBeCharged()) {
             throw DamageAssessmentException.notChargeable(damageReport.getStatus().name());

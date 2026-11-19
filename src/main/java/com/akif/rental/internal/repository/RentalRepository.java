@@ -148,22 +148,15 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
         long countSeverelyLateReturns(@Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate);
 
-        @Query("SELECT COALESCE(SUM(r.penaltyAmount), 0) FROM Rental r " +
+        @Query("SELECT r.currency, COALESCE(SUM(r.penaltyAmount), 0), " +
+                        "COALESCE(SUM(CASE WHEN r.penaltyPaid = true THEN r.penaltyAmount ELSE 0 END), 0) " +
+                        "FROM Rental r " +
                         "WHERE r.lateReturnStatus IN (:statuses) " +
                         "AND (CAST(:startDate AS java.time.LocalDate) IS NULL OR r.endDate >= :startDate) " +
                         "AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR r.endDate <= :endDate) " +
-                        "AND r.isDeleted = false")
-        BigDecimal sumTotalPenaltyAmount(@Param("statuses") List<LateReturnStatus> statuses,
-                        @Param("startDate") LocalDate startDate,
-                        @Param("endDate") LocalDate endDate);
-
-        @Query("SELECT COALESCE(SUM(r.penaltyAmount), 0) FROM Rental r " +
-                        "WHERE r.lateReturnStatus IN (:statuses) " +
-                        "AND r.penaltyPaid = true " +
-                        "AND (CAST(:startDate AS java.time.LocalDate) IS NULL OR r.endDate >= :startDate) " +
-                        "AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR r.endDate <= :endDate) " +
-                        "AND r.isDeleted = false")
-        BigDecimal sumCollectedPenaltyAmount(@Param("statuses") List<LateReturnStatus> statuses,
+                        "AND r.isDeleted = false " +
+                        "GROUP BY r.currency ORDER BY r.currency")
+        List<Object[]> sumPenaltiesByCurrency(@Param("statuses") List<LateReturnStatus> statuses,
                         @Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate);
 

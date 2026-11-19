@@ -176,7 +176,7 @@ public class AlertServiceImpl implements AlertService {
     @Transactional
     protected void createLateReturnAlert(RentalResponse rental, long hoursLate) {
         String customerName = rental.userSummary() != null 
-                ? rental.userSummary().username() 
+                ? rental.userSummary().displayName() 
                 : "Unknown";
         String carInfo = rental.carSummary() != null
                 ? String.format("%s %s (%s)", 
@@ -210,7 +210,7 @@ public class AlertServiceImpl implements AlertService {
                 .message(String.format(
                         "Fleet availability is at %s%% (%d of %d cars available). Consider reviewing maintenance schedules.",
                         rate.setScale(1, RoundingMode.HALF_UP), available, total))
-                .actionUrl("/admin/dashboard/fleet")
+                .actionUrl("/admin/fleet")
                 .referenceId(0L)
                 .acknowledged(false)
                 .build();
@@ -228,7 +228,7 @@ public class AlertServiceImpl implements AlertService {
                 .message(String.format(
                         "%d damage dispute(s) have been unresolved for more than %d days. Please review and take action.",
                         count, DISPUTE_DAYS_THRESHOLD))
-                .actionUrl("/admin/damage/disputes")
+                .actionUrl("/admin/damages")
                 .referenceId(0L)
                 .acknowledged(false)
                 .build();
@@ -246,7 +246,7 @@ public class AlertServiceImpl implements AlertService {
                 .message(String.format(
                         "%d payment(s) have failed. Review and retry or contact customers.",
                         count))
-                .actionUrl("/admin/payments?status=FAILED")
+                .actionUrl("/admin/rentals")
                 .referenceId(0L)
                 .acknowledged(false)
                 .build();

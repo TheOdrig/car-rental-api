@@ -224,9 +224,10 @@ class LateReturnControllerIntegrationTest {
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.totalLateReturns").value(2))
                 .andExpect(jsonPath("$.severelyLateCount").value(1))
-                .andExpect(jsonPath("$.totalPenaltyAmount").value(6500))
-                .andExpect(jsonPath("$.collectedPenaltyAmount").value(5000))
-                .andExpect(jsonPath("$.pendingPenaltyAmount").value(1500))
+                .andExpect(jsonPath("$.penaltiesByCurrency[0].totalPenaltyAmount").value(6500))
+                .andExpect(jsonPath("$.penaltiesByCurrency[0].collectedPenaltyAmount").value(5000))
+                .andExpect(jsonPath("$.penaltiesByCurrency[0].pendingPenaltyAmount").value(1500))
+                .andExpect(jsonPath("$.penaltiesByCurrency[0].currency").exists())
                 .andExpect(jsonPath("$.averageLateHours").exists())
                 .andExpect(jsonPath("$.lateReturnPercentage").exists());
     }
@@ -244,7 +245,7 @@ class LateReturnControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.totalLateReturns").exists())
-                .andExpect(jsonPath("$.totalPenaltyAmount").exists());
+                .andExpect(jsonPath("$.penaltiesByCurrency").isArray());
     }
 
     @Test

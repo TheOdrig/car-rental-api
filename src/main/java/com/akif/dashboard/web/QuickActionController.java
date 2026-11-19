@@ -55,9 +55,11 @@ public class QuickActionController {
         })
         public ResponseEntity<QuickActionResultDto> rejectRental(
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
-                        @Valid @RequestBody RejectRequest request) {
+                        @Valid @RequestBody RejectRequest request,
+                        org.springframework.security.core.Authentication authentication) {
 
-                QuickActionResultDto result = quickActionService.rejectRental(id, request.reason());
+                QuickActionResultDto result = quickActionService.rejectRental(id, request.reason(),
+                                authentication.getName());
                 return ResponseEntity.ok(result);
         }
 

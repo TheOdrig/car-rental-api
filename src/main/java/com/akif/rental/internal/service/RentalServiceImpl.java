@@ -374,8 +374,7 @@ public class RentalServiceImpl implements RentalService {
         UserDto currentUser = findUserByUsername(username);
 
         if (!currentUser.isAdmin() && !rental.getUserId().equals(currentUser.id())) {
-            throw new AccessDeniedException(
-                    "You can only cancel your own rentals");
+            throw new RentalNotFoundException(rentalId);
         }
 
         if (!rental.getStatus().canCancel()) {
@@ -557,8 +556,7 @@ public class RentalServiceImpl implements RentalService {
         UserDto user = findUserByUsername(username);
 
         if (!user.isAdmin() && !rental.getUserId().equals(user.id())) {
-            throw new AccessDeniedException(
-                    "You can only view your own rentals");
+            throw new RentalNotFoundException(id);
         }
 
         RentalResponse result = rentalMapper.toDto(rental);
@@ -573,7 +571,7 @@ public class RentalServiceImpl implements RentalService {
         UserDto user = findUserByUsername(username);
 
         if (!rental.getUserId().equals(user.id())) {
-            throw new AccessDeniedException("You can only pay for your own rentals");
+            throw new RentalNotFoundException(rentalId);
         }
         if (rental.getStatus() != RentalStatus.CONFIRMED) {
             throw new InvalidRentalStateException(rental.getStatus().name(), RentalStatus.CONFIRMED.name());
@@ -596,7 +594,7 @@ public class RentalServiceImpl implements RentalService {
         UserDto user = findUserByUsername(username);
 
         if (!user.isAdmin() && !rental.getUserId().equals(user.id())) {
-            throw new AccessDeniedException("You can only view your own rentals");
+            throw new RentalNotFoundException(rentalId);
         }
 
         return paymentService.syncAndGetSummaryForRental(rentalId)

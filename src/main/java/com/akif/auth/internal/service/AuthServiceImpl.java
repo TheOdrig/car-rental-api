@@ -139,8 +139,18 @@ public class AuthServiceImpl implements AuthService, UserLookup {
 
         } catch (AuthenticationException e) {
             log.warn("Login failed");
+            if (userOpt.isPresent() && isBannedWithCorrectPassword(userOpt.get(), loginRequest.password())) {
+                throw new com.akif.auth.internal.exception.AccountBannedException();
+            }
             throw e;
         }
+    }
+
+    private boolean isBannedWithCorrectPassword(User user, String rawPassword) {
+        return Boolean.TRUE.equals(user.getIsBanned()) 
+                && user.getPassword() != null
+                && rawPassword != null
+                && passwordEncoder.matches(rawPassword, user.getPassword());
     }
 
     private boolean isSocialOnlyUser(User user) {

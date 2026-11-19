@@ -166,6 +166,10 @@ class DamageAssessmentServiceTest {
         @Test
         @DisplayName("Should round repair cost, deductible and liability to whole yen for JPY")
         void shouldRoundLiabilityToWholeYen() {
+            when(rentalService.getRentalSummaryById(any())).thenReturn(new com.akif.rental.api.RentalSummaryDto(
+                    1L, 1L, 1L, "Toyota", "Corolla", "34ABC123", "c@example.com", "C U",
+                    java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(3), false, 0,
+                    com.akif.shared.enums.CurrencyType.JPY));
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
@@ -183,6 +187,11 @@ class DamageAssessmentServiceTest {
         @Test
         @DisplayName("Should keep an explicit assessment currency")
         void shouldKeepExplicitCurrency() {
+            when(rentalService.getRentalSummaryById(any())).thenReturn(new com.akif.rental.api.RentalSummaryDto(
+                    1L, 1L, 1L, "Toyota", "Corolla", "34ABC123", "c@example.com", "C U",
+                    java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(3), false, 0,
+                    com.akif.shared.enums.CurrencyType.EUR));
+            when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
@@ -193,6 +202,20 @@ class DamageAssessmentServiceTest {
             damageAssessmentService.assessDamage(1L, request, "admin");
 
             assertThat(testDamageReport.getCurrency()).isEqualTo(com.akif.shared.enums.CurrencyType.EUR);
+        }
+
+        @Test
+        @DisplayName("Should reject an assessment currency that differs from the rental currency")
+        void shouldRejectCurrencyDifferentFromRental() {
+            when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
+            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
+            DamageAssessmentRequest request = new DamageAssessmentRequest(DamageSeverity.MINOR, DamageCategory.SCRATCH,
+                    new BigDecimal("500.00"), true, new BigDecimal("100.00"), "n", com.akif.shared.enums.CurrencyType.EUR);
+
+            org.assertj.core.api.Assertions.assertThatThrownBy(
+                            () -> damageAssessmentService.assessDamage(1L, request, "admin"))
+                    .isInstanceOf(com.akif.damage.internal.exception.DamageAssessmentException.class)
+                    .hasMessageContaining("TRY");
         }
 
         @Test

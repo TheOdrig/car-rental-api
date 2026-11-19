@@ -20,6 +20,7 @@ public interface DamageMapper {
     List<DamageReportDto> toPublicDtoList(List<DamageReport> damageReports);
 
     @Mapping(target = "customerName", source = "customerFullName")
+    @Mapping(target = "refundAmount", source = "disputeRefundAmount")
     DamageReportResponse toResponseDto(DamageReport damageReport);
 
     List<DamageReportResponse> toResponseDtoList(List<DamageReport> damageReports);

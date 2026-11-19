@@ -1,5 +1,7 @@
 package com.akif.dashboard.api.dto;
 
+import com.akif.shared.enums.CurrencyType;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,6 +19,7 @@ public record PendingItemDto(
         LocalDate startDate,
         LocalDate endDate,
         BigDecimal totalAmount,
+        CurrencyType currency,
         String status,
         Long lateHours,
         LocalDateTime createdAt) {

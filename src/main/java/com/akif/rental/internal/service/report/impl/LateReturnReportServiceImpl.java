@@ -70,19 +70,16 @@ public class LateReturnReportServiceImpl implements LateReturnReportService {
                 endDate
         );
 
-        BigDecimal totalPenaltyAmount = rentalRepository.sumTotalPenaltyAmount(
-                lateStatuses,
-                startDate,
-                endDate
-        );
-
-        BigDecimal collectedPenaltyAmount = rentalRepository.sumCollectedPenaltyAmount(
-                lateStatuses,
-                startDate,
-                endDate
-        );
-
-        BigDecimal pendingPenaltyAmount = totalPenaltyAmount.subtract(collectedPenaltyAmount);
+        List<LateReturnStatisticsDto.CurrencyPenaltyTotals> penaltiesByCurrency =
+                rentalRepository.sumPenaltiesByCurrency(lateStatuses, startDate, endDate).stream()
+                        .map(row -> {
+                            BigDecimal total = (BigDecimal) row[1];
+                            BigDecimal collected = (BigDecimal) row[2];
+                            return new LateReturnStatisticsDto.CurrencyPenaltyTotals(
+                                    (com.akif.shared.enums.CurrencyType) row[0], total, collected,
+                                    total.subtract(collected));
+                        })
+                        .toList();
 
         Double averageLateHours = rentalRepository.averageLateHours(
                 lateStatuses,
@@ -93,15 +90,12 @@ public class LateReturnReportServiceImpl implements LateReturnReportService {
         long totalReturns = rentalRepository.countTotalReturns(startDate, endDate);
         double lateReturnPercentage = calculatePercentage(totalLateReturns, totalReturns);
 
-        log.info("Statistics: {} late returns, {} severely late, total penalty: {}",
-                totalLateReturns, severelyLateCount, totalPenaltyAmount);
+        log.debug("Statistics: {} late returns, {} severely late", totalLateReturns, severelyLateCount);
 
         return new LateReturnStatisticsDto(
                 (int) totalLateReturns,
                 (int) severelyLateCount,
-                totalPenaltyAmount,
-                collectedPenaltyAmount,
-                pendingPenaltyAmount,
+                penaltiesByCurrency,
                 averageLateHours,
                 lateReturnPercentage
         );
@@ -138,7 +132,7 @@ public class LateReturnReportServiceImpl implements LateReturnReportService {
 
         return new LateReturnReportDto(
                 rental.getId(),
-                rental.getUserEmail(),
+                customerName(rental),
                 rental.getUserEmail(),
                 rental.getCarBrand(),
                 rental.getCarModel(),
@@ -152,6 +146,14 @@ public class LateReturnReportServiceImpl implements LateReturnReportService {
                 rental.getCurrency(),
                 rental.getPenaltyPaid()
         );
+    }
+
+    private static String customerName(Rental rental) {
+        String fullName = rental.getUserFullName();
+        if (fullName == null || fullName.isBlank() || fullName.contains("null")) {
+            return rental.getUserEmail();
+        }
+        return fullName.trim();
     }
 
     private double calculatePercentage(long part, long total) {

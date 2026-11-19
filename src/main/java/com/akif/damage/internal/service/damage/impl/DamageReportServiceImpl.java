@@ -190,7 +190,7 @@ public class DamageReportServiceImpl implements DamageReportService {
         UserDto requester = userLookup.getUserByUsername(username);
         if (!requester.isAdmin() && !requester.id().equals(photo.getDamageReport().getCustomerUserId())) {
             log.warn("User {} requested a damage photo of another customer (photoId={})", requester.id(), photoId);
-            throw new AccessDeniedException("You can only view photos of your own damage reports");
+            throw DamageReportException.photoNotFound(photoId);
         }
 
         return fileUploadService.generateSecureUrl(
@@ -238,6 +238,13 @@ public class DamageReportServiceImpl implements DamageReportService {
                 damageReport.getInsuranceCoverage(),
                 damageReport.getReportedAt(),
                 damageReport.getAssessedAt(),
+                damageReport.getDisputeReason(),
+                damageReport.getDisputeComments(),
+                damageReport.getDisputedAt(),
+                damageReport.getOriginalLiability(),
+                damageReport.getDisputeRefundAmount(),
+                damageReport.getResolutionNotes(),
+                damageReport.getResolvedAt(),
                 photos
         );
     }

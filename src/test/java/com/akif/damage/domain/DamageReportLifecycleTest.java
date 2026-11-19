@@ -59,8 +59,10 @@ class DamageReportLifecycleTest {
         assertThat(report.getDisputedBy()).isEqualTo(9L);
         assertThat(report.getDisputeReason()).isEqualTo("pre-existing");
 
-        report.resolveDispute(new BigDecimal("100.00"), new BigDecimal("250.00"), "partially accepted", 5L,
-                now.plusDays(3));
+        BigDecimal charged = report.getCustomerLiability();
+        report.resolveDispute(new BigDecimal("100.00"), new BigDecimal("250.00"),
+                charged.subtract(new BigDecimal("100.00")), "partially accepted", 5L, now.plusDays(3));
+        assertThat(report.getOriginalLiability()).isEqualByComparingTo(charged);
         assertThat(report.getStatus()).isEqualTo(DamageStatus.RESOLVED);
         assertThat(report.getCustomerLiability()).isEqualByComparingTo("100.00");
         assertThat(report.getRepairCostEstimate()).isEqualByComparingTo("250.00");
