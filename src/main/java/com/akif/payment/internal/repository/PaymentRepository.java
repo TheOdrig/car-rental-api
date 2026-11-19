@@ -58,8 +58,25 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Query("SELECT p FROM Payment p WHERE p.stripePaymentIntentId = :intentId AND p.isDeleted = false")
     Optional<Payment> findByIntentIdForUpdate(@Param("intentId") String intentId);
 
-    @Query("SELECT p FROM Payment p WHERE p.createTime >= :startDate AND p.createTime < :endDate AND p.isDeleted = false")
-    List<Payment> findByCreateTimeBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+    @Query("""
+            SELECT p FROM Payment p
+            WHERE p.updateTime >= :startDate AND p.updateTime < :endDate
+            AND p.stripePaymentIntentId IS NOT NULL AND p.isDeleted = false
+            """)
+    List<Payment> findWithIntentUpdatedBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT p FROM Payment p WHERE p.stripePaymentIntentId IN :intentIds AND p.isDeleted = false")
+    List<Payment> findByStripePaymentIntentIdIn(@Param("intentIds") java.util.Collection<String> intentIds);
+
+    @Query("""
+            SELECT p.id, p.stripePaymentIntentId FROM Payment p
+            WHERE p.status IN (com.akif.payment.api.PaymentStatus.PENDING, com.akif.payment.api.PaymentStatus.AUTHORIZED)
+            AND p.closed = false AND p.isDeleted = false
+            AND p.stripePaymentIntentId IS NOT NULL
+            AND COALESCE(p.lastSyncedAt, p.updateTime) < :cutoff
+            ORDER BY p.id
+            """)
+    List<Object[]> findStaleNonTerminal(@Param("cutoff") LocalDateTime cutoff, org.springframework.data.domain.Pageable pageable);
 
     Optional<Payment> findByStripePaymentIntentIdAndIsDeletedFalse(String stripePaymentIntentId);
 
