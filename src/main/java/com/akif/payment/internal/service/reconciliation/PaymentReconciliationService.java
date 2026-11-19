@@ -11,7 +11,9 @@ import com.akif.payment.internal.repository.PaymentRepository;
 import com.akif.payment.internal.service.gateway.StripeAmounts;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
+import com.stripe.model.PaymentIntent;
 import com.stripe.param.ChargeListParams;
+import com.stripe.param.PaymentIntentRetrieveParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -60,7 +62,8 @@ public class PaymentReconciliationService {
                     date, stripePayments.size(), chargesOfTheDay, LocalDateTime.now(clock));
 
             Set<String> knownIntentIds = knownIntentIds(stripePayments);
-            List<Discrepancy> discrepancies = comparePayments(dbPayments, stripePayments, knownIntentIds, date);
+            List<StripePayment> looked = withIndividualLookups(dbPayments, stripePayments);
+            List<Discrepancy> discrepancies = comparePayments(dbPayments, looked, knownIntentIds, date);
 
             ReconciliationReport report = new ReconciliationReport(
                     date,
@@ -92,6 +95,45 @@ public class PaymentReconciliationService {
             log.error("[AUDIT] Reconciliation: FAILED | Date: {} | Error: {} | Timestamp: {}",
                     date, e.getMessage(), LocalDateTime.now(clock));
             throw new ReconciliationException(date, e.getMessage(), e);
+        }
+    }
+
+    public List<StripePayment> withIndividualLookups(List<Payment> dbPayments, List<StripePayment> stripePayments) {
+        Set<String> listed = new HashSet<>();
+        for (StripePayment stripePayment : stripePayments) {
+            if (stripePayment.paymentIntentId() != null) {
+                listed.add(stripePayment.paymentIntentId());
+            }
+        }
+        List<StripePayment> combined = new ArrayList<>(stripePayments);
+        for (Payment dbPayment : dbPayments) {
+            String intentId = dbPayment.getStripePaymentIntentId();
+            if (intentId == null || listed.contains(intentId) || !MONEY_STATUSES.contains(dbPayment.getStatus().name())) {
+                continue;
+            }
+            StripePayment found = fetchIntentCharge(intentId);
+            if (found != null) {
+                combined.add(found);
+                listed.add(intentId);
+            }
+        }
+        return combined;
+    }
+
+    public StripePayment fetchIntentCharge(String intentId) {
+        try {
+            PaymentIntentRetrieveParams params = PaymentIntentRetrieveParams.builder()
+                    .addExpand("latest_charge")
+                    .build();
+            PaymentIntent intent = PaymentIntent.retrieve(intentId, params, stripeConfig.requestOptions().build());
+            Charge charge = intent.getLatestChargeObject();
+            return charge == null ? null : toStripePayment(charge);
+        } catch (StripeException e) {
+            if ("resource_missing".equals(e.getCode())) {
+                return null;
+            }
+            log.error("[AUDIT] Reconciliation: STRIPE_LOOKUP_FAILED | Intent: {} | Stripe Error Code: {}", intentId, e.getCode());
+            throw new ReconciliationException(LocalDate.now(clock), "Failed to look up Stripe payment " + intentId, e);
         }
     }
 

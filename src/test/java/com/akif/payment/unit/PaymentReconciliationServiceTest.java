@@ -315,4 +315,56 @@ class PaymentReconciliationServiceTest {
         ReflectionTestUtils.setField(payment, "status", status);
         return payment;
     }
+
+    @Nested
+    @DisplayName("Individual lookups for intents outside the listed window")
+    class IndividualLookupTests {
+
+        private Payment oldCapturedPayment() {
+            Payment payment = new Payment();
+            ReflectionTestUtils.setField(payment, "id", 9L);
+            ReflectionTestUtils.setField(payment, "stripePaymentIntentId", "pi_old");
+            ReflectionTestUtils.setField(payment, "status", PaymentStatus.REFUNDED);
+            ReflectionTestUtils.setField(payment, "amount", new BigDecimal("100.00"));
+            return payment;
+        }
+
+        @Test
+        @DisplayName("a refund on a charge older than the listing window is looked up, not reported missing")
+        void oldChargeIsLookedUpIndividually() {
+            PaymentReconciliationService spy = org.mockito.Mockito.spy(reconciliationService);
+            org.mockito.Mockito.doReturn(stripe("pi_old", "100.00", "REFUNDED", null)).when(spy).fetchIntentCharge("pi_old");
+            List<Payment> db = List.of(oldCapturedPayment());
+
+            List<StripePayment> looked = spy.withIndividualLookups(db, List.of());
+            List<Discrepancy> found = spy.comparePayments(db, looked, Set.of(), DAY);
+
+            assertThat(looked).hasSize(1);
+            assertThat(found).isEmpty();
+        }
+
+        @Test
+        @DisplayName("an intent Stripe really does not know is still reported missing")
+        void trulyMissingIntentIsStillReported() {
+            PaymentReconciliationService spy = org.mockito.Mockito.spy(reconciliationService);
+            org.mockito.Mockito.doReturn(null).when(spy).fetchIntentCharge("pi_old");
+            List<Payment> db = List.of(oldCapturedPayment());
+
+            List<StripePayment> looked = spy.withIndividualLookups(db, List.of());
+            List<Discrepancy> found = spy.comparePayments(db, looked, Set.of(), DAY);
+
+            assertThat(found).extracting(Discrepancy::type).containsExactly(DiscrepancyType.MISSING_IN_STRIPE);
+        }
+
+        @Test
+        @DisplayName("intents already in the listing are not looked up again")
+        void listedIntentsAreNotLookedUp() {
+            PaymentReconciliationService spy = org.mockito.Mockito.spy(reconciliationService);
+            List<Payment> db = List.of(oldCapturedPayment());
+
+            spy.withIndividualLookups(db, List.of(stripe("pi_old", "100.00", "REFUNDED", DAY)));
+
+            org.mockito.Mockito.verify(spy, org.mockito.Mockito.never()).fetchIntentCharge(org.mockito.ArgumentMatchers.anyString());
+        }
+    }
 }
