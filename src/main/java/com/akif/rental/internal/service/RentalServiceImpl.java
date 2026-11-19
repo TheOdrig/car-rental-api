@@ -284,6 +284,10 @@ public class RentalServiceImpl implements RentalService {
             throw new RentalValidationException("Pickup is not allowed before the start date " + rental.getStartDate());
         }
 
+        if (LocalDate.now(clock).isAfter(rental.getEndDate())) {
+            throw new RentalValidationException("Pickup is not allowed after the end date " + rental.getEndDate());
+        }
+
         requireCarAvailable(rental.getCarId());
         if (rentalRepository.existsByCarIdAndStatusAndIsDeletedFalseAndIdNot(
                 rental.getCarId(), RentalStatus.IN_USE, rental.getId())) {
