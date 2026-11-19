@@ -2670,6 +2670,9 @@
             "format" : "int64",
             "type" : "integer"
           },
+          "notes" : {
+            "type" : "string"
+          },
           "originalPrice" : {
             "type" : "number"
           },

@@ -163,6 +163,47 @@ class RentalControllerIntegrationTest {
                 }
 
                 @Test
+                @DisplayName("Should store the customer notes and return them on the rental")
+                void shouldPersistCustomerNotes() throws Exception {
+                        RentalRequest request = new RentalRequest(
+                                        testCar.getId(),
+                                        LocalDate.now().plusDays(1),
+                                        LocalDate.now().plusDays(5),
+                                        "  Child seat please  ");
+
+                        String body = mockMvc.perform(post("/api/v1/rentals/request")
+                                        .header("Authorization", userToken)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(objectMapper.writeValueAsString(request)))
+                                        .andExpect(status().isCreated())
+                                        .andExpect(jsonPath("$.notes").value("Child seat please"))
+                                        .andReturn().getResponse().getContentAsString();
+                        long id = objectMapper.readTree(body).get("id").asLong();
+
+                        mockMvc.perform(get("/api/v1/rentals/" + id)
+                                        .header("Authorization", userToken))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.notes").value("Child seat please"));
+                }
+
+                @Test
+                @DisplayName("Should omit notes when the customer sent none")
+                void shouldOmitNotesWhenBlank() throws Exception {
+                        RentalRequest request = new RentalRequest(
+                                        testCar.getId(),
+                                        LocalDate.now().plusDays(1),
+                                        LocalDate.now().plusDays(5),
+                                        "   ");
+
+                        mockMvc.perform(post("/api/v1/rentals/request")
+                                        .header("Authorization", userToken)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(objectMapper.writeValueAsString(request)))
+                                        .andExpect(status().isCreated())
+                                        .andExpect(jsonPath("$.notes").doesNotExist());
+                }
+
+                @Test
                 @DisplayName("Should return 403 when unauthenticated")
                 void shouldReturn403WhenUnauthenticated() throws Exception {
                         RentalRequest request = new RentalRequest(

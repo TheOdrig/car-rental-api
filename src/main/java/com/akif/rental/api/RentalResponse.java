@@ -54,7 +54,9 @@ public record RentalResponse(
 
         Instant paymentDueBy,
 
-        CancelledBy cancelledBy) {
+        CancelledBy cancelledBy,
+
+        String notes) {
 
     public RentalResponse(
             Long id,
@@ -81,7 +83,7 @@ public record RentalResponse(
             Instant updateTime) {
         this(id, carSummary, userSummary, startDate, endDate, days, dailyPrice, totalPrice, currency, status,
                 originalPrice, finalPrice, totalSavings, appliedDiscounts, convertedTotalPrice, displayCurrency,
-                exchangeRate, rateSource, pickupNotes, returnNotes, null, null, createTime, updateTime, null, null, null, null);
+                exchangeRate, rateSource, pickupNotes, returnNotes, null, null, createTime, updateTime, null, null, null, null, null);
     }
 
     public RentalResponse(
@@ -112,7 +114,7 @@ public record RentalResponse(
         this(id, carSummary, userSummary, startDate, endDate, days, dailyPrice, totalPrice, currency, status,
                 originalPrice, finalPrice, totalSavings, appliedDiscounts, convertedTotalPrice, displayCurrency,
                 exchangeRate, rateSource, pickupNotes, returnNotes, approvalNotes, cancellationReason, createTime,
-                updateTime, null, null, null, null);
+                updateTime, null, null, null, null, null);
     }
 
     public RentalResponse withDisplayPrice(com.akif.currency.api.DisplayPrice price) {

@@ -80,6 +80,9 @@ public class Rental extends BaseEntity {
     @Builder.Default
     private RentalStatus status = RentalStatus.REQUESTED;
 
+    @Column(name = "customer_notes", length = 1000)
+    private String customerNotes;
+
     @Column(name = "pickup_notes", columnDefinition = "TEXT")
     private String pickupNotes;
 

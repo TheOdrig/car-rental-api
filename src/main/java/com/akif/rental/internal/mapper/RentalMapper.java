@@ -18,6 +18,7 @@ public interface RentalMapper {
     @Mapping(target = "userSummary.username", source = "userUsername")
     @Mapping(target = "userSummary.email", source = "userEmail")
     @Mapping(target = "userSummary.fullName", source = "userFullName")
+    @Mapping(target = "notes", source = "customerNotes")
     @Mapping(target = "paymentOpensOn", source = "startDate", qualifiedByName = "paymentOpensOn")
     RentalResponse toDto(Rental rental);
 }

@@ -84,6 +84,7 @@ public class RentalBookingService {
                 .userUsername(user.username())
                 .userEmail(user.email())
                 .userFullName(user.firstName() + " " + user.lastName())
+                .customerNotes(normalizeNotes(request.notes()))
                 .startDate(request.startDate())
                 .endDate(request.endDate())
                 .days(days)
@@ -107,6 +108,13 @@ public class RentalBookingService {
 
         lookups.logRentalOperationSuccess("created", result);
         return result;
+    }
+
+    private static String normalizeNotes(String notes) {
+        if (notes == null || notes.isBlank()) {
+            return null;
+        }
+        return notes.strip();
     }
 
     private void validateRentalDates(LocalDate startDate, LocalDate endDate) {
