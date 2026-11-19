@@ -32,7 +32,7 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:4200}
       MANAGEMENT_PORT: "8081"
     ports:
-      - "${APP_PORT:-8082}:8082"
+      - "127.0.0.1:${APP_PORT:-8082}:8082"
       - "127.0.0.1:${MANAGEMENT_HOST_PORT:-8081}:8081"
     restart: unless-stopped
 

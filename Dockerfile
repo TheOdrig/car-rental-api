@@ -15,11 +15,11 @@ RUN java -Djarmode=tools -jar application.jar extract --layers --destination ext
 
 FROM eclipse-temurin:21-jre-alpine AS runtime
 WORKDIR /app
-ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0"
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
 ENV JAVA_TOOL_OPTIONS="-Duser.timezone=UTC"
 ENV TZ=UTC
 
-RUN addgroup -S spring && adduser -S -G spring spring
+RUN addgroup -S -g 1001 spring && adduser -S -u 1001 -G spring spring
 COPY --from=layers /layers/extracted/dependencies/ ./
 COPY --from=layers /layers/extracted/spring-boot-loader/ ./
 COPY --from=layers /layers/extracted/snapshot-dependencies/ ./
