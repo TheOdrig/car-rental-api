@@ -46,7 +46,7 @@ public class LateReturnController {
             @Parameter(description = "End date for filtering (yyyy-MM-dd)")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @Parameter(description = "Late return status filter")
-            @RequestParam(required = false) String status,
+            @RequestParam(required = false) LateReturnStatus status,
             @Parameter(description = "Sort field (endDate, penaltyAmount, lateHours)")
             @RequestParam(required = false, defaultValue = "endDate") String sortBy,
             @Parameter(description = "Sort direction (ASC, DESC)")
@@ -61,19 +61,10 @@ public class LateReturnController {
         if (!"ASC".equalsIgnoreCase(sortDirection) && !"DESC".equalsIgnoreCase(sortDirection)) {
             throw new com.akif.shared.exception.InvalidParameterException("sortDirection must be ASC or DESC");
         }
-        LateReturnStatus lateStatus = null;
-        if (status != null) {
-            try {
-                lateStatus = LateReturnStatus.valueOf(status);
-            } catch (IllegalArgumentException e) {
-                throw new com.akif.shared.exception.InvalidParameterException("Unknown late return status '" + status + "'");
-            }
-        }
-
         LateReturnFilterDto filter = LateReturnFilterDto.builder()
                 .startDate(startDate)
                 .endDate(endDate)
-                .status(lateStatus)
+                .status(status)
                 .sortBy(sortBy)
                 .sortDirection(sortDirection)
                 .build();

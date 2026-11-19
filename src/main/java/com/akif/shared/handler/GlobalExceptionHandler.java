@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @RestControllerAdvice
 @Slf4j
@@ -58,6 +59,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     static final String ERROR_CODE_INVALID_JSON = ErrorCode.INVALID_JSON.name();
     static final String ERROR_CODE_MISSING_PARAMETER = ErrorCode.MISSING_PARAMETER.name();
     static final String ERROR_CODE_INVALID_PARAMETER_TYPE = ErrorCode.INVALID_PARAMETER_TYPE.name();
+    static final String ERROR_CODE_INVALID_PARAMETER = ErrorCode.INVALID_PARAMETER.name();
     static final String ERROR_CODE_ENDPOINT_NOT_FOUND = ErrorCode.ENDPOINT_NOT_FOUND.name();
     static final String ERROR_CODE_INTERNAL_SERVER_ERROR = ErrorCode.INTERNAL_SERVER_ERROR.name();
 
@@ -187,6 +189,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        List<FieldError> bindingFailures = ex.getBindingResult().getFieldErrors().stream()
+                .filter(FieldError::isBindingFailure)
+                .toList();
+        if (!bindingFailures.isEmpty()) {
+            return bindingFailureResponse(bindingFailures, request);
+        }
         List<FieldProblem> errors = new ArrayList<>();
         Object target = ex.getBindingResult().getTarget();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
@@ -226,6 +234,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        Optional<Class<?>> enumType = EnumBinding.enumTypeOf(ex);
+        if (enumType.isPresent() && ex.getCause() instanceof tools.jackson.databind.exc.InvalidFormatException format) {
+            return invalidEnumResponse(bodyFieldOf(format), enumType.get(), request);
+        }
         for (Throwable cause = ex; cause != null; cause = cause.getCause()) {
             if (cause instanceof com.akif.shared.security.RequestBodyLimitFilter.BodyTooLargeException) {
                 log.warn("[{}] Request body too large", ErrorCode.PAYLOAD_TOO_LARGE.name());
@@ -252,11 +264,59 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         String name = ex instanceof MethodArgumentTypeMismatchException mismatch ? mismatch.getName()
                 : ex.getPropertyName();
+        Optional<Class<?>> enumType = EnumBinding.enumTypeOf(ex);
+        if (enumType.isPresent()) {
+            return invalidEnumResponse(name, enumType.get(), request);
+        }
         String expectedType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown";
         log.warn("[{}] Type mismatch for '{}': expected {}", ERROR_CODE_INVALID_PARAMETER_TYPE, name, expectedType);
         return respondObject(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_INVALID_PARAMETER_TYPE,
                 String.format("Invalid parameter type for '%s'. Expected: %s", name, expectedType),
                 extractPath(request)));
+    }
+
+    private ResponseEntity<Object> invalidEnumResponse(String field, Class<?> enumType, WebRequest request) {
+        String allowed = EnumBinding.allowedValues(enumType);
+        log.warn("[{}] Unknown value for '{}'", ERROR_CODE_INVALID_PARAMETER, field);
+        return respondObject(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_INVALID_PARAMETER,
+                String.format("Invalid value for '%s'. Allowed values: %s", field, allowed), extractPath(request),
+                List.of(new FieldProblem(field, "must be one of: " + allowed))));
+    }
+
+    private ResponseEntity<Object> bindingFailureResponse(List<FieldError> failures, WebRequest request) {
+        List<FieldProblem> errors = new ArrayList<>();
+        boolean onlyEnums = true;
+        for (FieldError failure : failures) {
+            Optional<Class<?>> enumType = failure.contains(Throwable.class)
+                    ? EnumBinding.enumTypeOf(failure.unwrap(Throwable.class))
+                    : Optional.empty();
+            if (enumType.isPresent()) {
+                errors.add(new FieldProblem(failure.getField(), "must be one of: " + EnumBinding.allowedValues(enumType.get())));
+            } else {
+                onlyEnums = false;
+                errors.add(new FieldProblem(failure.getField(), "has an invalid value"));
+            }
+        }
+        List<FieldProblem> sorted = errors.stream().distinct().sorted(BY_FIELD_THEN_MESSAGE).toList();
+        String code = onlyEnums ? ERROR_CODE_INVALID_PARAMETER : ERROR_CODE_INVALID_PARAMETER_TYPE;
+        log.warn("[{}] Binding failed: {}", code, sorted);
+        return respondObject(problems.create(HttpStatus.BAD_REQUEST, code,
+                "Invalid value for '" + sorted.get(0).field() + "'", extractPath(request), sorted));
+    }
+
+    private static String bodyFieldOf(tools.jackson.databind.exc.InvalidFormatException format) {
+        StringBuilder path = new StringBuilder();
+        for (tools.jackson.core.JacksonException.Reference reference : format.getPath()) {
+            if (reference.getPropertyName() != null) {
+                if (!path.isEmpty()) {
+                    path.append('.');
+                }
+                path.append(reference.getPropertyName());
+            } else if (reference.getIndex() >= 0) {
+                path.append('[').append(reference.getIndex()).append(']');
+            }
+        }
+        return path.isEmpty() ? "body" : path.toString();
     }
 
     @Override

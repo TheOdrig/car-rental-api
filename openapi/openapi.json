@@ -5275,6 +5275,7 @@
           "name" : "status",
           "required" : false,
           "schema" : {
+            "enum" : [ "ON_TIME", "GRACE_PERIOD", "LATE", "SEVERELY_LATE" ],
             "type" : "string"
           }
         }, {
@@ -10677,7 +10678,7 @@
     },
     "/api/v1/rentals/admin" : {
       "get" : {
-        "description" : "Get all rentals (admin only) with optional currency conversion and an optional status filter. The status parameter may be repeated or given as a comma separated list of RentalStatus codes; an unknown value is rejected with INVALID_PARAMETER.",
+        "description" : "Get all rentals (admin only) with optional currency conversion and an optional status filter. The status parameter may be repeated or given as a comma separated list of RentalStatus codes; a value that is not an exact RentalStatus code is rejected with INVALID_PARAMETER.",
         "operationId" : "getAllRentals",
         "parameters" : [ {
           "description" : "Zero-based page index (0..N)",
@@ -10727,6 +10728,7 @@
           "required" : false,
           "schema" : {
             "items" : {
+              "enum" : [ "REQUESTED", "CONFIRMED", "IN_USE", "RETURNED", "CANCELLED" ],
               "type" : "string"
             },
             "type" : "array"

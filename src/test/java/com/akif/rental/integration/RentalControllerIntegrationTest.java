@@ -464,7 +464,7 @@ class RentalControllerIntegrationTest {
                 }
 
                 @Test
-                @DisplayName("Should filter by one status, a repeated parameter and a comma list")
+                @DisplayName("Should filter by one status code, a repeated parameter and a comma list")
                 void shouldFilterByStatus() throws Exception {
                         Long requested = requestRental(1, 3);
                         Long confirmed = requestRental(10, 12);
@@ -476,7 +476,7 @@ class RentalControllerIntegrationTest {
                                         .contains(confirmed + ":CONFIRMED")
                                         .doesNotContain(requested + ":REQUESTED")
                                         .allMatch(s -> s.endsWith(":CONFIRMED"));
-                        org.assertj.core.api.Assertions.assertThat(idsAndStatuses(adminList("CONFIRMED", "requested")))
+                        org.assertj.core.api.Assertions.assertThat(idsAndStatuses(adminList("CONFIRMED", "REQUESTED")))
                                         .contains(confirmed + ":CONFIRMED", requested + ":REQUESTED");
                         org.assertj.core.api.Assertions.assertThat(idsAndStatuses(adminList("CONFIRMED,REQUESTED")))
                                         .contains(confirmed + ":CONFIRMED", requested + ":REQUESTED");
