@@ -6,6 +6,7 @@ import com.akif.damage.api.DamageChargedEvent;
 import com.akif.damage.domain.model.DamageReport;
 import com.akif.damage.internal.service.damage.DamageChargeService;
 import com.akif.damage.internal.repository.DamageReportRepository;
+import com.akif.damage.internal.dto.damage.response.DamageChargeResponse;
 import com.akif.damage.internal.exception.DamageAssessmentException;
 import com.akif.rental.api.RentalService;
 import com.akif.rental.api.RentalSummaryDto;
@@ -67,10 +68,34 @@ public class DamageChargeServiceImpl implements DamageChargeService {
         return new PaymentResult(false, null, "Use chargeDamageById(Long damageId) instead");
     }
 
+    @Override
+    @Transactional
+    public DamageChargeResponse charge(Long damageId) {
+        PaymentResult result = chargeDamageById(damageId);
+        DamageReport report = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
+                .orElseThrow(() -> new DamageAssessmentException("Damage report not found: " + damageId));
+        return new DamageChargeResponse(
+                report.getId(),
+                report.getStatus(),
+                result.success(),
+                report.getCustomerLiability(),
+                report.getCurrency(),
+                result.success() ? result.transactionId() : null,
+                result.message());
+    }
+
+    @Override
     @Transactional
     public PaymentResult chargeDamageById(Long damageId) {
-        DamageReport damageReport = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
+        DamageReport damageReport = damageReportRepository.findByIdForUpdate(damageId)
                 .orElseThrow(() -> new DamageAssessmentException("Damage report not found: " + damageId));
+
+        if (!damageReport.canBeCharged()) {
+            throw DamageAssessmentException.notChargeable(damageReport.getStatus().name());
+        }
+        if (damageReport.getCustomerLiability() == null || damageReport.getCustomerLiability().signum() <= 0) {
+            throw new DamageAssessmentException("Customer liability must be positive to create charge");
+        }
 
         PaymentResult result = paymentService.chargeDamage(
                 damageReport.getRentalId(),

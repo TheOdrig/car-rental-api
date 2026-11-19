@@ -3,6 +3,7 @@ package com.akif.damage.internal.service;
 import java.time.Clock;
 
 import com.akif.damage.api.DamageService;
+import com.akif.damage.api.RepairCostTotal;
 import com.akif.damage.api.DamageReportDto;
 import com.akif.auth.api.UserDamageStatisticsDto;
 import com.akif.damage.domain.model.DamageReport;
@@ -65,15 +66,11 @@ public class DamageServiceImpl implements DamageService {
     }
 
     @Override
-    public BigDecimal sumDamageCharges(LocalDate startDate, LocalDate endDate) {
-        log.debug("Calculating damage charges between {} and {}", startDate, endDate);
-        return damageReportRepository.sumTotalCustomerLiability(startDate, endDate);
-    }
-
-    @Override
-    public BigDecimal sumRepairCosts(LocalDate startDate, LocalDate endDate) {
+    public List<RepairCostTotal> sumRepairCostsByCurrency(LocalDate startDate, LocalDate endDate) {
         log.debug("Calculating repair costs between {} and {}", startDate, endDate);
-        return damageReportRepository.sumTotalRepairCost(startDate, endDate);
+        return damageReportRepository.totalsByCurrency(startDate, endDate).stream()
+                .map(row -> new RepairCostTotal((CurrencyType) row[0], (BigDecimal) row[2]))
+                .toList();
     }
 
     @Override

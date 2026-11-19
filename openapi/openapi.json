@@ -899,11 +899,15 @@
       },
       "DailyRevenueDto" : {
         "properties" : {
+          "currency" : {
+            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
+            "type" : "string"
+          },
           "date" : {
             "format" : "date",
             "type" : "string"
           },
-          "rentalCount" : {
+          "paymentCount" : {
             "format" : "int32",
             "type" : "integer"
           },
@@ -1013,6 +1017,36 @@
           },
           "severity" : {
             "enum" : [ "MINOR", "MODERATE", "MAJOR", "TOTAL_LOSS" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "DamageChargeResponse" : {
+        "properties" : {
+          "amount" : {
+            "type" : "number"
+          },
+          "charged" : {
+            "description" : "True when the saved card was charged. A declined or undecided charge answers 200 with charged=false and the report stays ASSESSED so the charge can be retried.",
+            "type" : "boolean"
+          },
+          "currency" : {
+            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
+            "type" : "string"
+          },
+          "damageId" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "status" : {
+            "enum" : [ "REPORTED", "UNDER_ASSESSMENT", "ASSESSED", "CHARGED", "DISPUTED", "RESOLVED" ],
+            "type" : "string"
+          },
+          "transactionId" : {
             "type" : "string"
           }
         },
@@ -1671,9 +1705,6 @@
             "format" : "int32",
             "type" : "integer"
           },
-          "damageCharges" : {
-            "type" : "number"
-          },
           "endDate" : {
             "format" : "date",
             "type" : "string"
@@ -1682,28 +1713,32 @@
             "format" : "date-time",
             "type" : "string"
           },
-          "penaltyRevenue" : {
-            "type" : "number"
+          "revenueByCurrency" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RevenueBreakdownDto"
+            },
+            "type" : "array"
           },
           "startDate" : {
             "format" : "date",
             "type" : "string"
-          },
-          "totalRevenue" : {
-            "type" : "number"
           }
         },
         "type" : "object"
       },
       "MonthlyRevenueDto" : {
         "properties" : {
+          "currency" : {
+            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
+            "type" : "string"
+          },
           "growthPercentage" : {
             "type" : "number"
           },
           "month" : {
             "type" : "string"
           },
-          "rentalCount" : {
+          "paymentCount" : {
             "format" : "int32",
             "type" : "integer"
           },
@@ -2468,8 +2503,11 @@
       },
       "RevenueAnalyticsDto" : {
         "properties" : {
-          "breakdown" : {
-            "$ref" : "#/components/schemas/RevenueBreakdownDto"
+          "breakdownByCurrency" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RevenueBreakdownDto"
+            },
+            "type" : "array"
           },
           "dailyRevenue" : {
             "items" : {
@@ -2492,6 +2530,10 @@
       },
       "RevenueBreakdownDto" : {
         "properties" : {
+          "currency" : {
+            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
+            "type" : "string"
+          },
           "damagePercentage" : {
             "type" : "number"
           },
@@ -3809,6 +3851,86 @@
           }
         },
         "summary" : "Update assessment",
+        "tags" : [ "Damage Assessment" ]
+      }
+    },
+    "/api/v1/admin/damages/{id}/charge" : {
+      "post" : {
+        "description" : "Charge the assessed customer liability to the card saved with the rental (admin only). A charged report can then be disputed by the customer.",
+        "operationId" : "chargeDamage",
+        "parameters" : [ {
+          "description" : "Damage ID",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DamageChargeResponse"
+                }
+              }
+            },
+            "description" : "Charge attempted; see the charged flag"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Report is not in ASSESSED status or has no liability"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Authentication required"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Access denied"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Damage report not found"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Unexpected error"
+          }
+        },
+        "summary" : "Charge damage",
         "tags" : [ "Damage Assessment" ]
       }
     },

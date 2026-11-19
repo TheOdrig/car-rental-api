@@ -36,23 +36,11 @@ public interface PaymentService {
 
     PaymentResult refund(String transactionId, BigDecimal amount, String operationKey);
 
-    BigDecimal sumCapturedPaymentsBetween(LocalDateTime start, LocalDateTime end);
+    List<CollectedRevenue> sumCollectedBetween(LocalDateTime start, LocalDateTime end);
 
-    List<DailyRevenueProjection> getDailyRevenue(int days);
+    List<DailyRevenue> getDailyRevenue(int days);
 
-    List<MonthlyRevenueProjection> getMonthlyRevenue(int months);
+    List<MonthlyRevenue> getMonthlyRevenue(int months);
 
     int countFailedPayments();
-
-    interface DailyRevenueProjection {
-       LocalDate getDate();
-        BigDecimal getRevenue();
-        int getRentalCount();
-    }
-
-    interface MonthlyRevenueProjection {
-        YearMonth getMonth();
-        BigDecimal getRevenue();
-        int getRentalCount();
-    }
 }

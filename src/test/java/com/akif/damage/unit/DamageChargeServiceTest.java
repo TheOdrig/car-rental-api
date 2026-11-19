@@ -149,7 +149,7 @@ class DamageChargeServiceTest {
         @Test
         @DisplayName("Should charge damage successfully by ID")
         void shouldChargeDamageSuccessfullyById() {
-            when(damageReportRepository.findByIdAndIsDeletedFalse(1L))
+            when(damageReportRepository.findByIdForUpdate(1L))
                     .thenReturn(Optional.of(testDamageReport));
             when(paymentService.chargeDamage(any(), any(), any(), any()))
                     .thenReturn(new PaymentResult(true, "TXN-12345", "Success"));
@@ -175,7 +175,7 @@ class DamageChargeServiceTest {
         @Test
         @DisplayName("Should handle payment failure")
         void shouldHandlePaymentFailure() {
-            when(damageReportRepository.findByIdAndIsDeletedFalse(1L))
+            when(damageReportRepository.findByIdForUpdate(1L))
                     .thenReturn(Optional.of(testDamageReport));
             when(paymentService.chargeDamage(any(), any(), any(), any()))
                     .thenReturn(new PaymentResult(false, null, "Payment failed"));
@@ -188,9 +188,67 @@ class DamageChargeServiceTest {
         }
 
         @Test
+        @DisplayName("Should refuse to charge a report that is not assessed")
+        void shouldRefuseToChargeAReportThatIsNotAssessed() {
+            ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.CHARGED);
+            when(damageReportRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testDamageReport));
+
+            assertThatThrownBy(() -> damageChargeService.chargeDamageById(1L))
+                    .isInstanceOf(DamageAssessmentException.class)
+                    .hasMessageContaining("Cannot charge damage in current status: CHARGED");
+
+            verifyNoInteractions(paymentService);
+        }
+
+        @Test
+        @DisplayName("Should refuse to charge a report without liability")
+        void shouldRefuseToChargeAReportWithoutLiability() {
+            ReflectionTestUtils.setField(testDamageReport, "customerLiability", BigDecimal.ZERO);
+            when(damageReportRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testDamageReport));
+
+            assertThatThrownBy(() -> damageChargeService.chargeDamageById(1L))
+                    .isInstanceOf(DamageAssessmentException.class)
+                    .hasMessageContaining("Customer liability must be positive");
+
+            verifyNoInteractions(paymentService);
+        }
+
+        @Test
+        @DisplayName("Should answer the charge outcome with the report state")
+        void shouldAnswerTheChargeOutcome() {
+            when(damageReportRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testDamageReport));
+            when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
+            when(paymentService.chargeDamage(any(), any(), any(), any()))
+                    .thenReturn(new PaymentResult(true, "TXN-12345", "Damage charged"));
+
+            var response = damageChargeService.charge(1L);
+
+            assertThat(response.charged()).isTrue();
+            assertThat(response.status()).isEqualTo(DamageStatus.CHARGED);
+            assertThat(response.transactionId()).isEqualTo("TXN-12345");
+            assertThat(response.amount()).isEqualByComparingTo("350.00");
+        }
+
+        @Test
+        @DisplayName("Should keep the report ASSESSED and report charged=false when the charge fails")
+        void shouldReportAFailedCharge() {
+            when(damageReportRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testDamageReport));
+            when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
+            when(paymentService.chargeDamage(any(), any(), any(), any()))
+                    .thenReturn(new PaymentResult(false, null, "Your card was declined"));
+
+            var response = damageChargeService.charge(1L);
+
+            assertThat(response.charged()).isFalse();
+            assertThat(response.status()).isEqualTo(DamageStatus.ASSESSED);
+            assertThat(response.transactionId()).isNull();
+            assertThat(response.message()).isEqualTo("Your card was declined");
+        }
+
+        @Test
         @DisplayName("Should throw exception when damage report not found")
         void shouldThrowExceptionWhenDamageReportNotFound() {
-            when(damageReportRepository.findByIdAndIsDeletedFalse(999L))
+            when(damageReportRepository.findByIdForUpdate(999L))
                     .thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> damageChargeService.chargeDamageById(999L))

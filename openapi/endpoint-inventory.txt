@@ -9,6 +9,7 @@ GET /api/v1/admin/damages/vehicle/{carId} ADMIN
 GET /api/v1/admin/damages/{id} ADMIN
 POST /api/v1/admin/damages/{id}/assess ADMIN
 PUT /api/v1/admin/damages/{id}/assess ADMIN
+POST /api/v1/admin/damages/{id}/charge ADMIN
 POST /api/v1/admin/damages/{id}/photos ADMIN
 DELETE /api/v1/admin/damages/{id}/photos/{photoId} ADMIN
 POST /api/v1/admin/damages/{id}/resolve ADMIN

@@ -2,7 +2,11 @@ package com.akif.payment.internal.service;
 
 import java.time.Clock;
 
+import com.akif.payment.api.CollectedRevenue;
 import com.akif.payment.api.CreatePaymentRequest;
+import com.akif.payment.api.DailyRevenue;
+import com.akif.payment.api.MonthlyRevenue;
+import com.akif.payment.api.PaymentCategory;
 import com.akif.payment.api.InvalidPaymentStateException;
 import com.akif.payment.api.PaymentDto;
 import com.akif.payment.api.PaymentIntentResult;
@@ -635,50 +639,55 @@ class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public BigDecimal sumCapturedPaymentsBetween(LocalDateTime start, LocalDateTime end) {
-        return paymentRepository.sumCapturedPaymentsBetween(start, end);
+    public List<CollectedRevenue> sumCollectedBetween(LocalDateTime start, LocalDateTime end) {
+        return paymentRepository.sumCollectedBetween(start, end).stream()
+                .map(row -> new CollectedRevenue(
+                        PaymentCategory.valueOf(((PaymentKind) row[0]).name()),
+                        (CurrencyType) row[1],
+                        (BigDecimal) row[2],
+                        (Long) row[3]))
+                .toList();
     }
 
     @Override
-    public List<DailyRevenueProjection> getDailyRevenue(int days) {
+    public List<DailyRevenue> getDailyRevenue(int days) {
         LocalDateTime startDate = LocalDateTime.now(clock).minusDays(days);
-        List<Payment> payments = paymentRepository.findByStatusAndCreateTimeAfter(
-                PaymentStatus.CAPTURED, startDate);
-
-        Map<LocalDate, List<Payment>> grouped = payments.stream()
-                .collect(Collectors.groupingBy(
-                        p -> p.getCreateTime().toLocalDate()));
+        Map<RevenueKey<LocalDate>, List<Payment>> grouped = paymentRepository.findCapturedSince(startDate).stream()
+                .collect(Collectors.groupingBy(p -> new RevenueKey<>(p.getCapturedAt().toLocalDate(), p.getCurrency())));
 
         return grouped.entrySet().stream()
-                .map(entry -> new DailyRevenueProjectionImpl(
-                        entry.getKey(),
-                        entry.getValue().stream()
-                                .map(Payment::getAmount)
-                                .reduce(BigDecimal.ZERO, BigDecimal::add),
+                .map(entry -> new DailyRevenue(
+                        entry.getKey().period(),
+                        entry.getKey().currency(),
+                        netCollected(entry.getValue()),
                         entry.getValue().size()))
-                .sorted((a, b) -> a.getDate().compareTo(b.getDate()))
-                .collect(Collectors.toList());
+                .sorted(Comparator.comparing(DailyRevenue::date).thenComparing(DailyRevenue::currency))
+                .toList();
     }
 
     @Override
-    public List<MonthlyRevenueProjection> getMonthlyRevenue(int months) {
+    public List<MonthlyRevenue> getMonthlyRevenue(int months) {
         LocalDateTime startDate = LocalDateTime.now(clock).minusMonths(months);
-        List<Payment> payments = paymentRepository.findByStatusAndCreateTimeAfter(
-                PaymentStatus.CAPTURED, startDate);
-
-        Map<YearMonth, List<Payment>> grouped = payments.stream()
-                .collect(Collectors.groupingBy(
-                        p -> YearMonth.from(p.getCreateTime())));
+        Map<RevenueKey<YearMonth>, List<Payment>> grouped = paymentRepository.findCapturedSince(startDate).stream()
+                .collect(Collectors.groupingBy(p -> new RevenueKey<>(YearMonth.from(p.getCapturedAt()), p.getCurrency())));
 
         return grouped.entrySet().stream()
-                .map(entry -> new MonthlyRevenueProjectionImpl(
-                        entry.getKey(),
-                        entry.getValue().stream()
-                                .map(Payment::getAmount)
-                                .reduce(BigDecimal.ZERO, BigDecimal::add),
+                .map(entry -> new MonthlyRevenue(
+                        entry.getKey().period(),
+                        entry.getKey().currency(),
+                        netCollected(entry.getValue()),
                         entry.getValue().size()))
-                .sorted((a, b) -> a.getMonth().compareTo(b.getMonth()))
-                .collect(Collectors.toList());
+                .sorted(Comparator.comparing(MonthlyRevenue::month).thenComparing(MonthlyRevenue::currency))
+                .toList();
+    }
+
+    private static BigDecimal netCollected(List<Payment> payments) {
+        return payments.stream()
+                .map(p -> p.getAmount().subtract(p.refundedTotal()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private record RevenueKey<T>(T period, CurrencyType currency) {
     }
 
     @Override
@@ -746,29 +755,5 @@ class PaymentServiceImpl implements PaymentService {
                     payment.getIntentAttempt(),
                     payment.isClosed());
         }
-    }
-
-    private record DailyRevenueProjectionImpl(
-            LocalDate date,
-            BigDecimal revenue,
-            int rentalCount) implements DailyRevenueProjection {
-        @Override
-        public LocalDate getDate() { return date; }
-        @Override
-        public BigDecimal getRevenue() { return revenue; }
-        @Override
-        public int getRentalCount() { return rentalCount; }
-    }
-
-    private record MonthlyRevenueProjectionImpl(
-            YearMonth month,
-            BigDecimal revenue,
-            int rentalCount) implements MonthlyRevenueProjection {
-        @Override
-        public YearMonth getMonth() { return month; }
-        @Override
-        public BigDecimal getRevenue() { return revenue; }
-        @Override
-        public int getRentalCount() { return rentalCount; }
     }
 }

@@ -5,6 +5,7 @@ import java.time.Clock;
 import com.akif.car.api.CarCatalog;
 import com.akif.car.api.CarStatusType;
 import com.akif.damage.api.DamageService;
+import com.akif.damage.api.RepairCostTotal;
 import com.akif.dashboard.api.dto.DailySummaryDto;
 import com.akif.dashboard.api.dto.DailyRevenueDto;
 import com.akif.dashboard.api.dto.FleetStatusDto;
@@ -13,10 +14,14 @@ import com.akif.dashboard.api.dto.MonthlyRevenueDto;
 import com.akif.dashboard.api.dto.PendingItemDto;
 import com.akif.dashboard.api.dto.RevenueAnalyticsDto;
 import com.akif.dashboard.api.dto.RevenueBreakdownDto;
+import com.akif.payment.api.CollectedRevenue;
+import com.akif.payment.api.MonthlyRevenue;
+import com.akif.payment.api.PaymentCategory;
 import com.akif.payment.api.PaymentService;
 import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalService;
 import com.akif.rental.api.RentalStatus;
+import com.akif.shared.enums.CurrencyType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,6 +33,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -115,20 +124,15 @@ public class DashboardQueryService {
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
 
-        BigDecimal totalRevenue = paymentService.sumCapturedPaymentsBetween(startDateTime, endDateTime);
+        List<RevenueBreakdownDto> revenueByCurrency = revenueByCurrency(startDateTime, endDateTime, startDate, endDate);
         int completedRentals = rentalService.countByStatus(RentalStatus.RETURNED);
         int cancelledRentals = rentalService.countByStatus(RentalStatus.CANCELLED);
-
-        BigDecimal penaltyRevenue = rentalService.sumCollectedPenaltyRevenue(startDate, endDate);
-        BigDecimal damageCharges = damageService.sumDamageCharges(startDate, endDate);
         BigDecimal averageRentalDurationDays = rentalService.getAverageRentalDurationDays(startDate, endDate);
 
         return new MonthlyMetricsDto(
-                totalRevenue,
+                revenueByCurrency,
                 completedRentals,
                 cancelledRentals,
-                penaltyRevenue,
-                damageCharges,
                 averageRentalDurationDays,
                 startDate,
                 endDate,
@@ -138,24 +142,44 @@ public class DashboardQueryService {
     public RevenueAnalyticsDto fetchRevenueAnalytics() {
         log.debug("Fetching revenue analytics");
 
-        List<PaymentService.DailyRevenueProjection> dailyProjections = paymentService.getDailyRevenue(30);
-        List<PaymentService.MonthlyRevenueProjection> monthlyProjections = paymentService.getMonthlyRevenue(12);
-
-        List<DailyRevenueDto> dailyRevenue = dailyProjections.stream()
-                .map(p -> new DailyRevenueDto(p.getDate(), p.getRevenue(), p.getRentalCount()))
+        List<DailyRevenueDto> dailyRevenue = paymentService.getDailyRevenue(30).stream()
+                .map(p -> new DailyRevenueDto(p.date(), p.currency(), p.revenue(), p.paymentCount()))
                 .toList();
 
-        List<MonthlyRevenueDto> monthlyRevenue = monthlyProjections.stream()
-                .map(p -> new MonthlyRevenueDto(p.getMonth(), p.getRevenue(), p.getRentalCount(), BigDecimal.ZERO))
-                .toList();
+        List<MonthlyRevenueDto> monthlyRevenue = monthlyRevenueWithGrowth(paymentService.getMonthlyRevenue(12));
 
-        RevenueBreakdownDto breakdown = calculateRevenueBreakdown();
+        LocalDate endDate = LocalDate.now(clock);
+        LocalDate startDate = endDate.minusMonths(12);
+        List<RevenueBreakdownDto> breakdown = revenueByCurrency(
+                startDate.atStartOfDay(), endDate.plusDays(1).atStartOfDay(), startDate, endDate);
 
         return new RevenueAnalyticsDto(
                 dailyRevenue,
                 monthlyRevenue,
                 breakdown,
                 LocalDateTime.now(clock));
+    }
+
+    private List<MonthlyRevenueDto> monthlyRevenueWithGrowth(List<MonthlyRevenue> months) {
+        Map<CurrencyType, BigDecimal> previous = new EnumMap<>(CurrencyType.class);
+        Map<CurrencyType, YearMonth> previousMonth = new EnumMap<>(CurrencyType.class);
+        List<MonthlyRevenueDto> result = new ArrayList<>();
+        for (MonthlyRevenue month : months) {
+            BigDecimal growth = BigDecimal.ZERO;
+            BigDecimal before = previous.get(month.currency());
+            if (before != null && before.signum() > 0
+                    && month.month().minusMonths(1).equals(previousMonth.get(month.currency()))) {
+                growth = month.revenue().subtract(before)
+                        .divide(before, 4, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100))
+                        .setScale(2, RoundingMode.HALF_UP);
+            }
+            previous.put(month.currency(), month.revenue());
+            previousMonth.put(month.currency(), month.month());
+            result.add(new MonthlyRevenueDto(
+                    month.month(), month.currency(), month.revenue(), month.paymentCount(), growth));
+        }
+        return result;
     }
 
     public Page<PendingItemDto> fetchPendingApprovals(Pageable pageable) {
@@ -187,37 +211,41 @@ public class DashboardQueryService {
                 .multiply(BigDecimal.valueOf(100));
     }
 
-    private RevenueBreakdownDto calculateRevenueBreakdown() {
-        LocalDate endDate = LocalDate.now(clock);
-        LocalDate startDate = endDate.minusMonths(12);
-        LocalDateTime startDateTime = startDate.atStartOfDay();
-        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
+    private List<RevenueBreakdownDto> revenueByCurrency(
+            LocalDateTime from, LocalDateTime to, LocalDate startDate, LocalDate endDate) {
+        Map<CurrencyType, Map<PaymentCategory, BigDecimal>> collected = new EnumMap<>(CurrencyType.class);
+        for (CollectedRevenue revenue : paymentService.sumCollectedBetween(from, to)) {
+            collected.computeIfAbsent(revenue.currency(), key -> new EnumMap<>(PaymentCategory.class))
+                    .merge(revenue.category(), revenue.amount(), BigDecimal::add);
+        }
+        Map<CurrencyType, BigDecimal> repairCosts = new EnumMap<>(CurrencyType.class);
+        for (RepairCostTotal total : damageService.sumRepairCostsByCurrency(startDate, endDate)) {
+            repairCosts.merge(total.currency(), total.amount(), BigDecimal::add);
+        }
+        Set<CurrencyType> currencies = EnumSet.noneOf(CurrencyType.class);
+        currencies.addAll(collected.keySet());
+        currencies.addAll(repairCosts.keySet());
 
-        BigDecimal rentalRevenue = paymentService.sumCapturedPaymentsBetween(startDateTime, endDateTime);
-        BigDecimal penaltyRevenue = rentalService.sumCollectedPenaltyRevenue(startDate, endDate);
-        BigDecimal damageRecovered = damageService.sumDamageCharges(startDate, endDate);
-        BigDecimal damageRepairCosts = damageService.sumRepairCosts(startDate, endDate);
+        return currencies.stream()
+                .map(currency -> breakdown(
+                        currency,
+                        collected.getOrDefault(currency, Map.of()),
+                        repairCosts.getOrDefault(currency, BigDecimal.ZERO)))
+                .toList();
+    }
+
+    private RevenueBreakdownDto breakdown(
+            CurrencyType currency, Map<PaymentCategory, BigDecimal> byCategory, BigDecimal damageRepairCosts) {
+        BigDecimal rentalRevenue = byCategory.getOrDefault(PaymentCategory.RENTAL, BigDecimal.ZERO);
+        BigDecimal penaltyRevenue = byCategory.getOrDefault(PaymentCategory.PENALTY, BigDecimal.ZERO);
+        BigDecimal damageRecovered = byCategory.getOrDefault(PaymentCategory.DAMAGE, BigDecimal.ZERO);
 
         BigDecimal netDamageImpact = damageRecovered.subtract(damageRepairCosts);
-
         BigDecimal totalRevenue = rentalRevenue.add(penaltyRevenue).add(damageRecovered);
-
         BigDecimal netRevenue = rentalRevenue.add(penaltyRevenue).add(netDamageImpact);
 
-        BigDecimal rentalPercentage = BigDecimal.ZERO;
-        BigDecimal penaltyPercentage = BigDecimal.ZERO;
-        BigDecimal damagePercentage = BigDecimal.ZERO;
-
-        if (totalRevenue.compareTo(BigDecimal.ZERO) > 0) {
-            rentalPercentage = rentalRevenue.divide(totalRevenue, 4, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100));
-            penaltyPercentage = penaltyRevenue.divide(totalRevenue, 4, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100));
-            damagePercentage = damageRecovered.divide(totalRevenue, 4, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100));
-        }
-
         return new RevenueBreakdownDto(
+                currency,
                 rentalRevenue,
                 penaltyRevenue,
                 damageRecovered,
@@ -225,9 +253,16 @@ public class DashboardQueryService {
                 netDamageImpact,
                 totalRevenue,
                 netRevenue,
-                rentalPercentage,
-                penaltyPercentage,
-                damagePercentage);
+                percentage(rentalRevenue, totalRevenue),
+                percentage(penaltyRevenue, totalRevenue),
+                percentage(damageRecovered, totalRevenue));
+    }
+
+    private static BigDecimal percentage(BigDecimal part, BigDecimal total) {
+        if (total.signum() <= 0) {
+            return BigDecimal.ZERO;
+        }
+        return part.divide(total, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
     }
 
     private PendingItemDto toPendingItemDto(RentalResponse rental) {

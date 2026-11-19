@@ -6,7 +6,9 @@ import com.akif.damage.api.DamageStatus;
 import com.akif.damage.domain.model.DamageReport;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -21,6 +23,10 @@ import java.util.Optional;
 public interface DamageReportRepository extends JpaRepository<DamageReport, Long> {
 
         Optional<DamageReport> findByIdAndIsDeletedFalse(Long id);
+
+        @Lock(LockModeType.PESSIMISTIC_WRITE)
+        @Query("SELECT d FROM DamageReport d WHERE d.id = :id AND d.isDeleted = false")
+        Optional<DamageReport> findByIdForUpdate(@Param("id") Long id);
 
         Page<DamageReport> findByRentalIdAndIsDeletedFalse(Long rentalId, Pageable pageable);
 
@@ -108,26 +114,6 @@ public interface DamageReportRepository extends JpaRepository<DamageReport, Long
                         """)
         int countByStatus(
                         @Param("status") DamageStatus status,
-                        @Param("startDate") LocalDate startDate,
-                        @Param("endDate") LocalDate endDate);
-
-        @Query("""
-                        SELECT COALESCE(SUM(d.repairCostEstimate), 0) FROM DamageReport d WHERE
-                        d.isDeleted = false
-                        AND (CAST(:startDate AS java.time.LocalDate) IS NULL OR CAST(d.reportedAt AS date) >= :startDate)
-                        AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR CAST(d.reportedAt AS date) <= :endDate)
-                        """)
-        BigDecimal sumTotalRepairCost(
-                        @Param("startDate") LocalDate startDate,
-                        @Param("endDate") LocalDate endDate);
-
-        @Query("""
-                        SELECT COALESCE(SUM(d.customerLiability), 0) FROM DamageReport d WHERE
-                        d.isDeleted = false
-                        AND (CAST(:startDate AS java.time.LocalDate) IS NULL OR CAST(d.reportedAt AS date) >= :startDate)
-                        AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR CAST(d.reportedAt AS date) <= :endDate)
-                        """)
-        BigDecimal sumTotalCustomerLiability(
                         @Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate);
 

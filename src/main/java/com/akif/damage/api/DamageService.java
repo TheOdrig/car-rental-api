@@ -18,8 +18,6 @@ public interface DamageService extends UserDamageStatisticsProvider {
 
     int countUnresolvedDisputesOlderThan(int days);
 
-    BigDecimal sumDamageCharges(LocalDate startDate, LocalDate endDate);
-
-    BigDecimal sumRepairCosts(LocalDate startDate, LocalDate endDate);
+    List<RepairCostTotal> sumRepairCostsByCurrency(LocalDate startDate, LocalDate endDate);
 
 }

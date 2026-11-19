@@ -99,6 +99,9 @@ public class Payment extends BaseEntity {
     @Column(name = "last_synced_at")
     private LocalDateTime lastSyncedAt;
 
+    @Column(name = "captured_at")
+    private LocalDateTime capturedAt;
+
     public void applyStatus(PaymentStatus newStatus, String newTransactionId, String newFailureReason) {
         this.status = newStatus;
         if (newTransactionId != null) {
@@ -212,6 +215,12 @@ public class Payment extends BaseEntity {
         }
         if (refundedTotal().compareTo(amount) >= 0 && status == PaymentStatus.CAPTURED) {
             this.status = PaymentStatus.REFUNDED;
+        }
+    }
+
+    public void stampCaptured(LocalDateTime at) {
+        if (this.capturedAt == null) {
+            this.capturedAt = at;
         }
     }
 

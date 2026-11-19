@@ -62,8 +62,8 @@ public class DashboardServiceImpl implements DashboardService {
     public MonthlyMetricsDto getMonthlyMetrics(LocalDate startDate, LocalDate endDate) {
         log.info("Fetching monthly metrics (cache miss) for: {} to {}", startDate, endDate);
         MonthlyMetricsDto metrics = queryService.fetchMonthlyMetrics(startDate, endDate);
-        log.info("Monthly metrics: revenue={}, completed={}, cancelled={}",
-            metrics.totalRevenue(), metrics.completedRentals(), metrics.cancelledRentals());
+        log.info("Monthly metrics: revenueByCurrency={}, completed={}, cancelled={}",
+            metrics.revenueByCurrency(), metrics.completedRentals(), metrics.cancelledRentals());
         return metrics;
     }
 

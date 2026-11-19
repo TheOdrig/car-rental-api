@@ -110,6 +110,9 @@ class PaymentCommittedTransactionsIntegrationTest {
     private RentalService rentalService;
 
     @Autowired
+    private com.akif.car.api.DynamicPricingService dynamicPricingService;
+
+    @Autowired
     private RentalProperties rentalProperties;
 
     @Autowired
@@ -230,7 +233,7 @@ class PaymentCommittedTransactionsIntegrationTest {
         assertThat(paymentService.chargePayment(penalty.getId()).success()).isTrue();
 
         List<String> keys = chargeKeys(2);
-        assertThat(keys.get(0)).isEqualTo(keyPrefix() + "rental-" + rental.getId() + ":penalty:1");
+        assertThat(keys.get(0)).isEqualTo(keyPrefix() + "rental-" + rental.getId() + ":payment-" + penalty.getId() + ":penalty:1");
         assertThat(keys.get(1)).isEqualTo(keys.get(0));
     }
 
@@ -247,8 +250,8 @@ class PaymentCommittedTransactionsIntegrationTest {
         assertThat(paymentService.chargePayment(penalty.getId()).success()).isTrue();
 
         List<String> keys = chargeKeys(2);
-        assertThat(keys.get(0)).isEqualTo(keyPrefix() + "rental-" + rental.getId() + ":penalty:1");
-        assertThat(keys.get(1)).isEqualTo(keyPrefix() + "rental-" + rental.getId() + ":penalty:2");
+        assertThat(keys.get(0)).isEqualTo(keyPrefix() + "rental-" + rental.getId() + ":payment-" + penalty.getId() + ":penalty:1");
+        assertThat(keys.get(1)).isEqualTo(keyPrefix() + "rental-" + rental.getId() + ":payment-" + penalty.getId() + ":penalty:2");
     }
 
     @Test
@@ -668,20 +671,25 @@ class PaymentCommittedTransactionsIntegrationTest {
     @DisplayName("a partial refund in a zero-decimal currency is rounded down to whole units")
     void jpyPartialRefundRoundsDown() {
         Rental rental = rental(LocalDate.now().minusDays(1), LocalDate.now().plusDays(2), RentalStatus.IN_USE);
-        jdbcTemplate.update("UPDATE car_rental.rentals SET currency = 'JPY', total_price = 1000, days = 3 WHERE id = ?",
+        jdbcTemplate.update("UPDATE car_rental.rentals SET currency = 'JPY', total_price = 10000, days = 4 WHERE id = ?",
                 rental.getId());
         PaymentDto dto = paymentService.createPayment(new CreatePaymentRequest(
                 rental.getId(), rental.getUserEmail(), rental.getCarLicensePlate(),
-                new BigDecimal("1000"), CurrencyType.JPY, "CARD"));
+                new BigDecimal("10000"), CurrencyType.JPY, "CARD"));
         Payment payment = paymentRepository.findById(dto.id()).orElseThrow();
         payment.attachIntent("pi_jpy", "seed");
         payment.capture();
         paymentRepository.saveAndFlush(payment);
+        BigDecimal usedDays = dynamicPricingService.calculatePrice(
+                car.getId(), rental.getStartDate(), rental.getStartDate().plusDays(1), LocalDate.now()).finalPrice();
+        assertThat(usedDays.scale()).isEqualTo(2);
 
         rentalService.earlyReturnRental(rental.getId(), "returned early");
 
         ArgumentCaptor<BigDecimal> amount = ArgumentCaptor.forClass(BigDecimal.class);
         verify(paymentGateway).refund(anyString(), amount.capture(), org.mockito.ArgumentMatchers.eq(CurrencyType.JPY), anyString());
-        assertThat(amount.getValue()).isEqualByComparingTo("666");
+        assertThat(amount.getValue()).isEqualByComparingTo(
+                new BigDecimal("10000").subtract(usedDays).setScale(0, java.math.RoundingMode.DOWN));
+        assertThat(amount.getValue().scale()).isZero();
     }
 }

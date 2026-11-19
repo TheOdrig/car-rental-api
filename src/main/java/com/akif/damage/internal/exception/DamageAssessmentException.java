@@ -20,6 +20,12 @@ public class DamageAssessmentException extends BaseException {
         );
     }
 
+    public static DamageAssessmentException notChargeable(String currentStatus) {
+        return new DamageAssessmentException(
+                "Cannot charge damage in current status: " + currentStatus
+        );
+    }
+
     public static DamageAssessmentException alreadyCharged() {
         return new DamageAssessmentException(
                 "Cannot update assessment after charge has been created"

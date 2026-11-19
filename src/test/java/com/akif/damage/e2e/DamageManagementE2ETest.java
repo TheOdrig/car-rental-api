@@ -8,6 +8,7 @@ import com.akif.car.domain.Car;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.damage.api.DamageAssessedEvent;
+import com.akif.damage.api.DamageChargedEvent;
 import com.akif.damage.api.DamageDisputedEvent;
 import com.akif.damage.api.DamageReportedEvent;
 import com.akif.damage.api.DamageResolvedEvent;
@@ -181,8 +182,27 @@ class DamageManagementE2ETest extends E2ETestBase {
                         DamageReport damageReport = damageReportRepository.findById(damageId).orElseThrow();
                         assertThat(damageReport.getStatus()).isEqualTo(DamageStatus.ASSESSED);
 
-                        ReflectionTestUtils.setField(damageReport, "status", DamageStatus.CHARGED);
-                        damageReportRepository.saveAndFlush(damageReport);
+                        eventCaptor.clear();
+
+                        mockMvc.perform(post("/api/v1/admin/damages/{id}/charge", damageId)
+                                        .header("Authorization", "Bearer " + adminToken))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.damageId").value(damageId))
+                                        .andExpect(jsonPath("$.charged").value(true))
+                                        .andExpect(jsonPath("$.status").value("CHARGED"))
+                                        .andExpect(jsonPath("$.amount").value(1500.00))
+                                        .andExpect(jsonPath("$.transactionId").isNotEmpty());
+
+                        assertThat(damageReportRepository.findById(damageId).orElseThrow().getStatus())
+                                        .isEqualTo(DamageStatus.CHARGED);
+                        assertThat(eventCaptor.getEventsOfType(DamageChargedEvent.class)).hasSize(1);
+                        assertThat(jdbcTemplate.queryForObject(
+                                        "SELECT status FROM car_rental.payments WHERE kind = 'DAMAGE' AND reference_id = ?",
+                                        String.class, damageId)).isEqualTo("CAPTURED");
+
+                        mockMvc.perform(post("/api/v1/admin/damages/{id}/charge", damageId)
+                                        .header("Authorization", "Bearer " + adminToken))
+                                        .andExpect(status().isBadRequest());
 
                         eventCaptor.clear();
 
@@ -234,6 +254,14 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .andExpect(status().isOk())
                                         .andExpect(jsonPath("$.status").value("RESOLVED"))
                                         .andExpect(jsonPath("$.customerLiability").value(750.00));
+
+                        var recovered = paymentService.sumCollectedBetween(
+                                        java.time.LocalDateTime.now(clock).minusDays(1),
+                                        java.time.LocalDateTime.now(clock).plusDays(1));
+                        assertThat(recovered).anySatisfy(row -> {
+                                assertThat(row.category()).isEqualTo(com.akif.payment.api.PaymentCategory.DAMAGE);
+                                assertThat(row.amount()).isEqualByComparingTo("750.00");
+                        });
                 }
 
                 @Test
@@ -499,9 +527,10 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .content(objectMapper.writeValueAsString(assessmentRequest)))
                                         .andExpect(status().isOk());
 
-                        DamageReport damageReport = damageReportRepository.findById(damageId).orElseThrow();
-                        ReflectionTestUtils.setField(damageReport, "status", DamageStatus.CHARGED);
-                        damageReportRepository.saveAndFlush(damageReport);
+                        mockMvc.perform(post("/api/v1/admin/damages/{id}/charge", damageId)
+                                        .header("Authorization", "Bearer " + adminToken))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.charged").value(true));
 
                         DamageDisputeRequest disputeRequest = new DamageDisputeRequest(
                                         "Dispute reason",

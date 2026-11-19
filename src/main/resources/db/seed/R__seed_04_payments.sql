@@ -781,3 +781,7 @@ ON CONFLICT (id) DO UPDATE SET
     payment_method = EXCLUDED.payment_method,
     stripe_payment_intent_id = EXCLUDED.stripe_payment_intent_id,
     failure_reason = EXCLUDED.failure_reason;
+
+UPDATE car_rental.payments
+SET captured_at = create_time
+WHERE id >= 910001 AND status IN ('CAPTURED', 'REFUNDED') AND captured_at IS NULL;

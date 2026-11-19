@@ -60,6 +60,9 @@ public class PaymentStateService {
 
     public boolean markCaptured(Payment payment, String transactionId) {
         boolean transitioned = payment.capture();
+        if (transitioned) {
+            payment.stampCaptured(LocalDateTime.now(clock));
+        }
         if (transactionId != null && payment.getStripePaymentIntentId() == null) {
             payment.attachIntent(transactionId, payment.getIdempotencyKey());
         }

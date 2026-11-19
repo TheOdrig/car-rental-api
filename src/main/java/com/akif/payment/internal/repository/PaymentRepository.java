@@ -64,24 +64,25 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Optional<Payment> findByStripePaymentIntentIdAndIsDeletedFalse(String stripePaymentIntentId);
 
     @Query("""
-            SELECT COALESCE(SUM(p.amount), 0) FROM Payment p
+            SELECT p.kind, p.currency, COALESCE(SUM(p.amount - COALESCE(p.refundedAmount, 0)), 0), COUNT(p)
+            FROM Payment p
             WHERE p.status = com.akif.payment.api.PaymentStatus.CAPTURED
-            AND p.createTime >= :start
-            AND p.createTime < :end
+            AND p.capturedAt >= :start
+            AND p.capturedAt < :end
             AND p.isDeleted = false
+            GROUP BY p.kind, p.currency
+            ORDER BY p.kind, p.currency
             """)
-    BigDecimal sumCapturedPaymentsBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    List<Object[]> sumCollectedBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Query("""
             SELECT p FROM Payment p
-            WHERE p.status = :status
-            AND p.createTime >= :start
+            WHERE p.status = com.akif.payment.api.PaymentStatus.CAPTURED
+            AND p.capturedAt >= :start
             AND p.isDeleted = false
-            ORDER BY p.createTime DESC
+            ORDER BY p.capturedAt
             """)
-    List<Payment> findByStatusAndCreateTimeAfter(
-            @Param("status") PaymentStatus status,
-            @Param("start") LocalDateTime start);
+    List<Payment> findCapturedSince(@Param("start") LocalDateTime start);
 
     int countByStatusAndIsDeletedFalse(PaymentStatus status);
 }

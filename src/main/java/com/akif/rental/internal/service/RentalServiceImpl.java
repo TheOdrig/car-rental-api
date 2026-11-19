@@ -788,15 +788,6 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
-    public BigDecimal sumCollectedPenaltyRevenue(LocalDate startDate, LocalDate endDate) {
-        log.debug("Calculating collected penalty revenue between {} and {}", startDate, endDate);
-        return rentalRepository.sumCollectedPenaltyAmount(
-                java.util.List.of(LateReturnStatus.LATE, LateReturnStatus.SEVERELY_LATE),
-                startDate,
-                endDate);
-    }
-
-    @Override
     public BigDecimal getAverageRentalDurationDays(LocalDate startDate, LocalDate endDate) {
         log.debug("Calculating average rental duration between {} and {}", startDate, endDate);
         Double avgDays = rentalRepository.averageRentalDurationDays(startDate, endDate);

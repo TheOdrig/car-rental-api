@@ -25,6 +25,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import com.akif.shared.enums.CurrencyType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -80,28 +81,8 @@ class DashboardServiceImplTest {
                 new BigDecimal("30.00"),
                 now);
 
-        testMonthlyMetrics = new MonthlyMetricsDto(
-                new BigDecimal("150000.00"),
-                120,
-                10,
-                new BigDecimal("5000.00"),
-                new BigDecimal("2500.00"),
-                new BigDecimal("3.5"),
-                today.withDayOfMonth(1),
-                today,
-                now);
-
-        List<DailyRevenueDto> dailyRevenue = List.of(
-                new DailyRevenueDto(today.minusDays(1), new BigDecimal("5000.00"), 10),
-                new DailyRevenueDto(today, new BigDecimal("7500.00"), 15));
-
-        List<MonthlyRevenueDto> monthlyRevenue = List.of(
-                new MonthlyRevenueDto(YearMonth.of(2024, 11), new BigDecimal("120000.00"), 100,
-                        new BigDecimal("10.00")),
-                new MonthlyRevenueDto(YearMonth.of(2024, 12), new BigDecimal("150000.00"), 120,
-                        new BigDecimal("25.00")));
-
         RevenueBreakdownDto breakdown = new RevenueBreakdownDto(
+                CurrencyType.TRY,
                 new BigDecimal("140000.00"),
                 new BigDecimal("5000.00"),
                 new BigDecimal("2500.00"),
@@ -113,10 +94,29 @@ class DashboardServiceImplTest {
                 new BigDecimal("3.39"),
                 new BigDecimal("1.69"));
 
+        testMonthlyMetrics = new MonthlyMetricsDto(
+                List.of(breakdown),
+                120,
+                10,
+                new BigDecimal("3.5"),
+                today.withDayOfMonth(1),
+                today,
+                now);
+
+        List<DailyRevenueDto> dailyRevenue = List.of(
+                new DailyRevenueDto(today.minusDays(1), CurrencyType.TRY, new BigDecimal("5000.00"), 10),
+                new DailyRevenueDto(today, CurrencyType.TRY, new BigDecimal("7500.00"), 15));
+
+        List<MonthlyRevenueDto> monthlyRevenue = List.of(
+                new MonthlyRevenueDto(YearMonth.of(2024, 11), CurrencyType.TRY, new BigDecimal("120000.00"), 100,
+                        new BigDecimal("10.00")),
+                new MonthlyRevenueDto(YearMonth.of(2024, 12), CurrencyType.TRY, new BigDecimal("150000.00"), 120,
+                        new BigDecimal("25.00")));
+
         testRevenueAnalytics = new RevenueAnalyticsDto(
                 dailyRevenue,
                 monthlyRevenue,
-                breakdown,
+                List.of(breakdown),
                 now);
 
         PendingItemDto pendingItem = createPendingItemDto(1L, "testuser", "test@example.com", 100L, "Toyota", "Corolla",
@@ -272,11 +272,12 @@ class DashboardServiceImplTest {
 
             MonthlyMetricsDto result = dashboardService.getMonthlyMetrics();
 
-            assertThat(result.totalRevenue()).isEqualByComparingTo(new BigDecimal("150000.00"));
+            assertThat(result.revenueByCurrency()).hasSize(1);
+            assertThat(result.revenueByCurrency().get(0).totalRevenue()).isEqualByComparingTo(new BigDecimal("147500.00"));
             assertThat(result.completedRentals()).isEqualTo(120);
             assertThat(result.cancelledRentals()).isEqualTo(10);
-            assertThat(result.penaltyRevenue()).isEqualByComparingTo(new BigDecimal("5000.00"));
-            assertThat(result.damageCharges()).isEqualByComparingTo(new BigDecimal("2500.00"));
+            assertThat(result.revenueByCurrency().get(0).penaltyRevenue()).isEqualByComparingTo(new BigDecimal("5000.00"));
+            assertThat(result.revenueByCurrency().get(0).damageRecovered()).isEqualByComparingTo(new BigDecimal("2500.00"));
             assertThat(result.averageRentalDurationDays()).isEqualByComparingTo(new BigDecimal("3.5"));
         }
 
@@ -286,13 +287,12 @@ class DashboardServiceImplTest {
             LocalDate today = LocalDate.now();
             LocalDate startOfMonth = today.withDayOfMonth(1);
             MonthlyMetricsDto emptyMetrics = new MonthlyMetricsDto(
-                    BigDecimal.ZERO, 0, 0, BigDecimal.ZERO, BigDecimal.ZERO,
-                    BigDecimal.ZERO, startOfMonth, today, LocalDateTime.now());
+                    List.of(), 0, 0, BigDecimal.ZERO, startOfMonth, today, LocalDateTime.now());
             when(queryService.fetchMonthlyMetrics(startOfMonth, today)).thenReturn(emptyMetrics);
 
             MonthlyMetricsDto result = dashboardService.getMonthlyMetrics();
 
-            assertThat(result.totalRevenue()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(result.revenueByCurrency()).isEmpty();
             assertThat(result.completedRentals()).isZero();
         }
     }
@@ -322,7 +322,7 @@ class DashboardServiceImplTest {
 
             assertThat(result.dailyRevenue()).hasSize(2);
             assertThat(result.monthlyRevenue()).hasSize(2);
-            assertThat(result.breakdown()).isNotNull();
+            assertThat(result.breakdownByCurrency()).isNotEmpty();
         }
 
         @Test
@@ -332,7 +332,7 @@ class DashboardServiceImplTest {
 
             RevenueAnalyticsDto result = dashboardService.getRevenueAnalytics();
 
-            RevenueBreakdownDto breakdown = result.breakdown();
+            RevenueBreakdownDto breakdown = result.breakdownByCurrency().get(0);
             BigDecimal totalPercentage = breakdown.rentalPercentage()
                     .add(breakdown.penaltyPercentage())
                     .add(breakdown.damagePercentage());
@@ -345,10 +345,7 @@ class DashboardServiceImplTest {
             RevenueAnalyticsDto emptyAnalytics = new RevenueAnalyticsDto(
                     Collections.emptyList(),
                     Collections.emptyList(),
-                    new RevenueBreakdownDto(
-                            BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
-                            BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
-                            BigDecimal.ZERO, BigDecimal.ZERO),
+                    List.of(),
                     LocalDateTime.now());
             when(queryService.fetchRevenueAnalytics()).thenReturn(emptyAnalytics);
 
@@ -356,7 +353,7 @@ class DashboardServiceImplTest {
 
             assertThat(result.dailyRevenue()).isEmpty();
             assertThat(result.monthlyRevenue()).isEmpty();
-            assertThat(result.breakdown().totalRevenue()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(result.breakdownByCurrency()).isEmpty();
         }
     }
 

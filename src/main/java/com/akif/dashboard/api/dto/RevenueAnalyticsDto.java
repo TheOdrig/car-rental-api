@@ -6,7 +6,6 @@ import java.util.List;
 public record RevenueAnalyticsDto(
     List<DailyRevenueDto> dailyRevenue,
     List<MonthlyRevenueDto> monthlyRevenue,
-    RevenueBreakdownDto breakdown,
+    List<RevenueBreakdownDto> breakdownByCurrency,
     LocalDateTime generatedAt
 ) {}
-

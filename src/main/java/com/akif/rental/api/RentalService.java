@@ -57,8 +57,6 @@ public interface RentalService extends UserRentalStatisticsProvider {
 
     Page<RentalResponse> findOverdueRentals(Pageable pageable);
 
-    BigDecimal sumCollectedPenaltyRevenue(LocalDate startDate, LocalDate endDate);
-
     BigDecimal getAverageRentalDurationDays(LocalDate startDate, LocalDate endDate);
 
     Page<RentalResponse> getUserRentals(Long userId, RentalStatus status, Pageable pageable);
