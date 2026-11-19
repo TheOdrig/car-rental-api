@@ -89,8 +89,7 @@ class ProdProfileWiringTest {
                     declared.add(new String(stream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8));
                 }
             }
-            assertThat(String.join("
-", declared))
+            assertThat(String.join(" ", declared))
                     .contains("org.springframework.boot.EnvironmentPostProcessor=" + ProdConfigurationValidator.class.getName());
         } catch (java.io.IOException e) {
             throw new java.io.UncheckedIOException(e);
