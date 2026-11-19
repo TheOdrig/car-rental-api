@@ -4,6 +4,7 @@ import com.akif.payment.domain.Payment;
 import com.akif.payment.domain.PaymentRefund;
 import com.akif.payment.domain.enums.RefundStatus;
 import com.akif.payment.api.PaymentResult;
+import com.akif.payment.api.PaymentRefundChangedEvent;
 import com.akif.payment.internal.repository.PaymentRefundRepository;
 import com.akif.payment.internal.repository.PaymentRepository;
 import com.akif.payment.internal.service.gateway.IdempotencyKeyGenerator;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.dao.QueryTimeoutException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,7 @@ class PaymentRefundService {
     private final IdempotencyKeyGenerator keys;
     private final EntityManager entityManager;
     private final PaymentSupport support;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${payment.refund.lock-timeout-ms:5000}")
     private long refundLockTimeoutMs;
@@ -134,6 +137,7 @@ class PaymentRefundService {
                 }
                 payment.applyRefundTotal(targetTotal);
                 paymentRepository.save(payment);
+                eventPublisher.publishEvent(new PaymentRefundChangedEvent(payment.getId(), payment.getRentalId()));
                 log.info("Refunded payment: ID={}, operation={}, amount={}", payment.getId(), operationKey, refundAmount);
                 return PaymentResult.success(
                         refundId != null ? refundId : payment.getTransactionId(), "Refund processed");

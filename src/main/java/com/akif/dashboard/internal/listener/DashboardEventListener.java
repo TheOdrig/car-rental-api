@@ -9,6 +9,7 @@ import com.akif.payment.api.PaymentAttentionEvent;
 import com.akif.payment.api.PenaltyPaymentCapturedEvent;
 import com.akif.rental.api.PenaltyChargeFailedEvent;
 import com.akif.payment.api.PaymentCapturedEvent;
+import com.akif.payment.api.PaymentRefundChangedEvent;
 import com.akif.rental.api.RentalCancelledEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +52,12 @@ public class DashboardEventListener {
 
     @ApplicationModuleListener
     public void handleDamageCharged(DamageChargedEvent event) {
+        evictCache(REVENUE_ANALYTICS_CACHE);
+        evictCache(MONTHLY_METRICS_CACHE);
+    }
+
+    @ApplicationModuleListener
+    public void handlePaymentRefundChanged(PaymentRefundChangedEvent event) {
         evictCache(REVENUE_ANALYTICS_CACHE);
         evictCache(MONTHLY_METRICS_CACHE);
     }

@@ -3,6 +3,7 @@ package com.akif.payment.internal.service;
 import com.akif.payment.api.PaymentAttentionEvent;
 import com.akif.payment.api.PaymentCancelledEvent;
 import com.akif.payment.api.PaymentCapturedEvent;
+import com.akif.payment.api.PaymentRefundChangedEvent;
 import com.akif.payment.api.PenaltyPaymentCapturedEvent;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.domain.Payment;
@@ -166,6 +167,7 @@ public class PaymentStateService {
         boolean changed = payment.refundedTotal().compareTo(before) != 0 || payment.getStatus() != statusBefore;
         if (changed) {
             paymentRepository.save(payment);
+            eventPublisher.publishEvent(new PaymentRefundChangedEvent(payment.getId(), payment.getRentalId()));
         }
         return changed;
     }
@@ -177,6 +179,7 @@ public class PaymentStateService {
         boolean changed = payment.refundedTotal().compareTo(before) != 0 || payment.getStatus() != statusBefore;
         if (changed) {
             paymentRepository.save(payment);
+            eventPublisher.publishEvent(new PaymentRefundChangedEvent(payment.getId(), payment.getRentalId()));
         }
         return changed;
     }

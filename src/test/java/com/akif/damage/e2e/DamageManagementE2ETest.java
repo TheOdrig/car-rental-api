@@ -58,6 +58,20 @@ class DamageManagementE2ETest extends E2ETestBase {
         @Autowired
         private DamageReportRepository damageReportRepository;
 
+        private BigDecimal dashboardDamageRecovered(String adminToken, Long damageId) throws Exception {
+                String currency = damageReportRepository.findById(damageId).orElseThrow().getCurrency().name();
+                String body = mockMvc.perform(get("/api/v1/admin/dashboard/revenue")
+                                .header("Authorization", "Bearer " + adminToken))
+                                .andExpect(status().isOk())
+                                .andReturn().getResponse().getContentAsString();
+                for (var row : objectMapper.readTree(body).get("breakdownByCurrency")) {
+                        if (currency.equals(row.get("currency").asString())) {
+                                return row.get("damageRecovered").decimalValue();
+                        }
+                }
+                return BigDecimal.ZERO;
+        }
+
         @Nested
         @DisplayName("Complete Damage Flow E2E Tests")
         class CompleteDamageFlowE2ETests {
@@ -206,6 +220,8 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .header("Authorization", "Bearer " + adminToken))
                                         .andExpect(status().isBadRequest());
 
+                        BigDecimal recoveredAfterCharge = dashboardDamageRecovered(adminToken, damageId);
+
                         eventCaptor.clear();
 
                         DamageDisputeRequest disputeRequest = new DamageDisputeRequest(
@@ -264,6 +280,10 @@ class DamageManagementE2ETest extends E2ETestBase {
                                 assertThat(row.category()).isEqualTo(com.akif.payment.api.PaymentCategory.DAMAGE);
                                 assertThat(row.amount()).isEqualByComparingTo("750.00");
                         });
+
+                        org.awaitility.Awaitility.await().atMost(Duration.ofSeconds(10)).untilAsserted(() ->
+                                        assertThat(dashboardDamageRecovered(adminToken, damageId))
+                                                        .isEqualByComparingTo(recoveredAfterCharge.subtract(new BigDecimal("750.00"))));
                 }
 
                 @Test
