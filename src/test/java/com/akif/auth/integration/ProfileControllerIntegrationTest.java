@@ -113,6 +113,30 @@ class ProfileControllerIntegrationTest {
         }
 
         @Test
+        @DisplayName("Should report emailVerified false for a fresh account and true once verified")
+        void shouldExposeEmailVerified() throws Exception {
+            mockMvc.perform(get("/api/v1/users/me/profile")
+                    .header("Authorization", userToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.emailVerified").value(false));
+
+            User stored = userRepository.findByUsername("testuser").orElseThrow();
+            org.springframework.test.util.ReflectionTestUtils.setField(stored, "emailVerified", true);
+            userRepository.saveAndFlush(stored);
+
+            mockMvc.perform(get("/api/v1/users/me/profile")
+                    .header("Authorization", userToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.emailVerified").value(true));
+            mockMvc.perform(put("/api/v1/users/me/profile")
+                    .header("Authorization", userToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(new ProfileUpdateRequest("John", "Doe", "+9876543210"))))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.emailVerified").value(true));
+        }
+
+        @Test
         @DisplayName("Should return 401 without JWT")
         void shouldReturn401WithoutJwt() throws Exception {
             mockMvc.perform(get("/api/v1/users/me/profile"))

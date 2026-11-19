@@ -44,7 +44,8 @@ public class ProfileServiceImpl implements ProfileService {
                 dto.phone(),
                 avatarUrl,
                 dto.roles(),
-                dto.active());
+                dto.active(),
+                dto.emailVerified());
     }
 
     @Override
@@ -75,7 +76,8 @@ public class ProfileServiceImpl implements ProfileService {
                 dto.phone(),
                 avatarUrl,
                 dto.roles(),
-                dto.active());
+                dto.active(),
+                dto.emailVerified());
     }
 
     @Override
