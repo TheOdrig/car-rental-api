@@ -98,7 +98,7 @@ public class GoogleOAuth2ProviderService implements OAuth2ProviderService {
                 throw OAuth2ProviderException.emailRequired(PROVIDER_NAME);
             }
 
-            log.debug("Successfully retrieved user info from Google for email: {}", email);
+            log.debug("Successfully retrieved user info from Google");
             return new OAuth2UserInfo(providerId, email, name, firstName, lastName, avatarUrl, PROVIDER_NAME);
         } catch (RestClientException e) {
             log.error("Failed to fetch user info from Google: {}", e.getMessage());

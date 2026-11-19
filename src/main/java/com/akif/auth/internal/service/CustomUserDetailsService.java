@@ -24,13 +24,12 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.debug("Loading user by username or email: {}", username);
 
         User user = userRepository.findByUsername(username)
                 .or(() -> userRepository.findByEmail(username))
                 .orElseThrow(() -> {
-                    log.warn("User not found with username or email: {}", username);
-                    return new UsernameNotFoundException("User not found with username or email: " + username);
+                    log.warn("Login rejected: unknown username or email");
+                    return new UsernameNotFoundException("User not found");
                 });
 
         log.debug("User found: {} with roles: {}", user.getUsername(), user.getRoles());

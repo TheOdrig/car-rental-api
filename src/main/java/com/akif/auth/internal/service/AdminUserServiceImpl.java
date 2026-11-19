@@ -50,7 +50,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Override
     public Page<AdminUserListItem> getAllUsers(String role, String status, String search, Pageable pageable) {
-        log.debug("Fetching users list: role={}, status={}, search={}", role, status, search);
+        log.debug("Fetching users list: role={}, status={}", role, status);
 
         Pageable unsortedPageable = PageRequest.of(
                 pageable.getPageNumber(),

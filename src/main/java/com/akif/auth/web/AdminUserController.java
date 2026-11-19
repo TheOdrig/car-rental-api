@@ -75,8 +75,8 @@ public class AdminUserController {
             @PageableDefault(size = 20, sort = "createTime", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable,
             @AuthenticationPrincipal UserDetails adminUser) {
 
-        log.info("GET /api/v1/admin/users - Admin: {}, Role: {}, Status: {}, Search: {}",
-                adminUser.getUsername(), role, status, search);
+        log.info("GET /api/v1/admin/users - Admin: {}, Role: {}, Status: {}, Search present: {}",
+                adminUser.getUsername(), role, status, search != null && !search.isBlank());
 
         Page<AdminUserListItem> users = adminUserService.getAllUsers(role, status, search, pageable);
 

@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-
-    <property name="LOG_PATTERN" 
+    <property name="LOG_PATTERN"
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{correlationId:-NO-ID}] [%X{userId:-anon}] [%thread] %-5level %logger{36} - %msg%n"/>
-
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -13,56 +11,21 @@
         </encoder>
     </appender>
 
-
-
-
-    <logger name="com.akif.rental" level="DEBUG"/>
-    <logger name="com.akif.damage" level="DEBUG"/>
-    <logger name="com.akif.car" level="DEBUG"/>
-    <logger name="com.akif.auth" level="DEBUG"/>
-    <logger name="com.akif.currency" level="DEBUG"/>
-    <logger name="com.akif.notification" level="DEBUG"/>
-
-
-    <logger name="com.akif.security" level="DEBUG"/>
-    <logger name="com.akif.handler" level="DEBUG"/>
-
-
-    <logger name="com.akif.service" level="DEBUG"/>
-    <logger name="com.akif.controller" level="DEBUG"/>
-
-
-    <logger name="com.akif.scheduler" level="INFO"/>
-
-
     <logger name="org.springframework" level="INFO"/>
-    <logger name="org.springframework.web" level="INFO"/>
-    <logger name="org.springframework.security" level="INFO"/>
-    <logger name="org.springframework.boot" level="INFO"/>
-
-
     <logger name="org.hibernate" level="WARN"/>
-    <logger name="org.hibernate.SQL" level="DEBUG"/>
-    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
-
-
     <logger name="com.zaxxer.hikari" level="INFO"/>
-
-
     <logger name="org.flywaydb" level="INFO"/>
-
-
     <logger name="com.stripe" level="INFO"/>
 
-
     <springProfile name="default,dev,test">
+        <logger name="com.akif" level="DEBUG"/>
         <root level="DEBUG">
             <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
 
-
     <springProfile name="prod">
+        <logger name="com.akif" level="INFO"/>
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>

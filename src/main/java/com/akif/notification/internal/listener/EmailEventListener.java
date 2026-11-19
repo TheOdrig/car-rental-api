@@ -24,72 +24,72 @@ public class EmailEventListener {
     @ApplicationModuleListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void handleRentalConfirmed(RentalConfirmedEvent event) {
-        log.debug("Received RentalConfirmedEvent. RentalId: {}, CustomerEmail: {}",
-                event.rentalId(), event.customerEmail());
+        log.debug("Received RentalConfirmedEvent. RentalId: {}",
+                event.rentalId());
         emailNotificationService.sendRentalConfirmation(event);
     }
 
     @ApplicationModuleListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void handlePaymentCaptured(PaymentCapturedEvent event) {
-        log.debug("Received PaymentCapturedEvent. PaymentId: {}, RentalId: {}, CustomerEmail: {}",
-                event.paymentId(), event.rentalId(), event.customerEmail());
+        log.debug("Received PaymentCapturedEvent. PaymentId: {}, RentalId: {}",
+                event.paymentId(), event.rentalId());
         emailNotificationService.sendPaymentReceipt(event);
     }
 
     @ApplicationModuleListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void handlePickupReminder(PickupReminderEvent event) {
-        log.debug("Received PickupReminderEvent. RentalId: {}, CustomerEmail: {}, PickupDate: {}",
-                event.rentalId(), event.customerEmail(), event.pickupDate());
+        log.debug("Received PickupReminderEvent. RentalId: {}, PickupDate: {}",
+                event.rentalId(), event.pickupDate());
         emailNotificationService.sendPickupReminder(event);
     }
 
     @ApplicationModuleListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void handleReturnReminder(ReturnReminderEvent event) {
-        log.debug("Received ReturnReminderEvent. RentalId: {}, CustomerEmail: {}, ReturnDate: {}",
-                event.rentalId(), event.customerEmail(), event.returnDate());
+        log.debug("Received ReturnReminderEvent. RentalId: {}, ReturnDate: {}",
+                event.rentalId(), event.returnDate());
         emailNotificationService.sendReturnReminder(event);
     }
 
     @ApplicationModuleListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void handleRentalCancelled(RentalCancelledEvent event) {
-        log.debug("Received RentalCancelledEvent. RentalId: {}, CustomerEmail: {}, RefundProcessed: {}",
-                event.rentalId(), event.customerEmail(), event.refundProcessed());
+        log.debug("Received RentalCancelledEvent. RentalId: {}, RefundProcessed: {}",
+                event.rentalId(), event.refundProcessed());
         emailNotificationService.sendCancellationConfirmation(event);
     }
 
     @ApplicationModuleListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void handleGracePeriodWarning(GracePeriodWarningEvent event) {
-        log.debug("Received GracePeriodWarningEvent. RentalId: {}, CustomerEmail: {}, RemainingMinutes: {}",
-                event.rentalId(), event.customerEmail(), event.remainingGraceMinutes());
+        log.debug("Received GracePeriodWarningEvent. RentalId: {}, RemainingMinutes: {}",
+                event.rentalId(), event.remainingGraceMinutes());
         emailNotificationService.sendGracePeriodWarning(event);
     }
 
     @ApplicationModuleListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void handleLateReturnNotification(LateReturnNotificationEvent event) {
-        log.debug("Received LateReturnNotificationEvent. RentalId: {}, CustomerEmail: {}, LateHours: {}, Penalty: {}",
-                event.rentalId(), event.customerEmail(), event.lateHours(), event.currentPenaltyAmount());
+        log.debug("Received LateReturnNotificationEvent. RentalId: {}, LateHours: {}, Penalty: {}",
+                event.rentalId(), event.lateHours(), event.currentPenaltyAmount());
         emailNotificationService.sendLateReturnNotification(event);
     }
 
     @ApplicationModuleListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void handleSeverelyLateNotification(SeverelyLateNotificationEvent event) {
-        log.debug("Received SeverelyLateNotificationEvent. RentalId: {}, CustomerEmail: {}, LateDays: {}, Penalty: {}",
-                event.rentalId(), event.customerEmail(), event.lateDays(), event.currentPenaltyAmount());
+        log.debug("Received SeverelyLateNotificationEvent. RentalId: {}, LateDays: {}, Penalty: {}",
+                event.rentalId(), event.lateDays(), event.currentPenaltyAmount());
         emailNotificationService.sendSeverelyLateNotification(event);
     }
 
     @ApplicationModuleListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void handlePenaltySummary(PenaltySummaryEvent event) {
-        log.debug("Received PenaltySummaryEvent. RentalId: {}, CustomerEmail: {}, FinalPenalty: {}",
-                event.rentalId(), event.customerEmail(), event.finalPenaltyAmount());
+        log.debug("Received PenaltySummaryEvent. RentalId: {}, FinalPenalty: {}",
+                event.rentalId(), event.finalPenaltyAmount());
         emailNotificationService.sendPenaltySummary(event);
     }
 
@@ -144,15 +144,15 @@ public class EmailEventListener {
     @ApplicationModuleListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void handlePaymentRetryRequested(PaymentRetryRequestedEvent event) {
-        log.debug("Received PaymentRetryRequestedEvent. RentalId: {}, CustomerEmail: {}",
-                event.rentalId(), event.customerEmail());
+        log.debug("Received PaymentRetryRequestedEvent. RentalId: {}",
+                event.rentalId());
         emailNotificationService.sendPaymentRetryRequest(event);
     }
 
     @Async
     @TransactionalEventListener
     public void handlePasswordResetRequested(PasswordResetRequestedEvent event) {
-        log.debug("Received PasswordResetRequestedEvent. Email: {}", event.email());
+        log.debug("Received PasswordResetRequestedEvent");
         emailNotificationService.sendPasswordResetEmail(event.email(), event.resetLink());
     }
 }

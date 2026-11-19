@@ -31,8 +31,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     @Override
     @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendRentalConfirmation(RentalConfirmedEvent event) {
-        log.info("Queuing rental confirmation email. RentalId: {}, Recipient: {}",
-                event.rentalId(), event.customerEmail());
+        log.info("Queuing rental confirmation email. RentalId: {}",
+                event.rentalId());
 
         String body = templateService.renderConfirmationEmail(event);
         EmailMessage message = new EmailMessage(
@@ -44,8 +44,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Rental confirmation email sent successfully. RentalId: {}, To: {}, Timestamp: {}",
-                    event.rentalId(), event.customerEmail(), LocalDateTime.now(clock));
+            log.info("Rental confirmation email sent successfully. RentalId: {}, Timestamp: {}",
+                    event.rentalId(), LocalDateTime.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -56,8 +56,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     @Override
     @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendPaymentReceipt(PaymentCapturedEvent event) {
-        log.info("Queuing payment receipt email. PaymentId: {}, RentalId: {}, Recipient: {}",
-                event.paymentId(), event.rentalId(), event.customerEmail());
+        log.info("Queuing payment receipt email. PaymentId: {}, RentalId: {}",
+                event.paymentId(), event.rentalId());
 
         String body = templateService.renderPaymentReceiptEmail(event);
         EmailMessage message = new EmailMessage(
@@ -69,8 +69,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Payment receipt email sent successfully. PaymentId: {}, Amount: {}, To: {}, Timestamp: {}",
-                    event.paymentId(), event.amount(), event.customerEmail(), LocalDateTime.now(clock));
+            log.info("Payment receipt email sent successfully. PaymentId: {}, Amount: {}, Timestamp: {}",
+                    event.paymentId(), event.amount(), LocalDateTime.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. PaymentId: {}, Error: {}, SMTP Code: {}",
                     event.paymentId(), e.getMessage(), e.getSmtpErrorCode());
@@ -81,8 +81,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     @Override
     @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendPickupReminder(PickupReminderEvent event) {
-        log.info("Queuing pickup reminder email. RentalId: {}, Recipient: {}",
-                event.rentalId(), event.customerEmail());
+        log.info("Queuing pickup reminder email. RentalId: {}",
+                event.rentalId());
 
         String body = templateService.renderPickupReminderEmail(event);
         EmailMessage message = new EmailMessage(
@@ -94,8 +94,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Pickup reminder email sent successfully. RentalId: {}, To: {}, Timestamp: {}",
-                    event.rentalId(), event.customerEmail(), LocalDateTime.now(clock));
+            log.info("Pickup reminder email sent successfully. RentalId: {}, Timestamp: {}",
+                    event.rentalId(), LocalDateTime.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -106,8 +106,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     @Override
     @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendReturnReminder(ReturnReminderEvent event) {
-        log.info("Queuing return reminder email. RentalId: {}, Recipient: {}",
-                event.rentalId(), event.customerEmail());
+        log.info("Queuing return reminder email. RentalId: {}",
+                event.rentalId());
 
         String body = templateService.renderReturnReminderEmail(event);
         EmailMessage message = new EmailMessage(
@@ -119,8 +119,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Return reminder email sent successfully. RentalId: {}, To: {}, Timestamp: {}",
-                    event.rentalId(), event.customerEmail(), LocalDateTime.now(clock));
+            log.info("Return reminder email sent successfully. RentalId: {}, Timestamp: {}",
+                    event.rentalId(), LocalDateTime.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -131,8 +131,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     @Override
     @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendCancellationConfirmation(RentalCancelledEvent event) {
-        log.info("Queuing cancellation confirmation email. RentalId: {}, Recipient: {}",
-                event.rentalId(), event.customerEmail());
+        log.info("Queuing cancellation confirmation email. RentalId: {}",
+                event.rentalId());
 
         String body = templateService.renderCancellationEmail(event);
         EmailMessage message = new EmailMessage(
@@ -144,8 +144,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Cancellation confirmation email sent successfully. RentalId: {}, To: {}, Timestamp: {}",
-                    event.rentalId(), event.customerEmail(), LocalDateTime.now(clock));
+            log.info("Cancellation confirmation email sent successfully. RentalId: {}, Timestamp: {}",
+                    event.rentalId(), LocalDateTime.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -156,8 +156,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     @Override
     @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendGracePeriodWarning(GracePeriodWarningEvent event) {
-        log.info("Queuing grace period warning email. RentalId: {}, Recipient: {}",
-                event.rentalId(), event.customerEmail());
+        log.info("Queuing grace period warning email. RentalId: {}",
+                event.rentalId());
 
         String body = templateService.renderGracePeriodWarningEmail(event);
         EmailMessage message = new EmailMessage(
@@ -169,8 +169,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Grace period warning email sent successfully. RentalId: {}, To: {}, Timestamp: {}",
-                    event.rentalId(), event.customerEmail(), LocalDateTime.now(clock));
+            log.info("Grace period warning email sent successfully. RentalId: {}, Timestamp: {}",
+                    event.rentalId(), LocalDateTime.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -181,8 +181,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     @Override
     @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendLateReturnNotification(LateReturnNotificationEvent event) {
-        log.info("Queuing late return notification email. RentalId: {}, Recipient: {}",
-                event.rentalId(), event.customerEmail());
+        log.info("Queuing late return notification email. RentalId: {}",
+                event.rentalId());
 
         String body = templateService.renderLateReturnNotificationEmail(event);
         EmailMessage message = new EmailMessage(
@@ -194,8 +194,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Late return notification email sent successfully. RentalId: {}, To: {}, Timestamp: {}",
-                    event.rentalId(), event.customerEmail(), LocalDateTime.now(clock));
+            log.info("Late return notification email sent successfully. RentalId: {}, Timestamp: {}",
+                    event.rentalId(), LocalDateTime.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -206,8 +206,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     @Override
     @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendSeverelyLateNotification(SeverelyLateNotificationEvent event) {
-        log.info("Queuing severely late notification email. RentalId: {}, Recipient: {}",
-                event.rentalId(), event.customerEmail());
+        log.info("Queuing severely late notification email. RentalId: {}",
+                event.rentalId());
 
         String body = templateService.renderSeverelyLateNotificationEmail(event);
         EmailMessage message = new EmailMessage(
@@ -219,8 +219,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Severely late notification email sent successfully. RentalId: {}, To: {}, Timestamp: {}",
-                    event.rentalId(), event.customerEmail(), LocalDateTime.now(clock));
+            log.info("Severely late notification email sent successfully. RentalId: {}, Timestamp: {}",
+                    event.rentalId(), LocalDateTime.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -231,8 +231,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     @Override
     @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendPenaltySummary(PenaltySummaryEvent event) {
-        log.info("Queuing penalty summary email. RentalId: {}, Recipient: {}",
-                event.rentalId(), event.customerEmail());
+        log.info("Queuing penalty summary email. RentalId: {}",
+                event.rentalId());
 
         String body = templateService.renderPenaltySummaryEmail(event);
         EmailMessage message = new EmailMessage(
@@ -244,8 +244,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Penalty summary email sent successfully. RentalId: {}, To: {}, Timestamp: {}",
-                    event.rentalId(), event.customerEmail(), LocalDateTime.now(clock));
+            log.info("Penalty summary email sent successfully. RentalId: {}, Timestamp: {}",
+                    event.rentalId(), LocalDateTime.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -260,7 +260,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         Long damageId = event.damageReportId();
         Long rentalId = event.rentalId();
 
-        log.info("Queuing damage reported email. DamageId: {}, Recipient: {}", damageId, customerEmail);
+        log.info("Queuing damage reported email. DamageId: {}", damageId);
 
         String body = templateService.renderDamageReportedEmail(event);
         EmailMessage message = new EmailMessage(
@@ -272,7 +272,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Damage reported email sent successfully. DamageId: {}, To: {}", damageId, customerEmail);
+            log.info("Damage reported email sent successfully. DamageId: {}", damageId);
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. DamageId: {}, Error: {}", damageId, e.getMessage());
             throw e;
@@ -286,7 +286,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         Long damageId = event.damageReportId();
         Long rentalId = event.rentalId();
 
-        log.info("Queuing damage assessed email. DamageId: {}, Recipient: {}", damageId, customerEmail);
+        log.info("Queuing damage assessed email. DamageId: {}", damageId);
 
         String body = templateService.renderDamageAssessedEmail(event);
         EmailMessage message = new EmailMessage(
@@ -298,7 +298,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Damage assessed email sent successfully. DamageId: {}, To: {}", damageId, customerEmail);
+            log.info("Damage assessed email sent successfully. DamageId: {}", damageId);
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. DamageId: {}, Error: {}", damageId, e.getMessage());
             throw e;
@@ -312,7 +312,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         Long damageId = event.damageReportId();
         Long rentalId = event.rentalId();
 
-        log.info("Queuing damage charged email. DamageId: {}, Recipient: {}", damageId, customerEmail);
+        log.info("Queuing damage charged email. DamageId: {}", damageId);
 
         String body = templateService.renderDamageChargedEmail(event);
         EmailMessage message = new EmailMessage(
@@ -324,7 +324,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Damage charged email sent successfully. DamageId: {}, To: {}", damageId, customerEmail);
+            log.info("Damage charged email sent successfully. DamageId: {}", damageId);
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. DamageId: {}, Error: {}", damageId, e.getMessage());
             throw e;
@@ -338,7 +338,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         Long damageId = event.damageReportId();
         Long rentalId = event.rentalId();
 
-        log.info("Queuing damage disputed email. DamageId: {}, Recipient: {}", damageId, customerEmail);
+        log.info("Queuing damage disputed email. DamageId: {}", damageId);
 
         String body = templateService.renderDamageDisputedEmail(event);
         EmailMessage message = new EmailMessage(
@@ -350,7 +350,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Damage disputed email sent successfully. DamageId: {}, To: {}", damageId, customerEmail);
+            log.info("Damage disputed email sent successfully. DamageId: {}", damageId);
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. DamageId: {}, Error: {}", damageId, e.getMessage());
             throw e;
@@ -364,7 +364,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         Long damageId = event.damageReportId();
         Long rentalId = event.rentalId();
 
-        log.info("Queuing damage resolved email. DamageId: {}, Recipient: {}", damageId, customerEmail);
+        log.info("Queuing damage resolved email. DamageId: {}", damageId);
 
         String body = templateService.renderDamageResolvedEmail(event);
         EmailMessage message = new EmailMessage(
@@ -376,7 +376,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Damage resolved email sent successfully. DamageId: {}, To: {}", damageId, customerEmail);
+            log.info("Damage resolved email sent successfully. DamageId: {}", damageId);
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. DamageId: {}, Error: {}", damageId, e.getMessage());
             throw e;
@@ -390,7 +390,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         Long damageId = event.damageReportId();
         Long rentalId = event.rentalId();
 
-        log.info("Queuing damage charge failed email. DamageId: {}, Recipient: {}", damageId, customerEmail);
+        log.info("Queuing damage charge failed email. DamageId: {}", damageId);
 
         String body = templateService.renderDamageChargeFailedEmail(event);
         EmailMessage message = new EmailMessage(
@@ -402,7 +402,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Damage charge failed email sent successfully. DamageId: {}, To: {}", damageId, customerEmail);
+            log.info("Damage charge failed email sent successfully. DamageId: {}", damageId);
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. DamageId: {}, Error: {}", damageId, e.getMessage());
             throw e;
@@ -412,8 +412,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     @Override
     @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendPaymentRetryRequest(PaymentRetryRequestedEvent event) {
-        log.info("Queuing payment retry email. RentalId: {}, Recipient: {}",
-                event.rentalId(), event.customerEmail());
+        log.info("Queuing payment retry email. RentalId: {}",
+                event.rentalId());
 
         String body = templateService.renderPaymentRetryEmail(event);
         EmailMessage message = new EmailMessage(
@@ -425,8 +425,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Payment retry email sent successfully. RentalId: {}, To: {}, Timestamp: {}",
-                    event.rentalId(), event.customerEmail(), LocalDateTime.now(clock));
+            log.info("Payment retry email sent successfully. RentalId: {}, Timestamp: {}",
+                    event.rentalId(), LocalDateTime.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -437,7 +437,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     @Override
     @Retryable(includes = EmailSendException.class, maxRetries = 3, delay = 1000, multiplier = 2)
     public void sendPasswordResetEmail(String email, String resetLink) {
-        log.info("Queuing password reset email. Recipient: {}", email);
+        log.info("Queuing password reset email");
 
         String body = templateService.renderPasswordResetEmail(email, resetLink);
         EmailMessage message = new EmailMessage(
@@ -449,9 +449,9 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
         try {
             emailSender.send(message);
-            log.info("Password reset email sent successfully. To: {}", email);
+            log.info("Password reset email sent successfully");
         } catch (EmailSendException e) {
-            log.warn("Email send attempt failed. Email: {}, Error: {}", email, e.getMessage());
+            log.warn("Email send attempt failed. Error: {}", e.getMessage());
             throw e;
         }
     }

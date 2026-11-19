@@ -278,7 +278,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
     @Override
     public String renderPasswordResetEmail(String email, String resetLink) {
-        log.debug("Rendering password reset email for: {}", email);
+        log.debug("Rendering password reset email");
 
         Context context = new Context();
         context.setVariable("email", email);

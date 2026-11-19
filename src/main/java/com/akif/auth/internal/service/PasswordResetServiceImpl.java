@@ -44,10 +44,10 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     @Override
     @Transactional
     public void requestPasswordReset(String email) {
-        log.info("Password reset requested for email: {}", email);
+        log.info("Password reset requested");
 
         if (!userRepository.existsByEmail(email)) {
-            log.warn("Password reset requested for non-existent email: {}", email);
+            log.info("Password reset requested for an unknown address");
             return;
         }
 
@@ -67,7 +67,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         String resetLink = buildResetLink(token);
         eventPublisher.publishEvent(new PasswordResetRequestedEvent(email, resetLink));
 
-        log.info("Password reset token created for email: {}", email);
+        log.info("Password reset token created");
     }
 
     @Override

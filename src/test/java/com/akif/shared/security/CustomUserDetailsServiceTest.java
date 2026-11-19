@@ -172,7 +172,7 @@ public class CustomUserDetailsServiceTest {
 
             assertThatThrownBy(() -> userDetailsService.loadUserByUsername("nonexistent"))
                     .isInstanceOf(UsernameNotFoundException.class)
-                    .hasMessage("User not found with username or email: nonexistent");
+                    .hasMessage("User not found");
         }
 
         @Test
@@ -182,7 +182,7 @@ public class CustomUserDetailsServiceTest {
 
             assertThatThrownBy(() -> userDetailsService.loadUserByUsername(null))
                     .isInstanceOf(UsernameNotFoundException.class)
-                    .hasMessage("User not found with username or email: null");
+                    .hasMessage("User not found");
         }
 
         @Test
@@ -192,7 +192,7 @@ public class CustomUserDetailsServiceTest {
 
             assertThatThrownBy(() -> userDetailsService.loadUserByUsername(""))
                     .isInstanceOf(UsernameNotFoundException.class)
-                    .hasMessage("User not found with username or email: ");
+                    .hasMessage("User not found");
         }
     }
 
