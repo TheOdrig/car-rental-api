@@ -5,7 +5,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.akif.shared.exception.RateLimitExceededException;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
-import io.github.bucket4j.EstimationProbe;
 import io.github.bucket4j.TimeMeter;
 import org.springframework.stereotype.Service;
 
@@ -52,23 +51,24 @@ public class RateLimitService {
         }
     }
 
-    public void requireAvailable(RateLimitCategory category, String identity) {
+    public void reserve(RateLimitCategory category, String identity) {
         if (!properties.isEnabled() || identity == null || identity.isBlank()) {
             return;
         }
-        Bucket bucket = buckets.get(category.name() + ":" + normalize(identity), key -> newBucket(category));
-        EstimationProbe probe = bucket.estimateAbilityToConsume(1);
-        if (!probe.canBeConsumed()) {
-            long retryAfter = Math.max(1L, (probe.getNanosToWaitForRefill() + 999_999_999L) / 1_000_000_000L);
-            throw new RateLimitExceededException(retryAfter);
+        Decision decision = tryConsume(category, normalize(identity));
+        if (!decision.allowed()) {
+            throw new RateLimitExceededException(decision.retryAfterSeconds());
         }
     }
 
-    public void consume(RateLimitCategory category, String identity) {
+    public void refund(RateLimitCategory category, String identity) {
         if (!properties.isEnabled() || identity == null || identity.isBlank()) {
             return;
         }
-        tryConsume(category, normalize(identity));
+        Bucket bucket = buckets.getIfPresent(category.name() + ":" + normalize(identity));
+        if (bucket != null) {
+            bucket.addTokens(1);
+        }
     }
 
     public static String pair(String identity, String clientIp) {

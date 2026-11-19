@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.security.core.AuthenticationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -39,11 +38,11 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(summary = "Register a new user", description = "Create a new user account")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
-        log.info("POST /api/v1/auth/register - Registering user: {}", registerRequest.username());
+        log.info("POST /api/v1/auth/register");
 
         AuthResponse response = authService.register(registerRequest);
 
-        log.info("User registered successfully: {}", registerRequest.username());
+        log.info("User registered successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -51,22 +50,23 @@ public class AuthController {
     @Operation(summary = "User login", description = "Authenticate user and return JWT tokens")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest,
                                               HttpServletRequest httpRequest) {
-        log.info("POST /api/v1/auth/login - User login attempt: {}", loginRequest.username());
+        log.info("POST /api/v1/auth/login");
 
-        String attempt = RateLimitService.pair(loginRequest.username(), clientIpResolver.resolve(httpRequest));
-        rateLimitService.requireAvailable(RateLimitCategory.LOGIN_USERNAME_IP, attempt);
-        rateLimitService.requireAvailable(RateLimitCategory.LOGIN_USERNAME, loginRequest.username());
-
-        AuthResponse response;
+        String account = authService.loginThrottleKey(loginRequest.username());
+        String attempt = RateLimitService.pair(account, clientIpResolver.resolve(httpRequest));
+        rateLimitService.reserve(RateLimitCategory.LOGIN_USERNAME_IP, attempt);
         try {
-            response = authService.login(loginRequest);
-        } catch (AuthenticationException e) {
-            rateLimitService.consume(RateLimitCategory.LOGIN_USERNAME_IP, attempt);
-            rateLimitService.consume(RateLimitCategory.LOGIN_USERNAME, loginRequest.username());
+            rateLimitService.reserve(RateLimitCategory.LOGIN_USERNAME, account);
+        } catch (RuntimeException e) {
+            rateLimitService.refund(RateLimitCategory.LOGIN_USERNAME_IP, attempt);
             throw e;
         }
 
-        log.info("User logged in successfully: {}", loginRequest.username());
+        AuthResponse response = authService.login(loginRequest);
+        rateLimitService.refund(RateLimitCategory.LOGIN_USERNAME_IP, attempt);
+        rateLimitService.refund(RateLimitCategory.LOGIN_USERNAME, account);
+
+        log.info("User logged in successfully");
         return ResponseEntity.ok(response);
     }
 
@@ -92,7 +92,7 @@ public class AuthController {
     @Operation(summary = "Request password reset", description = "Send password reset email to the user")
     public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request,
                                                               HttpServletRequest httpRequest) {
-        log.info("POST /api/v1/auth/forgot-password - Password reset requested for email: {}", request.email());
+        log.info("POST /api/v1/auth/forgot-password");
 
         rateLimitService.enforce(RateLimitCategory.PASSWORD_RESET_EMAIL_IP,
                 RateLimitService.pair(request.email(), clientIpResolver.resolve(httpRequest)));

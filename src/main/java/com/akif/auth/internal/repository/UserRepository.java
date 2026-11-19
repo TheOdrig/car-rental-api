@@ -21,11 +21,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findWithRolesById(Long id);
 
     @EntityGraph(attributePaths = "roles")
-    Optional<User> findByEmail(String email);
+    @Query("SELECT u FROM User u WHERE LOWER(u.email) = LOWER(:email)")
+    Optional<User> findByEmail(@Param("email") String email);
 
     boolean existsByUsername(String username);
 
-    boolean existsByEmail(String email);
+    @Query("SELECT COUNT(u) > 0 FROM User u WHERE LOWER(u.email) = LOWER(:email)")
+    boolean existsByEmail(@Param("email") String email);
 
     @EntityGraph(attributePaths = "roles")
     Optional<User> findByUsernameAndIsDeletedFalse(String username);

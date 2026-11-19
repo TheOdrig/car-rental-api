@@ -72,7 +72,25 @@ class ClientIpResolverTest {
     @Test
     @DisplayName("accepts IPv6 literals")
     void acceptsIpv6() {
-        assertThat(resolver(true, 1).resolve(request("10.0.0.5", "2001:db8::1"))).isEqualTo("2001:db8::1");
+        assertThat(resolver(true, 1).resolve(request("10.0.0.5", "2001:db8::1"))).isEqualTo("2001:db8:0:0::/64");
+    }
+
+    @Test
+    @DisplayName("buckets every IPv6 address of a /64 together and keeps other prefixes apart")
+    void bucketsIpv6ByPrefix() {
+        ClientIpResolver resolver = resolver(false, 1);
+        String first = resolver.resolve(request("2001:db8:1:2:aaaa:bbbb:cccc:dddd", null));
+        String second = resolver.resolve(request("2001:DB8:1:2:1::9", null));
+        String other = resolver.resolve(request("2001:db8:1:3::1", null));
+
+        assertThat(first).isEqualTo("2001:db8:1:2::/64").isEqualTo(second);
+        assertThat(other).isNotEqualTo(first);
+    }
+
+    @Test
+    @DisplayName("treats an IPv4-mapped IPv6 address as the IPv4 address")
+    void mapsIpv4MappedAddresses() {
+        assertThat(resolver(false, 1).resolve(request("::ffff:203.0.113.9", null))).isEqualTo("203.0.113.9");
     }
 
     @Test
@@ -145,7 +163,7 @@ class ClientIpResolverTest {
 
         ClientIpResolver resolver = new ClientIpResolver(properties);
         assertThat(resolver.resolve(trusted)).isEqualTo("198.51.100.23");
-        assertThat(resolver.resolve(untrusted)).isEqualTo("2001:db8::5");
+        assertThat(resolver.resolve(untrusted)).isEqualTo("2001:db8:0:0::/64");
     }
 
     @Test

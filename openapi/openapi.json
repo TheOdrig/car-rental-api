@@ -1659,7 +1659,7 @@
       "LoginRequest" : {
         "properties" : {
           "password" : {
-            "maxLength" : 2147483647,
+            "maxLength" : 72,
             "minLength" : 8,
             "type" : "string"
           },
@@ -1913,11 +1913,12 @@
       "PasswordChangeRequest" : {
         "properties" : {
           "currentPassword" : {
-            "minLength" : 1,
+            "maxLength" : 72,
+            "minLength" : 0,
             "type" : "string"
           },
           "newPassword" : {
-            "maxLength" : 2147483647,
+            "maxLength" : 72,
             "minLength" : 8,
             "type" : "string"
           }
@@ -2319,7 +2320,7 @@
             "type" : "string"
           },
           "password" : {
-            "maxLength" : 2147483647,
+            "maxLength" : 72,
             "minLength" : 8,
             "type" : "string"
           },
@@ -2478,7 +2479,7 @@
       "ResetPasswordRequest" : {
         "properties" : {
           "newPassword" : {
-            "maxLength" : 2147483647,
+            "maxLength" : 72,
             "minLength" : 8,
             "type" : "string"
           },

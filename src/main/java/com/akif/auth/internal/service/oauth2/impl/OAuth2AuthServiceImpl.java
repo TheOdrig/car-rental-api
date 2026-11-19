@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -115,7 +116,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
         OAuth2TokenResponse tokenResponse = providerService.exchangeCodeForTokens(code);
 
         OAuth2UserInfo userInfo = providerService.getUserInfo(tokenResponse.accessToken());
-        log.debug("Retrieved user info from {}: email={}", provider, userInfo.email());
+        log.debug("Retrieved user info from {}", provider);
 
         User user = findOrCreateUser(userInfo);
 
@@ -214,7 +215,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
 
         User newUser = User.builder()
                 .username(username)
-                .email(userInfo.email())
+                .email(userInfo.email().trim().toLowerCase(Locale.ROOT))
                 .firstName(userInfo.firstName())
                 .lastName(userInfo.lastName())
                 .password(null)
@@ -280,7 +281,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
         OAuth2TokenResponse tokenResponse = providerService.exchangeCodeForTokens(code);
 
         OAuth2UserInfo userInfo = providerService.getUserInfo(tokenResponse.accessToken());
-        log.debug("Retrieved user info from {} for account linking: email={}", provider, userInfo.email());
+        log.debug("Retrieved user info from {} for account linking", provider);
 
         Optional<LinkedAccount> existingLinkedAccount = linkedAccountRepository
                 .findByProviderAndProviderId(oAuth2Provider, userInfo.providerId());

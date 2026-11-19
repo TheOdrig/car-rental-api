@@ -28,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
@@ -59,6 +60,15 @@ public class AuthServiceImpl implements AuthService, UserLookup {
     }
     
     @Override
+    public String loginThrottleKey(String usernameOrEmail) {
+        String normalized = usernameOrEmail.trim().toLowerCase(Locale.ROOT);
+        return userRepository.findByUsername(usernameOrEmail)
+                .or(() -> userRepository.findByEmail(normalized))
+                .map(user -> "user:" + user.getId())
+                .orElse("name:" + normalized);
+    }
+
+    @Override
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
@@ -67,7 +77,7 @@ public class AuthServiceImpl implements AuthService, UserLookup {
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest registerRequest) {
-        log.info("Registering new user with username: {}", registerRequest.username());
+        log.info("Registering new user");
 
         if (userRepository.existsByUsername(registerRequest.username())) {
             throw new UserAlreadyExistsException("Username is already taken!");
@@ -81,7 +91,7 @@ public class AuthServiceImpl implements AuthService, UserLookup {
                 .username(registerRequest.username())
                 .firstName(registerRequest.firstName())
                 .lastName(registerRequest.lastName())
-                .email(registerRequest.email())
+                .email(registerRequest.email().trim().toLowerCase(Locale.ROOT))
                 .password(passwordEncoder.encode(registerRequest.password()))
                 .roles(Set.of(Role.USER))
                 .enabled(true)
@@ -103,13 +113,13 @@ public class AuthServiceImpl implements AuthService, UserLookup {
     @Override
     @Transactional
     public AuthResponse login(LoginRequest loginRequest) {
-        log.info("User attempting to login with username: {}", loginRequest.username());
+        log.debug("Login attempt received");
 
         Optional<User> userOpt = userRepository.findByUsername(loginRequest.username());
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             if (isSocialOnlyUser(user)) {
-                log.warn("Social-only user attempted password login: {}", loginRequest.username());
+                log.warn("Social-only account attempted password login");
                 String provider = user.getAuthProvider() != null ? user.getAuthProvider().name().toLowerCase() : "social";
                 throw new SocialLoginRequiredException(provider, 
                     "This account was created via social login. Please use " + provider + " to sign in.");
@@ -124,11 +134,11 @@ public class AuthServiceImpl implements AuthService, UserLookup {
                     )
             );
 
-            log.info("User logged in successfully: {}", loginRequest.username());
+            log.debug("Password login succeeded");
             return generateTokenResponse(authentication);
 
         } catch (AuthenticationException e) {
-            log.warn("Login failed for user: {}", loginRequest.username());
+            log.warn("Login failed");
             throw e;
         }
     }

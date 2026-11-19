@@ -11,6 +11,8 @@ public interface AuthService {
 
     boolean existsByEmail(String email);
 
+    String loginThrottleKey(String usernameOrEmail);
+
 
     AuthResponse register(RegisterRequest registerRequest);
 

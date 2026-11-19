@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.springframework.stereotype.Component;
 
+import java.net.Inet6Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -91,7 +93,28 @@ public class ClientIpResolver {
     }
 
     private static String normalize(String address) {
-        return address == null || address.isBlank() ? UNKNOWN_CLIENT : address.trim().toLowerCase();
+        if (address == null || address.isBlank()) {
+            return UNKNOWN_CLIENT;
+        }
+        String trimmed = address.trim().toLowerCase();
+        return trimmed.indexOf(':') < 0 ? trimmed : ipv6Prefix(trimmed);
+    }
+
+    private static String ipv6Prefix(String address) {
+        try {
+            InetAddress parsed = InetAddress.getByName(address);
+            if (parsed instanceof Inet6Address) {
+                byte[] bytes = parsed.getAddress();
+                return String.format("%x:%x:%x:%x::/64",
+                        ((bytes[0] & 0xff) << 8) | (bytes[1] & 0xff),
+                        ((bytes[2] & 0xff) << 8) | (bytes[3] & 0xff),
+                        ((bytes[4] & 0xff) << 8) | (bytes[5] & 0xff),
+                        ((bytes[6] & 0xff) << 8) | (bytes[7] & 0xff));
+            }
+            return parsed.getHostAddress();
+        } catch (UnknownHostException | RuntimeException e) {
+            return UNKNOWN_CLIENT;
+        }
     }
 
     private static boolean isIpLiteral(String value) {

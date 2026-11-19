@@ -222,6 +222,78 @@ class RateLimitIntegrationTest {
     }
 
     @Test
+    @DisplayName("a parallel burst of failing logins from many addresses cannot exceed the account bucket")
+    void parallelFailuresAreCappedAtTheBucket() throws Exception {
+        String body = "{\"username\":\"burst-victim\",\"password\":\"wrong-password\"}";
+        java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(12);
+        try {
+            java.util.List<java.util.concurrent.Future<Integer>> results = new java.util.ArrayList<>();
+            for (int i = 0; i < 24; i++) {
+                String address = "198.51.100." + (100 + i);
+                results.add(pool.submit(() -> mockMvc.perform(
+                                fromAddress(json("/api/v1/auth/login", body), address))
+                        .andReturn().getResponse().getStatus()));
+            }
+            int unauthorized = 0;
+            int limited = 0;
+            for (java.util.concurrent.Future<Integer> result : results) {
+                int status = result.get(30, java.util.concurrent.TimeUnit.SECONDS);
+                if (status == 401) {
+                    unauthorized++;
+                } else if (status == 429) {
+                    limited++;
+                }
+            }
+            org.assertj.core.api.Assertions.assertThat(unauthorized).isEqualTo(5);
+            org.assertj.core.api.Assertions.assertThat(limited).isEqualTo(19);
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    @Test
+    @DisplayName("the username and the e-mail of one account share the same failure bucket")
+    void usernameAndEmailShareOneBucket() throws Exception {
+        User user = userRepository.save(User.builder()
+                .username("shared-bucket-owner")
+                .email("Shared-Bucket@example.com".toLowerCase())
+                .password(passwordEncoder.encode("correct-password-1"))
+                .roles(Set.of(Role.USER))
+                .enabled(true)
+                .build());
+        try {
+            String[] identities = {"shared-bucket-owner", "shared-bucket@example.com", "shared-bucket-owner",
+                    "Shared-Bucket@Example.com", "shared-bucket-owner"};
+            for (int i = 0; i < identities.length; i++) {
+                String body = "{\"username\":\"" + identities[i] + "\",\"password\":\"wrong-password\"}";
+                mockMvc.perform(fromAddress(json("/api/v1/auth/login", body), "203.0.113." + (100 + i)))
+                        .andExpect(status().isUnauthorized());
+            }
+
+            String good = "{\"username\":\"shared-bucket@example.com\",\"password\":\"correct-password-1\"}";
+            assertRateLimited(mockMvc.perform(fromAddress(json("/api/v1/auth/login", good), "203.0.113.250"))
+                    .andReturn());
+        } finally {
+            userRepository.delete(user);
+        }
+    }
+
+    @Test
+    @DisplayName("every IPv6 address of one /64 shares the same login bucket")
+    void ipv6AddressesInOnePrefixShareABucket() throws Exception {
+        String body = "{\"username\":\"v6-victim\",\"password\":\"wrong-password\"}";
+        for (int i = 0; i < 3; i++) {
+            mockMvc.perform(fromAddress(json("/api/v1/auth/login", body), "2001:db8:aa:bb:" + i + "::1"))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        assertRateLimited(mockMvc.perform(
+                fromAddress(json("/api/v1/auth/login", body), "2001:db8:aa:bb:ffff::9")).andReturn());
+        mockMvc.perform(fromAddress(json("/api/v1/auth/login", body), "2001:db8:aa:cc::1"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     @DisplayName("rental requests are limited")
     void rentalRequestsAreLimited() throws Exception {
         String body = "{\"carId\":1}";

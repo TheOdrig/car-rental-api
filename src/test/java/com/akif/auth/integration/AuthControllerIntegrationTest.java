@@ -84,6 +84,42 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("Should refuse an e-mail address that differs only by case")
+    void shouldRefuseCaseVariantEmail() throws Exception {
+        RegisterRequest first = new RegisterRequest("caseuser", "Case.User@Example.com", "password123", "Case", "User");
+        RegisterRequest second = new RegisterRequest("caseuser2", "case.user@example.COM", "password123", "Case", "Two");
+
+        mockMvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(first)))
+                .andExpect(status().isCreated());
+        mockMvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(second)))
+                .andExpect(status().isConflict());
+        org.assertj.core.api.Assertions.assertThat(userRepository.findByUsername("caseuser").orElseThrow().getEmail())
+                .isEqualTo("case.user@example.com");
+        mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new LoginRequest("CASE.USER@example.com", "password123"))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Should reject passwords longer than 72 bytes with 400")
+    void shouldRejectOverlongPassword() throws Exception {
+        String longPassword = "a".repeat(73);
+        String multiByte = "é".repeat(40);
+
+        for (String password : new String[] {longPassword, multiByte}) {
+            mockMvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new RegisterRequest("longpass", "longpass@example.com", password, "L", "P"))))
+                    .andExpect(status().isBadRequest());
+            mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new LoginRequest("admin", password))))
+                    .andExpect(status().isBadRequest());
+        }
+    }
+
+    @Test
     @DisplayName("Should login with valid credentials")
     void shouldLoginWithValidCredentials() throws Exception {
         LoginRequest loginRequest = new LoginRequest("admin", "admin123");

@@ -41,19 +41,42 @@ class RateLimitServiceTest {
     }
 
     @Test
-    @DisplayName("requireAvailable never consumes and consume only takes tokens on request")
-    void requireAvailableDoesNotConsume() {
-        for (int i = 0; i < 10; i++) {
-            service.requireAvailable(RateLimitCategory.LOGIN, "user|1.1.1.1");
-        }
+    @DisplayName("reserve takes a token up front and rejects once the bucket is empty")
+    void reserveConsumesAtomically() {
         for (int i = 0; i < 3; i++) {
-            service.consume(RateLimitCategory.LOGIN, "user|1.1.1.1");
+            service.reserve(RateLimitCategory.LOGIN, "user|1.1.1.1");
         }
 
         org.assertj.core.api.Assertions.assertThatThrownBy(
-                () -> service.requireAvailable(RateLimitCategory.LOGIN, "User|1.1.1.1"))
+                () -> service.reserve(RateLimitCategory.LOGIN, "User|1.1.1.1"))
                 .isInstanceOf(com.akif.shared.exception.RateLimitExceededException.class);
-        service.requireAvailable(RateLimitCategory.LOGIN, "user|2.2.2.2");
+        service.reserve(RateLimitCategory.LOGIN, "user|2.2.2.2");
+    }
+
+    @Test
+    @DisplayName("refund returns a reserved token without exceeding the capacity")
+    void refundRestoresReservedToken() {
+        for (int i = 0; i < 3; i++) {
+            service.reserve(RateLimitCategory.LOGIN, "user|1.1.1.1");
+        }
+        service.refund(RateLimitCategory.LOGIN, "USER|1.1.1.1");
+        service.refund(RateLimitCategory.LOGIN, "unknown|9.9.9.9");
+
+        service.reserve(RateLimitCategory.LOGIN, "user|1.1.1.1");
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> service.reserve(RateLimitCategory.LOGIN, "user|1.1.1.1"))
+                .isInstanceOf(com.akif.shared.exception.RateLimitExceededException.class);
+
+        service.refund(RateLimitCategory.LOGIN, "fresh|1.1.1.1");
+        service.reserve(RateLimitCategory.LOGIN, "fresh|1.1.1.1");
+        service.refund(RateLimitCategory.LOGIN, "fresh|1.1.1.1");
+        service.refund(RateLimitCategory.LOGIN, "fresh|1.1.1.1");
+        for (int i = 0; i < 3; i++) {
+            service.reserve(RateLimitCategory.LOGIN, "fresh|1.1.1.1");
+        }
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> service.reserve(RateLimitCategory.LOGIN, "fresh|1.1.1.1"))
+                .isInstanceOf(com.akif.shared.exception.RateLimitExceededException.class);
     }
 
     @Test
