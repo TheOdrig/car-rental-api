@@ -124,41 +124,6 @@ class CorrelationIdFilterTest {
     }
 
     @Test
-    @DisplayName("Should set userId to 'anonymous' when user is not authenticated")
-    void shouldSetUserIdToAnonymousWhenNotAuthenticated() throws ServletException, IOException {
-        when(securityContext.getAuthentication()).thenReturn(null);
-
-        correlationIdFilter.doFilterInternal(request, response, filterChain);
-
-        verify(filterChain).doFilter(request, response);
-    }
-
-    @Test
-    @DisplayName("Should extract userId from authenticated user")
-    void shouldExtractUserIdFromAuthenticatedUser() throws ServletException, IOException {
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.isAuthenticated()).thenReturn(true);
-        when(authentication.getPrincipal()).thenReturn("testUser");
-        when(authentication.getName()).thenReturn("testUser");
-
-        correlationIdFilter.doFilterInternal(request, response, filterChain);
-
-        verify(filterChain).doFilter(request, response);
-    }
-
-    @Test
-    @DisplayName("Should handle anonymousUser principal")
-    void shouldHandleAnonymousUserPrincipal() throws ServletException, IOException {
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.isAuthenticated()).thenReturn(true);
-        when(authentication.getPrincipal()).thenReturn("anonymousUser");
-
-        correlationIdFilter.doFilterInternal(request, response, filterChain);
-
-        verify(filterChain).doFilter(request, response);
-    }
-
-    @Test
     @DisplayName("Should clean up MDC after filter execution")
     void shouldCleanUpMdcAfterFilterExecution() throws ServletException, IOException {
         correlationIdFilter.doFilterInternal(request, response, filterChain);

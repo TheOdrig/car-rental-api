@@ -7,8 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.lang.NonNull;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -22,8 +20,6 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
 
     private static final String CORRELATION_ID_HEADER = "X-Correlation-ID";
     private static final String MDC_CORRELATION_ID_KEY = "correlationId";
-    private static final String MDC_USER_ID_KEY = "userId";
-    private static final String ANONYMOUS_USER = "anonymous";
     private static final Pattern VALID_CORRELATION_ID = Pattern.compile("[A-Za-z0-9-]{1,64}");
 
     @Override
@@ -38,17 +34,13 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
 
             response.setHeader(CORRELATION_ID_HEADER, correlationId);
 
-            String userId = extractUserId();
-            MDC.put(MDC_USER_ID_KEY, userId);
-
-            log.debug("Request started: {} {} [correlationId={}, userId={}]",
-                    request.getMethod(), request.getRequestURI(), correlationId, userId);
+            log.debug("Request started: {} {} [correlationId={}]",
+                    request.getMethod(), request.getRequestURI(), correlationId);
 
             filterChain.doFilter(request, response);
 
         } finally {
             MDC.remove(MDC_CORRELATION_ID_KEY);
-            MDC.remove(MDC_USER_ID_KEY);
         }
     }
 
@@ -67,16 +59,5 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
 
     private String generateCorrelationId() {
         return UUID.randomUUID().toString();
-    }
-
-    private String extractUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
-        if (authentication != null && authentication.isAuthenticated() 
-                && !"anonymousUser".equals(authentication.getPrincipal())) {
-            return authentication.getName();
-        }
-        
-        return ANONYMOUS_USER;
     }
 }
