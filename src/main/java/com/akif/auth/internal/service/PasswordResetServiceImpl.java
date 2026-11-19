@@ -7,6 +7,7 @@ import com.akif.auth.api.PasswordResetRequestedEvent;
 import com.akif.auth.api.PasswordResetService;
 import com.akif.auth.api.PasswordService;
 import com.akif.auth.domain.PasswordResetToken;
+import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.PasswordResetTokenRepository;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.shared.exception.InvalidTokenException;
@@ -82,7 +83,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
             throw new InvalidTokenException("Password reset token has expired", HttpStatus.BAD_REQUEST);
         }
 
-        var user = userRepository.findByEmail(resetToken.getEmail())
+        User user = userRepository.findByEmail(resetToken.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("User not found with email: " + resetToken.getEmail()));
 
         user.changePassword(passwordService.hashPassword(newPassword));

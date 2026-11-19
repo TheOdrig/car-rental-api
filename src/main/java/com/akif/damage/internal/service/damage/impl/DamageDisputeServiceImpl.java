@@ -17,6 +17,7 @@ import com.akif.damage.internal.exception.DamageDisputeException;
 import com.akif.damage.internal.exception.DamageReportException;
 import com.akif.rental.api.RentalService;
 import com.akif.rental.api.RentalSummaryDto;
+import com.akif.payment.api.PaymentResult;
 import com.akif.payment.api.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -139,7 +140,7 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
             return;
         }
 
-        var refundResult = paymentService.refund(transactionId, refundAmount, "damage-" + damageReport.getId() + ":dispute-refund");
+        PaymentResult refundResult = paymentService.refund(transactionId, refundAmount, "damage-" + damageReport.getId() + ":dispute-refund");
         
         if (refundResult.success()) {
             log.info("Refund processed successfully: damageId={}, refundAmount={}, transactionId={}", 
