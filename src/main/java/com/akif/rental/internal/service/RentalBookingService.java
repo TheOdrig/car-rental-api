@@ -83,7 +83,7 @@ public class RentalBookingService {
                 .carThumbnailUrl(car.thumbnailUrl())
                 .userUsername(user.username())
                 .userEmail(user.email())
-                .userFullName(user.firstName() + " " + user.lastName())
+                .userFullName(user.displayName())
                 .customerNotes(normalizeNotes(request.notes()))
                 .startDate(request.startDate())
                 .endDate(request.endDate())

@@ -20,6 +20,10 @@ import java.util.Optional;
 @Repository
 public interface RentalRepository extends JpaRepository<Rental, Long> {
 
+        @org.springframework.data.jpa.repository.Modifying(flushAutomatically = true)
+        @Query("UPDATE Rental r SET r.userFullName = :name WHERE r.userId = :userId")
+        int refreshCustomerName(@Param("userId") Long userId, @Param("name") String name);
+
         Page<Rental> findByUserIdAndIsDeletedFalse(Long userId, Pageable pageable);
 
         Page<Rental> findByCarIdAndIsDeletedFalse(Long carId, Pageable pageable);

@@ -38,6 +38,9 @@ class ProfileServiceImplTest {
     @Mock
     private AvatarStorageService avatarStorageService;
 
+    @Mock
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private ProfileServiceImpl profileService;
 

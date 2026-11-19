@@ -3,12 +3,14 @@ package com.akif.auth.internal.service;
 import com.akif.auth.internal.exception.UserNotFoundException;
 import com.akif.auth.api.AvatarStorageService;
 import com.akif.auth.api.UserDto;
+import com.akif.auth.api.UserProfileUpdatedEvent;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.dto.ProfileUpdateRequest;
 import com.akif.auth.internal.mapper.UserMapper;
 import com.akif.auth.internal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -23,6 +25,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final AvatarStorageService avatarStorageService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public UserDto getProfile(Long userId) {
@@ -61,6 +64,7 @@ public class ProfileServiceImpl implements ProfileService {
         log.info("Profile updated successfully for user: {}", userId);
 
         UserDto dto = userMapper.toDto(savedUser);
+        eventPublisher.publishEvent(new UserProfileUpdatedEvent(userId, dto.displayName()));
 
         String avatarUrl = null;
         if (savedUser.getAvatarUrl() != null && !savedUser.getAvatarUrl().isBlank()) {

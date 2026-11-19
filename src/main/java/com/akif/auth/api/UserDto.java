@@ -32,4 +32,14 @@ public record UserDto(
     public boolean isAdmin() {
         return roles != null && roles.contains(Role.ADMIN);
     }
+
+    public String displayName() {
+        String first = firstName == null ? "" : firstName.strip();
+        String last = lastName == null ? "" : lastName.strip();
+        String full = (first + " " + last).strip();
+        if (!full.isEmpty()) {
+            return full;
+        }
+        return username != null && !username.isBlank() ? username : email;
+    }
 }

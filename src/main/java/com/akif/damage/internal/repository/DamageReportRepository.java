@@ -22,6 +22,10 @@ import java.util.Optional;
 @Repository
 public interface DamageReportRepository extends JpaRepository<DamageReport, Long> {
 
+    @org.springframework.data.jpa.repository.Modifying(flushAutomatically = true)
+    @Query("UPDATE DamageReport d SET d.customerFullName = :name WHERE d.customerUserId = :userId")
+    int refreshCustomerName(@Param("userId") Long userId, @Param("name") String name);
+
         Optional<DamageReport> findByIdAndIsDeletedFalse(Long id);
 
         @Lock(LockModeType.PESSIMISTIC_WRITE)
