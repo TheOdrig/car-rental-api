@@ -45,6 +45,21 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
             WHERE a.type = :type
             AND a.referenceId = :referenceId
             AND a.title = :title
+            AND a.message LIKE CONCAT('%', :marker, '%')
+            AND a.acknowledged = false
+            AND a.isDeleted = false
+            """)
+    boolean existsOpenAlertForPayment(
+            @Param("type") AlertType type,
+            @Param("referenceId") Long referenceId,
+            @Param("title") String title,
+            @Param("marker") String marker);
+
+    @Query("""
+            SELECT COUNT(a) > 0 FROM Alert a
+            WHERE a.type = :type
+            AND a.referenceId = :referenceId
+            AND a.title = :title
             AND a.acknowledged = false
             AND a.isDeleted = false
             """)

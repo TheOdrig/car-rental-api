@@ -17,6 +17,7 @@ public record PaymentAttentionEvent(
         CHARGE_OUTCOME_UNKNOWN,
         LATE_CAPTURE_REFUNDED,
         DUPLICATE_PENALTY_REFUNDED,
-        AUTO_REFUND_FAILED
+        AUTO_REFUND_FAILED,
+        PENALTY_NOT_COLLECTED
     }
 }

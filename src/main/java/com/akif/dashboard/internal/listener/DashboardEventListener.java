@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class DashboardEventListener {
 
+    private static final String PENALTY_NOT_COLLECTED_TITLE = "Late return penalty not collected";
     private static final String DAILY_SUMMARY_CACHE = "dailySummary";
     private static final String FLEET_STATUS_CACHE = "fleetStatus";
     private static final String MONTHLY_METRICS_CACHE = "monthlyMetrics";
@@ -70,24 +71,13 @@ public class DashboardEventListener {
 
     @ApplicationModuleListener
     public void handlePenaltyChargeFailed(PenaltyChargeFailedEvent event) {
-        if (alertRepository.existsByTypeAndReferenceIdAndAcknowledgedFalse(AlertType.FAILED_PAYMENT, event.rentalId())) {
-            return;
-        }
         String reason = event.reason() != null && event.reason().length() > 300
                 ? event.reason().substring(0, 300)
                 : event.reason();
-        alertRepository.save(Alert.builder()
-                .type(AlertType.FAILED_PAYMENT)
-                .severity(AlertSeverity.HIGH)
-                .title("Late return penalty not collected")
-                .message(String.format(
-                        "The penalty of %s %s for rental #%d could not be charged (%s). Collect it manually or waive it.",
-                        event.amount(), event.currency(), event.rentalId(), reason))
-                .actionUrl("/admin/rentals/" + event.rentalId())
-                .referenceId(event.rentalId())
-                .acknowledged(false)
-                .build());
-        log.info("Created alert for the uncollected penalty of rental {}", event.rentalId());
+        String message = String.format(
+                "The penalty of %s %s for rental #%d could not be charged (%s). Collect it manually or waive it.",
+                event.amount(), event.currency(), event.rentalId(), reason);
+        saveAlertOnce(PENALTY_NOT_COLLECTED_TITLE, message, AlertSeverity.HIGH, event.rentalId(), event.paymentId());
     }
 
     @ApplicationModuleListener
@@ -100,7 +90,16 @@ public class DashboardEventListener {
                 title = "Charge outcome unknown, do not collect manually";
                 message = String.format(
                         "The charge of %s %s for rental #%d timed out and its outcome is unknown. Do not collect it manually: "
-                                + "the system reconciles it and refunds any late capture automatically.",
+                                + "the system checks it with the gateway. A charge that completed is kept and recorded as paid, "
+                                + "except on a payment already closed by a waiver or as a duplicate, where it is refunded "
+                                + "automatically. If the charge never completed, a \"penalty not collected\" alert follows.",
+                        event.amount(), event.currency(), event.rentalId());
+            }
+            case PENALTY_NOT_COLLECTED -> {
+                title = PENALTY_NOT_COLLECTED_TITLE;
+                message = String.format(
+                        "The penalty of %s %s for rental #%d was not collected: the charge never completed at the gateway. "
+                                + "Collect it manually or waive it.",
                         event.amount(), event.currency(), event.rentalId());
             }
             case LATE_CAPTURE_REFUNDED -> {
@@ -124,20 +123,29 @@ public class DashboardEventListener {
                         event.amount(), event.currency(), event.rentalId());
             }
         }
-        if (alertRepository.existsByTypeAndReferenceIdAndTitleAndAcknowledgedFalse(
-                AlertType.FAILED_PAYMENT, event.rentalId(), title)) {
+        saveAlertOnce(title, message, severity, event.rentalId(), event.paymentId());
+        log.info("Handled payment attention {} for rental {}", event.reason(), event.rentalId());
+    }
+
+    private void saveAlertOnce(String title, String message, AlertSeverity severity, Long rentalId, Long paymentId) {
+        String marker = paymentId == null ? null : "(payment #" + paymentId + ")";
+        boolean exists = marker == null
+                ? alertRepository.existsByTypeAndReferenceIdAndTitleAndAcknowledgedFalse(
+                        AlertType.FAILED_PAYMENT, rentalId, title)
+                : alertRepository.existsOpenAlertForPayment(AlertType.FAILED_PAYMENT, rentalId, title, marker);
+        if (exists) {
             return;
         }
         alertRepository.save(Alert.builder()
                 .type(AlertType.FAILED_PAYMENT)
                 .severity(severity)
                 .title(title)
-                .message(message)
-                .actionUrl("/admin/rentals/" + event.rentalId())
-                .referenceId(event.rentalId())
+                .message(marker == null ? message : message + " " + marker)
+                .actionUrl("/admin/rentals/" + rentalId)
+                .referenceId(rentalId)
                 .acknowledged(false)
                 .build());
-        log.info("Created alert {} for rental {}", event.reason(), event.rentalId());
+        log.info("Created alert '{}' for rental {}", title, rentalId);
     }
 
     @ApplicationModuleListener

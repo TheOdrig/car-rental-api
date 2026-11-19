@@ -1,5 +1,6 @@
 package com.akif.payment.internal.service.reconciliation;
 
+import com.akif.payment.api.PaymentAttentionEvent;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.domain.Payment;
 import com.akif.payment.internal.repository.PaymentRepository;
@@ -82,7 +83,10 @@ public class PaymentRepairService {
             try {
                 Optional<GatewayIntent> found = paymentGateway.findIntentByPayment(paymentId);
                 GatewayIntent intent = found.filter(i -> i.status() == GatewayIntentStatus.SUCCEEDED).orElse(null);
-                Boolean changed = transactionTemplate.execute(status -> apply(paymentId, null, intent));
+                boolean neverCompleted = intent == null && found.map(i -> isDead(i.status())).orElse(true);
+                Boolean changed = transactionTemplate.execute(status -> neverCompleted
+                        ? failUnknownOutcome(paymentId)
+                        : apply(paymentId, null, intent));
                 if (Boolean.TRUE.equals(changed)) {
                     repaired++;
                 }
@@ -91,6 +95,34 @@ public class PaymentRepairService {
             }
         }
         return repaired;
+    }
+
+    private static boolean isDead(GatewayIntentStatus status) {
+        return status == GatewayIntentStatus.CANCELED || status == GatewayIntentStatus.REQUIRES_PAYMENT_METHOD;
+    }
+
+    private boolean failUnknownOutcome(Long paymentId) {
+        Optional<Payment> locked = paymentRepository.findByIdForUpdate(paymentId);
+        if (locked.isEmpty()) {
+            return false;
+        }
+        Payment payment = locked.get();
+        payment.markSynced(LocalDateTime.now(clock));
+        boolean unresolved = !payment.isClosed()
+                && payment.getStatus() == PaymentStatus.PENDING
+                && payment.getStripePaymentIntentId() == null
+                && payment.hasUnknownOutcome();
+        if (!unresolved) {
+            paymentRepository.save(payment);
+            return false;
+        }
+        payment.markFailed("The charge never completed at the gateway", null);
+        payment.nextAttempt();
+        paymentRepository.save(payment);
+        stateService.publishAttention(payment, PaymentAttentionEvent.Reason.PENALTY_NOT_COLLECTED);
+        log.warn("[AUDIT] Penalty charge with an unknown outcome never completed at the gateway, marked failed | Payment: {} | Rental: {}",
+                payment.getId(), payment.getRentalId());
+        return true;
     }
 
     private int refundClosedCaptures(LocalDateTime cutoff) {
