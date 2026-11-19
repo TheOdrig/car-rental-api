@@ -1476,3 +1476,8 @@ ON CONFLICT (id) DO UPDATE SET
     status = EXCLUDED.status,
     late_return_status = EXCLUDED.late_return_status,
     cancellation_reason = EXCLUDED.cancellation_reason;
+
+UPDATE car_rental.rentals r
+SET user_username = u.username
+FROM car_rental.users u
+WHERE u.id = r.user_id AND r.user_username IS NULL;
