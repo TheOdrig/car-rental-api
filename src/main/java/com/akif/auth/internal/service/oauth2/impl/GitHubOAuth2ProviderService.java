@@ -85,7 +85,6 @@ public class GitHubOAuth2ProviderService implements OAuth2ProviderService {
 
             Object idObj = userAttributes.get("id");
             String providerId = idObj != null ? String.valueOf(idObj) : null;
-            String email = (String) userAttributes.get("email");
             String name = (String) userAttributes.get("name");
             String avatarUrl = (String) userAttributes.get("avatar_url");
 
@@ -103,16 +102,14 @@ public class GitHubOAuth2ProviderService implements OAuth2ProviderService {
                 }
             }
 
-            if (email == null || email.isBlank()) {
-                email = fetchPrimaryEmail(accessToken, config);
-            }
+            String email = fetchPrimaryEmail(accessToken, config);
 
             if (email == null || email.isBlank()) {
                 log.error("GitHub did not provide email for user");
                 throw OAuth2ProviderException.emailRequired(PROVIDER_NAME);
             }
 
-            log.debug("Successfully retrieved user info from GitHub for email: {}", email);
+            log.debug("Successfully retrieved user info from GitHub");
             return new OAuth2UserInfo(providerId, email, name, firstName, lastName, avatarUrl, PROVIDER_NAME);
         } catch (OAuth2ProviderException e) {
             throw e;
@@ -145,14 +142,7 @@ public class GitHubOAuth2ProviderService implements OAuth2ProviderService {
                 }
             }
 
-            for (Map<String, Object> emailEntry : emails) {
-                Boolean verified = (Boolean) emailEntry.get("verified");
-                if (Boolean.TRUE.equals(verified)) {
-                    return (String) emailEntry.get("email");
-                }
-            }
-
-            log.warn("No verified email found in GitHub emails API response");
+            log.warn("No verified primary email found in GitHub emails API response");
             return null;
         } catch (RestClientException e) {
             log.error("Failed to fetch emails from GitHub: {}", e.getMessage());
