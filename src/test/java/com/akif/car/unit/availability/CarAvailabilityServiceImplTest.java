@@ -422,7 +422,9 @@ class CarAvailabilityServiceImplTest {
                                         .findFirst()
                                         .orElseThrow();
                         assertThat(unavailableDay.status()).isEqualTo(AvailabilityStatus.UNAVAILABLE);
-                        assertThat(unavailableDay.rentalId()).isEqualTo(1L);
+                        assertThat(DayAvailabilityDto.class.getRecordComponents())
+                                        .extracting(java.lang.reflect.RecordComponent::getName)
+                                        .containsExactly("date", "status");
                 }
 
                 @Test

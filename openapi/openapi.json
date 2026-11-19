@@ -1431,10 +1431,6 @@
             "format" : "date",
             "type" : "string"
           },
-          "rentalId" : {
-            "format" : "int64",
-            "type" : "integer"
-          },
           "status" : {
             "enum" : [ "AVAILABLE", "UNAVAILABLE" ],
             "type" : "string"

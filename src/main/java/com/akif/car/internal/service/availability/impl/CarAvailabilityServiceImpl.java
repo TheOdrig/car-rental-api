@@ -151,10 +151,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
 
             DayAvailabilityDto dayDto;
             if (carBlocked) {
-                dayDto = new DayAvailabilityDto(
-                        date,
-                        AvailabilityStatus.UNAVAILABLE,
-                        null);
+                dayDto = new DayAvailabilityDto(date, AvailabilityStatus.UNAVAILABLE);
             } else {
                 BookedPeriod overlappingRental = rentals.stream()
                         .filter(r -> !date.isBefore(r.startDate()) && !date.isAfter(r.endDate()))
@@ -162,15 +159,9 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
                         .orElse(null);
 
                 if (overlappingRental != null) {
-                    dayDto = new DayAvailabilityDto(
-                            date,
-                            AvailabilityStatus.UNAVAILABLE,
-                            overlappingRental.bookingId());
+                    dayDto = new DayAvailabilityDto(date, AvailabilityStatus.UNAVAILABLE);
                 } else {
-                    dayDto = new DayAvailabilityDto(
-                            date,
-                            AvailabilityStatus.AVAILABLE,
-                            null);
+                    dayDto = new DayAvailabilityDto(date, AvailabilityStatus.AVAILABLE);
                 }
             }
             days.add(dayDto);

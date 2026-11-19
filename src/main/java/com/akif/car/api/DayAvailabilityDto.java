@@ -11,7 +11,5 @@ public record DayAvailabilityDto(
     @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate date,
 
-    AvailabilityStatus status,
-
-    Long rentalId
+    AvailabilityStatus status
 ) {}
