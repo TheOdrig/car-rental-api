@@ -54,10 +54,12 @@ public class RentalQueryService {
         return result;
     }
 
-    public Page<RentalResponse> getAllRentals(Pageable pageable) {
-        log.debug("Getting all rentals");
+    public Page<RentalResponse> getAllRentals(java.util.Collection<RentalStatus> statuses, Pageable pageable) {
+        log.debug("Getting all rentals, status filter: {}", statuses);
 
-        Page<Rental> rentals = rentalRepository.findByIsDeletedFalse(Pageables.stable(pageable));
+        Page<Rental> rentals = statuses == null || statuses.isEmpty()
+                ? rentalRepository.findByIsDeletedFalse(Pageables.stable(pageable))
+                : rentalRepository.findByStatusInAndIsDeletedFalse(statuses, Pageables.stable(pageable));
         Page<RentalResponse> result = rentals.map(rentalMapper::toDto);
 
         log.info("Successfully retrieved {} rentals. Page {}/{}",

@@ -10566,7 +10566,7 @@
     },
     "/api/v1/rentals/admin" : {
       "get" : {
-        "description" : "Get all rentals (admin only) with optional currency conversion",
+        "description" : "Get all rentals (admin only) with optional currency conversion and an optional status filter. The status parameter may be repeated or given as a comma separated list of RentalStatus codes; an unknown value is rejected with INVALID_PARAMETER.",
         "operationId" : "getAllRentals",
         "parameters" : [ {
           "description" : "Zero-based page index (0..N)",
@@ -10608,6 +10608,17 @@
           "schema" : {
             "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
             "type" : "string"
+          }
+        }, {
+          "description" : "Rental status codes to include; repeat the parameter or use a comma separated list",
+          "in" : "query",
+          "name" : "status",
+          "required" : false,
+          "schema" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
           }
         } ],
         "responses" : {

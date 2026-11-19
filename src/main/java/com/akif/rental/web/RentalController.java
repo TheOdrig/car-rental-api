@@ -6,6 +6,12 @@ import com.akif.currency.api.DisplayPrice;
 import com.akif.payment.api.PaymentIntentResult;
 import com.akif.payment.api.PaymentSummary;
 import com.akif.rental.api.RentalResponse;
+import com.akif.rental.api.RentalStatus;
+import com.akif.shared.exception.InvalidParameterException;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import com.akif.rental.internal.dto.request.ApproveRequest;
 import com.akif.rental.internal.dto.request.CancelRequest;
 import com.akif.rental.internal.dto.request.PickupRequest;
@@ -215,17 +221,18 @@ public class RentalController {
 
         @AllowedSort({"createTime", "startDate", "endDate", "totalPrice", "status"})
         @GetMapping("/admin")
-        @Operation(summary = "Get all rentals (Admin)", description = "Get all rentals (admin only) with optional currency conversion")
+        @Operation(summary = "Get all rentals (Admin)", description = "Get all rentals (admin only) with optional currency conversion and an optional status filter. The status parameter may be repeated or given as a comma separated list of RentalStatus codes; an unknown value is rejected with INVALID_PARAMETER.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Rentals retrieved successfully"),
                         @ApiResponse(responseCode = "403", description = "Access denied")
         })
         public ResponseEntity<PageResponse<RentalResponse>> getAllRentals(
                         @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable,
-                        @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
+                        @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency,
+                        @Parameter(description = "Rental status codes to include; repeat the parameter or use a comma separated list") @RequestParam(required = false) List<String> status) {
 
 
-                Page<RentalResponse> rentals = rentalService.getAllRentals(pageable);
+                Page<RentalResponse> rentals = rentalService.getAllRentals(parseStatuses(status), pageable);
                 if (currency != null) {
                         rentals = rentals.map(rental -> applyPriceConversion(rental, currency));
                 }
@@ -249,6 +256,24 @@ public class RentalController {
                 rental = applyPriceConversion(rental, currency);
 
                 return ResponseEntity.ok(rental);
+        }
+
+        private static Set<RentalStatus> parseStatuses(List<String> raw) {
+                Set<RentalStatus> statuses = EnumSet.noneOf(RentalStatus.class);
+                if (raw == null) {
+                        return statuses;
+                }
+                for (String value : raw) {
+                        if (value == null || value.isBlank()) {
+                                continue;
+                        }
+                        try {
+                                statuses.add(RentalStatus.valueOf(value.trim().toUpperCase(Locale.ROOT)));
+                        } catch (IllegalArgumentException e) {
+                                throw new InvalidParameterException("Unknown rental status: " + value.trim());
+                        }
+                }
+                return statuses;
         }
 
         private RentalResponse applyPriceConversion(RentalResponse rental, CurrencyType targetCurrency) {

@@ -415,6 +415,104 @@ class RentalControllerIntegrationTest {
                 }
         }
 
+        @Nested
+        @DisplayName("Admin status filter Tests")
+        class AdminStatusFilterTests {
+
+                private Long requestRental(int fromDays, int toDays) throws Exception {
+                        RentalRequest request = new RentalRequest(
+                                        testCar.getId(),
+                                        LocalDate.now().plusDays(fromDays),
+                                        LocalDate.now().plusDays(toDays),
+                                        null);
+                        String body = mockMvc.perform(post("/api/v1/rentals/request")
+                                        .header("Authorization", userToken)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(objectMapper.writeValueAsString(request)))
+                                        .andExpect(status().isCreated())
+                                        .andReturn().getResponse().getContentAsString();
+                        return objectMapper.readTree(body).get("id").asLong();
+                }
+
+                private java.util.List<String> idsAndStatuses(String body) throws Exception {
+                        java.util.List<String> out = new java.util.ArrayList<>();
+                        for (tools.jackson.databind.JsonNode n : objectMapper.readTree(body).get("content")) {
+                                out.add(n.get("id").asLong() + ":" + n.get("status").asText());
+                        }
+                        return out;
+                }
+
+                private String adminList(String... statusValues) throws Exception {
+                        var request = get("/api/v1/rentals/admin")
+                                        .header("Authorization", adminToken)
+                                        .param("size", "100");
+                        if (statusValues.length > 0) {
+                                request.param("status", statusValues);
+                        }
+                        return mockMvc.perform(request)
+                                        .andExpect(status().isOk())
+                                        .andReturn().getResponse().getContentAsString();
+                }
+
+                @Test
+                @DisplayName("Should filter by one status, a repeated parameter and a comma list")
+                void shouldFilterByStatus() throws Exception {
+                        Long requested = requestRental(1, 3);
+                        Long confirmed = requestRental(10, 12);
+                        mockMvc.perform(post("/api/v1/rentals/{id}/confirm", confirmed)
+                                        .header("Authorization", adminToken))
+                                        .andExpect(status().isOk());
+
+                        org.assertj.core.api.Assertions.assertThat(idsAndStatuses(adminList("CONFIRMED")))
+                                        .contains(confirmed + ":CONFIRMED")
+                                        .doesNotContain(requested + ":REQUESTED")
+                                        .allMatch(s -> s.endsWith(":CONFIRMED"));
+                        org.assertj.core.api.Assertions.assertThat(idsAndStatuses(adminList("CONFIRMED", "requested")))
+                                        .contains(confirmed + ":CONFIRMED", requested + ":REQUESTED");
+                        org.assertj.core.api.Assertions.assertThat(idsAndStatuses(adminList("CONFIRMED,REQUESTED")))
+                                        .contains(confirmed + ":CONFIRMED", requested + ":REQUESTED");
+                        org.assertj.core.api.Assertions.assertThat(idsAndStatuses(adminList()))
+                                        .contains(confirmed + ":CONFIRMED", requested + ":REQUESTED");
+                }
+
+                @Test
+                @DisplayName("Should answer 400 INVALID_PARAMETER for an unknown status")
+                void shouldRejectUnknownStatus() throws Exception {
+                        mockMvc.perform(get("/api/v1/rentals/admin")
+                                        .header("Authorization", adminToken)
+                                        .param("status", "CONFIRMED,NOPE"))
+                                        .andExpect(status().isBadRequest())
+                                        .andExpect(jsonPath("$.code").value("INVALID_PARAMETER"));
+                }
+
+                @Test
+                @DisplayName("Should keep the paging and sort guards in force with a status filter")
+                void shouldKeepPagingGuards() throws Exception {
+                        requestRental(1, 3);
+                        mockMvc.perform(get("/api/v1/rentals/admin")
+                                        .header("Authorization", adminToken)
+                                        .param("status", "REQUESTED")
+                                        .param("sort", "passwordHash,asc"))
+                                        .andExpect(status().isBadRequest());
+                        mockMvc.perform(get("/api/v1/rentals/admin")
+                                        .header("Authorization", adminToken)
+                                        .param("status", "REQUESTED")
+                                        .param("sort", "startDate,desc")
+                                        .param("size", "1"))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.content.length()").value(1));
+                }
+
+                @Test
+                @DisplayName("Should deny a non-admin")
+                void shouldDenyNonAdmin() throws Exception {
+                        mockMvc.perform(get("/api/v1/rentals/admin")
+                                        .header("Authorization", userToken)
+                                        .param("status", "REQUESTED"))
+                                        .andExpect(status().isForbidden());
+                }
+        }
+
     private void startToday(Long rentalId) {
         com.akif.rental.domain.model.Rental rental = rentalRepository.findById(rentalId).orElseThrow();
         org.springframework.test.util.ReflectionTestUtils.setField(rental, "startDate", LocalDate.now());

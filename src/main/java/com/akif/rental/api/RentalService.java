@@ -25,7 +25,7 @@ public interface RentalService extends UserRentalStatisticsProvider {
 
     Page<RentalResponse> getMyRentals(Long userId, Pageable pageable);
 
-    Page<RentalResponse> getAllRentals(Pageable pageable);
+    Page<RentalResponse> getAllRentals(java.util.Collection<RentalStatus> statuses, Pageable pageable);
 
     RentalResponse getRentalById(Long id, Long userId);
 

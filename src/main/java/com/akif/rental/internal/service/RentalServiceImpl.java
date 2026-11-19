@@ -66,8 +66,8 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
-    public Page<RentalResponse> getAllRentals(Pageable pageable) {
-        return queries.getAllRentals(pageable);
+    public Page<RentalResponse> getAllRentals(java.util.Collection<RentalStatus> statuses, Pageable pageable) {
+        return queries.getAllRentals(statuses, pageable);
     }
 
     @Override
