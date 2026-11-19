@@ -18,6 +18,7 @@ import com.akif.rental.domain.model.Rental;
 import com.akif.rental.api.RentalRequest;
 import com.akif.rental.internal.exception.*;
 import com.akif.rental.internal.mapper.RentalMapper;
+import com.akif.rental.internal.service.PaymentWindow;
 import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.rental.internal.service.RentalServiceImpl;
 import com.akif.rental.internal.service.RentalBookingService;
@@ -126,7 +127,8 @@ class RentalServiceTest {
                         rentalProperties, lookups),
                 new RentalLifecycleService(clock, rentalRepository, rentalMapper, paymentService, eventPublisher,
                         rentalProperties, lookups, refunds, penalties),
-                new RentalQueryService(clock, rentalRepository, rentalMapper, paymentService, rentalProperties,
+                new RentalQueryService(clock, rentalRepository, rentalMapper, paymentService,
+                        new PaymentWindow(clock, rentalProperties),
                         lookups));
         testUser = new UserDto(
                 1L,

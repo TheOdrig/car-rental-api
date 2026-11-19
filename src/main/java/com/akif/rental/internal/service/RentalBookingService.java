@@ -121,7 +121,8 @@ public class RentalBookingService {
                 result.approvalNotes(),
                 result.cancellationReason(),
                 result.createTime(),
-                result.updateTime());
+                result.updateTime(),
+                result.paymentOpensOn());
 
         lookups.logRentalOperationSuccess("created", result);
         return result;

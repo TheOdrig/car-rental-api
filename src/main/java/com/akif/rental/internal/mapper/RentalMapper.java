@@ -6,7 +6,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = "spring", uses = com.akif.rental.internal.service.PaymentWindow.class, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface RentalMapper {
 
     @Mapping(target = "carSummary.id", source = "carId")
@@ -18,5 +18,6 @@ public interface RentalMapper {
     @Mapping(target = "userSummary.username", source = "userEmail")
     @Mapping(target = "userSummary.email", source = "userEmail")
     @Mapping(target = "userSummary.fullName", source = "userFullName")
+    @Mapping(target = "paymentOpensOn", source = "startDate", qualifiedByName = "paymentOpensOn")
     RentalResponse toDto(Rental rental);
 }

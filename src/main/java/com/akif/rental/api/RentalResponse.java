@@ -46,7 +46,9 @@ public record RentalResponse(
 
         Instant createTime,
 
-        Instant updateTime) {
+        Instant updateTime,
+
+        @JsonFormat(pattern = "yyyy-MM-dd") LocalDate paymentOpensOn) {
 
     public RentalResponse(
             Long id,
@@ -73,7 +75,38 @@ public record RentalResponse(
             Instant updateTime) {
         this(id, carSummary, userSummary, startDate, endDate, days, dailyPrice, totalPrice, currency, status,
                 originalPrice, finalPrice, totalSavings, appliedDiscounts, convertedTotalPrice, displayCurrency,
-                exchangeRate, rateSource, pickupNotes, returnNotes, null, null, createTime, updateTime);
+                exchangeRate, rateSource, pickupNotes, returnNotes, null, null, createTime, updateTime, null);
+    }
+
+    public RentalResponse(
+            Long id,
+            CarSummaryResponse carSummary,
+            UserSummaryResponse userSummary,
+            LocalDate startDate,
+            LocalDate endDate,
+            Integer days,
+            BigDecimal dailyPrice,
+            BigDecimal totalPrice,
+            CurrencyType currency,
+            RentalStatus status,
+            BigDecimal originalPrice,
+            BigDecimal finalPrice,
+            BigDecimal totalSavings,
+            java.util.List<String> appliedDiscounts,
+            BigDecimal convertedTotalPrice,
+            CurrencyType displayCurrency,
+            BigDecimal exchangeRate,
+            String rateSource,
+            String pickupNotes,
+            String returnNotes,
+            String approvalNotes,
+            String cancellationReason,
+            Instant createTime,
+            Instant updateTime) {
+        this(id, carSummary, userSummary, startDate, endDate, days, dailyPrice, totalPrice, currency, status,
+                originalPrice, finalPrice, totalSavings, appliedDiscounts, convertedTotalPrice, displayCurrency,
+                exchangeRate, rateSource, pickupNotes, returnNotes, approvalNotes, cancellationReason, createTime,
+                updateTime, null);
     }
 
     public RentalResponse withDisplayPrice(com.akif.currency.api.DisplayPrice price) {
@@ -83,6 +116,6 @@ public record RentalResponse(
         return new RentalResponse(id, carSummary, userSummary, startDate, endDate, days, dailyPrice, totalPrice,
                 currency, status, originalPrice, finalPrice, totalSavings, appliedDiscounts, price.amount(),
                 price.currency(), price.exchangeRate(), price.rateSource(), pickupNotes, returnNotes,
-                approvalNotes, cancellationReason, createTime, updateTime);
+                approvalNotes, cancellationReason, createTime, updateTime, paymentOpensOn);
     }
 }

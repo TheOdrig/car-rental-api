@@ -2633,6 +2633,10 @@
           "originalPrice" : {
             "type" : "number"
           },
+          "paymentOpensOn" : {
+            "format" : "date",
+            "type" : "string"
+          },
           "pickupNotes" : {
             "type" : "string"
           },

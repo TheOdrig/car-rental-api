@@ -7,9 +7,7 @@ import com.akif.rental.api.RentalSummaryDto;
 import com.akif.payment.api.PaymentIntentResult;
 import com.akif.payment.api.PaymentSummary;
 import com.akif.rental.api.RentalStatus;
-import com.akif.rental.internal.config.RentalProperties;
 import com.akif.rental.internal.exception.InvalidRentalStateException;
-import com.akif.rental.internal.exception.PaymentWindowNotOpenException;
 import com.akif.rental.internal.exception.RentalPaymentNotFoundException;
 import com.akif.rental.internal.exception.RentalNotFoundException;
 import com.akif.rental.internal.mapper.RentalMapper;
@@ -40,7 +38,7 @@ public class RentalQueryService {
     private final RentalRepository rentalRepository;
     private final RentalMapper rentalMapper;
     private final PaymentService paymentService;
-    private final RentalProperties rentalProperties;
+    private final PaymentWindow paymentWindow;
     private final RentalLookups lookups;
 
     public Page<RentalResponse> getMyRentals(Long userId, Pageable pageable) {
@@ -94,10 +92,7 @@ public class RentalQueryService {
             throw new InvalidRentalStateException(rental.getStatus().name(), RentalStatus.CONFIRMED.name());
         }
 
-        LocalDate paymentOpensOn = rental.getStartDate().minusDays(rentalProperties.getPaymentWindowDays());
-        if (LocalDate.now(clock).isBefore(paymentOpensOn)) {
-            throw new PaymentWindowNotOpenException(paymentOpensOn);
-        }
+        paymentWindow.requireOpen(rental.getStartDate());
 
         PaymentIntentResult result = paymentService.createOrGetIntentForRental(rentalId);
         log.info("Payment intent ready for rental: {}, status: {}", rentalId, result.status());

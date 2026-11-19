@@ -609,6 +609,39 @@ class PaymentFlowE2ETest extends E2ETestBase {
         }
 
         @Test
+        @DisplayName("the paymentOpensOn on the rental is the exact day the payment-intent endpoint starts to accept payment")
+        void paymentOpensOnMatchesEnforcement() throws Exception {
+            LocalDate start = LocalDate.now().plusDays(20);
+            Long rentalId = confirmedRentalId(start, start.plusDays(3));
+            LocalDate opensOn = start.minusDays(rentalProperties.getPaymentWindowDays());
+            String ownerAuth = "Bearer " + customerToken;
+
+            mockMvc.perform(get("/api/v1/rentals/{id}", rentalId).header("Authorization", ownerAuth))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.paymentOpensOn").value(opensOn.toString()));
+
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId).header("Authorization", ownerAuth))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.code").value("PAYMENT_WINDOW_NOT_OPEN"))
+                    .andExpect(jsonPath("$.details.paymentOpensOn").value(opensOn.toString()));
+
+            long daysToOpen = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(clock), opensOn);
+            clock.advance(java.time.Duration.ofDays(daysToOpen - 1));
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
+                            .header("Authorization", "Bearer " + generateUserToken(customer)))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.code").value("PAYMENT_WINDOW_NOT_OPEN"));
+
+            clock.advance(java.time.Duration.ofDays(1));
+            mockMvc.perform(get("/api/v1/rentals/{id}", rentalId)
+                            .header("Authorization", "Bearer " + generateUserToken(customer)))
+                    .andExpect(jsonPath("$.paymentOpensOn").value(opensOn.toString()));
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
+                            .header("Authorization", "Bearer " + generateUserToken(customer)))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
         @DisplayName("payment-intent inside the window is allowed without touching the clock")
         void windowOpen() throws Exception {
             Long rentalId = confirmedRentalId();
