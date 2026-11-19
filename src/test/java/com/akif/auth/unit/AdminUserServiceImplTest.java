@@ -60,6 +60,9 @@ class AdminUserServiceImplTest {
     @Mock
     private RefreshTokenService refreshTokenService;
 
+    @Mock
+    private com.akif.auth.api.AvatarStorageService avatarStorageService;
+
     @InjectMocks
     private AdminUserServiceImpl adminUserService;
 
@@ -129,6 +132,19 @@ class AdminUserServiceImplTest {
 
             assertThat(result.verification().emailVerified()).isFalse();
             assertThat(result.lastLoginDate()).isNull();
+        }
+
+        @Test
+        @DisplayName("Should return the avatar as a resolved URL, not the stored key")
+        void shouldResolveTheAvatarUrl() {
+            when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+            when(avatarStorageService.generateAvatarUrl("https://example.com/avatar.jpg", 60))
+                    .thenReturn("/api/v1/files/avatars/resolved.jpg");
+            when(rentalService.getUserStatistics(1L)).thenReturn(testRentalStats);
+            when(damageService.getUserDamageStatistics(1L)).thenReturn(testDamageStats);
+
+            assertThat(adminUserService.getUserDetailForAdmin(1L).avatarUrl())
+                    .isEqualTo("/api/v1/files/avatars/resolved.jpg");
         }
 
         @Test

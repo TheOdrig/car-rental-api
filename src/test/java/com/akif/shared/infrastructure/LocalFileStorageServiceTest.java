@@ -134,6 +134,21 @@ class LocalFileStorageServiceTest {
     }
 
     @Nested
+    @DisplayName("Serving URLs")
+    class ServingUrls {
+
+        @Test
+        @DisplayName("Should return a relative path so the client can proxy it")
+        void shouldReturnARelativePath() {
+            assertThat(fileStorageService.generateSecureUrl("uploads/damage-photos/abc.png", 60))
+                    .isEqualTo("/api/v1/files/damage-photos/abc.png");
+            assertThat(fileStorageService.generateSecureUrl("uploads/avatars/abc.png", 60))
+                    .isEqualTo("/api/v1/files/avatars/abc.png");
+            assertThat(fileStorageService.generateSecureUrl(" ", 60)).isNull();
+        }
+    }
+
+    @Nested
     @DisplayName("Validate File Type Operations")
     class ValidateFileTypeOperations {
 
@@ -264,7 +279,7 @@ class LocalFileStorageServiceTest {
             String result = fileStorageService.generateSecureUrl(filePath, 60);
 
             assertThat(result).isNotNull();
-            assertThat(result).startsWith("http://localhost:");
+            assertThat(result).isEqualTo("/api/v1/files/damage-photos/test-file.jpg");
             assertThat(result).contains("test-file.jpg");
         }
     }

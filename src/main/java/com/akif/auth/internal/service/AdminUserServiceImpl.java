@@ -6,6 +6,7 @@ import java.time.Clock;
 
 import com.akif.auth.api.AdminNoteDto;
 import com.akif.auth.api.AdminUserDetailResponse;
+import com.akif.auth.api.AvatarStorageService;
 import com.akif.auth.api.AdminUserDetailResponse.AccountStatus;
 import com.akif.auth.api.AdminUserDetailResponse.UserStatistics;
 import com.akif.auth.api.AdminUserDetailResponse.VerificationInfo;
@@ -41,11 +42,14 @@ import java.util.TreeSet;
 @Transactional(readOnly = true)
 public class AdminUserServiceImpl implements AdminUserService {
 
+    private static final int AVATAR_URL_MINUTES = 60;
+
     private final Clock clock;
 
     private final UserRepository userRepository;
     private final AdminNoteRepository adminNoteRepository;
     private final RefreshTokenService refreshTokenService;
+    private final AvatarStorageService avatarStorageService;
     private final UserRentalStatisticsProvider rentalStatisticsProvider;
     private final UserDamageStatisticsProvider damageStatisticsProvider;
 
@@ -77,10 +81,14 @@ public class AdminUserServiceImpl implements AdminUserService {
                 user.getLastName(),
                 new TreeSet<>(user.getRoles()),
                 userStatus,
-                user.getAvatarUrl(),
+                avatarUrlOf(user),
                 user.hasVerifiedEmail(),
                 user.getCreateTime(),
                 user.getLastLoginAt());
+    }
+
+    private String avatarUrlOf(User user) {
+        return avatarStorageService.generateAvatarUrl(user.getAvatarUrl(), AVATAR_URL_MINUTES);
     }
 
     private String getUserStatus(User user) {
@@ -111,7 +119,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 user.getLastName(),
                 user.getEmail(),
                 user.getPhone(),
-                user.getAvatarUrl(),
+                avatarUrlOf(user),
                 new TreeSet<>(user.getRoles()),
                 user.getCreateTime(),
                 user.getLastLoginAt(),

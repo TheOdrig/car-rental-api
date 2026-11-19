@@ -78,7 +78,7 @@ public class LocalFileStorageService implements FileUploadService {
         String fileName = path.getFileName().toString();
         String directory = path.getParent() != null ? path.getParent().getFileName().toString() : "uploads";
 
-        return "http://localhost:8082/api/v1/files/" + directory + "/" + fileName;
+        return "/api/v1/files/" + directory + "/" + fileName;
     }
 
     @Override
