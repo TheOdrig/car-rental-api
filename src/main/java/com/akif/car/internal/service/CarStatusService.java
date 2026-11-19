@@ -36,8 +36,8 @@ public class CarStatusService implements CarFleetOperations {
         car.markAsMaintenance();
         CarResponse result = saveAndMap(car);
 
-        log.info("Successfully marked car as maintenance: ID={}, License Plate={}", result.getId(),
-                result.getLicensePlate());
+        log.info("Successfully marked car as maintenance: ID={}, License Plate={}", result.id(),
+                result.licensePlate());
         return result;
     }
 
@@ -49,8 +49,8 @@ public class CarStatusService implements CarFleetOperations {
         car.markAsAvailable();
         CarResponse result = saveAndMap(car);
 
-        log.info("Successfully marked car as available: ID={}, License Plate={}", result.getId(),
-                result.getLicensePlate());
+        log.info("Successfully marked car as available: ID={}, License Plate={}", result.id(),
+                result.licensePlate());
         return result;
     }
 
@@ -65,7 +65,7 @@ public class CarStatusService implements CarFleetOperations {
         car.changeFleetStatus(newStatus);
         CarResponse result = saveAndMap(car);
 
-        log.info("Successfully updated car status: ID={}, {} -> {}", result.getId(), oldStatus, newStatus);
+        log.info("Successfully updated car status: ID={}, {} -> {}", result.id(), oldStatus, newStatus);
         return result;
     }
 

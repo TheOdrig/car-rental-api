@@ -36,11 +36,11 @@ public class CarCommandService {
 
     @EvictCarCaches
     public CarResponse createCar(CarRequest carRequest) {
-        log.debug("Creating new car with license plate: {}", carRequest.getLicensePlate());
+        log.debug("Creating new car with license plate: {}", carRequest.licensePlate());
 
         validateCarRequest(carRequest);
-        checkLicensePlateUniqueness(carRequest.getLicensePlate());
-        checkVinNumberUniqueness(carRequest.getVinNumber());
+        checkLicensePlateUniqueness(carRequest.licensePlate());
+        checkVinNumberUniqueness(carRequest.vinNumber());
 
         Car car = carMapper.toEntity(carRequest);
         car.setCreateTime(LocalDateTime.now(clock));
@@ -48,7 +48,7 @@ public class CarCommandService {
 
         CarResponse result = carMapper.toDto(carRepository.save(car));
 
-        log.info("Successfully created car: ID={}, Plate={}", result.getId(), result.getLicensePlate());
+        log.info("Successfully created car: ID={}, Plate={}", result.id(), result.licensePlate());
         return result;
     }
 
@@ -61,12 +61,12 @@ public class CarCommandService {
 
         Car existingCar = carLookup.requireActiveById(id);
 
-        if (!existingCar.getLicensePlate().equals(carRequest.getLicensePlate())) {
-            checkLicensePlateUniqueness(carRequest.getLicensePlate());
+        if (!existingCar.getLicensePlate().equals(carRequest.licensePlate())) {
+            checkLicensePlateUniqueness(carRequest.licensePlate());
         }
 
-        if (!Objects.equals(existingCar.getVinNumber(), carRequest.getVinNumber())) {
-            checkVinNumberUniqueness(carRequest.getVinNumber());
+        if (!Objects.equals(existingCar.getVinNumber(), carRequest.vinNumber())) {
+            checkVinNumberUniqueness(carRequest.vinNumber());
         }
 
         carMapper.updateEntity(carRequest, existingCar);
@@ -74,7 +74,7 @@ public class CarCommandService {
 
         CarResponse result = carMapper.toDto(carRepository.save(existingCar));
 
-        log.info("Successfully updated car: ID={}, Plate={}", result.getId(), result.getLicensePlate());
+        log.info("Successfully updated car: ID={}, Plate={}", result.id(), result.licensePlate());
         return result;
     }
 
@@ -121,7 +121,7 @@ public class CarCommandService {
 
         CarResponse result = carMapper.toDto(carRepository.save(car));
 
-        log.info("Successfully updated car price: ID={}, {} -> {}", result.getId(), oldPrice, result.getPrice());
+        log.info("Successfully updated car price: ID={}, {} -> {}", result.id(), oldPrice, result.price());
         return result;
     }
 
@@ -129,39 +129,39 @@ public class CarCommandService {
     public List<String> validateCarData(CarRequest carRequest) {
         List<String> errors = new ArrayList<>();
 
-        if (!StringUtils.hasText(carRequest.getLicensePlate())) {
+        if (!StringUtils.hasText(carRequest.licensePlate())) {
             errors.add("License plate is required");
         }
 
-        if (!StringUtils.hasText(carRequest.getBrand())) {
+        if (!StringUtils.hasText(carRequest.brand())) {
             errors.add("Brand is required");
         }
 
-        if (!StringUtils.hasText(carRequest.getModel())) {
+        if (!StringUtils.hasText(carRequest.model())) {
             errors.add("Model is required");
         }
 
-        if (carRequest.getProductionYear() == null) {
+        if (carRequest.productionYear() == null) {
             errors.add("Production year is required");
         }
 
-        if (carRequest.getPrice() == null) {
+        if (carRequest.price() == null) {
             errors.add("Price is required");
         }
 
-        if (carRequest.getCurrencyType() == null) {
+        if (carRequest.currencyType() == null) {
             errors.add("Currency type is required");
         }
 
-        if (carRequest.getCarStatusType() == null) {
+        if (carRequest.carStatusType() == null) {
             errors.add("Car status type is required");
         }
 
-        if (carRequest.getProductionYear() != null && carRequest.getProductionYear() > LocalDate.now(clock).getYear()) {
+        if (carRequest.productionYear() != null && carRequest.productionYear() > LocalDate.now(clock).getYear()) {
             errors.add("Production year cannot be in the future");
         }
 
-        if (carRequest.getPrice() != null && carRequest.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+        if (carRequest.price() != null && carRequest.price().compareTo(BigDecimal.ZERO) <= 0) {
             errors.add("Price must be positive");
         }
 

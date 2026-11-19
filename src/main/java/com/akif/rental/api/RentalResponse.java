@@ -75,4 +75,14 @@ public record RentalResponse(
                 originalPrice, finalPrice, totalSavings, appliedDiscounts, convertedTotalPrice, displayCurrency,
                 exchangeRate, rateSource, pickupNotes, returnNotes, null, null, createTime, updateTime);
     }
+
+    public RentalResponse withDisplayPrice(com.akif.currency.api.DisplayPrice price) {
+        if (price == null) {
+            return this;
+        }
+        return new RentalResponse(id, carSummary, userSummary, startDate, endDate, days, dailyPrice, totalPrice,
+                currency, status, originalPrice, finalPrice, totalSavings, appliedDiscounts, price.amount(),
+                price.currency(), price.exchangeRate(), price.rateSource(), pickupNotes, returnNotes,
+                approvalNotes, cancellationReason, createTime, updateTime);
+    }
 }

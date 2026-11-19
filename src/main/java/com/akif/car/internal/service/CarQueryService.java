@@ -87,7 +87,7 @@ public class CarQueryService implements CarCatalog {
     }
 
     private static Sort searchSort(CarSearchRequest request) {
-        String requested = request.getSortBy();
+        String requested = request.sortBy();
         if (requested == null) {
             return defaultSearchSort();
         }
@@ -95,7 +95,7 @@ public class CarQueryService implements CarCatalog {
         if (column == null) {
             throw new CarValidationException("Invalid sort field: " + requested);
         }
-        Sort.Direction direction = "desc".equalsIgnoreCase(request.getSortDirection())
+        Sort.Direction direction = "desc".equalsIgnoreCase(request.sortDirection())
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort.Order primary = new Sort.Order(direction, column).nullsLast();
         if ("id".equals(column)) {
@@ -108,18 +108,18 @@ public class CarQueryService implements CarCatalog {
     public PageResponse<CarResponse> searchCars(CarSearchRequest searchRequest) {
         log.debug("Searching cars with criteria: {}", searchRequest);
 
-        int pageNumber = searchRequest.getPage() != null ? searchRequest.getPage() : 0;
-        int pageSize = searchRequest.getSize() != null ? searchRequest.getSize() : 20;
+        int pageNumber = searchRequest.page() != null ? searchRequest.page() : 0;
+        int pageSize = searchRequest.size() != null ? searchRequest.size() : 20;
         Pageable pageable = PageRequest.of(pageNumber, pageSize, searchSort(searchRequest));
 
-        String searchTerm = containsPattern(searchRequest.getSearchTerm());
-        String brand = exactPattern(searchRequest.getBrand());
-        String model = exactPattern(searchRequest.getModel());
-        String transmissionType = lowerCaseOrNull(searchRequest.getTransmissionType());
-        String bodyType = lowerCaseOrNull(searchRequest.getBodyType());
-        String fuelType = lowerCaseOrNull(searchRequest.getFuelType());
-        String currencyType = searchRequest.getCurrencyType() != null ? searchRequest.getCurrencyType().name() : null;
-        String carStatusType = searchRequest.getCarStatusType() != null ? searchRequest.getCarStatusType().name()
+        String searchTerm = containsPattern(searchRequest.searchTerm());
+        String brand = exactPattern(searchRequest.brand());
+        String model = exactPattern(searchRequest.model());
+        String transmissionType = lowerCaseOrNull(searchRequest.transmissionType());
+        String bodyType = lowerCaseOrNull(searchRequest.bodyType());
+        String fuelType = lowerCaseOrNull(searchRequest.fuelType());
+        String currencyType = searchRequest.currencyType() != null ? searchRequest.currencyType().name() : null;
+        String carStatusType = searchRequest.carStatusType() != null ? searchRequest.carStatusType().name()
                 : null;
 
         Page<Car> cars = carRepository.findCarsByCriteria(
@@ -129,17 +129,17 @@ public class CarQueryService implements CarCatalog {
                 transmissionType,
                 bodyType,
                 fuelType,
-                searchRequest.getMinSeats(),
-                searchRequest.getMaxSeats(),
-                searchRequest.getMinDoors(),
-                searchRequest.getMaxKilometer(),
-                searchRequest.getMinRating(),
-                lowerCaseOrNull(searchRequest.getEngineType()),
-                lowerCaseOrNull(searchRequest.getColor()),
-                searchRequest.getMinProductionYear(),
-                searchRequest.getMaxProductionYear(),
-                searchRequest.getMinPrice(),
-                searchRequest.getMaxPrice(),
+                searchRequest.minSeats(),
+                searchRequest.maxSeats(),
+                searchRequest.minDoors(),
+                searchRequest.maxKilometer(),
+                searchRequest.minRating(),
+                lowerCaseOrNull(searchRequest.engineType()),
+                lowerCaseOrNull(searchRequest.color()),
+                searchRequest.minProductionYear(),
+                searchRequest.maxProductionYear(),
+                searchRequest.minPrice(),
+                searchRequest.maxPrice(),
                 currencyType,
                 carStatusType,
                 pageable);
@@ -270,7 +270,7 @@ public class CarQueryService implements CarCatalog {
     }
 
     private void logCarRetrievalSuccess(CarResponse result) {
-        log.info("Successfully retrieved car (ID: {}, Plate: {})", result.getId(), result.getLicensePlate());
+        log.info("Successfully retrieved car (ID: {}, Plate: {})", result.id(), result.licensePlate());
     }
 
     private void logPagedRetrievalSuccess(String entityType, Page<?> result) {

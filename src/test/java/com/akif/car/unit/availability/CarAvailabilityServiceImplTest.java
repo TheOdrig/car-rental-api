@@ -132,8 +132,8 @@ class CarAvailabilityServiceImplTest {
                         assertThat(result.cars()).hasSize(1);
                         assertThat(result.totalElements()).isEqualTo(1);
                         assertThat(result.rentalDays()).isEqualTo(5);
-                        assertThat(result.searchStartDate()).isEqualTo(searchRequest.getStartDate());
-                        assertThat(result.searchEndDate()).isEqualTo(searchRequest.getEndDate());
+                        assertThat(result.searchStartDate()).isEqualTo(searchRequest.startDate());
+                        assertThat(result.searchEndDate()).isEqualTo(searchRequest.endDate());
 
                         verify(carRepository).findAvailableCarsForDateRange(
                                         anyCollection(), anyList(),
@@ -146,11 +146,11 @@ class CarAvailabilityServiceImplTest {
                 @Test
                 @DisplayName("Should apply all filters when multiple criteria provided")
                 void shouldApplyAllFiltersWhenMultipleCriteriaProvided() {
-                        searchRequest.setBrand("Toyota");
-                        searchRequest.setModel("Corolla");
-                        searchRequest.setBodyType("Sedan");
-                        searchRequest.setMinPrice(new BigDecimal("400"));
-                        searchRequest.setMaxPrice(new BigDecimal("600"));
+                        searchRequest = searchRequest.toBuilder().brand("Toyota").build();
+                        searchRequest = searchRequest.toBuilder().model("Corolla").build();
+                        searchRequest = searchRequest.toBuilder().bodyType("Sedan").build();
+                        searchRequest = searchRequest.toBuilder().minPrice(new BigDecimal("400")).build();
+                        searchRequest = searchRequest.toBuilder().maxPrice(new BigDecimal("600")).build();
 
                         Page<Car> carPage = new PageImpl<>(List.of(testCar));
                         when(carRepository.findAvailableCarsForDateRange(
@@ -178,7 +178,7 @@ class CarAvailabilityServiceImplTest {
                 @Test
                 @DisplayName("Should apply currency conversion when target currency specified")
                 void shouldApplyCurrencyConversionWhenTargetCurrencySpecified() {
-                        searchRequest.setTargetCurrency(CurrencyType.USD);
+                        searchRequest = searchRequest.toBuilder().targetCurrency(CurrencyType.USD).build();
                         Page<Car> carPage = new PageImpl<>(List.of(testCar));
 
                         ConversionResult dailyConversion = new ConversionResult(
@@ -217,8 +217,8 @@ class CarAvailabilityServiceImplTest {
                 @Test
                 @DisplayName("Should respect pagination parameters")
                 void shouldRespectPaginationParameters() {
-                        searchRequest.setPage(1);
-                        searchRequest.setSize(10);
+                        searchRequest = searchRequest.toBuilder().page(1).build();
+                        searchRequest = searchRequest.toBuilder().size(10).build();
                         Page<Car> carPage = new PageImpl<>(List.of(testCar),
                                         org.springframework.data.domain.PageRequest.of(1, 10), 25);
 
@@ -247,7 +247,7 @@ class CarAvailabilityServiceImplTest {
                 @Test
                 @DisplayName("Should throw exception when start date is in the past")
                 void shouldThrowExceptionWhenStartDateIsInThePast() {
-                        searchRequest.setStartDate(LocalDate.now().minusDays(1));
+                        searchRequest = searchRequest.toBuilder().startDate(LocalDate.now().minusDays(1)).build();
 
                         assertThatThrownBy(() -> carAvailabilityService.searchAvailableCars(searchRequest))
                                         .isInstanceOf(AvailabilityValidationException.class)
@@ -261,8 +261,8 @@ class CarAvailabilityServiceImplTest {
                 @Test
                 @DisplayName("Should throw exception when end date is before start date")
                 void shouldThrowExceptionWhenEndDateIsBeforeStartDate() {
-                        searchRequest.setStartDate(LocalDate.now().plusDays(5));
-                        searchRequest.setEndDate(LocalDate.now().plusDays(1));
+                        searchRequest = searchRequest.toBuilder().startDate(LocalDate.now().plusDays(5)).build();
+                        searchRequest = searchRequest.toBuilder().endDate(LocalDate.now().plusDays(1)).build();
 
                         assertThatThrownBy(() -> carAvailabilityService.searchAvailableCars(searchRequest))
                                         .isInstanceOf(AvailabilityValidationException.class)
@@ -272,8 +272,8 @@ class CarAvailabilityServiceImplTest {
                 @Test
                 @DisplayName("Should throw exception when rental period exceeds 90 days")
                 void shouldThrowExceptionWhenRentalPeriodExceeds90Days() {
-                        searchRequest.setStartDate(LocalDate.now().plusDays(1));
-                        searchRequest.setEndDate(LocalDate.now().plusDays(92));
+                        searchRequest = searchRequest.toBuilder().startDate(LocalDate.now().plusDays(1)).build();
+                        searchRequest = searchRequest.toBuilder().endDate(LocalDate.now().plusDays(92)).build();
 
                         assertThatThrownBy(() -> carAvailabilityService.searchAvailableCars(searchRequest))
                                         .isInstanceOf(AvailabilityValidationException.class)
@@ -283,7 +283,7 @@ class CarAvailabilityServiceImplTest {
                 @Test
                 @DisplayName("Should throw exception when page size is less than 1")
                 void shouldThrowExceptionWhenPageSizeIsLessThan1() {
-                        searchRequest.setSize(0);
+                        searchRequest = searchRequest.toBuilder().size(0).build();
 
                         assertThatThrownBy(() -> carAvailabilityService.searchAvailableCars(searchRequest))
                                         .isInstanceOf(AvailabilityValidationException.class)
@@ -293,7 +293,7 @@ class CarAvailabilityServiceImplTest {
                 @Test
                 @DisplayName("Should throw exception when page size exceeds 100")
                 void shouldThrowExceptionWhenPageSizeExceeds100() {
-                        searchRequest.setSize(101);
+                        searchRequest = searchRequest.toBuilder().size(101).build();
 
                         assertThatThrownBy(() -> carAvailabilityService.searchAvailableCars(searchRequest))
                                         .isInstanceOf(AvailabilityValidationException.class)
@@ -520,8 +520,8 @@ class CarAvailabilityServiceImplTest {
 
                         verify(dynamicPricingService).calculatePrice(
                                         eq(testCar.getId()),
-                                        eq(searchRequest.getStartDate()),
-                                        eq(searchRequest.getEndDate()),
+                                        eq(searchRequest.startDate()),
+                                        eq(searchRequest.endDate()),
                                         any(LocalDate.class));
                 }
         }

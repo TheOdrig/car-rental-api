@@ -215,9 +215,9 @@ class CarNullVinAndRestoreTest {
             CarResponse result = commandService.restoreCar(1L);
 
             assertThat(result).isNotNull();
-            assertThat(result.getId()).isEqualTo(1L);
-            assertThat(result.getLicensePlate()).isEqualTo("34ABC123");
-            assertThat(result.getBrand()).isEqualTo("Toyota");
+            assertThat(result.id()).isEqualTo(1L);
+            assertThat(result.licensePlate()).isEqualTo("34ABC123");
+            assertThat(result.brand()).isEqualTo("Toyota");
 
             verify(carRepository).findById(1L);
             verify(carRepository).save(deletedCar);

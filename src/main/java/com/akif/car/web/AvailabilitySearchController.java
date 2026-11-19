@@ -51,7 +51,7 @@ public class AvailabilitySearchController {
             @Parameter(description = "Availability search criteria with date range and filters", required = true)
             @Valid @RequestBody AvailabilitySearchRequest request) {
         log.debug("POST /api/v1/cars/availability/search - Searching available cars for dates: {} to {}", 
-                 request.getStartDate(), request.getEndDate());
+                 request.startDate(), request.endDate());
         
         AvailabilitySearchResponse result = carAvailabilityService.searchAvailableCars(request);
         

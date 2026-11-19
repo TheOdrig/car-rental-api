@@ -129,8 +129,8 @@ class CarCrudAndStatusTest {
         @DisplayName("Should create car successfully when car does not exist")
         void shouldCreateCarSuccessfullyWhenCarDoesNotExist() {
 
-            when(carRepository.existsByLicensePlate(testCarRequest.getLicensePlate())).thenReturn(false);
-            when(carRepository.existsByVinNumber(testCarRequest.getVinNumber())).thenReturn(false);
+            when(carRepository.existsByLicensePlate(testCarRequest.licensePlate())).thenReturn(false);
+            when(carRepository.existsByVinNumber(testCarRequest.vinNumber())).thenReturn(false);
             when(carMapper.toEntity(testCarRequest)).thenReturn(testCar1);
             when(carRepository.save(testCar1)).thenReturn(testCar1);
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
@@ -138,12 +138,12 @@ class CarCrudAndStatusTest {
             CarResponse result = commandService.createCar(testCarRequest);
 
             assertThat(result).isNotNull();
-            assertThat(result.getId()).isEqualTo(1L);
-            assertThat(result.getLicensePlate()).isEqualTo("34ABC123");
-            assertThat(result.getBrand()).isEqualTo("Toyota");
+            assertThat(result.id()).isEqualTo(1L);
+            assertThat(result.licensePlate()).isEqualTo("34ABC123");
+            assertThat(result.brand()).isEqualTo("Toyota");
 
-            verify(carRepository).existsByLicensePlate(testCarRequest.getLicensePlate());
-            verify(carRepository).existsByVinNumber(testCarRequest.getVinNumber());
+            verify(carRepository).existsByLicensePlate(testCarRequest.licensePlate());
+            verify(carRepository).existsByVinNumber(testCarRequest.vinNumber());
             verify(carMapper).toEntity(testCarRequest);
             verify(carRepository).save(testCar1);
             verify(carMapper).toDto(testCar1);
@@ -153,13 +153,13 @@ class CarCrudAndStatusTest {
         @DisplayName("Should throw exception when car with same license plate already exists")
         void shouldThrowExceptionWhenCarWithSameLicensePlateAlreadyExists() {
 
-            when(carRepository.existsByLicensePlate(testCarRequest.getLicensePlate())).thenReturn(true);
+            when(carRepository.existsByLicensePlate(testCarRequest.licensePlate())).thenReturn(true);
 
             assertThatThrownBy(() -> commandService.createCar(testCarRequest))
                     .isInstanceOf(CarAlreadyExistsException.class)
-                    .hasMessageContaining("Car already exists with license plate: " + testCarRequest.getLicensePlate());
+                    .hasMessageContaining("Car already exists with license plate: " + testCarRequest.licensePlate());
 
-            verify(carRepository).existsByLicensePlate(testCarRequest.getLicensePlate());
+            verify(carRepository).existsByLicensePlate(testCarRequest.licensePlate());
             verify(carRepository, never()).existsByVinNumber(any());
             verify(carMapper, never()).toEntity(any());
             verify(carRepository, never()).save(any());
@@ -169,15 +169,15 @@ class CarCrudAndStatusTest {
         @DisplayName("Should throw exception when car with same VIN already exists")
         void shouldThrowExceptionWhenCarWithSameVinAlreadyExists() {
 
-            when(carRepository.existsByLicensePlate(testCarRequest.getLicensePlate())).thenReturn(false);
-            when(carRepository.existsByVinNumber(testCarRequest.getVinNumber())).thenReturn(true);
+            when(carRepository.existsByLicensePlate(testCarRequest.licensePlate())).thenReturn(false);
+            when(carRepository.existsByVinNumber(testCarRequest.vinNumber())).thenReturn(true);
 
             assertThatThrownBy(() -> commandService.createCar(testCarRequest))
                     .isInstanceOf(CarAlreadyExistsException.class)
-                    .hasMessageContaining("Car already exists with vinNumber: " + testCarRequest.getVinNumber());
+                    .hasMessageContaining("Car already exists with vinNumber: " + testCarRequest.vinNumber());
 
-            verify(carRepository).existsByLicensePlate(testCarRequest.getLicensePlate());
-            verify(carRepository).existsByVinNumber(testCarRequest.getVinNumber());
+            verify(carRepository).existsByLicensePlate(testCarRequest.licensePlate());
+            verify(carRepository).existsByVinNumber(testCarRequest.vinNumber());
             verify(carMapper, never()).toEntity(any());
             verify(carRepository, never()).save(any());
         }
@@ -197,8 +197,8 @@ class CarCrudAndStatusTest {
             CarResponse result = queryService.getCarById(1L);
 
             assertThat(result).isNotNull();
-            assertThat(result.getId()).isEqualTo(1L);
-            assertThat(result.getLicensePlate()).isEqualTo("34ABC123");
+            assertThat(result.id()).isEqualTo(1L);
+            assertThat(result.licensePlate()).isEqualTo("34ABC123");
 
             verify(carRepository).findByIdAndIsDeletedFalse(1L);
             verify(carMapper).toDto(testCar1);
@@ -228,8 +228,8 @@ class CarCrudAndStatusTest {
             CarResponse result = queryService.getCarByLicensePlate("34ABC123");
 
             assertThat(result).isNotNull();
-            assertThat(result.getId()).isEqualTo(1L);
-            assertThat(result.getLicensePlate()).isEqualTo("34ABC123");
+            assertThat(result.id()).isEqualTo(1L);
+            assertThat(result.licensePlate()).isEqualTo("34ABC123");
 
             verify(carRepository).findByLicensePlateAndIsDeletedFalse("34ABC123");
             verify(carMapper).toDto(testCar1);
@@ -258,19 +258,19 @@ class CarCrudAndStatusTest {
         void shouldUpdateCarSuccessfullyWhenCarExists() {
 
             when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testCar1));
-            when(carRepository.existsByLicensePlate(testCarRequest.getLicensePlate())).thenReturn(false);
-            when(carRepository.existsByVinNumber(testCarRequest.getVinNumber())).thenReturn(false);
+            when(carRepository.existsByLicensePlate(testCarRequest.licensePlate())).thenReturn(false);
+            when(carRepository.existsByVinNumber(testCarRequest.vinNumber())).thenReturn(false);
             when(carRepository.save(testCar1)).thenReturn(testCar1);
             when(carMapper.toDto(testCar1)).thenReturn(testCarResponse);
 
             CarResponse result = commandService.updateCar(1L, testCarRequest);
 
             assertThat(result).isNotNull();
-            assertThat(result.getId()).isEqualTo(1L);
+            assertThat(result.id()).isEqualTo(1L);
 
             verify(carRepository).findByIdAndIsDeletedFalse(1L);
-            verify(carRepository).existsByLicensePlate(testCarRequest.getLicensePlate());
-            verify(carRepository).existsByVinNumber(testCarRequest.getVinNumber());
+            verify(carRepository).existsByLicensePlate(testCarRequest.licensePlate());
+            verify(carRepository).existsByVinNumber(testCarRequest.vinNumber());
             verify(carMapper).updateEntity(testCarRequest, testCar1);
             verify(carRepository).save(testCar1);
             verify(carMapper).toDto(testCar1);

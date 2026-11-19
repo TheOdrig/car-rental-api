@@ -314,9 +314,9 @@ class BookingIntegrityIntegrationTest {
         Car car = carRepository.save(TestDataBuilder.createAvailableCar());
         String token = tokenFor(userRepository.save(TestDataBuilder.createTestUser("renter")));
 
-        assertThat(carQueryService.getCarById(car.getId()).getCarStatusType()).isEqualTo(CarStatusType.AVAILABLE);
+        assertThat(carQueryService.getCarById(car.getId()).carStatusType()).isEqualTo(CarStatusType.AVAILABLE);
         jdbcTemplate.update("UPDATE car_rental.car SET car_status_type = 'MAINTENANCE' WHERE id = ?", car.getId());
-        assertThat(carQueryService.getCarById(car.getId()).getCarStatusType())
+        assertThat(carQueryService.getCarById(car.getId()).carStatusType())
                 .as("the cached read is stale, which is the point of the test")
                 .isEqualTo(CarStatusType.AVAILABLE);
 

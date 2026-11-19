@@ -4,7 +4,7 @@ import com.akif.car.api.CarResponse;
 import com.akif.car.api.FilterOptionsResponse;
 import com.akif.car.internal.dto.request.CarRequest;
 import com.akif.car.internal.dto.request.CarSearchRequest;
-import com.akif.currency.api.ConversionResult;
+import com.akif.currency.api.DisplayPrice;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.car.internal.service.CarQueryService;
 import com.akif.car.internal.service.CarCommandService;
@@ -55,8 +55,7 @@ public class CarController {
             @Parameter(description = "Car ID", required = true) @PathVariable Long id,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
         log.debug("GET /api/v1/cars/{} with currency={}", id, currency);
-        CarResponse car = carQueryService.getCarById(id);
-        applyPriceConversion(car, currency);
+        CarResponse car = withDisplayPrice(carQueryService.getCarById(id), currency);
         log.info("Successfully retrieved car: ID={}", id);
         return ResponseEntity.ok(car);
     }
@@ -118,9 +117,9 @@ public class CarController {
     })
     public ResponseEntity<CarResponse> createCar(
             @Parameter(description = "Car data", required = true) @Valid @RequestBody CarRequest carRequest) {
-        log.debug("POST /api/v1/cars - Creating car with license plate: {}", carRequest.getLicensePlate());
+        log.debug("POST /api/v1/cars - Creating car with license plate: {}", carRequest.licensePlate());
         CarResponse car = carCommandService.createCar(carRequest);
-        log.info("Successfully created car: ID={}, License Plate={}", car.getId(), car.getLicensePlate());
+        log.info("Successfully created car: ID={}, License Plate={}", car.id(), car.licensePlate());
         return ResponseEntity.status(HttpStatus.CREATED).body(car);
     }
 
@@ -203,7 +202,7 @@ public class CarController {
         log.debug("GET /api/v1/cars - Getting all cars with page: {}, size: {}, currency: {}", pageable.getPageNumber(), pageable.getPageSize(), currency);
         Page<CarResponse> cars = carQueryService.getAllCars(pageable);
         if (currency != null) {
-            cars.forEach(car -> applyPriceConversion(car, currency));
+            cars = cars.map(car -> withDisplayPrice(car, currency));
         }
         log.info("Successfully retrieved {} cars", cars.getTotalElements());
         return ResponseEntity.ok(PageResponse.of(cars));
@@ -226,31 +225,17 @@ public class CarController {
                  pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
         Page<CarResponse> cars = carQueryService.getAllActiveCars(pageable);
         if (currency != null) {
-            cars.forEach(car -> applyPriceConversion(car, currency));
+            cars = cars.map(car -> withDisplayPrice(car, currency));
         }
         log.info("Successfully retrieved {} active cars", cars.getTotalElements());
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
-    private void applyPriceConversion(CarResponse car, CurrencyType targetCurrency) {
-        if (targetCurrency == null || car.getPrice() == null) {
-            return;
+    private CarResponse withDisplayPrice(CarResponse car, CurrencyType targetCurrency) {
+        DisplayPrice price = DisplayPrice.of(currencyConversionService, car.price(), car.currencyType(), targetCurrency);
+        if (price == null) {
+            return car;
         }
-
-        CurrencyType originalCurrency = car.getCurrencyType() != null ? car.getCurrencyType() : CurrencyType.TRY;
-
-        if (originalCurrency.equals(targetCurrency)) {
-            car.setDisplayCurrency(targetCurrency);
-            car.setConvertedPrice(car.getPrice());
-            car.setExchangeRate(java.math.BigDecimal.ONE);
-            car.setRateSource("LIVE");
-            return;
-        }
-
-        ConversionResult result = currencyConversionService.convert(car.getPrice(), originalCurrency, targetCurrency);
-        car.setConvertedPrice(result.convertedAmount());
-        car.setDisplayCurrency(targetCurrency);
-        car.setExchangeRate(result.exchangeRate());
-        car.setRateSource(result.source().getDisplayName());
+        return car.withConversion(price.currency(), price.amount(), price.exchangeRate(), price.rateSource());
     }
 }

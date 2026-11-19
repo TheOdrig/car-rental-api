@@ -3,73 +3,61 @@ package com.akif.car.api;
 import com.akif.shared.enums.CurrencyType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
+import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CarResponse {
+public record CarResponse(
+        Long id,
+        String licensePlate,
+        String vinNumber,
+        String brand,
+        String model,
+        Integer productionYear,
+        BigDecimal price,
+        CurrencyType currencyType,
+        CarStatusType carStatusType,
+        String engineType,
+        BigDecimal engineDisplacement,
+        String fuelType,
+        String transmissionType,
+        String bodyType,
+        String color,
+        Long kilometer,
+        Integer doors,
+        Integer seats,
+        @JsonFormat(pattern = "yyyy-MM-dd") LocalDate registrationDate,
+        @JsonFormat(pattern = "yyyy-MM-dd") LocalDate lastServiceDate,
+        @JsonFormat(pattern = "yyyy-MM-dd") LocalDate nextServiceDate,
+        @JsonFormat(pattern = "yyyy-MM-dd") LocalDate insuranceExpiryDate,
+        @JsonFormat(pattern = "yyyy-MM-dd") LocalDate inspectionExpiryDate,
+        String notes,
+        String imageUrl,
+        String thumbnailUrl,
+        BigDecimal rating,
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC") LocalDateTime createTime,
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC") LocalDateTime updateTime,
+        Long version,
+        String formattedPrice,
+        String formattedPriceWithSeparators,
+        Integer age,
+        String fullName,
+        String displayName,
+        BigDecimal convertedPrice,
+        CurrencyType displayCurrency,
+        BigDecimal exchangeRate,
+        String rateSource) {
 
-    private Long id;
-    private String licensePlate;
-    private String vinNumber;
-    private String brand;
-    private String model;
-    private Integer productionYear;
-    private BigDecimal price;
-    private CurrencyType currencyType;
-    private CarStatusType carStatusType;
-    private String engineType;
-    private BigDecimal engineDisplacement;
-    private String fuelType;
-    private String transmissionType;
-    private String bodyType;
-    private String color;
-    private Long kilometer;
-    private Integer doors;
-    private Integer seats;
-
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate registrationDate;
-
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate lastServiceDate;
-
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate nextServiceDate;
-
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate insuranceExpiryDate;
-
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate inspectionExpiryDate;
-
-    private String notes;
-    private String imageUrl;
-    private String thumbnailUrl;
-    private BigDecimal rating;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-    private LocalDateTime createTime;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
-    private LocalDateTime updateTime;
-    private Long version;
-
-    private String formattedPrice;
-    private String formattedPriceWithSeparators;
-    private Integer age;
-    private String fullName;
-    private String displayName;
-
-    private BigDecimal convertedPrice;
-    private CurrencyType displayCurrency;
-    private BigDecimal exchangeRate;
-    private String rateSource;
+    public CarResponse withConversion(CurrencyType currency, BigDecimal converted, BigDecimal rate, String source) {
+        return toBuilder()
+                .displayCurrency(currency)
+                .convertedPrice(converted)
+                .exchangeRate(rate)
+                .rateSource(source)
+                .build();
+    }
 }

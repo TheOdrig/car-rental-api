@@ -6,60 +6,46 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.akif.shared.handler.ReportsAsField;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class AvailabilitySearchRequest {
+@Builder(toBuilder = true)
+public record AvailabilitySearchRequest(
+        @NotNull(message = "Start date cannot be null") @JsonFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+        @NotNull(message = "End date cannot be null") @JsonFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+        String brand,
+        String model,
+        String fuelType,
+        String transmissionType,
+        String bodyType,
+        @Min(value = 1, message = "Minimum seats must be at least 1") Integer minSeats,
+        @DecimalMin(value = "0.0", inclusive = false, message = "Minimum price must be positive") BigDecimal minPrice,
+        @DecimalMin(value = "0.0", inclusive = false, message = "Maximum price must be positive") BigDecimal maxPrice,
+        @Min(value = 1900, message = "Minimum production year must be at least 1900") Integer minProductionYear,
+        @Min(value = 1900, message = "Maximum production year must be at least 1900") Integer maxProductionYear,
+        CurrencyType targetCurrency,
+        String sortBy,
+        String sortDirection,
+        @Min(value = 0, message = "Page number must be non-negative") Integer page,
+        @Min(value = 1, message = "Page size must be at least 1") @Max(value = 100, message = "Page size cannot exceed 100") Integer size
+) {
 
-    @NotNull(message = "Start date cannot be null")
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate startDate;
-
-    @NotNull(message = "End date cannot be null")
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate endDate;
-
-    private String brand;
-    private String model;
-    private String fuelType;
-    private String transmissionType;
-    private String bodyType;
-
-    @Min(value = 1, message = "Minimum seats must be at least 1")
-    private Integer minSeats;
-
-    @DecimalMin(value = "0.0", inclusive = false, message = "Minimum price must be positive")
-    private BigDecimal minPrice;
-
-    @DecimalMin(value = "0.0", inclusive = false, message = "Maximum price must be positive")
-    private BigDecimal maxPrice;
-
-    @Min(value = 1900, message = "Minimum production year must be at least 1900")
-    private Integer minProductionYear;
-
-    @Min(value = 1900, message = "Maximum production year must be at least 1900")
-    private Integer maxProductionYear;
-
-    private CurrencyType targetCurrency;
-
-    private String sortBy = "price";
-    private String sortDirection = "asc";
-
-    @Min(value = 0, message = "Page number must be non-negative")
-    private Integer page = 0;
-
-    @Min(value = 1, message = "Page size must be at least 1")
-    @Max(value = 100, message = "Page size cannot exceed 100")
-    private Integer size = 20;
+    public AvailabilitySearchRequest {
+        if (sortBy == null) {
+            sortBy = "price";
+        }
+        if (sortDirection == null) {
+            sortDirection = "asc";
+        }
+        if (page == null) {
+            page = 0;
+        }
+        if (size == null) {
+            size = 20;
+        }
+    }
 
     @JsonIgnore
 

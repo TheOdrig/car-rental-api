@@ -2,40 +2,30 @@ package com.akif.car.internal.dto.response;
 
 import com.akif.car.api.PricingResult;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PricingResponse {
+public record PricingResponse(
+        BigDecimal basePrice,
+        BigDecimal baseTotalPrice,
+        BigDecimal finalPrice,
+        BigDecimal effectiveDailyPrice,
+        BigDecimal totalSavings,
+        BigDecimal combinedMultiplier,
+        Integer rentalDays,
+        List<ModifierDto> appliedModifiers) {
 
-    private BigDecimal basePrice;
-    private BigDecimal baseTotalPrice;
-    private BigDecimal finalPrice;
-    private BigDecimal effectiveDailyPrice;
-    private BigDecimal totalSavings;
-    private BigDecimal combinedMultiplier;
-    private Integer rentalDays;
-    private List<ModifierDto> appliedModifiers;
-
-    @Data
     @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ModifierDto {
-        private String strategyName;
-        private BigDecimal multiplier;
-        private String description;
-        private Boolean isDiscount;
-        private String formattedPercentage;
+    public record ModifierDto(
+            String strategyName,
+            BigDecimal multiplier,
+            String description,
+            Boolean isDiscount,
+            String formattedPercentage) {
     }
 
     public static PricingResponse fromPricingResult(PricingResult result) {

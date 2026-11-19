@@ -74,7 +74,7 @@ class CarCacheEvictionIntegrationTest {
     @Test
     @DisplayName("Updating a price refreshes the cached average price by brand")
     void shouldRefreshAveragePriceWhenPriceIsUpdated() {
-        Long carId = commandService.createCar(carRequest("34ABC123", "VIN00000000000001", "Toyota")).getId();
+        Long carId = commandService.createCar(carRequest("34ABC123", "VIN00000000000001", "Toyota")).id();
         BigDecimal before = statisticsService.getAveragePriceByBrand().get("Toyota");
 
         commandService.updateCarPrice(carId,

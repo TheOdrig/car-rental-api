@@ -103,10 +103,10 @@ class DamageAssessmentServiceTest {
         testDamageReport = DamageReport.builder()
                 .id(1L)
                 .rentalId(1L)
-                .carId(testCar.getId())
-                .carBrand(testCar.getBrand())
-                .carModel(testCar.getModel())
-                .carLicensePlate(testCar.getLicensePlate())
+                .carId(testCar.id())
+                .carBrand(testCar.brand())
+                .carModel(testCar.model())
+                .carLicensePlate(testCar.licensePlate())
                 .customerEmail(testUser.email())
                 .customerFullName(testUser.firstName() + " " + testUser.lastName())
                 .customerUserId(testUser.id())
@@ -278,7 +278,7 @@ class DamageAssessmentServiceTest {
 
             DamageAssessmentResponse result = damageAssessmentService.assessDamage(1L, majorDamageRequest, "admin");
 
-            verify(carFleetOperations).markAsMaintenance(testCar.getId());
+            verify(carFleetOperations).markAsMaintenance(testCar.id());
             assertThat(result.carStatusUpdated()).isEqualTo("MAINTENANCE");
         }
 

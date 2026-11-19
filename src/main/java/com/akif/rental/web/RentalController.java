@@ -1,6 +1,6 @@
 package com.akif.rental.web;
 
-import com.akif.currency.api.ConversionResult;
+import com.akif.currency.api.DisplayPrice;
 import com.akif.payment.api.PaymentIntentResult;
 import com.akif.payment.api.PaymentSummary;
 import com.akif.rental.api.RentalResponse;
@@ -280,67 +280,7 @@ public class RentalController {
         }
 
         private RentalResponse applyPriceConversion(RentalResponse rental, CurrencyType targetCurrency) {
-                if (targetCurrency == null || rental.totalPrice() == null) {
-                        return rental;
-                }
-
-                CurrencyType originalCurrency = rental.currency() != null ? rental.currency() : CurrencyType.TRY;
-
-                if (originalCurrency.equals(targetCurrency)) {
-                        return new RentalResponse(
-                                        rental.id(),
-                                        rental.carSummary(),
-                                        rental.userSummary(),
-                                        rental.startDate(),
-                                        rental.endDate(),
-                                        rental.days(),
-                                        rental.dailyPrice(),
-                                        rental.totalPrice(),
-                                        rental.currency(),
-                                        rental.status(),
-                                        rental.originalPrice(),
-                                        rental.finalPrice(),
-                                        rental.totalSavings(),
-                                        rental.appliedDiscounts(),
-                                        rental.totalPrice(),
-                                        targetCurrency,
-                                        java.math.BigDecimal.ONE,
-                                        "LIVE",
-                                        rental.pickupNotes(),
-                                        rental.returnNotes(),
-                                        rental.approvalNotes(),
-                                        rental.cancellationReason(),
-                                        rental.createTime(),
-                                        rental.updateTime());
-                }
-
-                ConversionResult result = currencyConversionService.convert(
-                                rental.totalPrice(), originalCurrency, targetCurrency);
-
-                return new RentalResponse(
-                                rental.id(),
-                                rental.carSummary(),
-                                rental.userSummary(),
-                                rental.startDate(),
-                                rental.endDate(),
-                                rental.days(),
-                                rental.dailyPrice(),
-                                rental.totalPrice(),
-                                rental.currency(),
-                                rental.status(),
-                                rental.originalPrice(),
-                                rental.finalPrice(),
-                                rental.totalSavings(),
-                                rental.appliedDiscounts(),
-                                result.convertedAmount(),
-                                targetCurrency,
-                                result.exchangeRate(),
-                                result.source().getDisplayName(),
-                                rental.pickupNotes(),
-                                rental.returnNotes(),
-                                rental.approvalNotes(),
-                                rental.cancellationReason(),
-                                rental.createTime(),
-                                rental.updateTime());
+                return rental.withDisplayPrice(DisplayPrice.of(currencyConversionService, rental.totalPrice(),
+                                rental.currency(), targetCurrency));
         }
 }

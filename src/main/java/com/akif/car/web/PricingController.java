@@ -49,7 +49,7 @@ public class PricingController {
         PricingResponse response = PricingResponse.fromPricingResult(result);
         
         log.info("Price calculated: base={}, final={}, savings={}", 
-            response.getBaseTotalPrice(), response.getFinalPrice(), response.getTotalSavings());
+            response.baseTotalPrice(), response.finalPrice(), response.totalSavings());
 
         return ResponseEntity.ok(response);
     }

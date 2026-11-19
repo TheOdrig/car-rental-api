@@ -56,38 +56,38 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
 
     @Override
     public AvailabilitySearchResponse searchAvailableCars(AvailabilitySearchRequest request) {
-        log.debug("Searching available cars for date range: {} to {}", request.getStartDate(), request.getEndDate());
+        log.debug("Searching available cars for date range: {} to {}", request.startDate(), request.endDate());
 
-        validateRentalDates(request.getStartDate(), request.getEndDate());
+        validateRentalDates(request.startDate(), request.endDate());
 
-        validatePageSize(request.getSize());
+        validatePageSize(request.size());
 
         Pageable pageable = createPageable(request);
 
         List<CarStatusType> blockingStatuses = Arrays.asList(CarStatusType.getUnavailableStatuses());
 
-        Set<Long> bookedCarIds = bookingCalendar.findBookedCarIds(request.getStartDate(), request.getEndDate());
+        Set<Long> bookedCarIds = bookingCalendar.findBookedCarIds(request.startDate(), request.endDate());
 
         Page<Car> availableCars = carRepository.findAvailableCarsForDateRange(
                 bookedCarIds,
                 blockingStatuses,
-                request.getBrand() != null ? request.getBrand().toLowerCase() : null,
-                request.getModel() != null ? request.getModel().toLowerCase() : null,
-                request.getFuelType() != null ? request.getFuelType().toLowerCase() : null,
-                request.getTransmissionType() != null ? request.getTransmissionType().toLowerCase() : null,
-                request.getBodyType() != null ? request.getBodyType().toLowerCase() : null,
-                request.getMinSeats(),
-                request.getMinPrice(),
-                request.getMaxPrice(),
-                request.getMinProductionYear(),
-                request.getMaxProductionYear(),
+                request.brand() != null ? request.brand().toLowerCase() : null,
+                request.model() != null ? request.model().toLowerCase() : null,
+                request.fuelType() != null ? request.fuelType().toLowerCase() : null,
+                request.transmissionType() != null ? request.transmissionType().toLowerCase() : null,
+                request.bodyType() != null ? request.bodyType().toLowerCase() : null,
+                request.minSeats(),
+                request.minPrice(),
+                request.maxPrice(),
+                request.minProductionYear(),
+                request.maxProductionYear(),
                 pageable);
 
-        int rentalDays = (int) ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1;
+        int rentalDays = (int) ChronoUnit.DAYS.between(request.startDate(), request.endDate()) + 1;
 
         List<AvailableCarDto> carDtos = availableCars.getContent().stream()
-                .map(car -> convertToAvailableCarDto(car, request.getStartDate(), request.getEndDate(),
-                        request.getTargetCurrency()))
+                .map(car -> convertToAvailableCarDto(car, request.startDate(), request.endDate(),
+                        request.targetCurrency()))
                 .toList();
 
         AvailabilitySearchResponse response = new AvailabilitySearchResponse(
@@ -96,12 +96,12 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
                 availableCars.getTotalPages(),
                 availableCars.getNumber(),
                 availableCars.getSize(),
-                request.getStartDate(),
-                request.getEndDate(),
+                request.startDate(),
+                request.endDate(),
                 rentalDays);
 
         log.info("Found {} available cars for date range {} to {}",
-                response.totalElements(), request.getStartDate(), request.getEndDate());
+                response.totalElements(), request.startDate(), request.endDate());
 
         return response;
     }
@@ -259,10 +259,10 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
     }
 
     private Pageable createPageable(AvailabilitySearchRequest request) {
-        String sortBy = request.getSortBy() != null ? request.getSortBy() : "price";
-        String sortDirection = request.getSortDirection() != null ? request.getSortDirection() : "asc";
-        int page = request.getPage() != null ? request.getPage() : 0;
-        int size = request.getSize() != null ? request.getSize() : 20;
+        String sortBy = request.sortBy() != null ? request.sortBy() : "price";
+        String sortDirection = request.sortDirection() != null ? request.sortDirection() : "asc";
+        int page = request.page() != null ? request.page() : 0;
+        int size = request.size() != null ? request.size() : 20;
 
         Sort sort = Sort.by(
                 "desc".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC,
