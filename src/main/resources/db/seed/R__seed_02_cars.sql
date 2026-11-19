@@ -164,8 +164,8 @@ INSERT INTO car_rental.car (
     '35FIA004', 'ZFA35600000000009', 'Fiat', 'Egea', 2021,
     42.00, 'USD', 'AVAILABLE',
     'Diesel', 'Manual', 'Sedan', 'White', 42000, 4, 5,
-    'https://www.log.com.tr/wp-content/uploads/2023/01/2025-fiat-egea-tipo-suv-benzeri-bir-formda-olacak-copy-1000x562.jpg',
-    'https://www.log.com.tr/wp-content/uploads/2023/01/2025-fiat-egea-tipo-suv-benzeri-bir-formda-olacak-copy-1000x562.jpg'
+    'https://images.unsplash.com/photo-1605515321331-46a63d31758c?auto=format&fit=crop&q=80&w=1200',
+    'https://images.unsplash.com/photo-1605515321331-46a63d31758c?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO UPDATE SET
     brand = EXCLUDED.brand,
     model = EXCLUDED.model,
@@ -257,8 +257,8 @@ INSERT INTO car_rental.car (
     '35SEA013', 'VSSZZZ5FZJR000018', 'Seat', 'Leon', 2019,
     45.00, 'USD', 'AVAILABLE',
     'Gasoline', 'Manual', 'Hatchback', 'Yellow', 62000, 5, 5,
-    'https://commons.wikimedia.org/wiki/Special:FilePath/SEAT_Leon_Cupra_002.jpg?width=800',
-    'https://commons.wikimedia.org/wiki/Special:FilePath/SEAT_Leon_Cupra_002.jpg?width=800'
+    'https://images.unsplash.com/photo-1708849894321-2c9bc515df0e?auto=format&fit=crop&q=80&w=1200',
+    'https://images.unsplash.com/photo-1708849894321-2c9bc515df0e?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO UPDATE SET
     brand = EXCLUDED.brand,
     model = EXCLUDED.model,
@@ -319,8 +319,8 @@ INSERT INTO car_rental.car (
     '01MNO654', 'JTDKBRFU9H3511234', 'Toyota', 'Corolla', 2021,
     65.00, 'USD', 'AVAILABLE',
     'Hybrid', 'Automatic', 'Sedan', 'Red', 28000, 4, 5,
-    'https://www.thedrive.com/wp-content/uploads/2023/05/02/corollahatch-1-scaled.jpg?w=1200',
-    'https://www.thedrive.com/wp-content/uploads/2023/05/02/corollahatch-1-scaled.jpg?w=400'
+    'https://images.unsplash.com/photo-1643142311721-c36cd233fb95?auto=format&fit=crop&q=80&w=1200',
+    'https://images.unsplash.com/photo-1643142311721-c36cd233fb95?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO UPDATE SET
     brand = EXCLUDED.brand,
     model = EXCLUDED.model,
@@ -536,8 +536,8 @@ INSERT INTO car_rental.car (
     '34MRC001', 'WDD2050421A000006', 'Mercedes', 'C200', 2022,
     120.00, 'USD', 'AVAILABLE',
     'Gasoline', 'Automatic', 'Sedan', 'Silver', 25000, 4, 5,
-    'https://www.sixt.com.tr/storage/cache/a4831ea1285880c2536797abe33a35a517ddeacf.webp',
-    'https://www.sixt.com.tr/storage/cache/a4831ea1285880c2536797abe33a35a517ddeacf.webp'
+    'https://images.unsplash.com/photo-1710011115921-7e67a8e4b483?auto=format&fit=crop&q=80&w=1200',
+    'https://images.unsplash.com/photo-1710011115921-7e67a8e4b483?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO UPDATE SET
     brand = EXCLUDED.brand,
     model = EXCLUDED.model,

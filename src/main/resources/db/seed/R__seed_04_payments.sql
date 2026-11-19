@@ -560,7 +560,7 @@ INSERT INTO car_rental.payments (
     910023, '2025-09-20 11:00:00+00'::timestamptz, '2025-09-20 11:00:00+00'::timestamptz, FALSE, 0,
     (SELECT id FROM car_rental.rentals WHERE user_email = 'okan.tekin@example.com' AND car_license_plate = '35SEA013' AND start_date = '2025-09-20'),
     'okan.tekin@example.com', '35SEA013',
-    405.00, 'USD', 'CAPTURED',
+    225.00, 'USD', 'CAPTURED',
     'card', 'pi_seed_sep_002'
 )
 ON CONFLICT (id) DO UPDATE SET
