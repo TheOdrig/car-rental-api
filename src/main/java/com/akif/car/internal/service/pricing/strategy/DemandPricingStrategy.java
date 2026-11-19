@@ -31,7 +31,9 @@ public class DemandPricingStrategy implements PricingStrategy {
     @Override
     public PriceModifier calculate(PricingContext context) {
 
-        int occupancyPercent = fleetOccupancyPercent(context);
+        int occupancyPercent = context.fleetOccupancyPercent() != null
+            ? context.fleetOccupancyPercent()
+            : fleetOccupancyPercent(context);
 
         if (occupancyPercent > config.getDemand().getHigh().getThreshold()) {
             return PriceModifier.surcharge(
@@ -53,6 +55,14 @@ public class DemandPricingStrategy implements PricingStrategy {
             getStrategyName(),
             String.format("Normal demand (%d%% occupancy)", occupancyPercent)
         );
+    }
+
+    @Override
+    public PricingContext enrich(PricingContext context) {
+        if (context.fleetOccupancyPercent() != null) {
+            return context;
+        }
+        return context.withFleetOccupancyPercent(fleetOccupancyPercent(context));
     }
 
     private int fleetOccupancyPercent(PricingContext context) {

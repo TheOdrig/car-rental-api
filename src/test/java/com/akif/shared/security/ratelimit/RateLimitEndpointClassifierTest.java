@@ -34,6 +34,8 @@ class RateLimitEndpointClassifierTest {
     void classifiesPaymentIntent() {
         assertThat(classify("POST", "/api/v1/rentals/12/payment-intent")).contains(RateLimitCategory.PAYMENT_INTENT);
         assertThat(classify("POST", "/api/v1/rentals/12/payment-intent/")).contains(RateLimitCategory.PAYMENT_INTENT);
+        assertThat(classify("POST", "/api/v1/cars/availability/search")).contains(RateLimitCategory.AVAILABILITY_SEARCH);
+        assertThat(classify("GET", "/api/v1/cars/7/similar")).contains(RateLimitCategory.AVAILABILITY_SEARCH);
         assertThat(classify("GET", "/api/v1/rentals/12/payment")).isEmpty();
     }
 

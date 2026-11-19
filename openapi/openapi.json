@@ -7159,6 +7159,27 @@
             },
             "description" : "Invalid search criteria or date range"
           },
+          "429" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Rate limit exceeded; retry after the number of seconds in the Retry-After header",
+            "headers" : {
+              "Retry-After" : {
+                "description" : "Seconds to wait before the next attempt",
+                "required" : true,
+                "schema" : {
+                  "format" : "int64",
+                  "minimum" : 1,
+                  "type" : "integer"
+                }
+              }
+            }
+          },
           "500" : {
             "content" : {
               "application/problem+json" : {
@@ -9036,6 +9057,27 @@
               }
             },
             "description" : "Car not found"
+          },
+          "429" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Rate limit exceeded; retry after the number of seconds in the Retry-After header",
+            "headers" : {
+              "Retry-After" : {
+                "description" : "Seconds to wait before the next attempt",
+                "required" : true,
+                "schema" : {
+                  "format" : "int64",
+                  "minimum" : 1,
+                  "type" : "integer"
+                }
+              }
+            }
           },
           "500" : {
             "content" : {

@@ -22,13 +22,16 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DynamicPricingServiceImpl implements DynamicPricingService, PricingStrategyCatalog {
+public class DynamicPricingServiceImpl implements DynamicPricingService, PricingStrategyCatalog, BatchPricing {
 
     private final Clock clock;
 
@@ -53,6 +56,27 @@ public class DynamicPricingServiceImpl implements DynamicPricingService, Pricing
         PricingContext context = createContext(car, startDate, endDate, bookingDate, excludedBookingId);
         
         return calculatePriceWithContext(context, car.getCurrencyType());
+    }
+
+    @Override
+    public Map<Long, PricingResult> priceCars(Collection<Car> cars, LocalDate startDate, LocalDate endDate,
+                                              LocalDate bookingDate) {
+        Map<Long, PricingResult> results = new LinkedHashMap<>();
+        if (cars.isEmpty()) {
+            return results;
+        }
+        List<PricingStrategy> strategies = getEnabledStrategies();
+        PricingContext shared = createContext(cars.iterator().next(), startDate, endDate, bookingDate, null);
+        for (PricingStrategy strategy : strategies) {
+            shared = strategy.enrich(shared);
+        }
+        Integer occupancy = shared.fleetOccupancyPercent();
+        for (Car car : cars) {
+            PricingContext context = createContext(car, startDate, endDate, bookingDate, null)
+                .withFleetOccupancyPercent(occupancy);
+            results.put(car.getId(), calculatePriceWithContext(context, car.getCurrencyType()));
+        }
+        return results;
     }
 
     @Override
@@ -147,7 +171,8 @@ public class DynamicPricingServiceImpl implements DynamicPricingService, Pricing
             rentalDays,
             leadTimeDays,
             car.getBodyType() != null ? car.getBodyType() : "UNKNOWN",
-            excludedBookingId
+            excludedBookingId,
+            null
         );
     }
 }

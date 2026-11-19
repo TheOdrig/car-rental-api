@@ -10,7 +10,7 @@ import com.akif.car.api.PricingResult;
 import com.akif.car.internal.exception.CarNotFoundException;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.car.internal.service.availability.impl.CarAvailabilityServiceImpl;
-import com.akif.car.api.DynamicPricingService;
+import com.akif.car.internal.service.pricing.BatchPricing;
 import com.akif.currency.api.ConversionResult;
 import com.akif.currency.api.CurrencyConversionService;
 import com.akif.currency.api.RateSource;
@@ -55,7 +55,7 @@ class CarAvailabilityServiceImplTest {
         private CarBookingCalendar bookingCalendar;
 
         @Mock
-        private DynamicPricingService dynamicPricingService;
+        private BatchPricing batchPricing;
 
         @Mock
         private CurrencyConversionService currencyConversionService;
@@ -122,9 +122,9 @@ class CarAvailabilityServiceImplTest {
                                         isNull(), isNull(), isNull(), isNull(), isNull(), isNull(),
                                         isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
                                         .thenReturn(carPage);
-                        when(dynamicPricingService.calculatePrice(anyLong(), any(LocalDate.class),
+                        when(batchPricing.priceCars(anyCollection(), any(LocalDate.class),
                                         any(LocalDate.class), any(LocalDate.class)))
-                                        .thenReturn(pricingResult);
+                                        .thenReturn(java.util.Map.of(1L, pricingResult));
 
                         AvailabilitySearchResponse result = carAvailabilityService.searchAvailableCars(searchRequest);
 
@@ -139,7 +139,7 @@ class CarAvailabilityServiceImplTest {
                                         anyCollection(), anyList(),
                                         isNull(), isNull(), isNull(), isNull(), isNull(), isNull(),
                                         isNull(), isNull(), isNull(), isNull(), any(Pageable.class));
-                        verify(dynamicPricingService).calculatePrice(anyLong(), any(LocalDate.class),
+                        verify(batchPricing).priceCars(anyCollection(), any(LocalDate.class),
                                         any(LocalDate.class), any(LocalDate.class));
                 }
 
@@ -159,9 +159,9 @@ class CarAvailabilityServiceImplTest {
                                         any(BigDecimal.class), any(BigDecimal.class), any(), any(),
                                         any(Pageable.class)))
                                         .thenReturn(carPage);
-                        when(dynamicPricingService.calculatePrice(anyLong(), any(LocalDate.class),
+                        when(batchPricing.priceCars(anyCollection(), any(LocalDate.class),
                                         any(LocalDate.class), any(LocalDate.class)))
-                                        .thenReturn(pricingResult);
+                                        .thenReturn(java.util.Map.of(1L, pricingResult));
 
                         AvailabilitySearchResponse result = carAvailabilityService.searchAvailableCars(searchRequest);
 
@@ -195,9 +195,9 @@ class CarAvailabilityServiceImplTest {
                                         isNull(), isNull(), isNull(), isNull(), isNull(), isNull(),
                                         isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
                                         .thenReturn(carPage);
-                        when(dynamicPricingService.calculatePrice(anyLong(), any(LocalDate.class),
+                        when(batchPricing.priceCars(anyCollection(), any(LocalDate.class),
                                         any(LocalDate.class), any(LocalDate.class)))
-                                        .thenReturn(pricingResult);
+                                        .thenReturn(java.util.Map.of(1L, pricingResult));
                         when(currencyConversionService.convert(any(BigDecimal.class),
                                         eq(CurrencyType.TRY), eq(CurrencyType.USD)))
                                         .thenReturn(dailyConversion, totalConversion);
@@ -227,9 +227,9 @@ class CarAvailabilityServiceImplTest {
                                         isNull(), isNull(), isNull(), isNull(), isNull(), isNull(),
                                         isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
                                         .thenReturn(carPage);
-                        when(dynamicPricingService.calculatePrice(anyLong(), any(LocalDate.class),
+                        when(batchPricing.priceCars(anyCollection(), any(LocalDate.class),
                                         any(LocalDate.class), any(LocalDate.class)))
-                                        .thenReturn(pricingResult);
+                                        .thenReturn(java.util.Map.of(1L, pricingResult));
 
                         AvailabilitySearchResponse result = carAvailabilityService.searchAvailableCars(searchRequest);
 
@@ -482,9 +482,9 @@ class CarAvailabilityServiceImplTest {
                                         isNull(), isNull(), isNull(), isNull(), isNull(), isNull(),
                                         isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
                                         .thenReturn(carPage);
-                        when(dynamicPricingService.calculatePrice(anyLong(), any(LocalDate.class),
+                        when(batchPricing.priceCars(anyCollection(), any(LocalDate.class),
                                         any(LocalDate.class), any(LocalDate.class)))
-                                        .thenReturn(pricingResult);
+                                        .thenReturn(java.util.Map.of(1L, pricingResult));
 
                         AvailabilitySearchResponse result = carAvailabilityService.searchAvailableCars(searchRequest);
 
@@ -496,8 +496,8 @@ class CarAvailabilityServiceImplTest {
                         assertThat(carDto.appliedDiscounts()).isNotEmpty();
                         assertThat(carDto.appliedDiscounts()).contains("Early booking discount");
 
-                        verify(dynamicPricingService).calculatePrice(
-                                        eq(1L), any(LocalDate.class), any(LocalDate.class), any(LocalDate.class));
+                        verify(batchPricing).priceCars(anyCollection(), any(LocalDate.class),
+                                        any(LocalDate.class), any(LocalDate.class));
                 }
 
                 @Test
@@ -509,17 +509,17 @@ class CarAvailabilityServiceImplTest {
                                         isNull(), isNull(), isNull(), isNull(), isNull(), isNull(),
                                         isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
                                         .thenReturn(carPage);
-                        when(dynamicPricingService.calculatePrice(anyLong(), any(LocalDate.class),
+                        when(batchPricing.priceCars(anyCollection(), any(LocalDate.class),
                                         any(LocalDate.class), any(LocalDate.class)))
-                                        .thenReturn(pricingResult);
+                                        .thenReturn(java.util.Map.of(1L, pricingResult));
 
                         AvailabilitySearchResponse result = carAvailabilityService.searchAvailableCars(searchRequest);
 
                         assertThat(result.cars().get(0).dailyRate()).isEqualTo(pricingResult.effectiveDailyPrice());
                         assertThat(result.cars().get(0).totalPrice()).isEqualTo(pricingResult.finalPrice());
 
-                        verify(dynamicPricingService).calculatePrice(
-                                        eq(testCar.getId()),
+                        verify(batchPricing).priceCars(
+                                        anyCollection(),
                                         eq(searchRequest.startDate()),
                                         eq(searchRequest.endDate()),
                                         any(LocalDate.class));

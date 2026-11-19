@@ -5,7 +5,7 @@ import com.akif.car.api.CarStatusType;
 import com.akif.car.internal.exception.CarNotFoundException;
 import com.akif.car.domain.Car;
 import com.akif.car.internal.repository.CarRepository;
-import com.akif.car.internal.service.availability.CarAvailabilityService;
+import com.akif.car.api.CarBookingCalendar;
 import com.akif.car.internal.service.availability.SimilarCarService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +29,7 @@ import java.util.List;
 public class SimilarCarServiceImpl implements SimilarCarService {
 
     private final CarRepository carRepository;
-    private final CarAvailabilityService carAvailabilityService;
+    private final CarBookingCalendar bookingCalendar;
 
     @Override
     public List<SimilarCarDto> findSimilarAvailableCars(Long carId, LocalDate startDate, LocalDate endDate, int limit) {
@@ -56,6 +57,8 @@ public class SimilarCarServiceImpl implements SimilarCarService {
                 blockingStatuses,
                 pageable);
 
+        Set<Long> bookedCarIds = bookingCalendar.findBookedCarIds(startDate, endDate);
+
         List<SimilarCarDto> similarCars = new ArrayList<>();
 
         for (Car car : similarCarsPage.getContent()) {
@@ -63,8 +66,7 @@ public class SimilarCarServiceImpl implements SimilarCarService {
                 break;
             }
 
-            boolean available = carAvailabilityService.isCarAvailable(car.getId(), startDate, endDate);
-            if (!available) {
+            if (bookedCarIds.contains(car.getId())) {
                 log.debug("Car {} is not available, skipping", car.getId());
                 continue;
             }

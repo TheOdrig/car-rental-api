@@ -7,6 +7,10 @@ public interface PricingStrategy {
 
     PriceModifier calculate(PricingContext context);
 
+    default PricingContext enrich(PricingContext context) {
+        return context;
+    }
+
     String getStrategyName();
 
     boolean isEnabled();

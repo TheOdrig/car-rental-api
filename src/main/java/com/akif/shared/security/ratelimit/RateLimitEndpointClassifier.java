@@ -30,6 +30,8 @@ public class RateLimitEndpointClassifier {
             new Rule(HttpMethod.POST, "/api/v1/auth/reset-password", RateLimitCategory.PASSWORD_RESET),
             new Rule(HttpMethod.POST, "/api/v1/rentals/request", RateLimitCategory.RENTAL_REQUEST),
             new Rule(HttpMethod.POST, "/api/v1/rentals/*/payment-intent", RateLimitCategory.PAYMENT_INTENT),
+            new Rule(HttpMethod.POST, "/api/v1/cars/availability/search", RateLimitCategory.AVAILABILITY_SEARCH),
+            new Rule(HttpMethod.GET, "/api/v1/cars/*/similar", RateLimitCategory.AVAILABILITY_SEARCH),
             new Rule(HttpMethod.GET, "/api/v1/oauth2/callback/**", RateLimitCategory.OAUTH2_CALLBACK));
 
     private final Map<RequestMatcher, RateLimitCategory> rules = new LinkedHashMap<>();

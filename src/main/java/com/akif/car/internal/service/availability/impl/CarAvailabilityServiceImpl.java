@@ -20,7 +20,7 @@ import com.akif.car.api.BookedPeriod;
 import com.akif.car.api.CarBookingCalendar;
 import com.akif.car.internal.service.availability.CarAvailabilityService;
 import com.akif.currency.api.CurrencyConversionService;
-import com.akif.car.api.DynamicPricingService;
+import com.akif.car.internal.service.pricing.BatchPricing;
 import com.akif.car.api.PriceModifier;
 import com.akif.car.api.PricingResult;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +39,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -51,7 +52,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
 
     private final CarRepository carRepository;
     private final CarBookingCalendar bookingCalendar;
-    private final DynamicPricingService dynamicPricingService;
+    private final BatchPricing batchPricing;
     private final CurrencyConversionService currencyConversionService;
 
     @Override
@@ -85,9 +86,11 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
 
         int rentalDays = (int) ChronoUnit.DAYS.between(request.startDate(), request.endDate()) + 1;
 
+        Map<Long, PricingResult> prices = batchPricing.priceCars(availableCars.getContent(), request.startDate(),
+                request.endDate(), LocalDate.now(clock));
+
         List<AvailableCarDto> carDtos = availableCars.getContent().stream()
-                .map(car -> convertToAvailableCarDto(car, request.startDate(), request.endDate(),
-                        request.targetCurrency()))
+                .map(car -> convertToAvailableCarDto(car, prices.get(car.getId()), request.targetCurrency()))
                 .toList();
 
         AvailabilitySearchResponse response = new AvailabilitySearchResponse(
@@ -270,14 +273,8 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
         return PageRequest.of(page, size, sort);
     }
 
-    private AvailableCarDto convertToAvailableCarDto(Car car, LocalDate startDate, LocalDate endDate,
+    private AvailableCarDto convertToAvailableCarDto(Car car, PricingResult pricingResult,
                                                      CurrencyType targetCurrency) {
-        PricingResult pricingResult = dynamicPricingService.calculatePrice(
-                car.getId(),
-                startDate,
-                endDate,
-                LocalDate.now(clock));
-
         List<String> appliedDiscounts = pricingResult.appliedModifiers().stream()
                 .map(PriceModifier::description)
                 .toList();
