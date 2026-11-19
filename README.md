@@ -14,7 +14,7 @@ The web client lives in [TheOdrig/car-rental-web](https://github.com/TheOdrig/ca
 | Security | Spring Security OAuth2 resource server (JWT), Bucket4j 8.10.1 rate limiting |
 | Payments | Stripe Java SDK 26.3.0 (test mode) |
 | API docs / metrics | springdoc-openapi 3.1.1, Actuator with Micrometer Prometheus |
-| Tests | JUnit 5, Testcontainers (PostgreSQL), JaCoCo |
+| Tests | JUnit 6, Testcontainers (PostgreSQL), JaCoCo |
 
 ## Architecture
 
@@ -76,7 +76,7 @@ DATABASE_URL=jdbc:postgresql://localhost:5433/car_rental SPRING_PROFILES_ACTIVE=
 bash scripts/verify.sh
 ```
 
-`scripts/verify.sh` is the full gate. It checks that no AI or planning files are tracked ([`scripts/check-no-ai-files.sh`](scripts/check-no-ai-files.sh)), runs `scripts/verify.local.sh` (or `.ps1`) when a contributor has added one, requires the OpenAPI artifacts to exist, then runs `./mvnw -B verify`: the full suite of about 1,550 tests against a real PostgreSQL 18 started by Testcontainers (Docker must be running), followed by JaCoCo gates of 80% line and 63% branch coverage overall plus line floors for the `payment`, `rental` and `auth` modules. It takes several minutes. On Windows use `scripts/verify.ps1`.
+`scripts/verify.sh` is the full gate. It checks that no AI or planning files are tracked ([`scripts/check-no-ai-files.sh`](scripts/check-no-ai-files.sh)), runs `scripts/verify.local.sh` (or `.ps1`) when a contributor has added one, requires the OpenAPI artifacts to exist, then runs `./mvnw -B verify`: the full suite of about 1,570 tests against a real PostgreSQL 18 started by Testcontainers (Docker must be running), followed by JaCoCo gates of 80% line and 63% branch coverage overall plus line floors for the `payment`, `rental` and `auth` modules. It takes several minutes. On Windows use `scripts/verify.ps1`.
 
 [`scripts/setup-hooks.sh`](scripts/setup-hooks.sh) installs a pre-push hook that runs only fast checks (the AI-file guard, artifact presence and `LogSafetyTest`, `ModularityTests`, `OpenApiContractTest`, `EndpointInventoryTest`, about a minute), not the full suite; run `scripts/verify.sh` before a release. There is no hosted CI; the local gate is the check.
 

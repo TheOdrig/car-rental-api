@@ -1,7 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
-bash scripts/check-no-ai-files.sh
-bash scripts/check-artifacts.sh
-./mvnw -B -q -ntp test -Djacoco.skip=true -Dtest='LogSafetyTest,ModularityTests,OpenApiContractTest,EndpointInventoryTest'
-echo "pre-push: fast checks OK; run scripts/verify.sh for the full gate"
+zero=0000000000000000000000000000000000000000
+heavy='^(src/|pom\.xml$|scripts/|Dockerfile$|docker-compose\.yml$|\.mvn/|openapi/)'
+full=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$local_sha" = "$zero" ]; then
+    continue
+  fi
+  if [ "$remote_sha" = "$zero" ] || ! git cat-file -e "${remote_sha}^{commit}" 2>/dev/null; then
+    changed=$(git log --name-only --format= "$local_sha" --not --remotes || true)
+    if [ -z "$changed" ]; then
+      changed=$(git ls-tree -r --name-only "$local_sha")
+    fi
+  else
+    changed=$(git diff --name-only "$remote_sha" "$local_sha")
+  fi
+  if printf '%s\n' "$changed" | grep -Eq "$heavy"; then
+    full=1
+  fi
+done
+if [ "$full" -eq 1 ]; then
+  echo "pre-push: the pushed range touches source, build or scripts; running the full gate"
+  bash scripts/verify.sh
+  echo "pre-push: full gate OK"
+else
+  bash scripts/check-no-ai-files.sh
+  bash scripts/check-artifacts.sh
+  ./mvnw -B -q -ntp test -Djacoco.skip=true -Dtest='LogSafetyTest,ModularityTests,OpenApiContractTest,EndpointInventoryTest'
+  echo "pre-push: fast checks OK; nothing under src, pom.xml or scripts changed"
+fi
