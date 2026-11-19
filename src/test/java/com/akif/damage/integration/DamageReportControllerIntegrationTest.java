@@ -26,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import com.akif.testsupport.TestcontainersConfiguration;
 import org.springframework.http.MediaType;
+import com.akif.testsupport.ImageFixtures;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -309,7 +310,7 @@ class DamageReportControllerIntegrationTest {
                     "photos",
                     "damage-photo.jpg",
                     "image/jpeg",
-                    "test image content".getBytes()
+                    ImageFixtures.jpeg()
             );
 
             mockMvc.perform(multipart("/api/v1/admin/damages/{id}/photos", damageId)

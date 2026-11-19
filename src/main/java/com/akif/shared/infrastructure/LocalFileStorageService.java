@@ -29,22 +29,23 @@ public class LocalFileStorageService implements FileUploadService {
     @Override
     public String uploadFile(MultipartFile file, String directory) {
         try {
-            Path uploadPath = Paths.get(baseUploadDir, directory);
+            UploadContentInspector.InspectedUpload inspected = UploadContentInspector.inspect(file)
+                    .orElseThrow(() -> new FileUploadException("File content is not a supported image"));
+            Path root = Paths.get(baseUploadDir).toAbsolutePath().normalize();
+            Path uploadPath = root.resolve(directory).normalize();
+            requireInside(root, uploadPath);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename != null && originalFilename.contains(".")
-                    ? originalFilename.substring(originalFilename.lastIndexOf("."))
-                    : "";
-            String fileName = UUID.randomUUID() + extension;
+            String fileName = UUID.randomUUID() + inspected.extension();
 
-            Path filePath = uploadPath.resolve(fileName);
+            Path filePath = uploadPath.resolve(fileName).normalize();
+            requireInside(root, filePath);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
             log.debug("File uploaded to local storage: {}", filePath);
-            return filePath.toString().replace("\\", "/");
+            return Paths.get(baseUploadDir).resolve(directory).resolve(fileName).normalize().toString().replace("\\", "/");
         } catch (IOException e) {
             throw new FileUploadException("Failed to upload file: " + e.getMessage(), e);
         }
@@ -53,7 +54,9 @@ public class LocalFileStorageService implements FileUploadService {
     @Override
     public void deleteFile(String filePath) {
         try {
-            Path path = Paths.get(filePath);
+            Path root = Paths.get(baseUploadDir).toAbsolutePath().normalize();
+            Path path = Paths.get(filePath).toAbsolutePath().normalize();
+            requireInside(root, path);
             if (Files.exists(path)) {
                 Files.delete(path);
                 log.debug("File deleted from local storage: {}", filePath);
@@ -78,8 +81,13 @@ public class LocalFileStorageService implements FileUploadService {
 
     @Override
     public boolean validateFileType(MultipartFile file, List<String> allowedTypes) {
-        String contentType = file.getContentType();
-        return contentType != null && allowedTypes.contains(contentType);
+        return UploadContentInspector.matchesAllowedTypes(file, allowedTypes);
+    }
+
+    private static void requireInside(Path root, Path candidate) {
+        if (!candidate.startsWith(root)) {
+            throw new FileUploadException("Invalid file path");
+        }
     }
 
     @Override

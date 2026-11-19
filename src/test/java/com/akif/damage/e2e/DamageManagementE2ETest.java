@@ -33,6 +33,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import com.akif.testsupport.TestcontainersConfiguration;
 import org.springframework.http.MediaType;
+import com.akif.testsupport.ImageFixtures;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.math.BigDecimal;
@@ -132,13 +133,13 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         "photos",
                                         "damage-photo-1.jpg",
                                         "image/jpeg",
-                                        "test image content 1".getBytes());
+                                        ImageFixtures.jpeg());
 
                         MockMultipartFile photo2 = new MockMultipartFile(
                                         "photos",
                                         "damage-photo-2.jpg",
                                         "image/jpeg",
-                                        "test image content 2".getBytes());
+                                        ImageFixtures.jpeg());
 
                         mockMvc.perform(multipart("/api/v1/admin/damages/{id}/photos", damageId)
                                         .file(photo1)

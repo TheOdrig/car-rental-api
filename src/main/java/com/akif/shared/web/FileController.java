@@ -38,7 +38,11 @@ public class FileController {
 
     private ResponseEntity<Resource> getFile(String directory, String filename) {
         try {
-            Path filePath = Paths.get(baseUploadDir, directory, filename);
+            Path root = Paths.get(baseUploadDir, directory).toAbsolutePath().normalize();
+            Path filePath = root.resolve(filename).normalize();
+            if (!filePath.startsWith(root)) {
+                return ResponseEntity.badRequest().build();
+            }
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() && resource.isReadable()) {

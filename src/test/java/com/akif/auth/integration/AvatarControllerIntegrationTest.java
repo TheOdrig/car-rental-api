@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import com.akif.testsupport.TestcontainersConfiguration;
 import org.springframework.http.MediaType;
+import com.akif.testsupport.ImageFixtures;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -105,7 +106,7 @@ class AvatarControllerIntegrationTest {
                                         "avatar",
                                         "avatar.jpg",
                                         "image/jpeg",
-                                        "test image content".getBytes());
+                                        ImageFixtures.jpeg());
 
                         mockMvc.perform(multipart("/api/v1/users/me/avatar")
                                         .file(avatarFile)
@@ -137,7 +138,7 @@ class AvatarControllerIntegrationTest {
                                         "avatar",
                                         "avatar.jpg",
                                         "image/jpeg",
-                                        "test image content".getBytes());
+                                        ImageFixtures.jpeg());
 
                         mockMvc.perform(multipart("/api/v1/users/me/avatar")
                                         .file(avatarFile))
@@ -151,7 +152,7 @@ class AvatarControllerIntegrationTest {
                                         "avatar",
                                         "avatar.png",
                                         "image/png",
-                                        "png content".getBytes());
+                                        ImageFixtures.png());
 
                         mockMvc.perform(multipart("/api/v1/users/me/avatar")
                                         .file(pngFile)

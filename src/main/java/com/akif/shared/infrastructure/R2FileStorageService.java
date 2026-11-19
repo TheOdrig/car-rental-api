@@ -69,16 +69,14 @@ public class R2FileStorageService implements FileUploadService {
         validateClientInitialized();
         
         try {
-            String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename != null && originalFilename.contains(".")
-                    ? originalFilename.substring(originalFilename.lastIndexOf("."))
-                    : "";
-            String key = directory + "/" + UUID.randomUUID() + extension;
+            UploadContentInspector.InspectedUpload inspected = UploadContentInspector.inspect(file)
+                    .orElseThrow(() -> new FileUploadException("File content is not a supported image"));
+            String key = directory + "/" + UUID.randomUUID() + inspected.extension();
 
             PutObjectRequest putRequest = PutObjectRequest.builder()
                     .bucket(r2Config.getBucketName())
                     .key(key)
-                    .contentType(file.getContentType())
+                    .contentType(inspected.contentType())
                     .contentLength(file.getSize())
                     .build();
 
@@ -124,8 +122,7 @@ public class R2FileStorageService implements FileUploadService {
 
     @Override
     public boolean validateFileType(MultipartFile file, List<String> allowedTypes) {
-        String contentType = file.getContentType();
-        return contentType != null && allowedTypes.contains(contentType);
+        return UploadContentInspector.matchesAllowedTypes(file, allowedTypes);
     }
 
     @Override

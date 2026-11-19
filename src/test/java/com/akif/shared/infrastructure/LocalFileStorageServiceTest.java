@@ -1,6 +1,7 @@
 package com.akif.shared.infrastructure;
 
-import com.akif.shared.infrastructure.LocalFileStorageService;
+import com.akif.shared.exception.FileUploadException;
+import com.akif.testsupport.ImageFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,6 +16,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("LocalFileStorageService Unit Tests")
 class LocalFileStorageServiceTest {
@@ -40,7 +42,7 @@ class LocalFileStorageServiceTest {
                     "file",
                     "test-image.jpg",
                     "image/jpeg",
-                    "test image content".getBytes());
+                    ImageFixtures.jpeg());
 
             String result = fileStorageService.uploadFile(file, "test-directory");
 
@@ -59,7 +61,7 @@ class LocalFileStorageServiceTest {
                     "file",
                     "original-name.png",
                     "image/png",
-                    "test content".getBytes());
+                    ImageFixtures.png());
 
             String result = fileStorageService.uploadFile(file, "damage-photos");
 
@@ -68,19 +70,47 @@ class LocalFileStorageServiceTest {
         }
 
         @Test
-        @DisplayName("Should handle file without extension")
-        void shouldHandleFileWithoutExtension() {
+        @DisplayName("Should take the extension from the file content, not from the client file name")
+        void shouldTakeExtensionFromContent() {
             MultipartFile file = new MockMultipartFile(
                     "file",
-                    "no-extension",
-                    "application/octet-stream",
-                    "test content".getBytes());
+                    "no-extension.png/../../escape",
+                    "image/png",
+                    ImageFixtures.png());
 
             String result = fileStorageService.uploadFile(file, "test");
 
-            assertThat(result).isNotNull();
-            String fileName = Path.of(result).getFileName().toString();
-            assertThat(fileName).doesNotContain(".");
+            assertThat(Path.of(result).getFileName().toString()).endsWith(".png").doesNotContain("escape");
+            assertThat(Files.exists(Path.of(result))).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should refuse content that is not a supported image")
+        void shouldRefuseNonImageContent() {
+            MultipartFile file = new MockMultipartFile(
+                    "file",
+                    "payload.png",
+                    "image/png",
+                    "<script>alert(1)</script>".getBytes());
+
+            assertThatThrownBy(() -> fileStorageService.uploadFile(file, "test"))
+                    .isInstanceOf(FileUploadException.class);
+        }
+
+        @Test
+        @DisplayName("Should refuse a directory that escapes the upload root")
+        void shouldRefuseDirectoryTraversal() {
+            MultipartFile file = new MockMultipartFile("file", "a.png", "image/png", ImageFixtures.png());
+
+            assertThatThrownBy(() -> fileStorageService.uploadFile(file, "../outside"))
+                    .isInstanceOf(FileUploadException.class);
+        }
+
+        @Test
+        @DisplayName("Should refuse to delete a path outside the upload root")
+        void shouldRefuseDeleteOutsideRoot() {
+            assertThatThrownBy(() -> fileStorageService.deleteFile(tempDir.getParent().resolve("other.txt").toString()))
+                    .isInstanceOf(FileUploadException.class);
         }
 
         @Test
@@ -90,7 +120,7 @@ class LocalFileStorageServiceTest {
                     "file",
                     "test.jpg",
                     "image/jpeg",
-                    "test".getBytes());
+                    ImageFixtures.jpeg());
 
             String result = fileStorageService.uploadFile(file, "new-directory/sub-directory");
 
@@ -114,7 +144,7 @@ class LocalFileStorageServiceTest {
                     "file",
                     "test.jpg",
                     "image/jpeg",
-                    "test".getBytes());
+                    ImageFixtures.jpeg());
             List<String> allowedTypes = List.of("image/jpeg", "image/png", "image/gif");
 
             boolean result = fileStorageService.validateFileType(file, allowedTypes);
@@ -135,6 +165,28 @@ class LocalFileStorageServiceTest {
             boolean result = fileStorageService.validateFileType(file, allowedTypes);
 
             assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should return false when the content does not match the declared type")
+        void shouldReturnFalseForSpoofedContent() {
+            List<String> allowedTypes = List.of("image/jpeg", "image/png");
+
+            assertThat(fileStorageService.validateFileType(
+                    new MockMultipartFile("file", "a.png", "image/png", "not an image".getBytes()), allowedTypes))
+                    .isFalse();
+            assertThat(fileStorageService.validateFileType(
+                    new MockMultipartFile("file", "a.jpg", "image/jpeg", ImageFixtures.png()), allowedTypes))
+                    .isFalse();
+        }
+
+        @Test
+        @DisplayName("Should return false for an image above the pixel limit")
+        void shouldReturnFalseForOversizedImage() {
+            MultipartFile file = new MockMultipartFile("file", "big.png", "image/png",
+                    ImageFixtures.png(9000, 9000));
+
+            assertThat(fileStorageService.validateFileType(file, List.of("image/png"))).isFalse();
         }
 
         @Test
