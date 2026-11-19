@@ -20,7 +20,7 @@ class PaymentStatusSerializationTest {
     @Test
     @DisplayName("PaymentSummary.status serializes as the enum name, never the display name")
     void summaryStatusIsEnumName() {
-        PaymentSummary summary = new PaymentSummary(1L, 2L, PaymentStatus.AUTHORIZED.name(),
+        PaymentSummary summary = new PaymentSummary(1L, 2L, PaymentStatus.AUTHORIZED,
                 BigDecimal.TEN, CurrencyType.USD, null, null);
 
         assertThat(mapper.writeValueAsString(summary)).contains("\"status\":\"AUTHORIZED\"").doesNotContain("Authorized");

@@ -123,7 +123,7 @@ class PaymentChargeService {
                 base.getStripePaymentMethodId(),
                 description);
         String key = payment.getKind() == PaymentKind.DAMAGE
-                ? keys.forDamageCharge(payment.getReferenceId(), payment.getIntentAttempt())
+                ? keys.forDamageCharge(payment.getReferenceId(), payment.getId(), payment.getIntentAttempt())
                 : keys.forPenaltyCharge(payment.getRentalId(), payment.getId(), payment.getIntentAttempt());
         return new ChargePlan(null, payment.getId(), command, key, base.getStripeCustomerId(),
                 base.getStripePaymentMethodId());

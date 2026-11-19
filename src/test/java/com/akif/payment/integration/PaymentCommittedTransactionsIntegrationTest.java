@@ -193,6 +193,11 @@ class PaymentCommittedTransactionsIntegrationTest {
         return new TransactionTemplate(transactionManager);
     }
 
+    private Long damagePaymentId(Long damageId) {
+        return paymentRepository.findByKindAndReferenceIdAndIsDeletedFalse(PaymentKind.DAMAGE, damageId)
+                .orElseThrow().getId();
+    }
+
     private List<String> chargeKeys(int calls) {
         ArgumentCaptor<String> keys = ArgumentCaptor.forClass(String.class);
         verify(paymentGateway, times(calls)).chargeSavedMethod(any(ChargeCommand.class), keys.capture());
@@ -282,7 +287,28 @@ class PaymentCommittedTransactionsIntegrationTest {
         })).isInstanceOf(IllegalStateException.class);
 
         assertThat(paymentService.chargeDamage(rental.getId(), 41L, new BigDecimal("90.00"), null).success()).isTrue();
-        assertThat(chargeKeys(1).get(0)).isEqualTo(keyPrefix() + "damage-41:charge:1");
+        assertThat(chargeKeys(1).get(0)).isEqualTo(keyPrefix() + "damage-41:payment-" + damagePaymentId(41L) + ":charge:1");
+    }
+
+    @Test
+    @DisplayName("a superseded failed damage charge followed by a new amount uses a different idempotency key")
+    void supersededDamageChargeUsesNewKey() {
+        Rental rental = capturedRental();
+        doReturn(ChargeResult.declined("Your card was declined."))
+                .doCallRealMethod()
+                .when(paymentGateway).chargeSavedMethod(any(ChargeCommand.class), anyString());
+
+        assertThat(paymentService.chargeDamage(rental.getId(), 43L, new BigDecimal("100.00"), null).success()).isFalse();
+        Payment failed = paymentRepository.findByKindAndReferenceIdAndIsDeletedFalse(PaymentKind.DAMAGE, 43L).orElseThrow();
+
+        assertThat(paymentService.chargeDamage(rental.getId(), 43L, new BigDecimal("80.00"), null).success()).isTrue();
+        Payment replacement = paymentRepository.findByKindAndReferenceIdAndIsDeletedFalse(PaymentKind.DAMAGE, 43L).orElseThrow();
+
+        List<String> keys = chargeKeys(2);
+        assertThat(replacement.getId()).isNotEqualTo(failed.getId());
+        assertThat(keys.get(0)).isEqualTo(keyPrefix() + "damage-43:payment-" + failed.getId() + ":charge:1");
+        assertThat(keys.get(1)).isEqualTo(keyPrefix() + "damage-43:payment-" + replacement.getId() + ":charge:1");
+        assertThat(keys.get(1)).isNotEqualTo(keys.get(0));
     }
 
     @Test

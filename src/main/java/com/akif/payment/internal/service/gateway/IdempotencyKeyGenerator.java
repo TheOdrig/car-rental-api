@@ -42,8 +42,8 @@ public class IdempotencyKeyGenerator {
         return key(rentalId, paymentId, "penalty", attempt);
     }
 
-    public String forDamageCharge(Long damageId, int attempt) {
-        return String.format("%s:damage-%d:charge:%d", prefix(), damageId, attempt);
+    public String forDamageCharge(Long damageId, Long paymentId, int attempt) {
+        return String.format("%s:damage-%d:payment-%d:charge:%d", prefix(), damageId, paymentId, attempt);
     }
 
     public String forRefundOperation(String operationKey, int failedAttempts) {
