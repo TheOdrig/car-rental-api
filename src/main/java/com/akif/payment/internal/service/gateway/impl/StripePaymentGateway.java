@@ -22,6 +22,7 @@ import com.stripe.net.RequestOptions;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.PaymentIntentRetrieveParams;
+import com.stripe.param.PaymentIntentSearchParams;
 import com.stripe.param.RefundCreateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -87,6 +91,25 @@ public class StripePaymentGateway implements PaymentGateway {
         } catch (StripeException e) {
             log.error("[AUDIT] Stripe RETRIEVE_INTENT FAILED | Intent: {} | Code: {} | Request: {}",
                     intentId, e.getCode(), e.getRequestId());
+            throw new StripeIntegrationException(e.getCode(), "Stripe request failed", e);
+        }
+    }
+
+    @Override
+    public Optional<GatewayIntent> findIntentByPayment(Long paymentId) {
+        try {
+            PaymentIntentSearchParams params = PaymentIntentSearchParams.builder()
+                    .setQuery("metadata['payment_id']:'" + paymentId + "' AND metadata['installation_id']:'"
+                            + installation.id() + "'")
+                    .setLimit(10L)
+                    .build();
+            List<PaymentIntent> found = PaymentIntent.search(params, options(null)).getData();
+            return found.stream()
+                    .map(this::toGatewayIntent)
+                    .min(Comparator.comparing(intent -> intent.status() == GatewayIntentStatus.SUCCEEDED ? 0 : 1));
+        } catch (StripeException e) {
+            log.error("[AUDIT] Stripe SEARCH_INTENT FAILED | Payment: {} | Code: {} | Request: {}",
+                    paymentId, e.getCode(), e.getRequestId());
             throw new StripeIntegrationException(e.getCode(), "Stripe request failed", e);
         }
     }

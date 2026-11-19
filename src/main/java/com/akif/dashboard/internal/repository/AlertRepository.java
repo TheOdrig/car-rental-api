@@ -39,4 +39,17 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     boolean existsByTypeAndReferenceIdAndAcknowledgedFalse(
             @Param("type") AlertType type,
             @Param("referenceId") Long referenceId);
+
+    @Query("""
+            SELECT COUNT(a) > 0 FROM Alert a
+            WHERE a.type = :type
+            AND a.referenceId = :referenceId
+            AND a.title = :title
+            AND a.acknowledged = false
+            AND a.isDeleted = false
+            """)
+    boolean existsByTypeAndReferenceIdAndTitleAndAcknowledgedFalse(
+            @Param("type") AlertType type,
+            @Param("referenceId") Long referenceId,
+            @Param("title") String title);
 }

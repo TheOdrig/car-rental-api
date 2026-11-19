@@ -78,6 +78,27 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             """)
     List<Object[]> findStaleNonTerminal(@Param("cutoff") LocalDateTime cutoff, org.springframework.data.domain.Pageable pageable);
 
+    @Query("""
+            SELECT p.id FROM Payment p
+            WHERE p.status = com.akif.payment.api.PaymentStatus.PENDING
+            AND p.kind = com.akif.payment.domain.enums.PaymentKind.PENALTY
+            AND p.closed = false AND p.isDeleted = false
+            AND p.stripePaymentIntentId IS NULL
+            AND COALESCE(p.lastSyncedAt, p.updateTime) < :cutoff
+            ORDER BY p.id
+            """)
+    List<Long> findStalePenaltiesWithoutIntent(@Param("cutoff") LocalDateTime cutoff, org.springframework.data.domain.Pageable pageable);
+
+    @Query("""
+            SELECT p.id FROM Payment p
+            WHERE p.status = com.akif.payment.api.PaymentStatus.CAPTURED
+            AND p.kind IN (com.akif.payment.domain.enums.PaymentKind.PENALTY, com.akif.payment.domain.enums.PaymentKind.DAMAGE)
+            AND p.closed = true AND p.isDeleted = false
+            AND p.updateTime < :cutoff
+            ORDER BY p.id
+            """)
+    List<Long> findClosedCapturedForRefund(@Param("cutoff") LocalDateTime cutoff, org.springframework.data.domain.Pageable pageable);
+
     Optional<Payment> findByStripePaymentIntentIdAndIsDeletedFalse(String stripePaymentIntentId);
 
     @Query("""

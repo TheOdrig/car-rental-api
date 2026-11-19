@@ -663,7 +663,9 @@ public class RentalServiceImpl implements RentalService {
                 log.info("Successfully charged penalty for rental: {}", rental.getId());
             } else {
                 rental.recordPenaltyPayment(false);
-                penaltyPaymentService.handleFailedPenaltyPayment(penaltyPaymentDto, chargeResult.message());
+                if (!chargeResult.outcomeUnknown()) {
+                    penaltyPaymentService.handleFailedPenaltyPayment(penaltyPaymentDto, chargeResult.message());
+                }
             }
 
             publishPenaltySummaryEvent(rental, penaltyResult, actualReturnTime);

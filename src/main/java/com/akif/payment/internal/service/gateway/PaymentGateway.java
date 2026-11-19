@@ -4,12 +4,15 @@ import com.akif.payment.api.PaymentResult;
 import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public interface PaymentGateway {
 
     GatewayIntent createIntent(IntentCommand command, String idempotencyKey);
 
     GatewayIntent retrieveIntent(String intentId);
+
+    Optional<GatewayIntent> findIntentByPayment(Long paymentId);
 
     PaymentResult capture(String intentId, String idempotencyKey);
 

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -58,6 +59,11 @@ public class StubPaymentGateway implements PaymentGateway {
         }
         return new GatewayIntent(base.id(), base.clientSecret(), status, base.paymentMethodId(),
                 base.customerId(), base.amountMinor(), base.currency());
+    }
+
+    @Override
+    public Optional<GatewayIntent> findIntentByPayment(Long paymentId) {
+        return Optional.empty();
     }
 
     @Override

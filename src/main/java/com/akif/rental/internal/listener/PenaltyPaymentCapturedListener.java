@@ -1,5 +1,7 @@
 package com.akif.rental.internal.listener;
 
+import com.akif.payment.api.PaymentService;
+import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.api.PenaltyPaymentCapturedEvent;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.repository.RentalRepository;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 public class PenaltyPaymentCapturedListener {
 
     private final RentalRepository rentalRepository;
+    private final PaymentService paymentService;
 
     @ApplicationModuleListener
     public void onPenaltyPaymentCaptured(PenaltyPaymentCapturedEvent event) {
@@ -22,6 +25,19 @@ public class PenaltyPaymentCapturedListener {
 
     private void markPaid(Rental rental, PenaltyPaymentCapturedEvent event) {
         if (Boolean.TRUE.equals(rental.getPenaltyPaid())) {
+            return;
+        }
+        if (rental.getPenaltyAmount() == null || rental.getPenaltyAmount().signum() <= 0) {
+            log.info("Penalty of rental {} is waived or zero, capture of payment {} is not recorded as paid",
+                    rental.getId(), event.paymentId());
+            return;
+        }
+        boolean stillCaptured = paymentService.getPaymentById(event.paymentId())
+                .map(payment -> payment.status() == PaymentStatus.CAPTURED)
+                .orElse(false);
+        if (!stillCaptured) {
+            log.info("Payment {} is no longer captured, penalty of rental {} is not recorded as paid",
+                    event.paymentId(), rental.getId());
             return;
         }
         rental.recordPenaltyPayment(true);

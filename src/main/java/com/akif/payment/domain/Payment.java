@@ -25,6 +25,8 @@ import java.time.LocalDateTime;
 @SuperBuilder
 public class Payment extends BaseEntity {
 
+    public static final String UNKNOWN_OUTCOME_REASON = "Charge outcome unknown";
+
     @Column(name = "rental_id", nullable = false)
     private Long rentalId;
 
@@ -160,6 +162,25 @@ public class Payment extends BaseEntity {
             return true;
         }
         return false;
+    }
+
+    public boolean captureAfterClose() {
+        if (status == PaymentStatus.CANCELLED && closed) {
+            this.status = PaymentStatus.CAPTURED;
+            this.failureReason = null;
+            return true;
+        }
+        return false;
+    }
+
+    public void flagUnknownOutcome() {
+        if (status == PaymentStatus.PENDING) {
+            this.failureReason = UNKNOWN_OUTCOME_REASON;
+        }
+    }
+
+    public boolean hasUnknownOutcome() {
+        return UNKNOWN_OUTCOME_REASON.equals(failureReason);
     }
 
     public boolean cancel() {

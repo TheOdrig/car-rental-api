@@ -9,6 +9,7 @@ import com.akif.payment.api.MonthlyRevenue;
 import com.akif.payment.api.NetPaid;
 import com.akif.payment.api.PaymentCategory;
 import com.akif.payment.api.InvalidPaymentStateException;
+import com.akif.payment.api.PaymentAttentionEvent;
 import com.akif.payment.api.PaymentDto;
 import com.akif.payment.api.PaymentIntentResult;
 import com.akif.payment.api.PaymentNotFoundException;
@@ -393,10 +394,13 @@ class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public int closeOutstandingPenaltyPayments(Long rentalId) {
         int closed = 0;
         for (Payment payment : paymentRepository.findOpenPenaltyPaymentsForUpdate(rentalId)) {
+            if (resolvedAsCaptured(payment)) {
+                continue;
+            }
             payment.cancel();
             payment.close();
             paymentRepository.save(payment);
@@ -406,6 +410,31 @@ class PaymentServiceImpl implements PaymentService {
             log.info("Closed {} outstanding penalty payment(s) of rental {}", closed, rentalId);
         }
         return closed;
+    }
+
+    private boolean resolvedAsCaptured(Payment payment) {
+        try {
+            Optional<GatewayIntent> found = payment.getStripePaymentIntentId() != null
+                    ? Optional.of(paymentGateway.retrieveIntent(payment.getStripePaymentIntentId()))
+                    : paymentGateway.findIntentByPayment(payment.getId());
+            if (found.isEmpty()) {
+                return false;
+            }
+            GatewayIntent intent = found.get();
+            if (intent.status() == GatewayIntentStatus.SUCCEEDED) {
+                stateService.applyIntent(payment, intent);
+                return payment.getStatus() == PaymentStatus.CAPTURED;
+            }
+            if (intent.status() != GatewayIntentStatus.CANCELED) {
+                paymentGateway.cancel(intent.id(), keys.forOrphanCancel(intent.id()));
+            }
+            return false;
+        } catch (RuntimeException e) {
+            log.warn("Could not resolve the penalty payment {} with the gateway before closing it: {}",
+                    payment.getId(), e.getMessage());
+            stateService.publishAttention(payment, PaymentAttentionEvent.Reason.CHARGE_OUTCOME_UNKNOWN);
+            return false;
+        }
     }
 
     @Override
@@ -500,6 +529,8 @@ class PaymentServiceImpl implements PaymentService {
             } else {
                 log.warn("Charge outcome is unknown, keeping the idempotency key: payment={}, reason={}",
                         payment.getId(), outcome.result().message());
+                stateService.flagUnknownOutcome(payment);
+                return PaymentResult.unknown(outcome.result().message());
             }
             return outcome.result();
         });

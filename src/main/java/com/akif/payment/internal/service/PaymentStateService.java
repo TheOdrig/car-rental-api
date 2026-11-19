@@ -1,5 +1,6 @@
 package com.akif.payment.internal.service;
 
+import com.akif.payment.api.PaymentAttentionEvent;
 import com.akif.payment.api.PaymentCancelledEvent;
 import com.akif.payment.api.PaymentCapturedEvent;
 import com.akif.payment.api.PenaltyPaymentCapturedEvent;
@@ -60,18 +61,35 @@ public class PaymentStateService {
 
     public boolean markCaptured(Payment payment, String transactionId) {
         boolean transitioned = payment.capture();
-        if (transitioned) {
+        boolean late = false;
+        if (!transitioned && isLateCaptureKind(payment)) {
+            late = payment.captureAfterClose();
+        }
+        if (transitioned || late) {
             payment.stampCaptured(LocalDateTime.now(clock));
         }
         if (transactionId != null && payment.getStripePaymentIntentId() == null) {
             payment.attachIntent(transactionId, payment.getIdempotencyKey());
         }
-        if (!transitioned && payment.getStatus() == PaymentStatus.CANCELLED) {
+        boolean duplicate = transitioned && payment.getKind() == PaymentKind.PENALTY
+                && paymentRepository.existsCapturedPenaltyOtherThan(payment.getRentalId(), payment.getId());
+        if (duplicate) {
+            payment.close();
+        }
+        if (!transitioned && !late && payment.getStatus() == PaymentStatus.CANCELLED) {
             log.error("[AUDIT] Funds were captured for a cancelled payment, a manual refund may be required | Payment: {} | Kind: {}",
                     payment.getId(), payment.getKind());
         }
         paymentRepository.save(payment);
-        if (transitioned && payment.getKind() == PaymentKind.RENTAL) {
+        if (late) {
+            log.error("[AUDIT] Funds were captured for a closed payment, refunding them | Payment: {} | Kind: {}",
+                    payment.getId(), payment.getKind());
+            eventPublisher.publishEvent(new RefundRequiredEvent(payment.getId(), RefundRequiredEvent.Cause.LATE_CAPTURE));
+        } else if (duplicate) {
+            log.error("[AUDIT] A second penalty was captured for the rental, refunding it | Payment: {} | Rental: {}",
+                    payment.getId(), payment.getRentalId());
+            eventPublisher.publishEvent(new RefundRequiredEvent(payment.getId(), RefundRequiredEvent.Cause.DUPLICATE_PENALTY));
+        } else if (transitioned && payment.getKind() == PaymentKind.RENTAL) {
             eventPublisher.publishEvent(new PaymentCapturedEvent(
                     payment.getId(),
                     payment.getRentalId(),
@@ -88,7 +106,27 @@ public class PaymentStateService {
                     payment.getCurrency(),
                     LocalDateTime.now(clock)));
         }
-        return transitioned;
+        return transitioned || late;
+    }
+
+    public void flagUnknownOutcome(Payment payment) {
+        payment.flagUnknownOutcome();
+        paymentRepository.save(payment);
+        publishAttention(payment, PaymentAttentionEvent.Reason.CHARGE_OUTCOME_UNKNOWN);
+    }
+
+    public void publishAttention(Payment payment, PaymentAttentionEvent.Reason reason) {
+        eventPublisher.publishEvent(new PaymentAttentionEvent(
+                payment.getId(),
+                payment.getRentalId(),
+                reason,
+                payment.getAmount(),
+                payment.getCurrency(),
+                LocalDateTime.now(clock)));
+    }
+
+    private static boolean isLateCaptureKind(Payment payment) {
+        return payment.getKind() == PaymentKind.PENALTY || payment.getKind() == PaymentKind.DAMAGE;
     }
 
     public boolean applyFailure(Payment payment, String reason) {

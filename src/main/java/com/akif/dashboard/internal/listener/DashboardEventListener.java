@@ -6,6 +6,7 @@ import com.akif.dashboard.api.AlertSeverity;
 import com.akif.dashboard.api.AlertType;
 import com.akif.dashboard.domain.model.Alert;
 import com.akif.dashboard.internal.repository.AlertRepository;
+import com.akif.payment.api.PaymentAttentionEvent;
 import com.akif.payment.api.PenaltyPaymentCapturedEvent;
 import com.akif.rental.api.PenaltyChargeFailedEvent;
 import com.akif.payment.api.PaymentCapturedEvent;
@@ -87,6 +88,56 @@ public class DashboardEventListener {
                 .acknowledged(false)
                 .build());
         log.info("Created alert for the uncollected penalty of rental {}", event.rentalId());
+    }
+
+    @ApplicationModuleListener
+    public void handlePaymentAttention(PaymentAttentionEvent event) {
+        String title;
+        String message;
+        AlertSeverity severity = AlertSeverity.HIGH;
+        switch (event.reason()) {
+            case CHARGE_OUTCOME_UNKNOWN -> {
+                title = "Charge outcome unknown, do not collect manually";
+                message = String.format(
+                        "The charge of %s %s for rental #%d timed out and its outcome is unknown. Do not collect it manually: "
+                                + "the system reconciles it and refunds any late capture automatically.",
+                        event.amount(), event.currency(), event.rentalId());
+            }
+            case LATE_CAPTURE_REFUNDED -> {
+                title = "Charge captured after the payment was closed";
+                message = String.format(
+                        "A charge of %s %s for rental #%d was captured after its payment was closed and has been refunded automatically.",
+                        event.amount(), event.currency(), event.rentalId());
+                severity = AlertSeverity.MEDIUM;
+            }
+            case DUPLICATE_PENALTY_REFUNDED -> {
+                title = "Duplicate penalty charge refunded";
+                message = String.format(
+                        "A second penalty of %s %s was captured for rental #%d and has been refunded automatically.",
+                        event.amount(), event.currency(), event.rentalId());
+                severity = AlertSeverity.MEDIUM;
+            }
+            default -> {
+                title = "Automatic refund failed";
+                message = String.format(
+                        "The automatic refund of %s %s for rental #%d failed. Refund it manually in Stripe.",
+                        event.amount(), event.currency(), event.rentalId());
+            }
+        }
+        if (alertRepository.existsByTypeAndReferenceIdAndTitleAndAcknowledgedFalse(
+                AlertType.FAILED_PAYMENT, event.rentalId(), title)) {
+            return;
+        }
+        alertRepository.save(Alert.builder()
+                .type(AlertType.FAILED_PAYMENT)
+                .severity(severity)
+                .title(title)
+                .message(message)
+                .actionUrl("/admin/rentals/" + event.rentalId())
+                .referenceId(event.rentalId())
+                .acknowledged(false)
+                .build());
+        log.info("Created alert {} for rental {}", event.reason(), event.rentalId());
     }
 
     @ApplicationModuleListener

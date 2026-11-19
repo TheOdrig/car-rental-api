@@ -11,6 +11,7 @@ import com.akif.rental.internal.repository.PenaltyWaiverRepository;
 import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.payment.api.PaymentService;
 import com.akif.payment.api.PaymentResult;
+import com.akif.rental.internal.service.penalty.PenaltyPaymentService;
 import com.akif.rental.internal.service.penalty.PenaltyWaiverService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
     private final RentalRepository rentalRepository;
     private final PenaltyWaiverRepository penaltyWaiverRepository;
     private final PaymentService paymentService;
+    private final PenaltyPaymentService penaltyPaymentService;
 
     @Override
     @Transactional
@@ -72,6 +74,7 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
 
         PenaltyWaiver savedWaiver = penaltyWaiverRepository.save(waiver);
 
+        paymentService.closeOutstandingPenaltyPayments(rentalId);
         boolean collected = paymentService.getPenaltyPaymentByRentalId(rentalId).isPresent();
 
         rental.reducePenaltyTo(remainingPenalty);
@@ -80,14 +83,33 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
 
         if (collected) {
             processRefundForWaiver(savedWaiver);
-        } else {
-            paymentService.closeOutstandingPenaltyPayments(rentalId);
+        } else if (remainingPenalty.signum() > 0) {
+            collectRemainder(rental, remainingPenalty);
         }
 
         log.info("Successfully waived penalty for rental: {}, waived amount: {}, remaining: {}",
                 rentalId, waiverAmount, remainingPenalty);
 
         return savedWaiver;
+    }
+
+    private void collectRemainder(Rental rental, BigDecimal remainingPenalty) {
+        PaymentDto remainder = null;
+        try {
+            remainder = penaltyPaymentService.createPenaltyPayment(rental, remainingPenalty);
+            PaymentResult result = penaltyPaymentService.chargePenalty(remainder.id(), rental.getUserId());
+            if (result.success()) {
+                rental.recordPenaltyPayment(true);
+                rentalRepository.save(rental);
+            } else if (!result.outcomeUnknown()) {
+                penaltyPaymentService.handleFailedPenaltyPayment(remainder, result.message());
+            }
+        } catch (RuntimeException e) {
+            log.error("Could not collect the remaining penalty of rental {}: {}", rental.getId(), e.getMessage());
+            if (remainder != null) {
+                penaltyPaymentService.handleFailedPenaltyPayment(remainder, e.getMessage());
+            }
+        }
     }
 
     @Override
