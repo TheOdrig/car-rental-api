@@ -25,6 +25,8 @@ COPY --from=layers /layers/extracted/spring-boot-loader/ ./
 COPY --from=layers /layers/extracted/snapshot-dependencies/ ./
 COPY --from=layers /layers/extracted/application/ ./
 
+RUN mkdir -p /app/uploads && chown -R spring:spring /app/uploads
+
 USER spring
 EXPOSE 8082 8081
 

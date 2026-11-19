@@ -47,7 +47,8 @@ public class LocalFileStorageService implements FileUploadService {
             log.debug("File uploaded to local storage: {}", filePath);
             return Paths.get(baseUploadDir).resolve(directory).resolve(fileName).normalize().toString().replace("\\", "/");
         } catch (IOException e) {
-            throw new FileUploadException("Failed to upload file: " + e.getMessage(), e);
+            log.error("Failed to write an uploaded file to local storage", e);
+            throw FileUploadException.storageFailure(e);
         }
     }
 
@@ -62,7 +63,8 @@ public class LocalFileStorageService implements FileUploadService {
                 log.debug("File deleted from local storage: {}", filePath);
             }
         } catch (IOException e) {
-            throw new FileUploadException("Failed to delete file: " + e.getMessage(), e);
+            log.error("Failed to delete a file from local storage", e);
+            throw FileUploadException.storageFailure(e);
         }
     }
 

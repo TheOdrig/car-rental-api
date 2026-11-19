@@ -85,7 +85,8 @@ public class R2FileStorageService implements FileUploadService {
             log.debug("File uploaded to R2: {}", key);
             return key;
         } catch (IOException e) {
-            throw new FileUploadException("Failed to upload file to R2: " + e.getMessage(), e);
+            log.error("Failed to upload a file to R2", e);
+            throw FileUploadException.storageFailure(e);
         }
     }
 
@@ -132,7 +133,8 @@ public class R2FileStorageService implements FileUploadService {
 
     private void validateClientInitialized() {
         if (s3Client == null) {
-            throw new FileUploadException("R2 storage client is not initialized. Check R2 configuration.");
+            log.error("R2 storage client is not initialized; check the R2 configuration");
+            throw FileUploadException.storageFailure(null);
         }
     }
 }
