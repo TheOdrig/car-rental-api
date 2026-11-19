@@ -20,6 +20,7 @@ class ApiAccessPolicyTest {
         assertThat(ApiAccessPolicy.resolve("GET", "/api/v1/rentals/me")).isEqualTo(Access.USER);
         assertThat(ApiAccessPolicy.resolve("GET", "/api/v1/rentals/7")).isEqualTo(Access.AUTHENTICATED);
         assertThat(ApiAccessPolicy.resolve("POST", "/api/v1/webhooks/stripe")).isEqualTo(Access.PUBLIC);
+        assertThat(ApiAccessPolicy.resolve("GET", "/api/v1/files/avatars/a.png")).isEqualTo(Access.AUTHENTICATED);
         assertThat(ApiAccessPolicy.resolve("POST", "/api/v1/auth/login")).isEqualTo(Access.PUBLIC);
     }
 

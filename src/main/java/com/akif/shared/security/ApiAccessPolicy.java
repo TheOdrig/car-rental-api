@@ -31,7 +31,7 @@ public final class ApiAccessPolicy {
             any("/api/v1/oauth2/authorize/**", Access.PUBLIC),
             any("/api/v1/oauth2/callback/**", Access.PUBLIC),
             any("/api/v1/oauth2/link/**", Access.AUTHENTICATED),
-            any("/api/v1/files/**", Access.PUBLIC),
+            any("/api/v1/files/**", Access.AUTHENTICATED),
             any("/api/v1/webhooks/**", Access.PUBLIC),
 
             rule(HttpMethod.POST, "/api/v1/rentals/request", Access.USER),

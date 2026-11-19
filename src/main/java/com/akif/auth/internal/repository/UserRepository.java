@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -75,4 +76,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     long countByIsDeletedFalseAndEnabledTrueAndIsBannedFalse();
 
     long countByIsDeletedFalseAndIsBannedTrue();
+
+    @Query(value = """
+            SELECT u.id FROM car_rental.users u
+            WHERE u.avatar_url IS NOT NULL
+            AND substring(u.avatar_url from '[^/]+$') = :filename
+            AND u.avatar_url NOT LIKE 'https://%'
+            """, nativeQuery = true)
+    List<Long> findIdsByAvatarFileName(@Param("filename") String filename);
 }

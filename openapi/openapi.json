@@ -10183,6 +10183,16 @@
             },
             "description" : "Invalid request"
           },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Authentication required"
+          },
           "404" : {
             "content" : {
               "application/problem+json" : {
@@ -10204,7 +10214,6 @@
             "description" : "Unexpected error"
           }
         },
-        "security" : [ ],
         "tags" : [ "file-controller" ]
       }
     },
@@ -10241,6 +10250,16 @@
             },
             "description" : "Invalid request"
           },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Authentication required"
+          },
           "404" : {
             "content" : {
               "application/problem+json" : {
@@ -10262,7 +10281,6 @@
             "description" : "Unexpected error"
           }
         },
-        "security" : [ ],
         "tags" : [ "file-controller" ]
       }
     },
