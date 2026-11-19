@@ -26,7 +26,9 @@ public record DamageReportDto(
     Instant reportedAt,
     Instant assessedAt,
     CurrencyType currency,
-    CarSummaryResponse carSummary
+    CarSummaryResponse carSummary,
+    String assessmentNotes,
+    BigDecimal insuranceDeductible
 ) {
 
     public DamageReportDto(
@@ -46,7 +48,7 @@ public record DamageReportDto(
             Instant reportedAt,
             Instant assessedAt) {
         this(id, rentalId, carId, carLicensePlate, customerName, description, damageLocation, severity, category,
-                status, repairCostEstimate, customerLiability, insuranceCoverage, reportedAt, assessedAt, null, null);
+                status, repairCostEstimate, customerLiability, insuranceCoverage, reportedAt, assessedAt, null, null, null, null);
     }
 
     public boolean isPending() {

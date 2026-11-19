@@ -203,6 +203,12 @@ class DamageAssessmentControllerIntegrationTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.damageId").value(damageId))
                     .andExpect(jsonPath("$.repairCostEstimate").value(2500.00));
+
+            mockMvc.perform(get("/api/v1/admin/damages/{id}", damageId)
+                            .header("Authorization", adminToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.assessmentNotes").value("Moderate dent requires professional repair"))
+                    .andExpect(jsonPath("$.insuranceDeductible").value(250.00));
         }
 
         @Test

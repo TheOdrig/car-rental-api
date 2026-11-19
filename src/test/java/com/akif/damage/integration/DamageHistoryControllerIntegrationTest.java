@@ -289,7 +289,9 @@ class DamageHistoryControllerIntegrationTest {
                     .andExpect(jsonPath("$.content[0].carSummary.id").value(testCar.getId()))
                     .andExpect(jsonPath("$.content[0].carSummary.brand").value(testCar.getBrand()))
                     .andExpect(jsonPath("$.content[0].carSummary.model").value(testCar.getModel()))
-                    .andExpect(jsonPath("$.content[0].carSummary.licensePlate").value("34HIS001"));
+                    .andExpect(jsonPath("$.content[0].carSummary.licensePlate").value("34HIS001"))
+                    .andExpect(jsonPath("$.content[0].assessmentNotes").doesNotExist())
+                    .andExpect(jsonPath("$.content[0].insuranceDeductible").doesNotExist());
         }
 
         @Test

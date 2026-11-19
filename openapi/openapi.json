@@ -1213,6 +1213,9 @@
             "format" : "date-time",
             "type" : "string"
           },
+          "assessmentNotes" : {
+            "type" : "string"
+          },
           "carId" : {
             "format" : "int64",
             "type" : "integer"
@@ -1249,6 +1252,9 @@
           },
           "insuranceCoverage" : {
             "type" : "boolean"
+          },
+          "insuranceDeductible" : {
+            "type" : "number"
           },
           "pending" : {
             "type" : "boolean"
@@ -1305,6 +1311,9 @@
             "format" : "date-time",
             "type" : "string"
           },
+          "assessmentNotes" : {
+            "type" : "string"
+          },
           "carId" : {
             "format" : "int64",
             "type" : "integer"
@@ -1351,6 +1360,9 @@
           },
           "insuranceCoverage" : {
             "type" : "boolean"
+          },
+          "insuranceDeductible" : {
+            "type" : "number"
           },
           "originalLiability" : {
             "type" : "number"

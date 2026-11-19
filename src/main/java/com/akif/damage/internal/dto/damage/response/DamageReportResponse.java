@@ -38,5 +38,7 @@ public record DamageReportResponse(
         String resolutionNotes,
         Instant resolvedAt,
         List<DamagePhotoDto> photos,
-        CarSummaryResponse carSummary
+        CarSummaryResponse carSummary,
+        String assessmentNotes,
+        BigDecimal insuranceDeductible
 ){ }
