@@ -203,7 +203,7 @@ class CurrencyConversionE2ETest extends E2ETestBase {
 
             RentalResponse response = objectMapper.readValue(responseJson, RentalResponse.class);
 
-            assertThat(response.rateSource()).isEqualTo("Fallback");
+            assertThat(response.rateSource()).isEqualTo("FALLBACK");
             assertThat(response.convertedTotalPrice()).isNotNull();
             assertThat(response.exchangeRate()).isNotNull();
             assertThat(response.exchangeRate()).isGreaterThan(BigDecimal.ZERO);
@@ -229,7 +229,7 @@ class CurrencyConversionE2ETest extends E2ETestBase {
                     .param("currency", "GBP")
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.rateSource").value("Fallback"))
+                    .andExpect(jsonPath("$.rateSource").value("FALLBACK"))
                     .andReturn()
                     .getResponse()
                     .getContentAsString();
@@ -237,7 +237,7 @@ class CurrencyConversionE2ETest extends E2ETestBase {
             RentalResponse response = objectMapper.readValue(responseJson, RentalResponse.class);
 
             assertThat(response.rateSource()).isNotNull();
-            assertThat(response.rateSource()).isEqualTo("Fallback");
+            assertThat(response.rateSource()).isEqualTo("FALLBACK");
 
             assertThat(response.convertedTotalPrice()).isNotNull();
             assertThat(response.displayCurrency()).isEqualTo(CurrencyType.GBP);

@@ -23,6 +23,10 @@ public enum PaymentStatus {
     }
 
     @JsonValue
+    public String code() {
+        return name();
+    }
+
     public String getDisplayName() {
         return displayName;
     }

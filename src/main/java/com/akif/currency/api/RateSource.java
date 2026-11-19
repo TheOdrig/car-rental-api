@@ -21,6 +21,10 @@ public enum RateSource {
     }
 
     @JsonValue
+    public String code() {
+        return name();
+    }
+
     public String getDisplayName() {
         return displayName;
     }

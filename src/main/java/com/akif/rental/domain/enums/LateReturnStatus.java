@@ -21,6 +21,10 @@ public enum LateReturnStatus {
     }
 
     @JsonValue
+    public String code() {
+        return name();
+    }
+
     public String getDisplayName() {
         return displayName;
     }

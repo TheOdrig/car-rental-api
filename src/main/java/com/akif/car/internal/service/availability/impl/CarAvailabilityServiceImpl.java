@@ -138,7 +138,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
                 .orElseThrow(() -> new CarNotFoundException(carId));
 
         boolean carBlocked = Arrays.asList(CarStatusType.getUnavailableStatuses()).contains(car.getCarStatusType());
-        String blockReason = carBlocked ? car.getCarStatusType().getDisplayName() : null;
+        String blockReason = carBlocked ? car.getCarStatusType().name() : null;
 
         LocalDate monthStart = month.atDay(1);
         LocalDate monthEnd = month.atEndOfMonth();

@@ -440,7 +440,7 @@ class CarAvailabilityServiceImplTest {
                                         month);
 
                         assertThat(result.carBlocked()).isTrue();
-                        assertThat(result.blockReason()).isEqualTo(CarStatusType.DAMAGED.getDisplayName());
+                        assertThat(result.blockReason()).isEqualTo(CarStatusType.DAMAGED.name());
                         assertThat(result.days()).allMatch(day -> day.status() == AvailabilityStatus.UNAVAILABLE);
                 }
 

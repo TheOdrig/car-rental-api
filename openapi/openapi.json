@@ -496,7 +496,7 @@
             "type" : "string"
           },
           "carStatusType" : {
-            "enum" : [ "Available", "Maintenance", "Damaged", "Inspection" ],
+            "enum" : [ "AVAILABLE", "MAINTENANCE", "DAMAGED", "INSPECTION" ],
             "type" : "string"
           },
           "color" : {
@@ -637,7 +637,7 @@
             "type" : "string"
           },
           "carStatusType" : {
-            "enum" : [ "Available", "Maintenance", "Damaged", "Inspection" ],
+            "enum" : [ "AVAILABLE", "MAINTENANCE", "DAMAGED", "INSPECTION" ],
             "type" : "string"
           },
           "color" : {
@@ -803,7 +803,7 @@
         "description" : "Status update data",
         "properties" : {
           "carStatusType" : {
-            "enum" : [ "Available", "Maintenance", "Damaged", "Inspection" ],
+            "enum" : [ "AVAILABLE", "MAINTENANCE", "DAMAGED", "INSPECTION" ],
             "type" : "string"
           },
           "notes" : {
@@ -869,7 +869,7 @@
             "type" : "string"
           },
           "source" : {
-            "enum" : [ "Live", "Cached", "Fallback" ],
+            "enum" : [ "LIVE", "CACHED", "FALLBACK" ],
             "type" : "string"
           },
           "targetCurrency" : {
@@ -1436,7 +1436,7 @@
             "type" : "integer"
           },
           "status" : {
-            "enum" : [ "Available", "Unavailable" ],
+            "enum" : [ "AVAILABLE", "UNAVAILABLE" ],
             "type" : "string"
           }
         },
@@ -1461,7 +1461,7 @@
             "type" : "boolean"
           },
           "source" : {
-            "enum" : [ "Live", "Cached", "Fallback" ],
+            "enum" : [ "LIVE", "CACHED", "FALLBACK" ],
             "type" : "string"
           },
           "timestamp" : {
@@ -1492,7 +1492,7 @@
             "type" : "object"
           },
           "source" : {
-            "enum" : [ "Live", "Cached", "Fallback" ],
+            "enum" : [ "LIVE", "CACHED", "FALLBACK" ],
             "type" : "string"
           },
           "timestamp" : {
@@ -1644,7 +1644,7 @@
             "type" : "integer"
           },
           "status" : {
-            "enum" : [ "On Time", "Grace Period", "Late", "Severely Late" ],
+            "enum" : [ "ON_TIME", "GRACE_PERIOD", "LATE", "SEVERELY_LATE" ],
             "type" : "string"
           }
         },
@@ -2483,7 +2483,7 @@
             "type" : "string"
           },
           "status" : {
-            "enum" : [ "Requested", "Confirmed", "In Use", "Returned", "Cancelled" ],
+            "enum" : [ "REQUESTED", "CONFIRMED", "IN_USE", "RETURNED", "CANCELLED" ],
             "type" : "string"
           },
           "totalPrice" : {
@@ -3010,7 +3010,7 @@
           "name" : "status",
           "required" : false,
           "schema" : {
-            "enum" : [ "Available", "Maintenance", "Damaged", "Inspection" ],
+            "enum" : [ "AVAILABLE", "MAINTENANCE", "DAMAGED", "INSPECTION" ],
             "type" : "string"
           }
         }, {
@@ -3198,7 +3198,7 @@
           "name" : "status",
           "required" : false,
           "schema" : {
-            "enum" : [ "Requested", "Confirmed", "In Use", "Returned", "Cancelled" ],
+            "enum" : [ "REQUESTED", "CONFIRMED", "IN_USE", "RETURNED", "CANCELLED" ],
             "type" : "string"
           }
         }, {
@@ -6322,7 +6322,7 @@
           "name" : "status",
           "required" : false,
           "schema" : {
-            "enum" : [ "Requested", "Confirmed", "In Use", "Returned", "Cancelled" ],
+            "enum" : [ "REQUESTED", "CONFIRMED", "IN_USE", "RETURNED", "CANCELLED" ],
             "type" : "string"
           }
         }, {
@@ -7759,7 +7759,7 @@
           "name" : "carStatusType",
           "required" : false,
           "schema" : {
-            "enum" : [ "Available", "Maintenance", "Damaged", "Inspection" ],
+            "enum" : [ "AVAILABLE", "MAINTENANCE", "DAMAGED", "INSPECTION" ],
             "type" : "string"
           }
         }, {
@@ -8065,7 +8065,7 @@
           "name" : "status",
           "required" : false,
           "schema" : {
-            "enum" : [ "Available", "Maintenance", "Damaged", "Inspection" ],
+            "enum" : [ "AVAILABLE", "MAINTENANCE", "DAMAGED", "INSPECTION" ],
             "type" : "string"
           }
         }, {

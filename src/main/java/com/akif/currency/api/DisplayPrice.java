@@ -17,6 +17,6 @@ public record DisplayPrice(BigDecimal amount, CurrencyType currency, BigDecimal 
         }
         ConversionResult result = conversionService.convert(amount, original, targetCurrency);
         return new DisplayPrice(result.convertedAmount(), targetCurrency, result.exchangeRate(),
-                result.source().getDisplayName());
+                result.source().name());
     }
 }

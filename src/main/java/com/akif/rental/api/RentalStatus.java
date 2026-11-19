@@ -22,6 +22,10 @@ public enum RentalStatus {
     }
 
     @JsonValue
+    public String code() {
+        return name();
+    }
+
     public String getDisplayName() {
         return displayName;
     }
