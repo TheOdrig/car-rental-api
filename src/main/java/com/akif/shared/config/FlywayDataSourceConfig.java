@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 @Configuration
 public class FlywayDataSourceConfig {
 
-    @Bean
+    @Bean(defaultCandidate = false)
     @FlywayDataSource
     public DataSource flywayDataSource(JdbcConnectionDetails connectionDetails) {
         DriverManagerDataSource dataSource = new DriverManagerDataSource(
