@@ -1,5 +1,6 @@
 package com.akif.car.unit.pricing.strategy;
 
+import com.akif.car.api.CarBooking;
 import com.akif.car.api.CarBookingCalendar;
 import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.config.PricingConfig;
@@ -18,7 +19,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -34,8 +34,8 @@ import static org.mockito.Mockito.when;
 @DisplayName("DemandPricingStrategy Unit Tests")
 class DemandPricingStrategyTest {
 
-    private static final LocalDate START = LocalDate.now().plusDays(10);
-    private static final LocalDate END = LocalDate.now().plusDays(15);
+    private static final LocalDate START = LocalDate.of(2031, 3, 10);
+    private static final LocalDate END = LocalDate.of(2031, 3, 15);
 
     @Mock
     private PricingConfig config;
@@ -72,14 +72,15 @@ class DemandPricingStrategyTest {
     }
 
     private PricingContext context() {
-        return new PricingContext(1L, new BigDecimal("500"), START, END, LocalDate.now(), 5, 10, "SUV");
+        return new PricingContext(1L, new BigDecimal("500"), START, END, START.minusDays(10), 5, 10, "SUV");
     }
 
     private void fleet(int size, int booked) {
         List<Long> ids = LongStream.rangeClosed(1, size).boxed().collect(Collectors.toList());
         when(carRepository.findBookableCarIds(any())).thenReturn(ids);
-        Set<Long> bookedIds = LongStream.rangeClosed(1, booked).boxed().collect(Collectors.toSet());
-        when(bookingCalendar.findBookedCarIds(eq(START), eq(END))).thenReturn(bookedIds);
+        List<CarBooking> bookings = LongStream.rangeClosed(1, booked)
+                .mapToObj(id -> new CarBooking(id, START, END)).collect(Collectors.toList());
+        when(bookingCalendar.findCommittedBookings(eq(START), eq(END))).thenReturn(bookings);
     }
 
     @Nested
@@ -162,12 +163,44 @@ class DemandPricingStrategyTest {
         @DisplayName("Booked cars outside the bookable fleet do not count")
         void bookedCarsOutsideFleetIgnored() {
             when(carRepository.findBookableCarIds(any())).thenReturn(List.of(1L, 2L, 3L, 4L));
-            when(bookingCalendar.findBookedCarIds(eq(START), eq(END))).thenReturn(Set.of(1L, 98L, 99L));
+            when(bookingCalendar.findCommittedBookings(eq(START), eq(END))).thenReturn(List.of(
+                    new CarBooking(1L, START, END), new CarBooking(98L, START, END), new CarBooking(99L, START, END)));
 
             PriceModifier result = strategy.calculate(context());
 
             assertThat(result.multiplier()).isEqualByComparingTo(BigDecimal.ONE);
             assertThat(result.description()).contains("25%");
+        }
+
+        @Test
+        @DisplayName("A short booking inside a long window is averaged per day, not counted as full occupancy")
+        void shortBookingInsideLongWindowIsAveragedPerDay() {
+            LocalDate longEnd = START.plusDays(29);
+            when(carRepository.findBookableCarIds(any())).thenReturn(List.of(1L, 2L, 3L, 4L, 5L));
+            when(bookingCalendar.findCommittedBookings(eq(START), eq(longEnd))).thenReturn(List.of(
+                    new CarBooking(1L, START, START.plusDays(2)),
+                    new CarBooking(2L, START, START.plusDays(2))));
+            PricingContext longContext =
+                    new PricingContext(1L, new BigDecimal("500"), START, longEnd, START.minusDays(10), 30, 10, "SUV");
+
+            PriceModifier result = strategy.calculate(longContext);
+
+            assertThat(result.multiplier()).isEqualByComparingTo(BigDecimal.ONE);
+            assertThat(result.description()).contains("4%");
+        }
+
+        @Test
+        @DisplayName("The occupancy of each day is averaged over the window")
+        void occupancyIsAveragedPerDay() {
+            when(carRepository.findBookableCarIds(any())).thenReturn(List.of(1L, 2L));
+            when(bookingCalendar.findCommittedBookings(eq(START), eq(END))).thenReturn(List.of(
+                    new CarBooking(1L, START, START.plusDays(2)),
+                    new CarBooking(2L, START, START.plusDays(2))));
+
+            PriceModifier result = strategy.calculate(context());
+
+            assertThat(result.description()).contains("50%");
+            assertThat(result.multiplier()).isEqualByComparingTo(new BigDecimal("1.10"));
         }
 
         @Test
@@ -179,7 +212,7 @@ class DemandPricingStrategyTest {
 
             assertThat(result.multiplier()).isEqualByComparingTo(BigDecimal.ONE);
             assertThat(result.description()).contains("0%");
-            verify(bookingCalendar, never()).findBookedCarIds(any(), any());
+            verify(bookingCalendar, never()).findCommittedBookings(any(), any());
         }
     }
 

@@ -11,4 +11,6 @@ public interface CarBookingCalendar {
     List<BookedPeriod> findBookedPeriods(Long carId, LocalDate startDate, LocalDate endDate);
 
     Set<Long> findBookedCarIds(LocalDate startDate, LocalDate endDate);
+
+    List<CarBooking> findCommittedBookings(LocalDate startDate, LocalDate endDate);
 }

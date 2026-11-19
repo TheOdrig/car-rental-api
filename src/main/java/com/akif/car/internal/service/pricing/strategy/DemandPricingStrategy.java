@@ -1,5 +1,6 @@
 package com.akif.car.internal.service.pricing.strategy;
 
+import com.akif.car.api.CarBooking;
 import com.akif.car.api.CarBookingCalendar;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.api.PriceModifier;
@@ -11,7 +12,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -58,9 +62,23 @@ public class DemandPricingStrategy implements PricingStrategy {
         if (bookableIds.isEmpty()) {
             return 0;
         }
-        Set<Long> bookedIds = bookingCalendar.findBookedCarIds(context.startDate(), context.endDate());
-        long occupied = bookableIds.stream().filter(bookedIds::contains).count();
-        return (int) Math.min(occupied * 100 / bookableIds.size(), 100);
+        Set<Long> bookable = new HashSet<>(bookableIds);
+        long days = ChronoUnit.DAYS.between(context.startDate(), context.endDate()) + 1;
+        if (days <= 0) {
+            return 0;
+        }
+        List<CarBooking> bookings = bookingCalendar.findCommittedBookings(context.startDate(), context.endDate());
+        long occupiedCarDays = 0;
+        for (LocalDate day = context.startDate(); !day.isAfter(context.endDate()); day = day.plusDays(1)) {
+            LocalDate current = day;
+            occupiedCarDays += bookings.stream()
+                .filter(booking -> bookable.contains(booking.carId()))
+                .filter(booking -> !current.isBefore(booking.startDate()) && !current.isAfter(booking.endDate()))
+                .map(CarBooking::carId)
+                .distinct()
+                .count();
+        }
+        return (int) Math.min(occupiedCarDays * 100 / (days * bookable.size()), 100);
     }
 
     @Override

@@ -97,6 +97,23 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
                         @Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate);
 
+        @Query("SELECT r.carId, r.startDate, r.endDate FROM Rental r WHERE " +
+                        "r.status IN :statuses AND " +
+                        "r.isDeleted = false AND " +
+                        "r.startDate <= :endDate AND " +
+                        "r.endDate >= :startDate")
+        List<Object[]> findCommittedBookings(
+                        @Param("statuses") List<RentalStatus> statuses,
+                        @Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate);
+
+        @Query("SELECT r.id FROM Rental r " +
+                        "WHERE r.status = com.akif.rental.api.RentalStatus.IN_USE " +
+                        "AND r.endDate < :currentDate " +
+                        "AND r.isDeleted = false " +
+                        "ORDER BY r.id")
+        List<Long> findOverdueRentalIds(@Param("currentDate") LocalDate currentDate);
+
         @Query("SELECT r FROM Rental r " +
                         "WHERE r.status = com.akif.rental.api.RentalStatus.IN_USE " +
                         "AND r.endDate < :currentDate " +

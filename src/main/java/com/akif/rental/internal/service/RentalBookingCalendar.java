@@ -1,6 +1,7 @@
 package com.akif.rental.internal.service;
 
 import com.akif.car.api.BookedPeriod;
+import com.akif.car.api.CarBooking;
 import com.akif.car.api.CarBookingCalendar;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
@@ -18,6 +19,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class RentalBookingCalendar implements CarBookingCalendar {
+
+    private static final List<RentalStatus> COMMITTED_STATUSES = List.of(RentalStatus.CONFIRMED, RentalStatus.IN_USE);
 
     private static final List<RentalStatus> BLOCKING_STATUSES = List.of(RentalStatus.REQUESTED, RentalStatus.CONFIRMED, RentalStatus.IN_USE);
 
@@ -40,5 +43,12 @@ public class RentalBookingCalendar implements CarBookingCalendar {
     @Override
     public Set<Long> findBookedCarIds(LocalDate startDate, LocalDate endDate) {
         return new HashSet<>(rentalRepository.findBookedCarIds(BLOCKING_STATUSES, startDate, endDate));
+    }
+
+    @Override
+    public List<CarBooking> findCommittedBookings(LocalDate startDate, LocalDate endDate) {
+        return rentalRepository.findCommittedBookings(COMMITTED_STATUSES, startDate, endDate).stream()
+                .map(row -> new CarBooking((Long) row[0], (LocalDate) row[1], (LocalDate) row[2]))
+                .toList();
     }
 }
