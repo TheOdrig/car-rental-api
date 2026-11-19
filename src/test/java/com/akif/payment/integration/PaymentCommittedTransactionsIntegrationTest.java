@@ -89,6 +89,9 @@ class PaymentCommittedTransactionsIntegrationTest {
     private PaymentService paymentService;
 
     @Autowired
+    private org.springframework.context.ApplicationContext context;
+
+    @Autowired
     private PaymentRepository paymentRepository;
 
     @Autowired
@@ -391,7 +394,8 @@ class PaymentCommittedTransactionsIntegrationTest {
         Rental rental = capturedRental();
         Payment payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rental.getId(), PaymentKind.RENTAL)
                 .orElseThrow();
-        Object target = org.springframework.test.util.AopTestUtils.getUltimateTargetObject(paymentService);
+        Object target = org.springframework.test.util.AopTestUtils.getUltimateTargetObject(
+                context.getBean("paymentRefundService"));
         Object previous = org.springframework.test.util.ReflectionTestUtils.getField(target, "refundLockTimeoutMs");
         org.springframework.test.util.ReflectionTestUtils.setField(target, "refundLockTimeoutMs", 700L);
         CountDownLatch locked = new CountDownLatch(1);
