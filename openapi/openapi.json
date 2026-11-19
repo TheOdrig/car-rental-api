@@ -1442,6 +1442,26 @@
         },
         "type" : "object"
       },
+      "EarlyReturnPreview" : {
+        "properties" : {
+          "amount" : {
+            "type" : "number"
+          },
+          "currency" : {
+            "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
+            "type" : "string"
+          },
+          "rentalId" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "unusedDays" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "ExchangeRate" : {
         "properties" : {
           "fallback" : {
@@ -5823,6 +5843,86 @@
         },
         "summary" : "Process return",
         "tags" : [ "Admin Quick Actions" ]
+      }
+    },
+    "/api/v1/admin/rentals/{id}/early-return/preview" : {
+      "get" : {
+        "description" : "Returns the amount that an early return of this IN_USE rental would refund if it happened now. It uses the same calculation as the early return itself and changes nothing.",
+        "operationId" : "previewEarlyReturn",
+        "parameters" : [ {
+          "description" : "Rental ID",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EarlyReturnPreview"
+                }
+              }
+            },
+            "description" : "Refund preview"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Rental is not in use"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Authentication required"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Access denied - Admin role required"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Rental or its payment not found"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Unexpected error"
+          }
+        },
+        "summary" : "Preview early return refund",
+        "tags" : [ "Rental Management" ]
       }
     },
     "/api/v1/admin/rentals/{id}/penalty/history" : {

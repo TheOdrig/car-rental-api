@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -275,6 +276,54 @@ class CancellationRefundE2ETest extends E2ETestBase {
             Payment payment = paymentOf(rentalId);
             assertThat(payment.refundedTotal()).isEqualByComparingTo("500.00");
             assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CAPTURED);
+        }
+
+        @Test
+        @DisplayName("The early-return preview equals the refund the real early return then makes, and changes nothing itself")
+        void previewEqualsTheActualRefund() throws Exception {
+            User customer = userRepository.save(TestDataBuilder.createTestUser());
+            User admin = userRepository.save(TestDataBuilder.createTestAdmin());
+            Long rentalId = inUseRental(generateUserToken(customer), generateAdminToken(admin));
+            clock.advance(java.time.Duration.ofDays(1));
+            String userToken = generateUserToken(customer);
+            String adminToken = generateAdminToken(admin);
+
+            mockMvc.perform(get("/api/v1/admin/rentals/{id}/early-return/preview", rentalId)
+                            .header("Authorization", "Bearer " + userToken))
+                    .andExpect(status().isForbidden());
+
+            String body = mockMvc.perform(get("/api/v1/admin/rentals/{id}/early-return/preview", rentalId)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.rentalId").value(rentalId))
+                    .andExpect(jsonPath("$.currency").value(paymentOf(rentalId).getCurrency().name()))
+                    .andExpect(jsonPath("$.unusedDays").value(1))
+                    .andReturn().getResponse().getContentAsString();
+            java.math.BigDecimal previewed = new java.math.BigDecimal(
+                    new tools.jackson.databind.ObjectMapper().readTree(body).get("amount").asText());
+            assertThat(previewed).isEqualByComparingTo("500.00");
+            assertThat(paymentOf(rentalId).refundedTotal()).isEqualByComparingTo("0");
+
+            mockMvc.perform(post("/api/v1/rentals/{id}/early-return", rentalId)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk());
+
+            assertThat(paymentOf(rentalId).refundedTotal()).isEqualByComparingTo(previewed);
+
+            mockMvc.perform(get("/api/v1/admin/rentals/{id}/early-return/preview", rentalId)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_RENTAL_STATE"));
+        }
+
+        @Test
+        @DisplayName("The early-return preview answers 404 for an unknown rental")
+        void previewOfAnUnknownRentalIs404() throws Exception {
+            String adminToken = generateAdminToken(userRepository.save(TestDataBuilder.createTestAdmin()));
+
+            mockMvc.perform(get("/api/v1/admin/rentals/{id}/early-return/preview", 987654L)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isNotFound());
         }
 
         @Test

@@ -6,6 +6,7 @@ import com.akif.payment.api.PaymentFailedException;
 import com.akif.payment.api.PaymentDto;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.rental.domain.model.Rental;
+import com.akif.rental.api.EarlyReturnPreview;
 import com.akif.payment.api.PaymentService;
 import com.akif.payment.api.PaymentResult;
 import com.akif.car.api.DynamicPricingService;
@@ -63,26 +64,25 @@ public class RentalRefundService {
         return new RefundInfo(false, BigDecimal.ZERO, null);
     }
 
-    RefundInfo refundPartialPayment(Rental rental) {
-        PaymentDto payment = lookups.findPaymentByRentalId(rental.getId());
-
-        if (payment.status() != PaymentStatus.CAPTURED) {
-            log.warn("Cannot refund payment in status: {} for rental: {}",
-                    payment.status(), rental.getId());
-            return new RefundInfo(false, BigDecimal.ZERO, null);
-        }
-
+    EarlyReturnPreview quoteEarlyReturn(Rental rental, PaymentDto payment) {
         LocalDate today = LocalDate.now(clock);
         long daysUsed = today.isBefore(rental.getStartDate())
                 ? 0
                 : ChronoUnit.DAYS.between(rental.getStartDate(), today) + 1;
+        int places = rental.getCurrency().getDecimalPlaces();
+        BigDecimal none = BigDecimal.ZERO.setScale(places, RoundingMode.DOWN);
+        int unusedDays = (int) Math.max(0, rental.getDays() - daysUsed);
 
-        if (daysUsed >= rental.getDays()) {
-            log.info("No remaining days for refund. RentalId: {}", rental.getId());
-            return new RefundInfo(false, BigDecimal.ZERO, null);
+        if (payment.status() != PaymentStatus.CAPTURED) {
+            log.warn("Cannot refund payment in status: {} for rental: {}", payment.status(), rental.getId());
+            return new EarlyReturnPreview(rental.getId(), none, rental.getCurrency(), unusedDays);
         }
 
-        int places = rental.getCurrency().getDecimalPlaces();
+        if (unusedDays == 0) {
+            log.info("No remaining days for refund. RentalId: {}", rental.getId());
+            return new EarlyReturnPreview(rental.getId(), none, rental.getCurrency(), 0);
+        }
+
         BigDecimal usedPrice = BigDecimal.ZERO;
         if (daysUsed > 0) {
             usedPrice = priceOfDaysUsed(rental, payment.amount(), daysUsed, today, places);
@@ -95,6 +95,18 @@ public class RentalRefundService {
 
         log.info("Calculating partial refund: totalDays={}, daysUsed={}, usedPrice={}, amount={}",
                 rental.getDays(), daysUsed, usedPrice, refundAmount);
+
+        return new EarlyReturnPreview(rental.getId(), refundAmount, rental.getCurrency(), unusedDays);
+    }
+
+    EarlyReturnPreview previewEarlyReturn(Rental rental) {
+        return quoteEarlyReturn(rental, lookups.findPaymentByRentalId(rental.getId()));
+    }
+
+    RefundInfo refundPartialPayment(Rental rental) {
+        PaymentDto payment = lookups.findPaymentByRentalId(rental.getId());
+        EarlyReturnPreview quote = quoteEarlyReturn(rental, payment);
+        BigDecimal refundAmount = quote.amount();
 
         if (refundAmount.signum() <= 0) {
             return new RefundInfo(false, BigDecimal.ZERO, null);

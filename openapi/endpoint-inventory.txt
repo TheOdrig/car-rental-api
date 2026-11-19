@@ -29,6 +29,7 @@ POST /api/v1/admin/quick-actions/rentals/{id}/approve ADMIN
 POST /api/v1/admin/quick-actions/rentals/{id}/pickup ADMIN
 POST /api/v1/admin/quick-actions/rentals/{id}/reject ADMIN
 POST /api/v1/admin/quick-actions/rentals/{id}/return ADMIN
+GET /api/v1/admin/rentals/{id}/early-return/preview ADMIN
 GET /api/v1/admin/rentals/{id}/penalty/history ADMIN
 POST /api/v1/admin/rentals/{id}/penalty/waive ADMIN
 GET /api/v1/admin/users ADMIN

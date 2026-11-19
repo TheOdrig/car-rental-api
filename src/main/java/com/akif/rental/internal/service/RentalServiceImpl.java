@@ -51,6 +51,11 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
+    public com.akif.rental.api.EarlyReturnPreview previewEarlyReturn(Long rentalId) {
+        return lifecycle.previewEarlyReturn(rentalId);
+    }
+
+    @Override
     public RentalResponse cancelRental(Long rentalId, Long userId, String reason) {
         return lifecycle.cancelRental(rentalId, userId, reason);
     }

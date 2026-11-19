@@ -5,6 +5,7 @@ import java.time.Clock;
 import com.akif.car.api.CarDatesUnavailableException;
 import com.akif.payment.api.PaymentFailedException;
 import com.akif.rental.api.RentalResponse;
+import com.akif.rental.api.EarlyReturnPreview;
 import com.akif.payment.api.PaymentDto;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.api.CreatePaymentRequest;
@@ -156,6 +157,18 @@ public class RentalLifecycleService {
     @Transactional
     public RentalResponse earlyReturnRental(Long rentalId, String returnNotes) {
         return completeReturn(rentalId, returnNotes, true);
+    }
+
+    public EarlyReturnPreview previewEarlyReturn(Long rentalId) {
+        Rental rental = lookups.findRentalById(rentalId);
+
+        if (!rental.getStatus().canReturn()) {
+            throw new InvalidRentalStateException(
+                    rental.getStatus().name(),
+                    RentalStatus.IN_USE.name());
+        }
+
+        return refunds.previewEarlyReturn(rental);
     }
 
     private RentalResponse completeReturn(Long rentalId, String returnNotes, boolean refundUnusedDays) {
