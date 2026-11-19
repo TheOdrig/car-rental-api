@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -25,7 +24,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/admin/alerts")
 @RequiredArgsConstructor
-@Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "Admin Alerts", description = "Alert management for administrators")
 public class AlertController {
@@ -43,7 +41,6 @@ public class AlertController {
             @Parameter(description = "Filter by alert type")
             @RequestParam(required = false) AlertType type) {
         
-        log.info("GET /api/v1/admin/alerts - type: {}", type);
         
         List<AlertDto> alerts;
         if (type != null) {
@@ -69,7 +66,6 @@ public class AlertController {
             Authentication authentication) {
         
         String adminUsername = authentication.getName();
-        log.info("POST /api/v1/admin/alerts/{}/acknowledge - admin: {}", id, adminUsername);
         
         AlertDto acknowledgedAlert = alertService.acknowledgeAlert(id, adminUsername);
         return ResponseEntity.ok(acknowledgedAlert);

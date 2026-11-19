@@ -1,5 +1,6 @@
 package com.akif.damage.web;
 
+import com.akif.shared.web.AllowedSort;
 import com.akif.auth.api.UserLookup;
 import com.akif.auth.api.UserDto;
 import com.akif.damage.api.DamageReportDto;
@@ -15,7 +16,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
 import org.springdoc.core.annotations.ParameterObject;
@@ -31,7 +31,6 @@ import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Damage History", description = "Operations for damage history and statistics")
 public class DamageHistoryController {
 
@@ -39,6 +38,7 @@ public class DamageHistoryController {
 
     private final UserLookup userLookup;
 
+    @AllowedSort({"reportedAt", "createTime", "severity", "status"})
     @GetMapping("/api/v1/admin/damages/vehicle/{carId}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get vehicle damage history", description = "Get damage history for a vehicle (admin only)")
@@ -51,11 +51,11 @@ public class DamageHistoryController {
             @PathVariable Long carId,
             @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
 
-        log.info("GET /api/v1/admin/damages/vehicle/{}", carId);
         Page<DamageReportDto> damages = damageHistoryService.getDamagesByVehicle(carId, pageable);
         return ResponseEntity.ok(PageResponse.of(damages));
     }
 
+    @AllowedSort({"reportedAt", "createTime", "severity", "status"})
     @GetMapping("/api/v1/admin/damages/customer/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get customer damage history", description = "Get damage history for a customer (admin only)")
@@ -68,11 +68,11 @@ public class DamageHistoryController {
             @PathVariable Long userId,
             @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
 
-        log.info("GET /api/v1/admin/damages/customer/{}", userId);
         Page<DamageReportDto> damages = damageHistoryService.getDamagesByCustomer(userId, pageable);
         return ResponseEntity.ok(PageResponse.of(damages));
     }
 
+    @AllowedSort({"reportedAt", "createTime", "severity", "status"})
     @GetMapping("/api/v1/damages/me")
     @Operation(summary = "Get my damage history", description = "Get current user's damage history")
     @ApiResponses(value = {
@@ -84,7 +84,6 @@ public class DamageHistoryController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("GET /api/v1/damages/me - User: {}", username);
 
         UserDto user = userLookup.getUserByUsername(username);
         
@@ -92,6 +91,7 @@ public class DamageHistoryController {
         return ResponseEntity.ok(PageResponse.of(damages));
     }
 
+    @AllowedSort({"reportedAt", "createTime", "severity", "status"})
     @GetMapping("/api/v1/admin/damages/search")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Search damages", description = "Search damages with filters (admin only)")
@@ -114,7 +114,6 @@ public class DamageHistoryController {
             @RequestParam(required = false) Long carId,
             @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
 
-        log.info("GET /api/v1/admin/damages/search");
         DamageSearchFilterDto filter = new DamageSearchFilterDto(
                 startDate, endDate, severity, category, status, carId
         );
@@ -135,7 +134,6 @@ public class DamageHistoryController {
             @Parameter(description = "End date")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
-        log.info("GET /api/v1/admin/damages/statistics - startDate: {}, endDate: {}", startDate, endDate);
         DamageStatisticsDto statistics = damageHistoryService.getDamageStatistics(startDate, endDate);
         return ResponseEntity.ok(statistics);
     }

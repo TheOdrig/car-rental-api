@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
 import org.springdoc.core.annotations.ParameterObject;
@@ -28,7 +27,6 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/api/v1/admin/late-returns")
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Late Return Management", description = "Admin operations for managing and reporting late returns")
 public class LateReturnController {
 
@@ -56,20 +54,32 @@ public class LateReturnController {
             @Parameter(description = "Pagination information")
             @PageableDefault(size = 20) @ParameterObject Pageable pageable) {
 
-        log.debug("GET /api/v1/admin/late-returns - startDate: {}, endDate: {}, status: {}, sortBy: {}, sortDirection: {}",
-                startDate, endDate, status, sortBy, sortDirection);
+        if (!java.util.Set.of("endDate", "penaltyAmount", "lateHours").contains(sortBy)) {
+            throw new com.akif.shared.exception.InvalidParameterException(
+                    "Cannot sort by '" + sortBy + "'. Supported sort fields: endDate, lateHours, penaltyAmount");
+        }
+        if (!"ASC".equalsIgnoreCase(sortDirection) && !"DESC".equalsIgnoreCase(sortDirection)) {
+            throw new com.akif.shared.exception.InvalidParameterException("sortDirection must be ASC or DESC");
+        }
+        LateReturnStatus lateStatus = null;
+        if (status != null) {
+            try {
+                lateStatus = LateReturnStatus.valueOf(status);
+            } catch (IllegalArgumentException e) {
+                throw new com.akif.shared.exception.InvalidParameterException("Unknown late return status '" + status + "'");
+            }
+        }
 
         LateReturnFilterDto filter = LateReturnFilterDto.builder()
                 .startDate(startDate)
                 .endDate(endDate)
-                .status(status != null ? LateReturnStatus.valueOf(status) : null)
+                .status(lateStatus)
                 .sortBy(sortBy)
                 .sortDirection(sortDirection)
                 .build();
 
         Page<LateReturnReportDto> lateReturns = lateReturnReportService.getLateReturns(filter, pageable);
 
-        log.info("Retrieved {} late returns", lateReturns.getTotalElements());
         return ResponseEntity.ok(PageResponse.of(lateReturns));
     }
 
@@ -89,12 +99,9 @@ public class LateReturnController {
             @Parameter(description = "End date for statistics (yyyy-MM-dd)")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
-        log.debug("GET /api/v1/admin/late-returns/statistics - startDate: {}, endDate: {}", startDate, endDate);
 
         LateReturnStatisticsDto statistics = lateReturnReportService.getStatistics(startDate, endDate);
 
-        log.info("Retrieved late return statistics: totalLateReturns={}, totalPenaltyAmount={}",
-                statistics.totalLateReturns(), statistics.totalPenaltyAmount());
         return ResponseEntity.ok(statistics);
     }
 }

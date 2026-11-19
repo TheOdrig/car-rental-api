@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Damage Dispute", description = "Operations for damage dispute management")
 public class DamageDisputeController {
 
@@ -41,7 +39,6 @@ public class DamageDisputeController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("POST /api/v1/damages/{}/dispute - User: {}", id, username);
         DamageDisputeResponse response = damageDisputeService.createDispute(id, request, username);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -62,7 +59,6 @@ public class DamageDisputeController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("POST /api/v1/admin/damages/{}/resolve - user: {}", id, username);
         DamageDisputeResponse response = damageDisputeService.resolveDispute(id, resolution, username);
         return ResponseEntity.ok(response);
     }

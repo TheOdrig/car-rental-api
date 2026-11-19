@@ -16,6 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -66,7 +68,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<ProblemDetail> handleBaseException(BaseException ex, WebRequest request) {
-        log.error("[{}] {}", ex.getErrorCode(), ex.getMessage());
+        if (ex.getHttpStatus().is5xxServerError()) {
+            log.error("[{}] {}", ex.getErrorCode(), ex.getMessage(), ex);
+        } else {
+            log.warn("[{}] {}", ex.getErrorCode(), ex.getMessage());
+        }
         ProblemDetail problem = problems.create(ex.getHttpStatus(), ex.getErrorCode(), ex.getMessage(),
                 extractPath(request), ex.getDetails());
         return respond(problem);
@@ -91,7 +97,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .distinct()
                 .sorted(BY_FIELD_THEN_MESSAGE)
                 .toList();
-        log.error("[{}] Constraint violation: {}", ERROR_CODE_CONSTRAINT_VIOLATION, errors);
+        log.warn("[{}] Constraint violation: {}", ERROR_CODE_CONSTRAINT_VIOLATION, errors);
         return respond(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_CONSTRAINT_VIOLATION,
                 "Constraint violation occurred", extractPath(request), errors));
     }
@@ -99,7 +105,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ProblemDetail> handleAuthenticationException(
             AuthenticationException ex, WebRequest request) {
-        log.error("[{}] Authentication failed: {}", ERROR_CODE_AUTHENTICATION_FAILED, ex.getMessage());
+        log.warn("[{}] Authentication failed: {}", ERROR_CODE_AUTHENTICATION_FAILED, ex.getMessage());
         return respond(problems.create(HttpStatus.UNAUTHORIZED, ERROR_CODE_AUTHENTICATION_FAILED,
                 "Authentication failed. Please check your credentials.", extractPath(request)));
     }
@@ -107,7 +113,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ProblemDetail> handleAccessDeniedException(
             AccessDeniedException ex, WebRequest request) {
-        log.error("[{}] Access denied: {}", ERROR_CODE_ACCESS_DENIED, ex.getMessage());
+        log.warn("[{}] Access denied: {}", ERROR_CODE_ACCESS_DENIED, ex.getMessage());
         return respond(problems.create(HttpStatus.FORBIDDEN, ERROR_CODE_ACCESS_DENIED,
                 "Access denied. You don't have permission to perform this action.", extractPath(request)));
     }
@@ -115,7 +121,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(DateTimeParseException.class)
     public ResponseEntity<ProblemDetail> handleDateTimeParseException(
             DateTimeParseException ex, WebRequest request) {
-        log.error("[{}] Invalid date format: {}", ERROR_CODE_INVALID_PARAMETER_TYPE, ex.getMessage());
+        log.warn("[{}] Invalid date format: {}", ERROR_CODE_INVALID_PARAMETER_TYPE, ex.getMessage());
         return respond(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_INVALID_PARAMETER_TYPE,
                 "Invalid date format. Expected format: yyyy-MM-dd", extractPath(request)));
     }
@@ -141,6 +147,26 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.warn("[{}] Invalid multipart request: {}", ErrorCode.INVALID_MULTIPART_REQUEST.name(), ex.getMessage());
         return respond(problems.create(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_MULTIPART_REQUEST.name(),
                 "The multipart request is malformed.", extractPath(request)));
+    }
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<ProblemDetail> handlePropertyReference(PropertyReferenceException ex, WebRequest request) {
+        log.warn("[{}] Unknown property: {}", ErrorCode.INVALID_PARAMETER.name(), ex.getPropertyName());
+        return respond(problems.create(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_PARAMETER.name(),
+                String.format("Unknown property '%s' in sort or filter", ex.getPropertyName()), extractPath(request)));
+    }
+
+    @ExceptionHandler(InvalidDataAccessApiUsageException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidDataAccessUsage(
+            InvalidDataAccessApiUsageException ex, WebRequest request) {
+        Throwable cause = ex.getCause();
+        while (cause != null && !(cause instanceof PropertyReferenceException)) {
+            cause = cause.getCause();
+        }
+        if (cause instanceof PropertyReferenceException property) {
+            return handlePropertyReference(property, request);
+        }
+        return handleGenericException(ex, request);
     }
 
     @ExceptionHandler(Exception.class)
@@ -170,7 +196,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             errors.add(new FieldProblem(error.getObjectName(), messageOf(error)));
         }
         List<FieldProblem> sorted = errors.stream().distinct().sorted(BY_FIELD_THEN_MESSAGE).toList();
-        log.error("[{}] Validation failed: {}", ERROR_CODE_VALIDATION_FAILED, sorted);
+        log.warn("[{}] Validation failed: {}", ERROR_CODE_VALIDATION_FAILED, sorted);
         return respondObject(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_VALIDATION_FAILED,
                 "Validation failed", extractPath(request), sorted));
     }
@@ -192,7 +218,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             }
         }
         List<FieldProblem> sorted = errors.stream().distinct().sorted(BY_FIELD_THEN_MESSAGE).toList();
-        log.error("[{}] Validation failed: {}", ERROR_CODE_VALIDATION_FAILED, sorted);
+        log.warn("[{}] Validation failed: {}", ERROR_CODE_VALIDATION_FAILED, sorted);
         return respondObject(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_VALIDATION_FAILED,
                 "Validation failed", extractPath(request), sorted));
     }
@@ -200,7 +226,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        log.error("[{}] Invalid JSON: {}", ERROR_CODE_INVALID_JSON, ex.getMessage());
+        for (Throwable cause = ex; cause != null; cause = cause.getCause()) {
+            if (cause instanceof com.akif.shared.security.RequestBodyLimitFilter.BodyTooLargeException) {
+                log.warn("[{}] Request body too large", ErrorCode.PAYLOAD_TOO_LARGE.name());
+                return respondObject(problems.create(HttpStatus.CONTENT_TOO_LARGE, ErrorCode.PAYLOAD_TOO_LARGE.name(),
+                        com.akif.shared.security.RequestBodyLimitFilter.MESSAGE, extractPath(request)));
+            }
+        }
+        log.warn("[{}] Invalid JSON: {}", ERROR_CODE_INVALID_JSON, ex.getMessage());
         return respondObject(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_INVALID_JSON,
                 "Invalid JSON format in request body", extractPath(request)));
     }
@@ -209,7 +242,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleMissingServletRequestParameter(
             MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatusCode status,
             WebRequest request) {
-        log.error("[{}] Missing parameter: {}", ERROR_CODE_MISSING_PARAMETER, ex.getParameterName());
+        log.warn("[{}] Missing parameter: {}", ERROR_CODE_MISSING_PARAMETER, ex.getParameterName());
         return respondObject(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_MISSING_PARAMETER,
                 String.format("Required parameter '%s' is missing", ex.getParameterName()), extractPath(request)));
     }
@@ -220,7 +253,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         String name = ex instanceof MethodArgumentTypeMismatchException mismatch ? mismatch.getName()
                 : ex.getPropertyName();
         String expectedType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown";
-        log.error("[{}] Type mismatch for '{}': expected {}", ERROR_CODE_INVALID_PARAMETER_TYPE, name, expectedType);
+        log.warn("[{}] Type mismatch for '{}': expected {}", ERROR_CODE_INVALID_PARAMETER_TYPE, name, expectedType);
         return respondObject(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_INVALID_PARAMETER_TYPE,
                 String.format("Invalid parameter type for '%s'. Expected: %s", name, expectedType),
                 extractPath(request)));
@@ -229,7 +262,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleNoHandlerFoundException(
             NoHandlerFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        log.error("[{}] Endpoint not found: {} {}", ERROR_CODE_ENDPOINT_NOT_FOUND, ex.getHttpMethod(),
+        log.warn("[{}] Endpoint not found: {} {}", ERROR_CODE_ENDPOINT_NOT_FOUND, ex.getHttpMethod(),
                 extractPath(request));
         return respondObject(problems.create(HttpStatus.NOT_FOUND, ERROR_CODE_ENDPOINT_NOT_FOUND,
                 "The requested endpoint was not found", extractPath(request)));
@@ -238,7 +271,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleNoResourceFoundException(
             NoResourceFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        log.error("[{}] Endpoint not found: {} {}", ERROR_CODE_ENDPOINT_NOT_FOUND, ex.getHttpMethod(),
+        log.warn("[{}] Endpoint not found: {} {}", ERROR_CODE_ENDPOINT_NOT_FOUND, ex.getHttpMethod(),
                 ex.getResourcePath());
         return respondObject(problems.create(HttpStatus.NOT_FOUND, ERROR_CODE_ENDPOINT_NOT_FOUND,
                 "The requested endpoint was not found", extractPath(request)));

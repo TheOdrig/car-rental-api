@@ -1,5 +1,7 @@
 package com.akif.shared.config;
 
+import com.akif.shared.handler.ProblemFactory;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,23 @@ public class CorsConfig {
     static final List<String> ALLOWED_METHODS = List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS");
     static final List<String> ALLOWED_HEADERS = List.of("Authorization", "Content-Type", "Accept", "X-Correlation-ID");
     static final List<String> EXPOSED_HEADERS = List.of("X-Correlation-ID", "Retry-After");
+
+    @Bean
+    org.springframework.web.filter.CorsFilter corsFilter(@org.springframework.beans.factory.annotation.Qualifier("corsConfigurationSource") CorsConfigurationSource source, ProblemFactory problems,
+                                                         ObjectMapper objectMapper) {
+        org.springframework.web.filter.CorsFilter filter = new org.springframework.web.filter.CorsFilter(source);
+        filter.setCorsProcessor(new ProblemCorsProcessor(problems, objectMapper));
+        return filter;
+    }
+
+    @Bean
+    org.springframework.boot.web.servlet.FilterRegistrationBean<org.springframework.web.filter.CorsFilter> corsFilterRegistration(
+            org.springframework.web.filter.CorsFilter filter) {
+        org.springframework.boot.web.servlet.FilterRegistrationBean<org.springframework.web.filter.CorsFilter> registration =
+                new org.springframework.boot.web.servlet.FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(CorsProperties properties) {

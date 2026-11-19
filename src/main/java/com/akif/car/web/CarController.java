@@ -1,5 +1,6 @@
 package com.akif.car.web;
 
+import com.akif.shared.web.AllowedSort;
 import com.akif.car.api.CarResponse;
 import com.akif.car.api.FilterOptionsResponse;
 import com.akif.car.internal.dto.request.CarRequest;
@@ -19,7 +20,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
 import org.springdoc.core.annotations.ParameterObject;
@@ -34,7 +34,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/cars")
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Car Management", description = "Basic CRUD operations for cars")
 public class CarController {
 
@@ -54,9 +53,7 @@ public class CarController {
     public ResponseEntity<CarResponse> getCarById(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
-        log.debug("GET /api/v1/cars/{} with currency={}", id, currency);
         CarResponse car = withDisplayPrice(carQueryService.getCarById(id), currency);
-        log.info("Successfully retrieved car: ID={}", id);
         return ResponseEntity.ok(car);
     }
 
@@ -70,9 +67,7 @@ public class CarController {
     })
     public ResponseEntity<CarResponse> getCarByLicensePlate(
             @Parameter(description = "License plate number", required = true) @PathVariable String licensePlate) {
-        log.debug("GET /api/v1/cars/licensePlate/{}", licensePlate);
         CarResponse car = carQueryService.getCarByLicensePlate(licensePlate);
-        log.info("Successfully retrieved car by license plate: {}", licensePlate);
         return ResponseEntity.ok(car);
     }
 
@@ -84,9 +79,7 @@ public class CarController {
     })
     public ResponseEntity<PageResponse<CarResponse>> searchCars(
             @Valid @ParameterObject CarSearchRequest searchRequest) {
-        log.debug("GET /api/v1/cars/search - Searching cars with criteria: {}", searchRequest);
         PageResponse<CarResponse> response = carQueryService.searchCars(searchRequest);
-        log.info("Successfully found {} cars", response.totalElements());
         return ResponseEntity.ok(response);
     }
 
@@ -99,9 +92,7 @@ public class CarController {
                             schema = @Schema(implementation = FilterOptionsResponse.class)))
     })
     public ResponseEntity<FilterOptionsResponse> getFilterOptions() {
-        log.debug("GET /api/v1/cars/filter-options");
         FilterOptionsResponse options = carStatisticsService.getFilterOptions();
-        log.info("Successfully retrieved filter options");
         return ResponseEntity.ok(options);
     }
 
@@ -117,9 +108,7 @@ public class CarController {
     })
     public ResponseEntity<CarResponse> createCar(
             @Parameter(description = "Car data", required = true) @Valid @RequestBody CarRequest carRequest) {
-        log.debug("POST /api/v1/cars - Creating car with license plate: {}", carRequest.licensePlate());
         CarResponse car = carCommandService.createCar(carRequest);
-        log.info("Successfully created car: ID={}, License Plate={}", car.id(), car.licensePlate());
         return ResponseEntity.status(HttpStatus.CREATED).body(car);
     }
 
@@ -136,9 +125,7 @@ public class CarController {
     public ResponseEntity<CarResponse> updateCar(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id,
             @Parameter(description = "Updated car data", required = true) @Valid @RequestBody CarRequest carRequest) {
-        log.debug("PUT /api/v1/cars/{} - Updating car", id);
         CarResponse car = carCommandService.updateCar(id, carRequest);
-        log.info("Successfully updated car: ID={}", id);
         return ResponseEntity.ok(car);
     }
 
@@ -153,9 +140,7 @@ public class CarController {
     })
     public ResponseEntity<Void> deleteCar(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id) {
-        log.debug("DELETE /api/v1/cars/{} - Deleting car", id);
         carCommandService.deleteCar(id);
-        log.info("Successfully deleted car: ID={}", id);
         return ResponseEntity.noContent().build();
     }
 
@@ -190,6 +175,7 @@ public class CarController {
         return ResponseEntity.ok(car);
     }
 
+    @AllowedSort({"id", "brand", "model", "productionYear", "price", "rating", "createTime"})
     @GetMapping
     @Operation(summary = "Get all cars", description = "Retrieve all cars with pagination and optional currency conversion")
     @ApiResponses(value = {
@@ -199,15 +185,14 @@ public class CarController {
     public ResponseEntity<PageResponse<CarResponse>> getAllCars(
             @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
-        log.debug("GET /api/v1/cars - Getting all cars with page: {}, size: {}, currency: {}", pageable.getPageNumber(), pageable.getPageSize(), currency);
         Page<CarResponse> cars = carQueryService.getAllCars(pageable);
         if (currency != null) {
             cars = cars.map(car -> withDisplayPrice(car, currency));
         }
-        log.info("Successfully retrieved {} cars", cars.getTotalElements());
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
+    @AllowedSort({"id", "brand", "model", "productionYear", "price", "rating", "createTime"})
     @GetMapping(value = "/active")
     @Operation(summary = "Get active cars", 
                description = "Retrieve all active (not deleted) cars with pagination, sorting, and optional currency conversion. " +
@@ -221,13 +206,10 @@ public class CarController {
             @Parameter(description = "Pagination and sorting. Use ?sort=field,direction (e.g., ?sort=price,asc)") 
             @PageableDefault(size = 20, sort = "createTime", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable,
             @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
-        log.debug("GET /api/v1/cars/active - Getting active cars with page: {}, size: {}, sort: {}", 
-                 pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
         Page<CarResponse> cars = carQueryService.getAllActiveCars(pageable);
         if (currency != null) {
             cars = cars.map(car -> withDisplayPrice(car, currency));
         }
-        log.info("Successfully retrieved {} active cars", cars.getTotalElements());
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 

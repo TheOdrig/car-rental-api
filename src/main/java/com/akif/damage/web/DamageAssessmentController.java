@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Damage Assessment", description = "Operations for damage assessment")
 public class DamageAssessmentController {
 
@@ -43,7 +41,6 @@ public class DamageAssessmentController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("POST /api/v1/admin/damages/{}/assess - user: {}", id, username);
         DamageAssessmentResponse response = damageAssessmentService.assessDamage(id, request, username);
         return ResponseEntity.ok(response);
     }
@@ -62,7 +59,6 @@ public class DamageAssessmentController {
             @PathVariable Long id,
             Authentication authentication) {
 
-        log.info("POST /api/v1/admin/damages/{}/charge - user: {}", id, authentication.getName());
         return ResponseEntity.ok(damageChargeService.charge(id));
     }
 
@@ -82,7 +78,6 @@ public class DamageAssessmentController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("PUT /api/v1/admin/damages/{}/assess - user: {}", id, username);
         DamageAssessmentResponse response = damageAssessmentService.updateAssessment(id, request, username);
         return ResponseEntity.ok(response);
     }

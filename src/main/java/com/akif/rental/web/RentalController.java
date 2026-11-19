@@ -1,5 +1,6 @@
 package com.akif.rental.web;
 
+import com.akif.shared.web.AllowedSort;
 import com.akif.currency.api.DisplayPrice;
 import com.akif.payment.api.PaymentIntentResult;
 import com.akif.payment.api.PaymentSummary;
@@ -21,7 +22,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
 import org.springdoc.core.annotations.ParameterObject;
@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/rentals")
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Rental Management", description = "Operations for managing car rentals")
 public class RentalController {
 
@@ -57,11 +56,9 @@ public class RentalController {
                         Authentication authentication) {
 
                 String username = authentication.getName();
-                log.info("POST /api/v1/rentals/request - User: {}", username);
 
                 RentalResponse rental = rentalService.requestRental(request, username);
 
-                log.info("Rental request created successfully. RentalId: {}", rental.id());
                 return ResponseEntity.status(HttpStatus.CREATED).body(rental);
         }
 
@@ -79,12 +76,10 @@ public class RentalController {
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
                         @RequestBody(required = false) ApproveRequest request) {
 
-                log.info("POST /api/v1/rentals/{}/confirm", id);
 
                 String notes = (request != null) ? request.notes() : null;
                 RentalResponse rental = rentalService.confirmRental(id, notes);
 
-                log.info("Rental confirmed successfully. RentalId: {}", id);
                 return ResponseEntity.ok(rental);
         }
 
@@ -101,12 +96,10 @@ public class RentalController {
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
                         @Parameter(description = "Pickup notes") @RequestBody(required = false) PickupRequest request) {
 
-                log.info("POST /api/v1/rentals/{}/pickup", id);
 
                 String notes = (request != null) ? request.notes() : null;
                 RentalResponse rental = rentalService.pickupRental(id, notes);
 
-                log.info("Pickup processed successfully. RentalId: {}", id);
                 return ResponseEntity.ok(rental);
         }
 
@@ -123,12 +116,10 @@ public class RentalController {
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
                         @Parameter(description = "Return notes") @RequestBody(required = false) ReturnRequest request) {
 
-                log.info("POST /api/v1/rentals/{}/return", id);
 
                 String notes = (request != null) ? request.notes() : null;
                 RentalResponse rental = rentalService.returnRental(id, notes);
 
-                log.info("Return processed successfully. RentalId: {}", id);
                 return ResponseEntity.ok(rental);
         }
 
@@ -145,12 +136,10 @@ public class RentalController {
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
                         @Parameter(description = "Return notes") @RequestBody(required = false) ReturnRequest request) {
 
-                log.info("POST /api/v1/rentals/{}/early-return", id);
 
                 String notes = (request != null) ? request.notes() : null;
                 RentalResponse rental = rentalService.earlyReturnRental(id, notes);
 
-                log.info("Early return processed successfully. RentalId: {}", id);
                 return ResponseEntity.ok(rental);
         }
 
@@ -168,12 +157,10 @@ public class RentalController {
                         Authentication authentication) {
 
                 String username = authentication.getName();
-                log.info("POST /api/v1/rentals/{}/cancel - User: {}", id, username);
 
                 String reason = (request != null) ? request.reason() : "Cancelled by user";
                 RentalResponse rental = rentalService.cancelRental(id, username, reason);
 
-                log.info("Rental cancelled successfully. RentalId: {}", id);
                 return ResponseEntity.ok(rental);
         }
 
@@ -192,7 +179,6 @@ public class RentalController {
                         Authentication authentication) {
 
                 String username = authentication.getName();
-                log.info("POST /api/v1/rentals/{}/payment-intent - User: {}", id, username);
                 return ResponseEntity.ok(rentalService.createPaymentIntent(id, username));
         }
 
@@ -208,10 +194,10 @@ public class RentalController {
                         Authentication authentication) {
 
                 String username = authentication.getName();
-                log.debug("GET /api/v1/rentals/{}/payment - User: {}", id, username);
                 return ResponseEntity.ok(rentalService.getRentalPayment(id, username));
         }
 
+        @AllowedSort({"createTime", "startDate", "endDate", "totalPrice", "status"})
         @GetMapping("/me")
         @PreAuthorize("hasRole('USER')")
         @Operation(summary = "Get my rentals", description = "Get current user's rental list with optional currency conversion")
@@ -225,17 +211,16 @@ public class RentalController {
                         Authentication authentication) {
 
                 String username = authentication.getName();
-                log.debug("GET /api/v1/rentals/me - User: {}, currency: {}", username, currency);
 
                 Page<RentalResponse> rentals = rentalService.getMyRentals(username, pageable);
                 if (currency != null) {
                         rentals = rentals.map(rental -> applyPriceConversion(rental, currency));
                 }
 
-                log.info("Retrieved {} rentals for user: {}", rentals.getTotalElements(), username);
                 return ResponseEntity.ok(PageResponse.of(rentals));
         }
 
+        @AllowedSort({"createTime", "startDate", "endDate", "totalPrice", "status"})
         @GetMapping("/admin")
         @Operation(summary = "Get all rentals (Admin)", description = "Get all rentals (admin only) with optional currency conversion")
         @ApiResponses(value = {
@@ -246,14 +231,12 @@ public class RentalController {
                         @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable,
                         @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency) {
 
-                log.debug("GET /api/v1/rentals/admin with currency: {}", currency);
 
                 Page<RentalResponse> rentals = rentalService.getAllRentals(pageable);
                 if (currency != null) {
                         rentals = rentals.map(rental -> applyPriceConversion(rental, currency));
                 }
 
-                log.info("Retrieved {} rentals", rentals.getTotalElements());
                 return ResponseEntity.ok(PageResponse.of(rentals));
         }
 
@@ -270,12 +253,10 @@ public class RentalController {
                         Authentication authentication) {
 
                 String username = authentication.getName();
-                log.debug("GET /api/v1/rentals/{} - User: {}, currency: {}", id, username, currency);
 
                 RentalResponse rental = rentalService.getRentalById(id, username);
                 rental = applyPriceConversion(rental, currency);
 
-                log.info("Retrieved rental: {}", id);
                 return ResponseEntity.ok(rental);
         }
 

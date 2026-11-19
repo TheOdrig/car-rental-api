@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +23,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/cars/statistics")
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Car Statistics", description = "Statistics and analytics for cars")
 public class CarStatisticsController {
 
@@ -106,7 +104,6 @@ public class CarStatisticsController {
     })
     public ResponseEntity<Map<String, Object>> validateCarData(
             @Parameter(description = "Car data to validate", required = true) @Valid @RequestBody CarRequest carRequest) {
-        log.info("POST /api/v1/cars/statistics/validate");
 
         List<String> errors = carCommandService.validateCarData(carRequest);
         boolean isValid = errors.isEmpty();

@@ -1,5 +1,6 @@
 package com.akif.car.web;
 
+import com.akif.shared.web.AllowedSort;
 import com.akif.car.api.CarResponse;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.internal.service.CarQueryService;
@@ -13,7 +14,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
 import org.springdoc.core.annotations.ParameterObject;
@@ -27,12 +27,12 @@ import java.math.BigDecimal;
 @RestController
 @RequestMapping("/api/v1/cars/search")
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Car Search", description = "Search and filtering operations for cars")
 public class CarSearchController {
 
     private final CarQueryService carQueryService;
 
+    @AllowedSort({"id", "brand", "model", "productionYear", "price", "rating", "createTime"})
     @GetMapping(value = "/status/{status}")
     @Operation(summary = "Get cars by status", description = "Retrieve cars by their status")
     @ApiResponses(value = {
@@ -46,6 +46,7 @@ public class CarSearchController {
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
+    @AllowedSort({"id", "brand", "model", "productionYear", "price", "rating", "createTime"})
     @GetMapping(value = "/brand/{brand}")
     @Operation(summary = "Get cars by brand", description = "Retrieve cars by their brand")
     @ApiResponses(value = {
@@ -59,6 +60,7 @@ public class CarSearchController {
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
+    @AllowedSort({"id", "brand", "model", "productionYear", "price", "rating", "createTime"})
     @GetMapping(value = "/price-range")
     @Operation(summary = "Get cars by price range", description = "Retrieve cars within a price range")
     @ApiResponses(value = {
@@ -73,6 +75,7 @@ public class CarSearchController {
         return ResponseEntity.ok(PageResponse.of(cars));
     }
 
+    @AllowedSort({"id", "brand", "model", "productionYear", "price", "rating", "createTime"})
     @GetMapping(value = "/new")
     @Operation(summary = "Get new cars", description = "Retrieve new cars (less than 1 year old)")
     @ApiResponses(value = {

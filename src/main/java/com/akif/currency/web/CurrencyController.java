@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/exchange-rates")
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Currency", description = "Currency conversion and exchange rate operations")
 public class CurrencyController {
 
@@ -33,7 +31,6 @@ public class CurrencyController {
             @ApiResponse(responseCode = "200", description = "Exchange rates retrieved successfully")
     })
     public ResponseEntity<ExchangeRatesResponse> getAllRates() {
-        log.debug("Getting all exchange rates");
         ExchangeRatesResponse response = currencyConversionService.getAllRates();
         return ResponseEntity.ok(response);
     }
@@ -47,7 +44,6 @@ public class CurrencyController {
     public ResponseEntity<ExchangeRate> getRate(
             @Parameter(description = "Source currency code") @PathVariable CurrencyType from,
             @Parameter(description = "Target currency code") @PathVariable CurrencyType to) {
-        log.debug("Getting exchange rate from {} to {}", from, to);
         ExchangeRate rate = currencyConversionService.getRate(from, to);
         return ResponseEntity.ok(rate);
     }
@@ -60,7 +56,6 @@ public class CurrencyController {
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     public ResponseEntity<ConversionResult> convert(@Valid @RequestBody ConvertRequest request) {
-        log.debug("Converting {} {} to {}", request.amount(), request.fromCurrency(), request.toCurrency());
         ConversionResult result = currencyConversionService.convert(
                 request.amount(),
                 request.fromCurrency(),
@@ -77,7 +72,6 @@ public class CurrencyController {
             @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
     })
     public ResponseEntity<Void> refreshRates() {
-        log.info("Admin requested exchange rate refresh");
         currencyConversionService.refreshRates();
         return ResponseEntity.ok().build();
     }

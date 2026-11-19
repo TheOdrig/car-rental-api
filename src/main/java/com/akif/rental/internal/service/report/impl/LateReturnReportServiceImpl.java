@@ -122,7 +122,7 @@ public class LateReturnReportServiceImpl implements LateReturnReportService {
                 ? Sort.Direction.ASC
                 : Sort.Direction.DESC;
 
-        Sort sort = Sort.by(direction, sortBy);
+        Sort sort = Sort.by(direction, sortBy).and(Sort.by(direction, "id"));
 
         return PageRequest.of(
                 pageable.getPageNumber(),

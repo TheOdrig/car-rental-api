@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
 import org.springdoc.core.annotations.ParameterObject;
@@ -31,7 +30,6 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/api/v1/admin/dashboard")
 @RequiredArgsConstructor
-@Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "Admin Dashboard", description = "Dashboard operations for administrators")
 public class DashboardController {
@@ -46,7 +44,6 @@ public class DashboardController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
     public ResponseEntity<DailySummaryDto> getDailySummary() {
-        log.info("GET /api/v1/admin/dashboard/summary");
         DailySummaryDto summary = dashboardService.getDailySummary();
         return ResponseEntity.ok(summary);
     }
@@ -59,7 +56,6 @@ public class DashboardController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
     public ResponseEntity<FleetStatusDto> getFleetStatus() {
-        log.info("GET /api/v1/admin/dashboard/fleet");
         FleetStatusDto fleetStatus = dashboardService.getFleetStatus();
         return ResponseEntity.ok(fleetStatus);
     }
@@ -80,7 +76,6 @@ public class DashboardController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         
-        log.info("GET /api/v1/admin/dashboard/metrics - startDate: {}, endDate: {}", startDate, endDate);
         
         MonthlyMetricsDto metrics;
         if (startDate != null && endDate != null) {
@@ -100,7 +95,6 @@ public class DashboardController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
     public ResponseEntity<RevenueAnalyticsDto> getRevenueAnalytics() {
-        log.info("GET /api/v1/admin/dashboard/revenue");
         RevenueAnalyticsDto analytics = dashboardService.getRevenueAnalytics();
         return ResponseEntity.ok(analytics);
     }
@@ -113,9 +107,7 @@ public class DashboardController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
     public ResponseEntity<PageResponse<PendingItemDto>> getPendingApprovals(
-            @PageableDefault(size = 10, sort = "createTime") @ParameterObject Pageable pageable) {
-        log.info("GET /api/v1/admin/dashboard/pending/approvals - page: {}, size: {}", 
-                pageable.getPageNumber(), pageable.getPageSize());
+            @PageableDefault(size = 10) @ParameterObject Pageable pageable) {
         Page<PendingItemDto> approvals = dashboardService.getPendingApprovals(pageable);
         return ResponseEntity.ok(PageResponse.of(approvals));
     }
@@ -128,9 +120,7 @@ public class DashboardController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
     public ResponseEntity<PageResponse<PendingItemDto>> getTodaysPickups(
-            @PageableDefault(size = 10, sort = "startDate") @ParameterObject Pageable pageable) {
-        log.info("GET /api/v1/admin/dashboard/pending/pickups - page: {}, size: {}", 
-                pageable.getPageNumber(), pageable.getPageSize());
+            @PageableDefault(size = 10) @ParameterObject Pageable pageable) {
         Page<PendingItemDto> pickups = dashboardService.getTodaysPickups(pageable);
         return ResponseEntity.ok(PageResponse.of(pickups));
     }
@@ -143,9 +133,7 @@ public class DashboardController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
     public ResponseEntity<PageResponse<PendingItemDto>> getTodaysReturns(
-            @PageableDefault(size = 10, sort = "endDate") @ParameterObject Pageable pageable) {
-        log.info("GET /api/v1/admin/dashboard/pending/returns - page: {}, size: {}", 
-                pageable.getPageNumber(), pageable.getPageSize());
+            @PageableDefault(size = 10) @ParameterObject Pageable pageable) {
         Page<PendingItemDto> returns = dashboardService.getTodaysReturns(pageable);
         return ResponseEntity.ok(PageResponse.of(returns));
     }
@@ -158,9 +146,7 @@ public class DashboardController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
     public ResponseEntity<PageResponse<PendingItemDto>> getOverdueRentals(
-            @PageableDefault(size = 10, sort = "endDate") @ParameterObject Pageable pageable) {
-        log.info("GET /api/v1/admin/dashboard/pending/overdue - page: {}, size: {}", 
-                pageable.getPageNumber(), pageable.getPageSize());
+            @PageableDefault(size = 10) @ParameterObject Pageable pageable) {
         Page<PendingItemDto> overdue = dashboardService.getOverdueRentals(pageable);
         return ResponseEntity.ok(PageResponse.of(overdue));
     }

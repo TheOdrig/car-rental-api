@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +25,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/admin/rentals")
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Penalty Waiver Management", description = "Admin operations for waiving penalties")
 public class PenaltyWaiverController {
 
@@ -52,18 +50,15 @@ public class PenaltyWaiverController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("POST /api/v1/admin/rentals/{}/penalty/waive - Admin: {}", id, username);
 
         UserDto admin = userLookup.getUserByUsername(username);
 
         PenaltyWaiver waiver;
         if (Boolean.TRUE.equals(request.fullWaiver())) {
             waiver = penaltyWaiverService.waiveFullPenalty(id, request.reason(), admin.id());
-            log.info("Full penalty waived for rental: {}", id);
         } else {
             waiver = penaltyWaiverService.waivePenalty(id, request.waiverAmount(), 
                     request.reason(), admin.id());
-            log.info("Partial penalty waived for rental: {}, amount: {}", id, request.waiverAmount());
         }
 
         PenaltyWaiverResponse response = mapToDto(waiver);
@@ -82,14 +77,12 @@ public class PenaltyWaiverController {
             @Parameter(description = "Rental ID", required = true)
             @PathVariable Long id) {
 
-        log.debug("GET /api/v1/admin/rentals/{}/penalty/history", id);
 
         List<PenaltyWaiver> history = penaltyWaiverService.getPenaltyHistory(id);
         List<PenaltyWaiverResponse> response = history.stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
 
-        log.info("Retrieved {} penalty waiver records for rental: {}", response.size(), id);
         return ResponseEntity.ok(response);
     }
 

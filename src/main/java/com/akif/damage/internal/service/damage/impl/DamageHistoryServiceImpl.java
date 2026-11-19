@@ -1,5 +1,6 @@
 package com.akif.damage.internal.service.damage.impl;
 
+import com.akif.shared.web.Pageables;
 import com.akif.damage.api.DamageReportDto;
 import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.api.DamageStatus;
@@ -33,13 +34,13 @@ public class DamageHistoryServiceImpl implements DamageHistoryService {
 
     @Override
     public Page<DamageReportDto> getDamagesByVehicle(Long carId, Pageable pageable) {
-        return damageReportRepository.findByCarIdAndIsDeletedFalse(carId, pageable)
+        return damageReportRepository.findByCarIdAndIsDeletedFalse(carId, Pageables.stable(pageable))
                 .map(damageMapper::toPublicDto);
     }
 
     @Override
     public Page<DamageReportDto> getDamagesByCustomer(Long userId, Pageable pageable) {
-        return damageReportRepository.findByCustomerUserIdAndIsDeletedFalse(userId, pageable)
+        return damageReportRepository.findByCustomerUserIdAndIsDeletedFalse(userId, Pageables.stable(pageable))
                 .map(damageMapper::toPublicDto);
     }
 

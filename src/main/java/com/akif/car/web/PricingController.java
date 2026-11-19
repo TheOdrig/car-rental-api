@@ -36,8 +36,6 @@ public class PricingController {
     @Operation(summary = "Calculate rental price", 
                description = "Calculates the final rental price with all applicable pricing strategies")
     public ResponseEntity<PricingResponse> calculatePrice(@Valid @RequestBody PricingRequest request) {
-        log.info("Calculating price for car: {}, dates: {} to {}", 
-            request.carId(), request.startDate(), request.endDate());
 
         PricingResult result = dynamicPricingService.calculatePrice(
             request.carId(),
@@ -48,8 +46,6 @@ public class PricingController {
 
         PricingResponse response = PricingResponse.fromPricingResult(result);
         
-        log.info("Price calculated: base={}, final={}, savings={}", 
-            response.baseTotalPrice(), response.finalPrice(), response.totalSavings());
 
         return ResponseEntity.ok(response);
     }
@@ -62,7 +58,6 @@ public class PricingController {
             @RequestParam String startDate,
             @RequestParam String endDate) {
         
-        log.info("Previewing price for car: {}, dates: {} to {}", carId, startDate, endDate);
 
         LocalDate start = LocalDate.parse(startDate);
         LocalDate end = LocalDate.parse(endDate);
@@ -77,7 +72,6 @@ public class PricingController {
     @Operation(summary = "List enabled pricing strategies", 
                description = "Returns all currently enabled pricing strategies")
     public ResponseEntity<List<Map<String, Object>>> getEnabledStrategies() {
-        log.info("Fetching enabled pricing strategies");
 
         List<PricingStrategy> strategies = pricingStrategyCatalog.getEnabledStrategies();
         
@@ -89,7 +83,6 @@ public class PricingController {
             ))
             .toList();
 
-        log.info("Found {} enabled strategies", response.size());
 
         return ResponseEntity.ok(response);
     }

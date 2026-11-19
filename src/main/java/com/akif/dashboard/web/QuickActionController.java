@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/admin/quick-actions")
 @RequiredArgsConstructor
-@Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "Admin Quick Actions", description = "Quick rental operations for administrators")
 public class QuickActionController {
@@ -41,7 +39,6 @@ public class QuickActionController {
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
                         @Valid @RequestBody(required = false) QuickApproveRequest request) {
 
-                log.info("POST /api/v1/admin/quick-actions/rentals/{}/approve", id);
                 String notes = request != null ? request.notes() : null;
                 QuickActionResultDto result = quickActionService.approveRental(id, notes);
                 return ResponseEntity.ok(result);
@@ -60,7 +57,6 @@ public class QuickActionController {
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
                         @Valid @RequestBody RejectRequest request) {
 
-                log.info("POST /api/v1/admin/quick-actions/rentals/{}/reject", id);
                 QuickActionResultDto result = quickActionService.rejectRental(id, request.reason());
                 return ResponseEntity.ok(result);
         }
@@ -78,7 +74,6 @@ public class QuickActionController {
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
                         @Valid @RequestBody(required = false) QuickPickupRequest request) {
 
-                log.info("POST /api/v1/admin/quick-actions/rentals/{}/pickup", id);
                 String notes = request != null ? request.notes() : "Processed via admin dashboard";
                 QuickActionResultDto result = quickActionService.processPickup(id, notes);
                 return ResponseEntity.ok(result);
@@ -97,7 +92,6 @@ public class QuickActionController {
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
                         @Valid @RequestBody(required = false) QuickReturnRequest request) {
 
-                log.info("POST /api/v1/admin/quick-actions/rentals/{}/return", id);
                 String notes = request != null ? request.notes() : "Processed via admin dashboard";
                 QuickActionResultDto result = quickActionService.processReturn(id, notes);
                 return ResponseEntity.ok(result);

@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +23,6 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Damage Report", description = "Operations for damage report management")
 public class DamageReportController {
 
@@ -46,7 +44,6 @@ public class DamageReportController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("POST /api/v1/admin/damages - rentalId: {}, user: {}", rentalId, username);
         DamageReportResponse response = damageReportService.createDamageReport(rentalId, request, username);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -63,7 +60,6 @@ public class DamageReportController {
             @Parameter(description = "Damage ID", required = true)
             @PathVariable Long id) {
 
-        log.info("GET /api/v1/admin/damages/{}", id);
         DamageReportResponse response = damageReportService.getDamageReport(id);
         return ResponseEntity.ok(response);
     }
@@ -85,7 +81,6 @@ public class DamageReportController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        log.info("POST /api/v1/admin/damages/{}/photos - count: {}, user: {}", id, photos.size(), username);
         List<DamagePhotoDto> uploadedPhotos = damageReportService.uploadDamagePhotos(id, photos, username);
         return ResponseEntity.status(HttpStatus.CREATED).body(uploadedPhotos);
     }
@@ -104,7 +99,6 @@ public class DamageReportController {
             @Parameter(description = "Photo ID", required = true)
             @PathVariable Long photoId) {
 
-        log.info("DELETE /api/v1/admin/damages/{}/photos/{}", id, photoId);
         damageReportService.deleteDamagePhoto(id, photoId);
         return ResponseEntity.noContent().build();
     }
@@ -121,7 +115,6 @@ public class DamageReportController {
             @PathVariable Long photoId,
             Authentication authentication) {
 
-        log.debug("GET /api/v1/damages/photos/{}/url", photoId);
         String url = damageReportService.getPhotoUrl(photoId, authentication.getName());
         return ResponseEntity.ok(url);
     }

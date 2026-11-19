@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +28,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/cars")
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Availability Search", description = "Car availability search and calendar operations")
 public class AvailabilitySearchController {
 
@@ -50,13 +48,9 @@ public class AvailabilitySearchController {
     public ResponseEntity<AvailabilitySearchResponse> searchAvailableCars(
             @Parameter(description = "Availability search criteria with date range and filters", required = true)
             @Valid @RequestBody AvailabilitySearchRequest request) {
-        log.debug("POST /api/v1/cars/availability/search - Searching available cars for dates: {} to {}", 
-                 request.startDate(), request.endDate());
         
         AvailabilitySearchResponse result = carAvailabilityService.searchAvailableCars(request);
         
-        log.info("Availability search completed: found {} available cars for {} days", 
-                result.totalElements(), result.rentalDays());
         
         return ResponseEntity.ok(result);
     }
@@ -81,12 +75,9 @@ public class AvailabilitySearchController {
             ? YearMonth.parse(month, DateTimeFormatter.ofPattern("yyyy-MM"))
             : YearMonth.now(clock);
         
-        log.debug("GET /api/v1/cars/{}/availability/calendar - Getting calendar for month: {}", id, targetMonth);
         
         CarAvailabilityCalendarDto calendar = carAvailabilityService.getCarAvailabilityCalendar(id, targetMonth);
         
-        log.info("Successfully retrieved availability calendar for car: ID={}, month={}, blocked={}", 
-                id, targetMonth, calendar.carBlocked());
         
         return ResponseEntity.ok(calendar);
     }
@@ -118,12 +109,9 @@ public class AvailabilitySearchController {
 
         int effectiveLimit = Math.min(limit, 10);
         
-        log.debug("GET /api/v1/cars/{}/similar - Finding similar cars for dates: {} to {}, limit: {}", 
-                 id, start, end, effectiveLimit);
         
         List<SimilarCarDto> similarCars = similarCarService.findSimilarAvailableCars(id, start, end, effectiveLimit);
         
-        log.info("Found {} similar available cars for car: ID={}", similarCars.size(), id);
         
         return ResponseEntity.ok(similarCars);
     }

@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,7 +23,6 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/v1/oauth2")
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "OAuth2", description = "OAuth2 Social Login endpoints")
 public class OAuth2Controller {
 
@@ -43,7 +41,6 @@ public class OAuth2Controller {
             @PathVariable String provider,
             HttpServletResponse response) throws IOException {
         
-        log.debug("Initiating OAuth2 authorization for provider: {}", provider);
         String authorizationUrl = oAuth2AuthService.getAuthorizationUrl(provider);
         response.sendRedirect(authorizationUrl);
     }
@@ -66,7 +63,6 @@ public class OAuth2Controller {
             @Parameter(description = "State parameter for CSRF protection")
             @RequestParam String state) {
         
-        log.debug("Processing OAuth2 callback for provider: {}", provider);
         AuthResponse response = oAuth2AuthService.processOAuth2Callback(provider, code, state);
         return ResponseEntity.ok(response);
     }
@@ -89,7 +85,6 @@ public class OAuth2Controller {
             @RequestParam String state,
             @AuthenticationPrincipal UserDetails userDetails) {
         
-        log.debug("Linking {} account for user: {}", provider, userDetails.getUsername());
         
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));

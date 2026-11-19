@@ -117,7 +117,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
         @Query("SELECT r FROM Rental r " +
                         "WHERE r.status = com.akif.rental.api.RentalStatus.IN_USE " +
                         "AND r.endDate < :currentDate " +
-                        "AND r.isDeleted = false")
+                        "AND r.isDeleted = false ORDER BY r.endDate ASC, r.id ASC")
         Page<Rental> findOverdueRentals(@Param("currentDate") LocalDate currentDate,
                         Pageable pageable);
 
@@ -228,7 +228,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
                         SELECT r FROM Rental r
                         WHERE r.status = com.akif.rental.api.RentalStatus.REQUESTED
                         AND r.isDeleted = false
-                        ORDER BY r.createTime ASC
+                        ORDER BY r.createTime ASC, r.id ASC
                         """)
         Page<Rental> findPendingApprovals(Pageable pageable);
 
@@ -237,7 +237,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
                         WHERE r.status = com.akif.rental.api.RentalStatus.CONFIRMED
                         AND r.startDate = :today
                         AND r.isDeleted = false
-                        ORDER BY r.startDate ASC
+                        ORDER BY r.createTime ASC, r.id ASC
                         """)
         Page<Rental> findTodaysPickups(@Param("today") LocalDate today, Pageable pageable);
 
@@ -246,7 +246,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
                         WHERE r.status = com.akif.rental.api.RentalStatus.IN_USE
                         AND r.endDate = :today
                         AND r.isDeleted = false
-                        ORDER BY r.endDate ASC
+                        ORDER BY r.createTime ASC, r.id ASC
                         """)
         Page<Rental> findTodaysReturns(@Param("today") LocalDate today, Pageable pageable);
 

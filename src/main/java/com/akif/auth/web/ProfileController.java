@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/users/me")
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Profile Management", description = "User profile management APIs")
 @SecurityRequirement(name = "bearerAuth")
 public class ProfileController {
@@ -27,7 +25,6 @@ public class ProfileController {
     @GetMapping("/profile")
     @Operation(summary = "Get user profile", description = "Get current user's profile information")
     public ResponseEntity<UserDto> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
-        log.info("GET /api/v1/users/me/profile - Getting profile for user: {}", userDetails.getUsername());
 
         UserDto profile = profileService.getProfile(userDetails.getUsername());
 
@@ -39,11 +36,9 @@ public class ProfileController {
     public ResponseEntity<UserDto> updateProfile(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody ProfileUpdateRequest request) {
-        log.info("PUT /api/v1/users/me/profile - Updating profile for user: {}", userDetails.getUsername());
 
         UserDto updatedProfile = profileService.updateProfile(userDetails.getUsername(), request);
 
-        log.info("Profile updated successfully for user: {}", userDetails.getUsername());
         return ResponseEntity.ok(updatedProfile);
     }
 }

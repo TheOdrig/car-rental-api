@@ -1,5 +1,6 @@
 package com.akif.rental.web;
 
+import com.akif.shared.web.AllowedSort;
 import com.akif.auth.api.AdminUserService;
 import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalService;
@@ -10,7 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import com.akif.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
 import org.springdoc.core.annotations.ParameterObject;
@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
-@Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "Admin Rental History", description = "Rental history per car and per user for administrators")
 public class AdminRentalHistoryController {
@@ -38,6 +37,7 @@ public class AdminRentalHistoryController {
     private final RentalService rentalService;
     private final AdminUserService adminUserService;
 
+    @AllowedSort({"createTime", "startDate", "endDate", "totalPrice", "status"})
     @GetMapping("/cars/{id}/rentals")
     @Operation(summary = "Get car rental history (Admin)", description = "Returns paginated rental history for a specific car")
     @ApiResponses(value = {
@@ -52,13 +52,13 @@ public class AdminRentalHistoryController {
             @PageableDefault(size = 10, sort = "startDate", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable,
             @AuthenticationPrincipal UserDetails adminUser) {
 
-        log.info("GET /api/v1/admin/cars/{}/rentals - Admin: {}, Status: {}", id, adminUser.getUsername(), status);
 
         Page<RentalResponse> rentals = rentalService.getCarRentals(id, status, pageable);
 
         return ResponseEntity.ok(PageResponse.of(rentals));
     }
 
+    @AllowedSort({"createTime", "startDate", "endDate", "totalPrice", "status"})
     @GetMapping("/users/{id}/rentals")
     @Operation(summary = "Get user rental history (Admin)", description = "Returns paginated rental history for a specific user")
     @ApiResponses(value = {
@@ -73,8 +73,6 @@ public class AdminRentalHistoryController {
             @PageableDefault(size = 10, sort = "startDate", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable,
             @AuthenticationPrincipal UserDetails adminUser) {
 
-        log.info("GET /api/v1/admin/users/{}/rentals - Admin: {}, Status: {}", id, adminUser.getUsername(),
-                status);
 
         adminUserService.getUserDetailForAdmin(id);
 

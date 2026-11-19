@@ -37,7 +37,7 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 
-import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.security.config.Customizer;
 
 import java.util.List;
 
@@ -59,6 +59,7 @@ public class SecurityConfig {
     private final ClientIpResolver clientIpResolver;
     private final RateLimitService rateLimitService;
     private final ApiErrorWriter apiErrorWriter;
+    private final RequestBodyLimitFilter requestBodyLimitFilter;
 
     @Bean
     @Order(1)
@@ -79,11 +80,11 @@ public class SecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource,
+    public SecurityFilterChain filterChain(HttpSecurity http,
                                            @Value("${springdoc.swagger-ui.enabled:true}") boolean swaggerUiEnabled)
             throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> {
                     headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::deny);
@@ -114,6 +115,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler)
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtUserAuthenticationConverter)))
                 .addFilterBefore(correlationIdFilter, SecurityContextHolderFilter.class)
+                .addFilterAfter(requestBodyLimitFilter, CorrelationIdFilter.class)
                 .addFilterAfter(new MdcUserFilter(), BearerTokenAuthenticationFilter.class)
                 .addFilterBefore(new RateLimitFilter(rateLimitProperties, rateLimitClassifier, clientIpResolver,
                         rateLimitService, apiErrorWriter), BearerTokenAuthenticationFilter.class);
@@ -147,6 +149,13 @@ public class SecurityConfig {
     @Bean
     public FilterRegistrationBean<CorrelationIdFilter> correlationIdFilterRegistration(CorrelationIdFilter filter) {
         FilterRegistrationBean<CorrelationIdFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<RequestBodyLimitFilter> requestBodyLimitFilterRegistration(RequestBodyLimitFilter filter) {
+        FilterRegistrationBean<RequestBodyLimitFilter> registration = new FilterRegistrationBean<>(filter);
         registration.setEnabled(false);
         return registration;
     }

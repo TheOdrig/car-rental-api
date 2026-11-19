@@ -1,5 +1,6 @@
 package com.akif.rental.internal.service;
 
+import com.akif.shared.web.Pageables;
 import java.time.Clock;
 
 import com.akif.car.api.CarDto;
@@ -529,7 +530,7 @@ public class RentalServiceImpl implements RentalService {
         log.debug("Getting rentals for user: {}", username);
 
         UserDto user = findUserByUsername(username);
-        Page<Rental> rentals = rentalRepository.findByUserIdAndIsDeletedFalse(user.id(), pageable);
+        Page<Rental> rentals = rentalRepository.findByUserIdAndIsDeletedFalse(user.id(), Pageables.stable(pageable));
         Page<RentalResponse> result = rentals.map(rentalMapper::toDto);
 
         log.info("Successfully retrieved {} rentals for user: {}", result.getTotalElements(), username);
@@ -540,7 +541,7 @@ public class RentalServiceImpl implements RentalService {
     public Page<RentalResponse> getAllRentals(Pageable pageable) {
         log.debug("Getting all rentals");
 
-        Page<Rental> rentals = rentalRepository.findByIsDeletedFalse(pageable);
+        Page<Rental> rentals = rentalRepository.findByIsDeletedFalse(Pageables.stable(pageable));
         Page<RentalResponse> result = rentals.map(rentalMapper::toDto);
 
         log.info("Successfully retrieved {} rentals. Page {}/{}",
@@ -864,9 +865,9 @@ public class RentalServiceImpl implements RentalService {
 
         Page<Rental> rentals;
         if (status != null) {
-            rentals = rentalRepository.findByUserIdAndStatusAndIsDeletedFalse(userId, status, pageable);
+            rentals = rentalRepository.findByUserIdAndStatusAndIsDeletedFalse(userId, status, Pageables.stable(pageable));
         } else {
-            rentals = rentalRepository.findByUserIdAndIsDeletedFalse(userId, pageable);
+            rentals = rentalRepository.findByUserIdAndIsDeletedFalse(userId, Pageables.stable(pageable));
         }
 
         Page<RentalResponse> result = rentals.map(rentalMapper::toDto);
@@ -880,9 +881,9 @@ public class RentalServiceImpl implements RentalService {
 
         Page<Rental> rentals;
         if (status != null) {
-            rentals = rentalRepository.findByCarIdAndStatusAndIsDeletedFalse(carId, status, pageable);
+            rentals = rentalRepository.findByCarIdAndStatusAndIsDeletedFalse(carId, status, Pageables.stable(pageable));
         } else {
-            rentals = rentalRepository.findByCarIdAndIsDeletedFalse(carId, pageable);
+            rentals = rentalRepository.findByCarIdAndIsDeletedFalse(carId, Pageables.stable(pageable));
         }
 
         Page<RentalResponse> result = rentals.map(rentalMapper::toDto);

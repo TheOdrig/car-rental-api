@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,7 +17,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/users/me")
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "Password Management", description = "User password management APIs")
 @SecurityRequirement(name = "bearerAuth")
 public class PasswordController {
@@ -30,14 +28,12 @@ public class PasswordController {
     public ResponseEntity<Map<String, String>> changePassword(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody PasswordChangeRequest request) {
-        log.info("POST /api/v1/users/me/password - Changing password for user: {}", userDetails.getUsername());
 
         passwordService.changePassword(
                 userDetails.getUsername(),
                 request.currentPassword(),
                 request.newPassword());
 
-        log.info("Password changed successfully for user: {}", userDetails.getUsername());
         return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
     }
 }
