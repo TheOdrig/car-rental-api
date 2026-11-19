@@ -394,17 +394,15 @@ class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public int closeOutstandingPenaltyPayments(Long rentalId) {
+        List<Long> openIds = isolated().execute(status -> paymentRepository.findOpenPenaltyPaymentsForUpdate(rentalId)
+                .stream().map(Payment::getId).toList());
         int closed = 0;
-        for (Payment payment : paymentRepository.findOpenPenaltyPaymentsForUpdate(rentalId)) {
-            if (resolvedAsCaptured(payment)) {
-                continue;
+        for (Long paymentId : openIds) {
+            if (closeOutstandingPenaltyPayment(paymentId)) {
+                closed++;
             }
-            payment.cancel();
-            payment.close();
-            paymentRepository.save(payment);
-            closed++;
         }
         if (closed > 0) {
             log.info("Closed {} outstanding penalty payment(s) of rental {}", closed, rentalId);
@@ -412,29 +410,52 @@ class PaymentServiceImpl implements PaymentService {
         return closed;
     }
 
-    private boolean resolvedAsCaptured(Payment payment) {
+    private boolean closeOutstandingPenaltyPayment(Long paymentId) {
+        String intentId = paymentRepository.findById(paymentId).map(Payment::getStripePaymentIntentId).orElse(null);
+        GatewayIntent resolved = null;
+        boolean lookupFailed = false;
         try {
-            Optional<GatewayIntent> found = payment.getStripePaymentIntentId() != null
-                    ? Optional.of(paymentGateway.retrieveIntent(payment.getStripePaymentIntentId()))
-                    : paymentGateway.findIntentByPayment(payment.getId());
-            if (found.isEmpty()) {
-                return false;
+            Optional<GatewayIntent> found = intentId != null
+                    ? Optional.of(paymentGateway.retrieveIntent(intentId))
+                    : paymentGateway.findIntentByPayment(paymentId);
+            if (found.isPresent()) {
+                resolved = found.get();
+                if (resolved.status() != GatewayIntentStatus.SUCCEEDED
+                        && resolved.status() != GatewayIntentStatus.CANCELED) {
+                    paymentGateway.cancel(resolved.id(), keys.forOrphanCancel(resolved.id()));
+                }
             }
-            GatewayIntent intent = found.get();
-            if (intent.status() == GatewayIntentStatus.SUCCEEDED) {
-                stateService.applyIntent(payment, intent);
-                return payment.getStatus() == PaymentStatus.CAPTURED;
-            }
-            if (intent.status() != GatewayIntentStatus.CANCELED) {
-                paymentGateway.cancel(intent.id(), keys.forOrphanCancel(intent.id()));
-            }
-            return false;
         } catch (RuntimeException e) {
             log.warn("Could not resolve the penalty payment {} with the gateway before closing it: {}",
-                    payment.getId(), e.getMessage());
-            stateService.publishAttention(payment, PaymentAttentionEvent.Reason.CHARGE_OUTCOME_UNKNOWN);
-            return false;
+                    paymentId, e.getMessage());
+            lookupFailed = true;
         }
+        GatewayIntent outcome = resolved;
+        boolean failed = lookupFailed;
+        return Boolean.TRUE.equals(isolated().execute(status -> {
+            Optional<Payment> locked = paymentRepository.findByIdForUpdate(paymentId);
+            if (locked.isEmpty()) {
+                return false;
+            }
+            Payment payment = locked.get();
+            if (payment.isClosed() || payment.getStatus() == PaymentStatus.CAPTURED
+                    || payment.getStatus() == PaymentStatus.REFUNDED) {
+                return false;
+            }
+            if (outcome != null && outcome.status() == GatewayIntentStatus.SUCCEEDED) {
+                stateService.applyIntent(payment, outcome);
+                if (payment.getStatus() == PaymentStatus.CAPTURED) {
+                    return false;
+                }
+            }
+            if (failed) {
+                stateService.publishAttention(payment, PaymentAttentionEvent.Reason.CHARGE_OUTCOME_UNKNOWN);
+            }
+            payment.cancel();
+            payment.close();
+            paymentRepository.save(payment);
+            return true;
+        }));
     }
 
     @Override

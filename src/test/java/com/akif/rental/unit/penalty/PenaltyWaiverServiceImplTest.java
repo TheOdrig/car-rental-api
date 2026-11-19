@@ -51,6 +51,15 @@ class PenaltyWaiverServiceImplTest {
     @Mock
     private PaymentService paymentService;
 
+    @Mock
+    private com.akif.rental.internal.service.penalty.PenaltyPaymentService penaltyPaymentService;
+
+    @Mock
+    private org.springframework.transaction.PlatformTransactionManager transactionManager;
+
+    @Mock
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
+
     @Spy
     private Clock clock = Clock.systemDefaultZone();
 
@@ -105,6 +114,7 @@ class PenaltyWaiverServiceImplTest {
                 .adminId(100L)
                 .refundInitiated(false)
                 .build();
+        when(rentalRepository.findById(1L)).thenReturn(Optional.of(testRental));
     }
 
     @Nested
@@ -151,7 +161,7 @@ class PenaltyWaiverServiceImplTest {
         @DisplayName("Should throw exception when rental has no penalty for full waiver")
         void shouldThrowExceptionWhenRentalHasNoPenaltyForFullWaiver() {
             ReflectionTestUtils.setField(testRental, "penaltyAmount", BigDecimal.ZERO);
-            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.findById(1L)).thenReturn(Optional.of(testRental));
 
             assertThatThrownBy(() -> service.waiveFullPenalty(1L, "Reason", 100L))
                     .isInstanceOf(PenaltyWaiverException.class)
@@ -200,6 +210,41 @@ class PenaltyWaiverServiceImplTest {
             assertThatThrownBy(() -> service.waivePenalty(1L, excessiveWaiver, "Reason", 100L))
                     .isInstanceOf(PenaltyWaiverException.class)
                     .hasMessageContaining("cannot exceed penalty amount");
+        }
+
+        @Test
+        @DisplayName("Should close outstanding payments before the waiver is recorded and not at all for an invalid request")
+        void shouldCloseOutstandingPaymentsBeforeRecordingTheWaiver() {
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
+            when(penaltyWaiverRepository.save(any(PenaltyWaiver.class))).thenReturn(testWaiver);
+
+            service.waivePenalty(1L, new BigDecimal("50.00"), "Partial waiver", 100L);
+
+            var order = inOrder(paymentService, penaltyWaiverRepository);
+            order.verify(paymentService).closeOutstandingPenaltyPayments(1L);
+            order.verify(penaltyWaiverRepository).save(any(PenaltyWaiver.class));
+
+            clearInvocations(paymentService);
+            assertThatThrownBy(() -> service.waivePenalty(1L, new BigDecimal("900.00"), "Too much", 100L))
+                    .isInstanceOf(PenaltyWaiverException.class);
+            verify(paymentService, never()).closeOutstandingPenaltyPayments(any());
+        }
+
+        @Test
+        @DisplayName("Should keep the waiver and raise the failure alert when the remainder charge throws")
+        void shouldKeepTheWaiverWhenTheRemainderChargeThrows() {
+            PaymentDto remainder = new PaymentDto(2L, 1L, "test@example.com", "34ABC123", new BigDecimal("150.00"),
+                    CurrencyType.TRY, PaymentStatus.PENDING, "PENALTY", null, null, null, null);
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
+            when(penaltyWaiverRepository.save(any(PenaltyWaiver.class))).thenReturn(testWaiver);
+            when(penaltyPaymentService.createPenaltyPayment(any(Rental.class), any(BigDecimal.class))).thenReturn(remainder);
+            when(penaltyPaymentService.chargePenalty(eq(2L), any())).thenThrow(new IllegalStateException("gateway down"));
+
+            PenaltyWaiver result = service.waivePenalty(1L, new BigDecimal("50.00"), "Partial waiver", 100L);
+
+            assertThat(result).isSameAs(testWaiver);
+            assertThat(testRental.getPenaltyAmount()).isEqualByComparingTo("150.00");
+            verify(penaltyPaymentService).handleFailedPenaltyPayment(remainder, "gateway down");
         }
     }
 

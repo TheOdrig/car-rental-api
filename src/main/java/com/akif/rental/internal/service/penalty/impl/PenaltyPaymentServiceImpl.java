@@ -13,6 +13,7 @@ import com.akif.rental.internal.service.penalty.PenaltyPaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -55,7 +56,7 @@ public class PenaltyPaymentServiceImpl implements PenaltyPaymentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.SUPPORTS)
     public PaymentResult chargePenalty(Long paymentId, Long userId) {
         log.debug("Attempting to charge penalty payment: paymentId={}, userId={}", paymentId, userId);
 
@@ -74,6 +75,7 @@ public class PenaltyPaymentServiceImpl implements PenaltyPaymentService {
     }
 
     @Override
+    @Transactional
     public void handleFailedPenaltyPayment(PaymentDto payment, String failureReason) {
         log.warn("Penalty payment could not be collected and needs manual follow-up: paymentId={}, rentalId={}, reason={}",
                 payment.id(), payment.rentalId(), failureReason);
