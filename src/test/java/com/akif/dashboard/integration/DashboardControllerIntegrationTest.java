@@ -204,6 +204,20 @@ class DashboardControllerIntegrationTest {
         }
 
         @Test
+        @DisplayName("Should reflect a new rental request on the next call without waiting for a cache to expire")
+        void shouldReflectNewRequestsImmediately() throws Exception {
+            mockMvc.perform(get("/api/v1/admin/dashboard/summary")
+                            .header("Authorization", adminToken))
+                    .andExpect(jsonPath("$.pendingApprovals").value(0));
+
+            createTestRental(RentalStatus.REQUESTED, LocalDate.now().plusDays(1), LocalDate.now().plusDays(5));
+
+            mockMvc.perform(get("/api/v1/admin/dashboard/summary")
+                            .header("Authorization", adminToken))
+                    .andExpect(jsonPath("$.pendingApprovals").value(1));
+        }
+
+        @Test
         @DisplayName("Should return correct pending approvals count")
         void shouldReturnCorrectPendingApprovalsCount() throws Exception {
             createTestRental(RentalStatus.REQUESTED, LocalDate.now().plusDays(1), LocalDate.now().plusDays(5));

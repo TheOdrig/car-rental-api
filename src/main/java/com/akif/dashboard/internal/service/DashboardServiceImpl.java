@@ -29,9 +29,8 @@ public class DashboardServiceImpl implements DashboardService {
     private final DashboardQueryService queryService;
 
     @Override
-    @Cacheable(value = "dailySummary", key = "'current'")
     public DailySummaryDto getDailySummary() {
-        log.info("Fetching daily summary (cache miss)");
+        log.info("Fetching daily summary");
         DailySummaryDto summary = queryService.fetchDailySummary();
         log.info("Daily summary: pending={}, pickups={}, returns={}, overdue={}, damage={}",
             summary.pendingApprovals(), summary.todaysPickups(), summary.todaysReturns(),

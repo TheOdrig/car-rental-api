@@ -1,7 +1,6 @@
 package com.akif.dashboard.internal.listener;
 
 import com.akif.damage.api.DamageChargedEvent;
-import com.akif.damage.api.DamageReportedEvent;
 import com.akif.dashboard.api.AlertSeverity;
 import com.akif.dashboard.api.AlertType;
 import com.akif.dashboard.domain.model.Alert;
@@ -11,7 +10,6 @@ import com.akif.payment.api.PenaltyPaymentCapturedEvent;
 import com.akif.rental.api.PenaltyChargeFailedEvent;
 import com.akif.payment.api.PaymentCapturedEvent;
 import com.akif.rental.api.RentalCancelledEvent;
-import com.akif.rental.api.RentalConfirmedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
@@ -24,8 +22,6 @@ import org.springframework.stereotype.Component;
 public class DashboardEventListener {
 
     private static final String PENALTY_NOT_COLLECTED_TITLE = "Late return penalty not collected";
-    private static final String DAILY_SUMMARY_CACHE = "dailySummary";
-    private static final String FLEET_STATUS_CACHE = "fleetStatus";
     private static final String MONTHLY_METRICS_CACHE = "monthlyMetrics";
     private static final String REVENUE_ANALYTICS_CACHE = "revenueAnalytics";
 
@@ -33,19 +29,9 @@ public class DashboardEventListener {
     private final AlertRepository alertRepository;
 
     @ApplicationModuleListener
-    public void handleRentalConfirmed(RentalConfirmedEvent event) {
-        log.debug("Received RentalConfirmedEvent for rental: {}. Evicting dailySummary and fleetStatus caches.",
-                event.rentalId());
-        evictCache(DAILY_SUMMARY_CACHE);
-        evictCache(FLEET_STATUS_CACHE);
-    }
-
-    @ApplicationModuleListener
     public void handleRentalCancelled(RentalCancelledEvent event) {
-        log.debug("Received RentalCancelledEvent for rental: {}. Evicting dailySummary, fleetStatus, and monthlyMetrics caches.",
+        log.debug("Received RentalCancelledEvent for rental: {}. Evicting the monthlyMetrics cache.",
                 event.rentalId());
-        evictCache(DAILY_SUMMARY_CACHE);
-        evictCache(FLEET_STATUS_CACHE);
         evictCache(MONTHLY_METRICS_CACHE);
     }
 
@@ -146,13 +132,6 @@ public class DashboardEventListener {
                 .acknowledged(false)
                 .build());
         log.info("Created alert '{}' for rental {}", title, rentalId);
-    }
-
-    @ApplicationModuleListener
-    public void handleDamageReported(DamageReportedEvent event) {
-        log.debug("Received DamageReportedEvent for damage: {}, rental: {}. Evicting dailySummary cache.",
-                event.damageReportId(), event.rentalId());
-        evictCache(DAILY_SUMMARY_CACHE);
     }
 
     private void evictCache(String cacheName) {
