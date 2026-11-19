@@ -42,7 +42,7 @@ class StripeKeyValidationTest {
     void rejectsLiveSecretKey() {
         MockEnvironment environment = environment().withProperty("stripe.api.key", "sk_live_51Habcdefghijklmnop");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("live keys are rejected");
     }
@@ -52,7 +52,7 @@ class StripeKeyValidationTest {
     void rejectsLiveRestrictedKey() {
         MockEnvironment environment = environment().withProperty("stripe.api.key", "rk_live_51Habcdefghijklmnop");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .hasMessageContaining("live keys are rejected");
     }
 
@@ -61,7 +61,7 @@ class StripeKeyValidationTest {
     void rejectsLivePublishableKey() {
         MockEnvironment environment = environment().withProperty("stripe.publishable-key", "pk_live_51Habcdefghijklmnop");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .hasMessageContaining("stripe.publishable-key must be a Stripe test-mode key");
     }
 
@@ -70,8 +70,8 @@ class StripeKeyValidationTest {
     void acceptsTestPublishableKey() {
         MockEnvironment withKey = environment().withProperty("stripe.publishable-key", "pk_test_51Habcdefghijklmnop");
 
-        assertThatCode(() -> new ProdConfigurationValidator(withKey)).doesNotThrowAnyException();
-        assertThatCode(() -> new ProdConfigurationValidator(environment())).doesNotThrowAnyException();
+        assertThatCode(() -> ProdConfigurationValidator.validate(withKey)).doesNotThrowAnyException();
+        assertThatCode(() -> ProdConfigurationValidator.validate(environment())).doesNotThrowAnyException();
     }
 
     @Test
@@ -79,7 +79,7 @@ class StripeKeyValidationTest {
     void rejectsNonTestPublishableKey() {
         MockEnvironment environment = environment().withProperty("stripe.publishable-key", "sk_test_51Habcdefghijklmnop");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .hasMessageContaining("stripe.publishable-key");
     }
 
@@ -88,7 +88,7 @@ class StripeKeyValidationTest {
     void failsWhenStripeKeyMissing() {
         MockEnvironment environment = environment().withProperty("stripe.api.key", "");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .hasMessageContaining("stripe.api.key is missing");
     }
 
@@ -97,7 +97,7 @@ class StripeKeyValidationTest {
     void failsWhenWebhookSecretMissing() {
         MockEnvironment environment = environment().withProperty("stripe.webhook.secret", "");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .hasMessageContaining("stripe.webhook.secret is missing");
     }
 
@@ -106,7 +106,7 @@ class StripeKeyValidationTest {
     void rejectsUnknownKeyPrefix() {
         MockEnvironment environment = environment().withProperty("stripe.api.key", "abc_51Habcdefghijklmnop");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .hasMessageContaining("test-mode secret key");
     }
 
@@ -115,7 +115,7 @@ class StripeKeyValidationTest {
     void rejectsBadWebhookSecret() {
         MockEnvironment environment = environment().withProperty("stripe.webhook.secret", "not-a-signing-secret");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .hasMessageContaining("stripe.webhook.secret must be a real Stripe signing secret");
     }
 }

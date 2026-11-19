@@ -43,7 +43,7 @@ class ProdConfigurationValidatorTest {
     @Test
     @DisplayName("accepts a complete configuration")
     void acceptsCompleteConfiguration() {
-        assertThatCode(() -> new ProdConfigurationValidator(validEnvironment())).doesNotThrowAnyException();
+        assertThatCode(() -> ProdConfigurationValidator.validate(validEnvironment())).doesNotThrowAnyException();
     }
 
     @Test
@@ -52,7 +52,7 @@ class ProdConfigurationValidatorTest {
         MockEnvironment environment = validEnvironment();
         environment.withProperty("stripe.metadata.environment", "");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("stripe.metadata.environment is missing");
     }
@@ -63,7 +63,7 @@ class ProdConfigurationValidatorTest {
         MockEnvironment environment = validEnvironment();
         environment.withProperty("jwt.secret", "");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("jwt.secret is missing");
     }
@@ -74,7 +74,7 @@ class ProdConfigurationValidatorTest {
         MockEnvironment environment = validEnvironment();
         environment.withProperty("jwt.secret", "short-secret");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("jwt.secret must be at least 32 bytes");
     }
@@ -85,7 +85,7 @@ class ProdConfigurationValidatorTest {
         MockEnvironment environment = validEnvironment();
         environment.withProperty("oauth2.state.secret", "your-secure-state-secret-minimum-32-chars");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("oauth2.state.secret looks like a placeholder");
     }
@@ -96,7 +96,7 @@ class ProdConfigurationValidatorTest {
         MockEnvironment environment = validEnvironment();
         environment.withProperty("stripe.api.key", "sk_test_placeholder");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("stripe.api.key");
     }
@@ -109,10 +109,10 @@ class ProdConfigurationValidatorTest {
         MockEnvironment insecure = validEnvironment();
         insecure.withProperty("cors.allowed-origins", "http://rent.example.com");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(wildcard))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(wildcard))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("cors.allowed-origins");
-        assertThatThrownBy(() -> new ProdConfigurationValidator(insecure))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(insecure))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("cors.allowed-origins");
     }
@@ -123,7 +123,7 @@ class ProdConfigurationValidatorTest {
         MockEnvironment environment = validEnvironment();
         environment.withProperty("spring.datasource.password", "");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("spring.datasource.password is missing");
     }
@@ -134,7 +134,7 @@ class ProdConfigurationValidatorTest {
         MockEnvironment environment = validEnvironment();
         environment.withProperty("security.rate-limit.trust-forwarded-headers", "");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("security.rate-limit.trust-forwarded-headers is missing");
     }
@@ -146,7 +146,7 @@ class ProdConfigurationValidatorTest {
             MockEnvironment environment = validEnvironment();
             environment.withProperty("security.rate-limit.trusted-proxy-cidrs", cidrs);
 
-            assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+            assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("must not trust every address");
         }
@@ -158,7 +158,7 @@ class ProdConfigurationValidatorTest {
         MockEnvironment environment = validEnvironment();
         environment.withProperty("security.rate-limit.trusted-proxy-cidrs", "");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("security.rate-limit.trusted-proxy-cidrs is missing");
     }
@@ -171,7 +171,7 @@ class ProdConfigurationValidatorTest {
         environment.withProperty("security.rate-limit.trusted-client-ip-header", "X-Client-IP");
         environment.withProperty("security.rate-limit.trusted-proxy-cidrs", "");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("security.rate-limit.trusted-proxy-cidrs is missing");
     }
@@ -183,7 +183,7 @@ class ProdConfigurationValidatorTest {
         environment.withProperty("security.rate-limit.trust-forwarded-headers", "false");
         environment.withProperty("security.rate-limit.trusted-proxy-cidrs", "");
 
-        assertThatCode(() -> new ProdConfigurationValidator(environment)).doesNotThrowAnyException();
+        assertThatCode(() -> ProdConfigurationValidator.validate(environment)).doesNotThrowAnyException();
     }
 
     @Test
@@ -192,7 +192,7 @@ class ProdConfigurationValidatorTest {
         MockEnvironment environment = validEnvironment();
         environment.withProperty("security.rate-limit.trusted-proxy-cidrs", "10.0.0.0/8,proxy.example.com,10.0.0.1");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("must list valid CIDR ranges, found: proxy.example.com")
                 .hasMessageContaining("found: 10.0.0.1");
@@ -208,11 +208,11 @@ class ProdConfigurationValidatorTest {
         MockEnvironment text = validEnvironment();
         text.withProperty("security.rate-limit.trusted-proxy-hops", "two");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(missing))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(missing))
                 .hasMessageContaining("security.rate-limit.trusted-proxy-hops is missing");
-        assertThatThrownBy(() -> new ProdConfigurationValidator(zero))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(zero))
                 .hasMessageContaining("trusted-proxy-hops must be at least 1");
-        assertThatThrownBy(() -> new ProdConfigurationValidator(text))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(text))
                 .hasMessageContaining("trusted-proxy-hops must be an integer");
     }
 
@@ -226,7 +226,7 @@ class ProdConfigurationValidatorTest {
         environment.withProperty("oauth2.state.secret", "short");
         environment.withProperty("spring.datasource.password", "");
 
-        assertThatThrownBy(() -> new ProdConfigurationValidator(environment))
+        assertThatThrownBy(() -> ProdConfigurationValidator.validate(environment))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("jwt.secret references an unset environment variable")
                 .hasMessageContaining("stripe.api.key references an unset environment variable")

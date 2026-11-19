@@ -1,8 +1,10 @@
 package com.akif.shared.config;
 
-import org.springframework.context.annotation.Profile;
+import org.springframework.boot.EnvironmentPostProcessor;
+import org.springframework.boot.SpringApplication;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
+import org.springframework.core.env.Profiles;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -11,9 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-@Component
-@Profile("prod")
-public class ProdConfigurationValidator {
+public class ProdConfigurationValidator implements EnvironmentPostProcessor {
 
     static final int MIN_SECRET_BYTES = 32;
 
@@ -49,8 +49,11 @@ public class ProdConfigurationValidator {
     private static final List<String> WEAK_MARKERS = List.of(
             "changeme", "change-me", "placeholder", "your-", "dev-only", "secret-key-here");
 
-    public ProdConfigurationValidator(Environment environment) {
-        validate(environment);
+    @Override
+    public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+        if (environment.acceptsProfiles(Profiles.of("prod"))) {
+            validate(environment);
+        }
     }
 
     static void validate(Environment environment) {
