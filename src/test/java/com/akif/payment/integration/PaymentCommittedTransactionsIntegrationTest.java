@@ -632,12 +632,12 @@ class PaymentCommittedTransactionsIntegrationTest {
         Rental rental = rental(LocalDate.now().plusDays(1), LocalDate.now().plusDays(4), RentalStatus.CONFIRMED);
         rentalPayment(rental, PaymentStatus.PENDING);
         paymentService.createOrGetIntentForRental(rental.getId());
-        String username = customer.getUsername();
+        Long userId = customer.getId();
 
         ExecutorService pool = Executors.newFixedThreadPool(2);
         CountDownLatch go = new CountDownLatch(1);
         try {
-            Future<Boolean> cancel = pool.submit(() -> attempt(go, () -> rentalService.cancelRental(rental.getId(), username, "changed")));
+            Future<Boolean> cancel = pool.submit(() -> attempt(go, () -> rentalService.cancelRental(rental.getId(), userId, "changed")));
             Future<Boolean> pickup = pool.submit(() -> attempt(go, () -> rentalService.pickupRental(rental.getId(), "go")));
             go.countDown();
             boolean cancelled = cancel.get(30, java.util.concurrent.TimeUnit.SECONDS);

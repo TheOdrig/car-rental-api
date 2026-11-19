@@ -33,10 +33,10 @@ public class QuickActionServiceImpl implements QuickActionService {
     }
 
     @Override
-    public QuickActionResultDto rejectRental(Long rentalId, String reason, String username) {
+    public QuickActionResultDto rejectRental(Long rentalId, String reason, Long userId) {
         log.info("Processing quick action: reject rental {}", rentalId);
 
-        RentalResponse response = rentalService.cancelRental(rentalId, username, reason);
+        RentalResponse response = rentalService.cancelRental(rentalId, userId, reason);
         DailySummaryDto updatedSummary = dashboardQueryService.fetchDailySummary();
 
         log.info("Rental {} rejected successfully, new status: {}", rentalId, response.status());

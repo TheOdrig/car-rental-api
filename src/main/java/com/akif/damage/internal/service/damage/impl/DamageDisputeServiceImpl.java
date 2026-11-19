@@ -47,11 +47,11 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
 
     @Override
     @Transactional
-    public DamageDisputeResponse createDispute(Long damageId, DamageDisputeRequest request, String username) {
+    public DamageDisputeResponse createDispute(Long damageId, DamageDisputeRequest request, Long userId) {
         DamageReport damageReport = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
                 .orElseThrow(() -> DamageReportException.notFound(damageId));
 
-        UserDto user = userLookup.getUserByUsername(username);
+        UserDto user = userLookup.getUserById(userId);
 
         RentalSummaryDto rental = rentalService.getRentalSummaryById(damageReport.getRentalId());
 
@@ -82,11 +82,11 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
 
     @Override
     @Transactional
-    public DamageDisputeResponse resolveDispute(Long damageId, DamageDisputeResolutionDto resolution, String username) {
+    public DamageDisputeResponse resolveDispute(Long damageId, DamageDisputeResolutionDto resolution, Long userId) {
         DamageReport damageReport = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
                 .orElseThrow(() -> DamageReportException.notFound(damageId));
 
-        UserDto user = userLookup.getUserByUsername(username);
+        UserDto user = userLookup.getUserById(userId);
 
         if (damageReport.getStatus() != DamageStatus.DISPUTED) {
             throw DamageDisputeException.cannotResolve(damageReport.getStatus().name());

@@ -20,7 +20,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import com.akif.shared.security.AuthenticatedUser;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,7 +40,6 @@ import java.util.List;
 public class AdminUserController {
 
     private final AdminUserService adminUserService;
-    private final UserLookup userLookup;
 
     @GetMapping("/stats")
     @Operation(summary = "Get user statistics (Admin)", description = "Returns user count statistics for dashboard")
@@ -49,8 +48,7 @@ public class AdminUserController {
             @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required"),
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
-    public ResponseEntity<UserStatsResponse> getStats(
-            @AuthenticationPrincipal UserDetails adminUser) {
+    public ResponseEntity<UserStatsResponse> getStats() {
 
 
         UserStatsResponse stats = adminUserService.getStats();
@@ -69,8 +67,7 @@ public class AdminUserController {
             @Parameter(description = "Filter by role (ADMIN, USER)") @RequestParam(required = false) String role,
             @Parameter(description = "Filter by status (ACTIVE, BANNED)") @RequestParam(required = false) String status,
             @Parameter(description = "Search by name or email") @RequestParam(required = false) String search,
-            @PageableDefault(size = 20, sort = "createTime", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable,
-            @AuthenticationPrincipal UserDetails adminUser) {
+            @PageableDefault(size = 20, sort = "createTime", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable) {
 
 
         Page<AdminUserListItem> users = adminUserService.getAllUsers(role, status, search, pageable);
@@ -87,8 +84,7 @@ public class AdminUserController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     public ResponseEntity<AdminUserDetailResponse> getUserDetail(
-            @Parameter(description = "User ID", required = true) @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails adminUser) {
+            @Parameter(description = "User ID", required = true) @PathVariable Long id) {
 
 
         AdminUserDetailResponse userDetail = adminUserService.getUserDetailForAdmin(id);
@@ -108,11 +104,10 @@ public class AdminUserController {
     public ResponseEntity<Map<String, String>> banUser(
             @Parameter(description = "User ID", required = true) @PathVariable Long id,
             @Valid @RequestBody BanUserRequest request,
-            @AuthenticationPrincipal UserDetails adminUser) {
+            @AuthenticationPrincipal AuthenticatedUser caller) {
 
 
-        UserDto admin = userLookup.getUserByUsername(adminUser.getUsername());
-        adminUserService.banUser(id, request.reason(), admin.id());
+                adminUserService.banUser(id, request.reason(), caller.id());
 
         return ResponseEntity.ok(Map.of("message", "User banned successfully"));
     }
@@ -129,12 +124,11 @@ public class AdminUserController {
     public ResponseEntity<Map<String, String>> unbanUser(
             @Parameter(description = "User ID", required = true) @PathVariable Long id,
             @Valid @RequestBody(required = false) UnbanUserRequest request,
-            @AuthenticationPrincipal UserDetails adminUser) {
+            @AuthenticationPrincipal AuthenticatedUser caller) {
 
 
-        UserDto admin = userLookup.getUserByUsername(adminUser.getUsername());
-        String note = request != null ? request.note() : null;
-        adminUserService.unbanUser(id, note, admin.id());
+                String note = request != null ? request.note() : null;
+        adminUserService.unbanUser(id, note, caller.id());
 
         return ResponseEntity.ok(Map.of("message", "User unbanned successfully"));
     }
@@ -151,12 +145,11 @@ public class AdminUserController {
     public ResponseEntity<AdminNoteDto> addNote(
             @Parameter(description = "User ID", required = true) @PathVariable Long id,
             @Valid @RequestBody AddNoteRequest request,
-            @AuthenticationPrincipal UserDetails adminUser) {
+            @AuthenticationPrincipal AuthenticatedUser caller) {
 
 
-        UserDto admin = userLookup.getUserByUsername(adminUser.getUsername());
-        AdminNoteDto note = adminUserService.addAdminNote(id, request.text(), admin.id(),
-                admin.username());
+                AdminNoteDto note = adminUserService.addAdminNote(id, request.text(), caller.id(),
+                caller.getUsername());
 
         return ResponseEntity.status(201).body(note);
     }
@@ -170,8 +163,7 @@ public class AdminUserController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     public ResponseEntity<List<AdminNoteDto>> getNotes(
-            @Parameter(description = "User ID", required = true) @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails adminUser) {
+            @Parameter(description = "User ID", required = true) @PathVariable Long id) {
 
 
         List<AdminNoteDto> notes = adminUserService.getAdminNotes(id);

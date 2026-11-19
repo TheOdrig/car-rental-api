@@ -190,14 +190,14 @@ class DamageReportServiceTest {
         @DisplayName("Should create damage report successfully")
         void shouldCreateDamageReportSuccessfully() {
             when(rentalService.getRentalSummaryById(1L)).thenReturn(testRental);
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(carCatalog.getCarDtoById(testCar.id())).thenReturn(testCar);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
             when(damagePhotoRepository.findByDamageReportIdAndIsDeletedFalse(any())).thenReturn(List.of());
             when(fileUploadService.generateSecureUrl(anyString(), anyInt()))
                     .thenReturn("https://example.com/photo.jpg");
 
-            DamageReportResponse result = damageReportService.createDamageReport(1L, testRequestDto, "testuser");
+            DamageReportResponse result = damageReportService.createDamageReport(1L, testRequestDto, 1L);
 
             assertThat(result).isNotNull();
             assertThat(result.id()).isEqualTo(1L);
@@ -213,12 +213,12 @@ class DamageReportServiceTest {
         @DisplayName("Should call incrementDamageReportCount when creating report")
         void shouldCallIncrementDamageReportCountWhenCreatingReport() {
             when(rentalService.getRentalSummaryById(1L)).thenReturn(testRental);
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(carCatalog.getCarDtoById(testCar.id())).thenReturn(testCar);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
             when(damagePhotoRepository.findByDamageReportIdAndIsDeletedFalse(any())).thenReturn(List.of());
 
-            damageReportService.createDamageReport(1L, testRequestDto, "testuser");
+            damageReportService.createDamageReport(1L, testRequestDto, 1L);
 
             verify(rentalService).incrementDamageReportCount(1L);
         }
@@ -229,7 +229,7 @@ class DamageReportServiceTest {
             when(rentalService.getRentalSummaryById(999L))
                     .thenThrow(new RentalNotFoundException("Rental not found with id: 999"));
 
-            assertThatThrownBy(() -> damageReportService.createDamageReport(999L, testRequestDto, "testuser"))
+            assertThatThrownBy(() -> damageReportService.createDamageReport(999L, testRequestDto, 1L))
                     .isInstanceOf(RentalNotFoundException.class)
                     .hasMessageContaining("Rental not found");
 
@@ -241,10 +241,10 @@ class DamageReportServiceTest {
         @DisplayName("Should throw exception when user not found")
         void shouldThrowExceptionWhenUserNotFound() {
             when(rentalService.getRentalSummaryById(1L)).thenReturn(testRental);
-            when(userLookup.getUserByUsername("unknownuser"))
+            when(userLookup.getUserById(404L))
                     .thenThrow(new RuntimeException("User not found: unknownuser"));
 
-            assertThatThrownBy(() -> damageReportService.createDamageReport(1L, testRequestDto, "unknownuser"))
+            assertThatThrownBy(() -> damageReportService.createDamageReport(1L, testRequestDto, 404L))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessageContaining("User not found");
 
@@ -255,12 +255,12 @@ class DamageReportServiceTest {
         @DisplayName("Should publish DamageReportedEvent when creating report")
         void shouldPublishDamageReportedEventWhenCreatingReport() {
             when(rentalService.getRentalSummaryById(1L)).thenReturn(testRental);
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(carCatalog.getCarDtoById(testCar.id())).thenReturn(testCar);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
             when(damagePhotoRepository.findByDamageReportIdAndIsDeletedFalse(any())).thenReturn(List.of());
 
-            damageReportService.createDamageReport(1L, testRequestDto, "testuser");
+            damageReportService.createDamageReport(1L, testRequestDto, 1L);
 
             ArgumentCaptor<DamageReportedEvent> eventCaptor = ArgumentCaptor.forClass(DamageReportedEvent.class);
             verify(eventPublisher).publishEvent(eventCaptor.capture());
@@ -287,12 +287,12 @@ class DamageReportServiceTest {
                     .build();
 
             when(rentalService.getRentalSummaryById(1L)).thenReturn(testRental);
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(carCatalog.getCarDtoById(testCar.id())).thenReturn(testCar);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(majorDamageReport);
             when(damagePhotoRepository.findByDamageReportIdAndIsDeletedFalse(any())).thenReturn(List.of());
 
-            damageReportService.createDamageReport(1L, majorDamageRequest, "testuser");
+            damageReportService.createDamageReport(1L, majorDamageRequest, 1L);
 
             verify(carFleetOperations).markAsMaintenance(testCar.id());
         }
@@ -339,7 +339,7 @@ class DamageReportServiceTest {
                     "test content".getBytes());
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(1L)).thenReturn(0);
             when(damageConfig.getMaxPhotosPerReport()).thenReturn(10);
             when(damageConfig.getPhotoStorageDirectory()).thenReturn("damage-photos");
@@ -353,7 +353,7 @@ class DamageReportServiceTest {
                     .thenReturn("https://example.com/photo.jpg");
             when(damagePhotoRepository.save(any(DamagePhoto.class))).thenReturn(testDamagePhoto);
 
-            List<DamagePhotoDto> result = damageReportService.uploadDamagePhotos(1L, List.of(mockFile), "testuser");
+            List<DamagePhotoDto> result = damageReportService.uploadDamagePhotos(1L, List.of(mockFile), 1L);
 
             assertThat(result).hasSize(1);
             verify(fileUploadService).uploadFile(any(), eq("damage-photos"));
@@ -366,12 +366,12 @@ class DamageReportServiceTest {
             MultipartFile mockFile = new MockMultipartFile("photo", "test.jpg", "image/jpeg", "test".getBytes());
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(1L)).thenReturn(9);
             when(damageConfig.getMaxPhotosPerReport()).thenReturn(10);
 
             assertThatThrownBy(
-                    () -> damageReportService.uploadDamagePhotos(1L, List.of(mockFile, mockFile), "testuser"))
+                    () -> damageReportService.uploadDamagePhotos(1L, List.of(mockFile, mockFile), 1L))
                     .isInstanceOf(DamageReportException.class)
                     .hasMessageContaining("Maximum");
 
@@ -385,13 +385,13 @@ class DamageReportServiceTest {
                     "test".getBytes());
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(1L)).thenReturn(0);
             when(damageConfig.getMaxPhotosPerReport()).thenReturn(10);
             when(damageConfig.getAllowedPhotoTypes()).thenReturn(List.of("image/jpeg", "image/png"));
             when(fileUploadService.validateFileType(any(), anyList())).thenReturn(false);
 
-            assertThatThrownBy(() -> damageReportService.uploadDamagePhotos(1L, List.of(mockFile), "testuser"))
+            assertThatThrownBy(() -> damageReportService.uploadDamagePhotos(1L, List.of(mockFile), 1L))
                     .isInstanceOf(FileUploadException.class)
                     .hasMessageContaining("Invalid file type");
         }
@@ -403,7 +403,7 @@ class DamageReportServiceTest {
                     new byte[10 * 1024 * 1024]);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(1L)).thenReturn(0);
             when(damageConfig.getMaxPhotosPerReport()).thenReturn(10);
             when(damageConfig.getAllowedPhotoTypes()).thenReturn(List.of("image/jpeg"));
@@ -411,7 +411,7 @@ class DamageReportServiceTest {
             when(fileUploadService.validateFileType(any(), anyList())).thenReturn(true);
             when(fileUploadService.validateFileSize(any(), anyLong())).thenReturn(false);
 
-            assertThatThrownBy(() -> damageReportService.uploadDamagePhotos(1L, List.of(mockFile), "testuser"))
+            assertThatThrownBy(() -> damageReportService.uploadDamagePhotos(1L, List.of(mockFile), 1L))
                     .isInstanceOf(FileUploadException.class)
                     .hasMessageContaining("File size exceeds");
         }
@@ -471,11 +471,11 @@ class DamageReportServiceTest {
         @DisplayName("Should return the URL to the customer who owns the damage report")
         void shouldGetPhotoUrlForOwner() {
             when(damagePhotoRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamagePhoto));
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(damageConfig.getPhotoUrlExpirationMinutes()).thenReturn(60);
             when(fileUploadService.generateSecureUrl(anyString(), eq(60))).thenReturn("https://secure.url/photo.jpg");
 
-            String result = damageReportService.getPhotoUrl(1L, "testuser");
+            String result = damageReportService.getPhotoUrl(1L, 1L);
 
             assertThat(result).isEqualTo("https://secure.url/photo.jpg");
             verify(fileUploadService).generateSecureUrl(testDamagePhoto.getFilePath(), 60);
@@ -487,11 +487,11 @@ class DamageReportServiceTest {
             UserDto admin = new UserDto(9L, "admin", "admin@example.com", "Ad", "Min", null, null,
                     Set.of(Role.ADMIN), true);
             when(damagePhotoRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamagePhoto));
-            when(userLookup.getUserByUsername("admin")).thenReturn(admin);
+            when(userLookup.getUserById(2L)).thenReturn(admin);
             when(damageConfig.getPhotoUrlExpirationMinutes()).thenReturn(60);
             when(fileUploadService.generateSecureUrl(anyString(), eq(60))).thenReturn("https://secure.url/photo.jpg");
 
-            assertThat(damageReportService.getPhotoUrl(1L, "admin")).isEqualTo("https://secure.url/photo.jpg");
+            assertThat(damageReportService.getPhotoUrl(1L, 2L)).isEqualTo("https://secure.url/photo.jpg");
         }
 
         @Test
@@ -500,9 +500,9 @@ class DamageReportServiceTest {
             UserDto stranger = new UserDto(7L, "stranger", "stranger@example.com", "Some", "One", null, null,
                     Set.of(Role.USER), true);
             when(damagePhotoRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamagePhoto));
-            when(userLookup.getUserByUsername("stranger")).thenReturn(stranger);
+            when(userLookup.getUserById(4L)).thenReturn(stranger);
 
-            assertThatThrownBy(() -> damageReportService.getPhotoUrl(1L, "stranger"))
+            assertThatThrownBy(() -> damageReportService.getPhotoUrl(1L, 4L))
                     .isInstanceOf(com.akif.damage.internal.exception.DamageReportException.class);
 
             verify(fileUploadService, never()).generateSecureUrl(anyString(), anyInt());
@@ -513,7 +513,7 @@ class DamageReportServiceTest {
         void shouldThrowExceptionWhenPhotoNotFoundForUrl() {
             when(damagePhotoRepository.findByIdAndIsDeletedFalse(999L)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> damageReportService.getPhotoUrl(999L, "testuser"))
+            assertThatThrownBy(() -> damageReportService.getPhotoUrl(999L, 1L))
                     .isInstanceOf(DamageReportException.class);
         }
     }

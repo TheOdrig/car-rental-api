@@ -27,14 +27,14 @@ public class AvatarStorageServiceImpl implements AvatarStorageService {
     private final FileUploadService fileUploadService;
 
     @Override
-    public String storeAvatar(String username, MultipartFile file) {
-        log.info("Storing avatar for user: {}", username);
+    public String storeAvatar(Long userId, MultipartFile file) {
+        log.info("Storing avatar for user: {}", userId);
 
         validateFile(file);
 
         String avatarKey = fileUploadService.uploadFile(file, AVATARS_DIRECTORY);
 
-        log.info("Avatar stored successfully for user: {}", username);
+        log.info("Avatar stored successfully for user: {}", userId);
         return avatarKey;
     }
 

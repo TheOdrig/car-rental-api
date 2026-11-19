@@ -1,5 +1,7 @@
 package com.akif.dashboard.web;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.akif.shared.security.AuthenticatedUser;
 import com.akif.dashboard.api.QuickActionService;
 import com.akif.dashboard.api.dto.QuickActionResultDto;
 import com.akif.dashboard.internal.dto.request.QuickApproveRequest;
@@ -56,10 +58,10 @@ public class QuickActionController {
         public ResponseEntity<QuickActionResultDto> rejectRental(
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
                         @Valid @RequestBody RejectRequest request,
-                        org.springframework.security.core.Authentication authentication) {
+                        @AuthenticationPrincipal AuthenticatedUser caller) {
 
                 QuickActionResultDto result = quickActionService.rejectRental(id, request.reason(),
-                                authentication.getName());
+                                caller.id());
                 return ResponseEntity.ok(result);
         }
 

@@ -1,5 +1,6 @@
 package com.akif.rental.web;
 
+import com.akif.shared.security.AuthenticatedUser;
 import com.akif.shared.web.AllowedSort;
 import com.akif.currency.api.DisplayPrice;
 import com.akif.payment.api.PaymentIntentResult;
@@ -29,7 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,11 +54,10 @@ public class RentalController {
         })
         public ResponseEntity<RentalResponse> requestRental(
                         @Parameter(description = "Rental request data", required = true) @Valid @RequestBody RentalRequest request,
-                        Authentication authentication) {
+                        @AuthenticationPrincipal AuthenticatedUser caller) {
 
-                String username = authentication.getName();
 
-                RentalResponse rental = rentalService.requestRental(request, username);
+                RentalResponse rental = rentalService.requestRental(request, caller.id());
 
                 return ResponseEntity.status(HttpStatus.CREATED).body(rental);
         }
@@ -154,12 +154,11 @@ public class RentalController {
         public ResponseEntity<RentalResponse> cancelRental(
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
                         @RequestBody(required = false) CancelRequest request,
-                        Authentication authentication) {
+                        @AuthenticationPrincipal AuthenticatedUser caller) {
 
-                String username = authentication.getName();
 
                 String reason = (request != null) ? request.reason() : "Cancelled by user";
-                RentalResponse rental = rentalService.cancelRental(id, username, reason);
+                RentalResponse rental = rentalService.cancelRental(id, caller.id(), reason);
 
                 return ResponseEntity.ok(rental);
         }
@@ -176,10 +175,9 @@ public class RentalController {
         })
         public ResponseEntity<PaymentIntentResult> createPaymentIntent(
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
-                        Authentication authentication) {
+                        @AuthenticationPrincipal AuthenticatedUser caller) {
 
-                String username = authentication.getName();
-                return ResponseEntity.ok(rentalService.createPaymentIntent(id, username));
+                return ResponseEntity.ok(rentalService.createPaymentIntent(id, caller.id()));
         }
 
         @GetMapping("/{id}/payment")
@@ -191,10 +189,9 @@ public class RentalController {
         })
         public ResponseEntity<PaymentSummary> getRentalPayment(
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
-                        Authentication authentication) {
+                        @AuthenticationPrincipal AuthenticatedUser caller) {
 
-                String username = authentication.getName();
-                return ResponseEntity.ok(rentalService.getRentalPayment(id, username));
+                return ResponseEntity.ok(rentalService.getRentalPayment(id, caller.id()));
         }
 
         @AllowedSort({"createTime", "startDate", "endDate", "totalPrice", "status"})
@@ -208,11 +205,10 @@ public class RentalController {
         public ResponseEntity<PageResponse<RentalResponse>> getMyRentals(
                         @Parameter(description = "Pagination information") @PageableDefault(size = 20) @ParameterObject Pageable pageable,
                         @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency,
-                        Authentication authentication) {
+                        @AuthenticationPrincipal AuthenticatedUser caller) {
 
-                String username = authentication.getName();
 
-                Page<RentalResponse> rentals = rentalService.getMyRentals(username, pageable);
+                Page<RentalResponse> rentals = rentalService.getMyRentals(caller.id(), pageable);
                 if (currency != null) {
                         rentals = rentals.map(rental -> applyPriceConversion(rental, currency));
                 }
@@ -250,11 +246,10 @@ public class RentalController {
         public ResponseEntity<RentalResponse> getRentalById(
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
                         @Parameter(description = "Target currency for price conversion") @RequestParam(required = false) CurrencyType currency,
-                        Authentication authentication) {
+                        @AuthenticationPrincipal AuthenticatedUser caller) {
 
-                String username = authentication.getName();
 
-                RentalResponse rental = rentalService.getRentalById(id, username);
+                RentalResponse rental = rentalService.getRentalById(id, caller.id());
                 rental = applyPriceConversion(rental, currency);
 
                 return ResponseEntity.ok(rental);

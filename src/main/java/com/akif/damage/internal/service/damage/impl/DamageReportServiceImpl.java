@@ -57,10 +57,10 @@ public class DamageReportServiceImpl implements DamageReportService {
 
     @Override
     @Transactional
-    public DamageReportResponse createDamageReport(Long rentalId, DamageReportRequest request, String username) {
+    public DamageReportResponse createDamageReport(Long rentalId, DamageReportRequest request, Long userId) {
         RentalSummaryDto rental = rentalService.getRentalSummaryById(rentalId);
 
-        UserDto user = userLookup.getUserByUsername(username);
+        UserDto user = userLookup.getUserById(userId);
 
         CarDto car = carCatalog.getCarDtoById(rental.carId());
 
@@ -119,11 +119,11 @@ public class DamageReportServiceImpl implements DamageReportService {
 
     @Override
     @Transactional
-    public List<DamagePhotoDto> uploadDamagePhotos(Long damageId, List<MultipartFile> photos, String username) {
+    public List<DamagePhotoDto> uploadDamagePhotos(Long damageId, List<MultipartFile> photos, Long userId) {
         DamageReport damageReport = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
                 .orElseThrow(() -> DamageReportException.notFound(damageId));
 
-        UserDto user = userLookup.getUserByUsername(username);
+        UserDto user = userLookup.getUserById(userId);
 
         int currentPhotoCount = damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(damageId);
         int maxPhotos = damageConfig.getMaxPhotosPerReport();
@@ -183,11 +183,11 @@ public class DamageReportServiceImpl implements DamageReportService {
     }
 
     @Override
-    public String getPhotoUrl(Long photoId, String username) {
+    public String getPhotoUrl(Long photoId, Long userId) {
         DamagePhoto photo = damagePhotoRepository.findByIdAndIsDeletedFalse(photoId)
                 .orElseThrow(() -> DamageReportException.photoNotFound(photoId));
 
-        UserDto requester = userLookup.getUserByUsername(username);
+        UserDto requester = userLookup.getUserById(userId);
         if (!requester.isAdmin() && !requester.id().equals(photo.getDamageReport().getCustomerUserId())) {
             log.warn("User {} requested a damage photo of another customer (photoId={})", requester.id(), photoId);
             throw DamageReportException.photoNotFound(photoId);

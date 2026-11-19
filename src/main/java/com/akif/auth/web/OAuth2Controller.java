@@ -1,10 +1,7 @@
 package com.akif.auth.web;
 
-import com.akif.auth.internal.exception.UserNotFoundException;
 import com.akif.auth.internal.dto.oauth2.LinkAccountResponse;
 import com.akif.auth.api.AuthResponse;
-import com.akif.auth.domain.User;
-import com.akif.auth.internal.repository.UserRepository;
 import com.akif.auth.internal.service.oauth2.OAuth2AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import com.akif.shared.security.AuthenticatedUser;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -27,7 +24,6 @@ import java.io.IOException;
 public class OAuth2Controller {
 
     private final OAuth2AuthService oAuth2AuthService;
-    private final UserRepository userRepository;
 
     @GetMapping("/authorize/{provider}")
     @Operation(summary = "Initiate OAuth2 login", 
@@ -83,14 +79,11 @@ public class OAuth2Controller {
             @RequestParam String code,
             @Parameter(description = "State parameter for CSRF protection")
             @RequestParam String state,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal AuthenticatedUser caller) {
         
-        
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
         
         LinkAccountResponse response = oAuth2AuthService.linkSocialAccount(
-                provider, code, state, user.getId());
+                provider, code, state, caller.id());
         return ResponseEntity.ok(response);
     }
 }

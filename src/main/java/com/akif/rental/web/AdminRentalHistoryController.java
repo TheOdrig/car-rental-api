@@ -20,7 +20,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import com.akif.shared.security.AuthenticatedUser;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,8 +49,7 @@ public class AdminRentalHistoryController {
     public ResponseEntity<PageResponse<RentalResponse>> getCarRentals(
             @Parameter(description = "Car ID", required = true) @PathVariable Long id,
             @Parameter(description = "Filter by rental status") @RequestParam(required = false) RentalStatus status,
-            @PageableDefault(size = 10, sort = "startDate", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable,
-            @AuthenticationPrincipal UserDetails adminUser) {
+            @PageableDefault(size = 10, sort = "startDate", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable) {
 
 
         Page<RentalResponse> rentals = rentalService.getCarRentals(id, status, pageable);
@@ -70,8 +69,7 @@ public class AdminRentalHistoryController {
     public ResponseEntity<PageResponse<RentalResponse>> getUserRentals(
             @Parameter(description = "User ID", required = true) @PathVariable Long id,
             @Parameter(description = "Filter by rental status") @RequestParam(required = false) RentalStatus status,
-            @PageableDefault(size = 10, sort = "startDate", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable,
-            @AuthenticationPrincipal UserDetails adminUser) {
+            @PageableDefault(size = 10, sort = "startDate", direction = Sort.Direction.DESC) @ParameterObject Pageable pageable) {
 
 
         adminUserService.getUserDetailForAdmin(id);

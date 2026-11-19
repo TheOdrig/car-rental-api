@@ -3,8 +3,8 @@ package com.akif.shared.security;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.stereotype.Component;
 
@@ -23,10 +23,19 @@ public class JwtUserAuthenticationConverter implements Converter<Jwt, UsernamePa
     @Override
     public UsernamePasswordAuthenticationToken convert(Jwt jwt) {
         Collection<GrantedAuthority> authorities = authoritiesConverter.convert(jwt);
-        User principal = new User(jwt.getSubject(), "", authorities);
+        AuthenticatedUser principal = new AuthenticatedUser(userId(jwt), jwt.getSubject(), authorities);
         UsernamePasswordAuthenticationToken authentication =
                 UsernamePasswordAuthenticationToken.authenticated(principal, jwt, authorities);
         authentication.setDetails(jwt);
         return authentication;
+    }
+
+    private static Long userId(Jwt jwt) {
+        Object claim = jwt.getClaim(JwtTokenService.USER_ID_CLAIM);
+        if (claim instanceof Number number) {
+            return number.longValue();
+        }
+        throw new InvalidBearerTokenException("The token does not identify a user",
+                new IllegalArgumentException("missing " + JwtTokenService.USER_ID_CLAIM + " claim"));
     }
 }

@@ -1,8 +1,6 @@
 package com.akif.damage.web;
 
 import com.akif.shared.web.AllowedSort;
-import com.akif.auth.api.UserLookup;
-import com.akif.auth.api.UserDto;
 import com.akif.damage.api.DamageReportDto;
 import com.akif.damage.api.DamageCategory;
 import com.akif.damage.api.DamageSeverity;
@@ -24,7 +22,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.akif.shared.security.AuthenticatedUser;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -35,8 +34,6 @@ import java.time.LocalDate;
 public class DamageHistoryController {
 
     private final DamageHistoryService damageHistoryService;
-
-    private final UserLookup userLookup;
 
     @AllowedSort({"reportedAt", "createTime", "severity", "status"})
     @GetMapping("/api/v1/admin/damages/vehicle/{carId}")
@@ -81,13 +78,9 @@ public class DamageHistoryController {
     })
     public ResponseEntity<PageResponse<DamageReportDto>> getMyDamageHistory(
             @PageableDefault(size = 20) @ParameterObject Pageable pageable,
-            Authentication authentication) {
+            @AuthenticationPrincipal AuthenticatedUser caller) {
 
-        String username = authentication.getName();
-
-        UserDto user = userLookup.getUserByUsername(username);
-        
-        Page<DamageReportDto> damages = damageHistoryService.getDamagesByCustomer(user.id(), pageable);
+        Page<DamageReportDto> damages = damageHistoryService.getDamagesByCustomer(caller.id(), pageable);
         return ResponseEntity.ok(PageResponse.of(damages));
     }
 

@@ -10,7 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import com.akif.shared.security.AuthenticatedUser;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,9 +24,9 @@ public class ProfileController {
 
     @GetMapping("/profile")
     @Operation(summary = "Get user profile", description = "Get current user's profile information")
-    public ResponseEntity<UserDto> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<UserDto> getProfile(@AuthenticationPrincipal AuthenticatedUser caller) {
 
-        UserDto profile = profileService.getProfile(userDetails.getUsername());
+        UserDto profile = profileService.getProfile(caller.id());
 
         return ResponseEntity.ok(profile);
     }
@@ -34,10 +34,10 @@ public class ProfileController {
     @PutMapping("/profile")
     @Operation(summary = "Update user profile", description = "Update current user's profile information")
     public ResponseEntity<UserDto> updateProfile(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal AuthenticatedUser caller,
             @Valid @RequestBody ProfileUpdateRequest request) {
 
-        UserDto updatedProfile = profileService.updateProfile(userDetails.getUsername(), request);
+        UserDto updatedProfile = profileService.updateProfile(caller.id(), request);
 
         return ResponseEntity.ok(updatedProfile);
     }

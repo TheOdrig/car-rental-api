@@ -41,6 +41,7 @@ import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -144,6 +145,12 @@ class PenaltyWaiverControllerIntegrationTest {
         lateRental = rentalRepository.save(lateRental);
     }
 
+    private org.springframework.test.web.servlet.request.RequestPostProcessor admin() {
+        return user(new com.akif.shared.security.AuthenticatedUser(
+                adminUser.getId(), adminUser.getUsername(),
+                java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))));
+    }
+
     @AfterEach
     void tearDown() {
         penaltyWaiverRepository.deleteAll();
@@ -163,7 +170,7 @@ class PenaltyWaiverControllerIntegrationTest {
         );
 
         mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", lateRental.getId())
-                        .with(csrf())
+                        .with(admin()).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -188,7 +195,7 @@ class PenaltyWaiverControllerIntegrationTest {
         );
 
         mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", lateRental.getId())
-                        .with(csrf())
+                        .with(admin()).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -212,7 +219,7 @@ class PenaltyWaiverControllerIntegrationTest {
         );
 
         mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", lateRental.getId())
-                        .with(csrf())
+                        .with(admin()).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -229,7 +236,7 @@ class PenaltyWaiverControllerIntegrationTest {
         );
 
         mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", lateRental.getId())
-                        .with(csrf())
+                        .with(admin()).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -369,7 +376,7 @@ class PenaltyWaiverControllerIntegrationTest {
         );
 
         mockMvc.perform(post("/api/v1/admin/rentals/{id}/penalty/waive", 99999L)
-                        .with(csrf())
+                        .with(admin()).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound());

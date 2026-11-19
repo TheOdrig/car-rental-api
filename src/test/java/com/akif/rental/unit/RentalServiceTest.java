@@ -190,17 +190,17 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should successfully create rental request")
         void shouldSuccessfullyCreateRentalRequest() {
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(carCatalog.getCarForBooking(1L)).thenReturn(testCar);
             when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(0L);
             when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any())).thenReturn(testPricingResult);
             when(rentalRepository.saveAndFlush(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
 
-            RentalResponse result = rentalService.requestRental(rentalRequest, "testuser");
+            RentalResponse result = rentalService.requestRental(rentalRequest, 1L);
 
             assertThat(result).isNotNull();
-            verify(userLookup).getUserByUsername("testuser");
+            verify(userLookup).getUserById(1L);
             verify(carCatalog).getCarForBooking(1L);
             verify(rentalRepository).saveAndFlush(any(Rental.class));
         }
@@ -210,10 +210,10 @@ class RentalServiceTest {
         void shouldThrowExceptionWhenCarNotAvailable() {
             CarDto maintenanceCar = carWith(CarStatusType.MAINTENANCE);
 
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(carCatalog.getCarForBooking(1L)).thenReturn(maintenanceCar);
 
-            assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, "testuser"))
+            assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, 1L))
                     .isInstanceOf(CarNotAvailableException.class);
 
             verify(rentalRepository, never()).saveAndFlush(any());
@@ -222,11 +222,11 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should throw exception when date overlap exists")
         void shouldThrowExceptionWhenDateOverlapExists() {
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(carCatalog.getCarForBooking(1L)).thenReturn(testCar);
             when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(1L);
 
-            assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, "testuser"))
+            assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, 1L))
                     .isInstanceOf(CarDatesUnavailableException.class)
                     .satisfies(error -> assertThat(((CarDatesUnavailableException) error).getHttpStatus())
                             .isEqualTo(HttpStatus.CONFLICT));
@@ -237,14 +237,14 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should map the database exclusion violation to a conflict")
         void shouldMapExclusionViolationToConflict() {
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(carCatalog.getCarForBooking(1L)).thenReturn(testCar);
             when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(0L);
             when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any())).thenReturn(testPricingResult);
             when(rentalRepository.saveAndFlush(any(Rental.class))).thenThrow(
                     new DataIntegrityViolationException("exclusion", new SQLException("conflict", "23P01")));
 
-            assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, "testuser"))
+            assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, 1L))
                     .isInstanceOf(CarDatesUnavailableException.class)
                     .satisfies(error -> {
                         CarDatesUnavailableException exception = (CarDatesUnavailableException) error;
@@ -256,14 +256,14 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should rethrow other integrity violations")
         void shouldRethrowOtherIntegrityViolations() {
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(carCatalog.getCarForBooking(1L)).thenReturn(testCar);
             when(rentalRepository.countOverlappingRentals(anyLong(), any(), any())).thenReturn(0L);
             when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any())).thenReturn(testPricingResult);
             when(rentalRepository.saveAndFlush(any(Rental.class))).thenThrow(
                     new DataIntegrityViolationException("unique", new SQLException("duplicate", "23505")));
 
-            assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, "testuser"))
+            assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, 1L))
                     .isInstanceOf(DataIntegrityViolationException.class);
         }
 
@@ -276,10 +276,10 @@ class RentalServiceTest {
                     LocalDate.now().plusDays(5),
                     null);
 
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(carCatalog.getCarForBooking(1L)).thenReturn(testCar);
 
-            assertThatThrownBy(() -> rentalService.requestRental(pastRequest, "testuser"))
+            assertThatThrownBy(() -> rentalService.requestRental(pastRequest, 1L))
                     .isInstanceOf(RentalValidationException.class)
                     .hasMessageContaining("past");
         }
@@ -290,7 +290,7 @@ class RentalServiceTest {
     class RequestLimitTests {
 
         private void prepare() {
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(carCatalog.getCarForBooking(1L)).thenReturn(testCar);
         }
 
@@ -300,7 +300,7 @@ class RentalServiceTest {
             prepare();
             LocalDate day = LocalDate.now().plusDays(3);
 
-            assertThatThrownBy(() -> rentalService.requestRental(new RentalRequest(1L, day, day, null), "testuser"))
+            assertThatThrownBy(() -> rentalService.requestRental(new RentalRequest(1L, day, day, null), 1L))
                     .isInstanceOf(RentalValidationException.class)
                     .hasMessageContaining("End date must be after start date");
         }
@@ -312,7 +312,7 @@ class RentalServiceTest {
             LocalDate start = LocalDate.now().plusDays(1);
 
             assertThatThrownBy(() -> rentalService.requestRental(
-                    new RentalRequest(1L, start, start.plusDays(30), null), "testuser"))
+                    new RentalRequest(1L, start, start.plusDays(30), null), 1L))
                     .isInstanceOf(RentalValidationException.class)
                     .hasMessageContaining("30 days");
         }
@@ -328,7 +328,7 @@ class RentalServiceTest {
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
 
             assertThat(rentalService.requestRental(
-                    new RentalRequest(1L, start, start.plusDays(29), null), "testuser")).isNotNull();
+                    new RentalRequest(1L, start, start.plusDays(29), null), 1L)).isNotNull();
         }
 
         @Test
@@ -338,7 +338,7 @@ class RentalServiceTest {
             LocalDate start = LocalDate.now().plusDays(181);
 
             assertThatThrownBy(() -> rentalService.requestRental(
-                    new RentalRequest(1L, start, start.plusDays(2), null), "testuser"))
+                    new RentalRequest(1L, start, start.plusDays(2), null), 1L))
                     .isInstanceOf(RentalValidationException.class)
                     .hasMessageContaining("180 days");
         }
@@ -351,7 +351,7 @@ class RentalServiceTest {
             LocalDate start = LocalDate.now().plusDays(1);
 
             assertThatThrownBy(() -> rentalService.requestRental(
-                    new RentalRequest(1L, start, start.plusDays(7), null), "testuser"))
+                    new RentalRequest(1L, start, start.plusDays(7), null), 1L))
                     .isInstanceOf(RentalValidationException.class)
                     .hasMessageContaining("7 days");
         }
@@ -363,7 +363,7 @@ class RentalServiceTest {
             when(rentalRepository.countByUserIdAndStatusAndIsDeletedFalse(1L, RentalStatus.REQUESTED))
                     .thenReturn(3);
 
-            assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, "testuser"))
+            assertThatThrownBy(() -> rentalService.requestRental(rentalRequest, 1L))
                     .isInstanceOf(OpenRentalRequestLimitException.class)
                     .satisfies(error -> {
                         OpenRentalRequestLimitException exception = (OpenRentalRequestLimitException) error;
@@ -476,11 +476,11 @@ class RentalServiceTest {
         @DisplayName("Should successfully cancel requested rental without refund")
         void shouldSuccessfullyCancelRequestedRentalWithoutRefund() {
             when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
 
-            RentalResponse result = rentalService.cancelRental(1L, "testuser", null);
+            RentalResponse result = rentalService.cancelRental(1L, 1L, null);
 
             assertThat(result).isNotNull();
             verify(paymentService, never()).refundPayment(anyLong(), any(), any());
@@ -495,9 +495,9 @@ class RentalServiceTest {
                     true);
 
             when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
-            when(userLookup.getUserByUsername("otheruser")).thenReturn(otherUser);
+            when(userLookup.getUserById(3L)).thenReturn(otherUser);
 
-            assertThatThrownBy(() -> rentalService.cancelRental(1L, "otheruser", null))
+            assertThatThrownBy(() -> rentalService.cancelRental(1L, 3L, null))
                     .isInstanceOf(com.akif.rental.internal.exception.RentalNotFoundException.class);
         }
     }
@@ -780,11 +780,11 @@ class RentalServiceTest {
             Pageable pageable = PageRequest.of(0, 10);
             Page<Rental> rentalsPage = new PageImpl<>(List.of(testRental));
 
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(rentalRepository.findByUserIdAndIsDeletedFalse(testUser.id(), com.akif.shared.web.Pageables.stable(pageable))).thenReturn(rentalsPage);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
 
-            Page<RentalResponse> result = rentalService.getMyRentals("testuser", pageable);
+            Page<RentalResponse> result = rentalService.getMyRentals(1L, pageable);
 
             assertThat(result).isNotNull();
             assertThat(result.getTotalElements()).isEqualTo(1);
@@ -796,10 +796,10 @@ class RentalServiceTest {
             Pageable pageable = PageRequest.of(0, 10);
             Page<Rental> emptyPage = Page.empty();
 
-            when(userLookup.getUserByUsername("testuser")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(rentalRepository.findByUserIdAndIsDeletedFalse(testUser.id(), com.akif.shared.web.Pageables.stable(pageable))).thenReturn(emptyPage);
 
-            Page<RentalResponse> result = rentalService.getMyRentals("testuser", pageable);
+            Page<RentalResponse> result = rentalService.getMyRentals(1L, pageable);
 
             assertThat(result).isEmpty();
         }

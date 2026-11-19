@@ -9,7 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import com.akif.shared.security.AuthenticatedUser;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -26,11 +26,11 @@ public class PasswordController {
     @PostMapping("/password")
     @Operation(summary = "Change password", description = "Change the current user's password")
     public ResponseEntity<Map<String, String>> changePassword(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal AuthenticatedUser caller,
             @Valid @RequestBody PasswordChangeRequest request) {
 
         passwordService.changePassword(
-                userDetails.getUsername(),
+                caller.id(),
                 request.currentPassword(),
                 request.newPassword());
 

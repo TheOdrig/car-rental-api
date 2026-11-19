@@ -8,9 +8,9 @@ import java.math.BigDecimal;
 
 public interface DamageAssessmentService {
 
-    DamageAssessmentResponse assessDamage(Long damageId, DamageAssessmentRequest request, String username);
+    DamageAssessmentResponse assessDamage(Long damageId, DamageAssessmentRequest request, Long userId);
 
-    DamageAssessmentResponse updateAssessment(Long damageId, DamageAssessmentRequest request, String username);
+    DamageAssessmentResponse updateAssessment(Long damageId, DamageAssessmentRequest request, Long userId);
 
     BigDecimal calculateCustomerLiability(BigDecimal repairCost, boolean hasInsurance, BigDecimal deductible);
 

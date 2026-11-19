@@ -2,7 +2,7 @@ package com.akif.auth.api;
 
 public interface PasswordService {
 
-    void changePassword(String username, String currentPassword, String newPassword);
+    void changePassword(Long userId, String currentPassword, String newPassword);
 
     boolean verifyPassword(String rawPassword, String encodedPassword);
 

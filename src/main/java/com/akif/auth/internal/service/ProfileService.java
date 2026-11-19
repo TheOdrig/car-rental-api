@@ -5,11 +5,11 @@ import com.akif.auth.internal.dto.ProfileUpdateRequest;
 
 public interface ProfileService {
 
-    UserDto getProfile(String username);
+    UserDto getProfile(Long userId);
 
-    UserDto updateProfile(String username, ProfileUpdateRequest request);
+    UserDto updateProfile(Long userId, ProfileUpdateRequest request);
 
-    void updateAvatarUrl(String username, String avatarKey);
+    void updateAvatarUrl(Long userId, String avatarKey);
 
-    void removeAvatar(String username);
+    void removeAvatar(Long userId);
 }

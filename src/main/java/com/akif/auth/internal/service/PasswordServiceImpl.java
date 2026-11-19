@@ -23,14 +23,14 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Override
     @Transactional
-    public void changePassword(String username, String currentPassword, String newPassword) {
-        log.info("Changing password for user: {}", username);
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        log.info("Changing password for user: {}", userId);
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
         if (!verifyPassword(currentPassword, user.getPassword())) {
-            log.warn("Invalid current password for user: {}", username);
+            log.warn("Invalid current password for user: {}", userId);
             throw new InvalidPasswordException("Current password is incorrect");
         }
 
@@ -42,7 +42,7 @@ public class PasswordServiceImpl implements PasswordService {
         userRepository.save(user);
         refreshTokenService.revokeAllForUser(user.getId());
 
-        log.info("Password changed successfully for user: {}", username);
+        log.info("Password changed successfully for user: {}", userId);
     }
 
     @Override

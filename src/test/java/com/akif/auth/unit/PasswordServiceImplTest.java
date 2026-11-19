@@ -60,12 +60,12 @@ class PasswordServiceImplTest {
             String currentPassword = "oldPassword123";
             String newPassword = "newPassword456";
 
-            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+            when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
             when(passwordEncoder.matches(currentPassword, testUser.getPassword())).thenReturn(true);
             when(passwordEncoder.encode(newPassword)).thenReturn("$2a$10$encodedNewPassword");
             when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-            passwordService.changePassword("testuser", currentPassword, newPassword);
+            passwordService.changePassword(1L, currentPassword, newPassword);
 
             verify(userRepository).save(argThat(user -> "$2a$10$encodedNewPassword".equals(user.getPassword())));
         }
@@ -73,10 +73,10 @@ class PasswordServiceImplTest {
         @Test
         @DisplayName("Should throw exception when current password is incorrect")
         void shouldThrowExceptionWhenCurrentPasswordIsIncorrect() {
-            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+            when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
             when(passwordEncoder.matches("wrongPassword", testUser.getPassword())).thenReturn(false);
 
-            assertThatThrownBy(() -> passwordService.changePassword("testuser", "wrongPassword", "newPassword456"))
+            assertThatThrownBy(() -> passwordService.changePassword(1L, "wrongPassword", "newPassword456"))
                     .isInstanceOf(InvalidPasswordException.class)
                     .hasMessageContaining("Current password is incorrect");
 
@@ -88,10 +88,10 @@ class PasswordServiceImplTest {
         void shouldThrowExceptionWhenNewPasswordIsSameAsCurrent() {
             String samePassword = "samePassword123";
 
-            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+            when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
             when(passwordEncoder.matches(samePassword, testUser.getPassword())).thenReturn(true);
 
-            assertThatThrownBy(() -> passwordService.changePassword("testuser", samePassword, samePassword))
+            assertThatThrownBy(() -> passwordService.changePassword(1L, samePassword, samePassword))
                     .isInstanceOf(InvalidPasswordException.class)
                     .hasMessageContaining("New password must be different");
 
@@ -101,9 +101,9 @@ class PasswordServiceImplTest {
         @Test
         @DisplayName("Should throw exception when user not found")
         void shouldThrowExceptionWhenUserNotFound() {
-            when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
+            when(userRepository.findById(404L)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> passwordService.changePassword("nonexistent", "current", "new"))
+            assertThatThrownBy(() -> passwordService.changePassword(404L, "current", "new"))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessageContaining("User not found");
         }

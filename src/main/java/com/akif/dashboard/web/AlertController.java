@@ -1,5 +1,6 @@
 package com.akif.dashboard.web;
 
+import com.akif.shared.security.AuthenticatedUser;
 import com.akif.dashboard.api.AlertService;
 import com.akif.dashboard.api.dto.AlertDto;
 import com.akif.dashboard.api.AlertType;
@@ -11,7 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -63,11 +64,10 @@ public class AlertController {
     public ResponseEntity<AlertDto> acknowledgeAlert(
             @Parameter(description = "Alert ID", required = true)
             @PathVariable Long id,
-            Authentication authentication) {
+            @AuthenticationPrincipal AuthenticatedUser caller) {
         
-        String adminUsername = authentication.getName();
         
-        AlertDto acknowledgedAlert = alertService.acknowledgeAlert(id, adminUsername);
+        AlertDto acknowledgedAlert = alertService.acknowledgeAlert(id, caller.getUsername());
         return ResponseEntity.ok(acknowledgedAlert);
     }
 }

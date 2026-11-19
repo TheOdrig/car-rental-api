@@ -25,9 +25,9 @@ public class ProfileServiceImpl implements ProfileService {
     private final AvatarStorageService avatarStorageService;
 
     @Override
-    public UserDto getProfile(String username) {
-        log.debug("Getting profile for user: {}", username);
-        User user = findUserByUsername(username);
+    public UserDto getProfile(Long userId) {
+        log.debug("Getting profile for user: {}", userId);
+        User user = findUserById(userId);
         UserDto dto = userMapper.toDto(user);
 
         String avatarUrl = null;
@@ -49,15 +49,15 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional
-    public UserDto updateProfile(String username, ProfileUpdateRequest request) {
-        log.info("Updating profile for user: {}", username);
+    public UserDto updateProfile(Long userId, ProfileUpdateRequest request) {
+        log.info("Updating profile for user: {}", userId);
 
-        User user = findUserByUsername(username);
+        User user = findUserById(userId);
 
         user.updateProfile(request.firstName(), request.lastName(), request.phone());
 
         User savedUser = userRepository.save(user);
-        log.info("Profile updated successfully for user: {}", username);
+        log.info("Profile updated successfully for user: {}", userId);
 
         UserDto dto = userMapper.toDto(savedUser);
 
@@ -80,10 +80,10 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional
-    public void updateAvatarUrl(String username, String avatarKey) {
-        log.info("Updating avatar for user: {}", username);
+    public void updateAvatarUrl(Long userId, String avatarKey) {
+        log.info("Updating avatar for user: {}", userId);
 
-        User user = findUserByUsername(username);
+        User user = findUserById(userId);
         String previousKey = user.getAvatarUrl();
         user.changeAvatar(avatarKey);
         userRepository.save(user);
@@ -91,15 +91,15 @@ public class ProfileServiceImpl implements ProfileService {
             deleteStoredAvatarAfterCommit(previousKey);
         }
 
-        log.info("Avatar updated successfully for user: {}", username);
+        log.info("Avatar updated successfully for user: {}", userId);
     }
 
     @Override
     @Transactional
-    public void removeAvatar(String username) {
-        log.info("Removing avatar for user: {}", username);
+    public void removeAvatar(Long userId) {
+        log.info("Removing avatar for user: {}", userId);
 
-        User user = findUserByUsername(username);
+        User user = findUserById(userId);
         String storedKey = user.getAvatarUrl();
         user.removeAvatar();
         userRepository.save(user);
@@ -107,7 +107,7 @@ public class ProfileServiceImpl implements ProfileService {
             deleteStoredAvatarAfterCommit(storedKey);
         }
 
-        log.info("Avatar removed successfully for user: {}", username);
+        log.info("Avatar removed successfully for user: {}", userId);
     }
 
     private void deleteStoredAvatarAfterCommit(String avatarKey) {
@@ -130,8 +130,8 @@ public class ProfileServiceImpl implements ProfileService {
         }
     }
 
-    private User findUserByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+    private User findUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
     }
 }

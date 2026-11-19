@@ -96,10 +96,10 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     @Transactional
-    public RentalResponse requestRental(RentalRequest request, String username) {
-        log.info("Creating rental request for user: {}, car: {}", username, request.carId());
+    public RentalResponse requestRental(RentalRequest request, Long userId) {
+        log.info("Creating rental request for user: {}, car: {}", userId, request.carId());
 
-        UserDto user = findUserByUsername(username);
+        UserDto user = findUserById(userId);
         CarDto car = findCarById(request.carId());
 
         if (!car.status().equals(CarStatusType.AVAILABLE)) {
@@ -368,11 +368,11 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     @Transactional
-    public RentalResponse cancelRental(Long rentalId, String username, String reason) {
-        log.info("Cancelling rental: {} by user: {}", rentalId, username);
+    public RentalResponse cancelRental(Long rentalId, Long userId, String reason) {
+        log.info("Cancelling rental: {} by user: {}", rentalId, userId);
 
         Rental rental = findRentalForUpdate(rentalId);
-        UserDto currentUser = findUserByUsername(username);
+        UserDto currentUser = findUserById(userId);
 
         if (!currentUser.isAdmin() && !rental.getUserId().equals(currentUser.id())) {
             throw new RentalNotFoundException(rentalId);
@@ -406,7 +406,7 @@ public class RentalServiceImpl implements RentalService {
         eventPublisher.publishEvent(event);
         log.info("Published RentalCancelledEvent for rental: {}", updatedRental.getId());
 
-        logRentalOperationSuccess("cancelled", result, "By user: " + username);
+        logRentalOperationSuccess("cancelled", result, "By user: " + userId);
         return result;
     }
 
@@ -526,14 +526,14 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
-    public Page<RentalResponse> getMyRentals(String username, Pageable pageable) {
-        log.debug("Getting rentals for user: {}", username);
+    public Page<RentalResponse> getMyRentals(Long userId, Pageable pageable) {
+        log.debug("Getting rentals for user: {}", userId);
 
-        UserDto user = findUserByUsername(username);
+        UserDto user = findUserById(userId);
         Page<Rental> rentals = rentalRepository.findByUserIdAndIsDeletedFalse(user.id(), Pageables.stable(pageable));
         Page<RentalResponse> result = rentals.map(rentalMapper::toDto);
 
-        log.info("Successfully retrieved {} rentals for user: {}", result.getTotalElements(), username);
+        log.info("Successfully retrieved {} rentals for user: {}", result.getTotalElements(), userId);
         return result;
     }
 
@@ -550,11 +550,11 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
-    public RentalResponse getRentalById(Long id, String username) {
-        log.debug("Getting rental: {} for user: {}", id, username);
+    public RentalResponse getRentalById(Long id, Long userId) {
+        log.debug("Getting rental: {} for user: {}", id, userId);
 
         Rental rental = findRentalById(id);
-        UserDto user = findUserByUsername(username);
+        UserDto user = findUserById(userId);
 
         if (!user.isAdmin() && !rental.getUserId().equals(user.id())) {
             throw new RentalNotFoundException(id);
@@ -567,9 +567,9 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS)
-    public PaymentIntentResult createPaymentIntent(Long rentalId, String username) {
+    public PaymentIntentResult createPaymentIntent(Long rentalId, Long userId) {
         Rental rental = findRentalById(rentalId);
-        UserDto user = findUserByUsername(username);
+        UserDto user = findUserById(userId);
 
         if (!rental.getUserId().equals(user.id())) {
             throw new RentalNotFoundException(rentalId);
@@ -590,9 +590,9 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS)
-    public PaymentSummary getRentalPayment(Long rentalId, String username) {
+    public PaymentSummary getRentalPayment(Long rentalId, Long userId) {
         Rental rental = findRentalById(rentalId);
-        UserDto user = findUserByUsername(username);
+        UserDto user = findUserById(userId);
 
         if (!user.isAdmin() && !rental.getUserId().equals(user.id())) {
             throw new RentalNotFoundException(rentalId);
@@ -625,8 +625,8 @@ public class RentalServiceImpl implements RentalService {
         return carCatalog.getCarForBooking(id);
     }
 
-    private UserDto findUserByUsername(String username) {
-        return userLookup.getUserByUsername(username);
+    private UserDto findUserById(Long userId) {
+        return userLookup.getUserById(userId);
     }
 
     private PaymentDto findPaymentByRentalId(Long rentalId) {

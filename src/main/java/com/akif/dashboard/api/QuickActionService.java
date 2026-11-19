@@ -6,7 +6,7 @@ public interface QuickActionService {
 
     QuickActionResultDto approveRental(Long rentalId, String notes);
 
-    QuickActionResultDto rejectRental(Long rentalId, String reason, String username);
+    QuickActionResultDto rejectRental(Long rentalId, String reason, Long userId);
 
     QuickActionResultDto processPickup(Long rentalId, String notes);
 

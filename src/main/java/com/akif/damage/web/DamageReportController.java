@@ -1,5 +1,6 @@
 package com.akif.damage.web;
 
+import com.akif.shared.security.AuthenticatedUser;
 import com.akif.damage.internal.dto.damage.request.DamageReportRequest;
 import com.akif.damage.internal.dto.damage.response.DamagePhotoDto;
 import com.akif.damage.internal.dto.damage.response.DamageReportResponse;
@@ -15,7 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,10 +42,9 @@ public class DamageReportController {
             @Parameter(description = "Rental ID", required = true)
             @RequestParam Long rentalId,
             @Valid @RequestBody DamageReportRequest request,
-            Authentication authentication) {
+            @AuthenticationPrincipal AuthenticatedUser caller) {
 
-        String username = authentication.getName();
-        DamageReportResponse response = damageReportService.createDamageReport(rentalId, request, username);
+        DamageReportResponse response = damageReportService.createDamageReport(rentalId, request, caller.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -78,10 +78,9 @@ public class DamageReportController {
             @PathVariable Long id,
             @Parameter(description = "Photo files", required = true)
             @RequestParam("photos") List<MultipartFile> photos,
-            Authentication authentication) {
+            @AuthenticationPrincipal AuthenticatedUser caller) {
 
-        String username = authentication.getName();
-        List<DamagePhotoDto> uploadedPhotos = damageReportService.uploadDamagePhotos(id, photos, username);
+        List<DamagePhotoDto> uploadedPhotos = damageReportService.uploadDamagePhotos(id, photos, caller.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(uploadedPhotos);
     }
 
@@ -113,9 +112,9 @@ public class DamageReportController {
     public ResponseEntity<String> getPhotoUrl(
             @Parameter(description = "Photo ID", required = true)
             @PathVariable Long photoId,
-            Authentication authentication) {
+            @AuthenticationPrincipal AuthenticatedUser caller) {
 
-        String url = damageReportService.getPhotoUrl(photoId, authentication.getName());
+        String url = damageReportService.getPhotoUrl(photoId, caller.id());
         return ResponseEntity.ok(url);
     }
 }

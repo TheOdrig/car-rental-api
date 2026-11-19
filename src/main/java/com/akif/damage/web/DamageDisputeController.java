@@ -1,5 +1,6 @@
 package com.akif.damage.web;
 
+import com.akif.shared.security.AuthenticatedUser;
 import com.akif.damage.internal.dto.damage.request.DamageDisputeRequest;
 import com.akif.damage.internal.dto.damage.request.DamageDisputeResolutionDto;
 import com.akif.damage.internal.dto.damage.response.DamageDisputeResponse;
@@ -14,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,10 +37,9 @@ public class DamageDisputeController {
             @Parameter(description = "Damage ID", required = true)
             @PathVariable Long id,
             @Valid @RequestBody DamageDisputeRequest request,
-            Authentication authentication) {
+            @AuthenticationPrincipal AuthenticatedUser caller) {
 
-        String username = authentication.getName();
-        DamageDisputeResponse response = damageDisputeService.createDispute(id, request, username);
+        DamageDisputeResponse response = damageDisputeService.createDispute(id, request, caller.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -56,10 +56,9 @@ public class DamageDisputeController {
             @Parameter(description = "Damage ID", required = true)
             @PathVariable Long id,
             @Valid @RequestBody DamageDisputeResolutionDto resolution,
-            Authentication authentication) {
+            @AuthenticationPrincipal AuthenticatedUser caller) {
 
-        String username = authentication.getName();
-        DamageDisputeResponse response = damageDisputeService.resolveDispute(id, resolution, username);
+        DamageDisputeResponse response = damageDisputeService.resolveDispute(id, resolution, caller.id());
         return ResponseEntity.ok(response);
     }
 }

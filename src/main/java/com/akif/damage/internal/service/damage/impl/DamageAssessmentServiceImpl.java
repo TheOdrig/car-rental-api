@@ -45,11 +45,11 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
 
     @Override
     @Transactional
-    public DamageAssessmentResponse assessDamage(Long damageId, DamageAssessmentRequest request, String username) {
+    public DamageAssessmentResponse assessDamage(Long damageId, DamageAssessmentRequest request, Long userId) {
         DamageReport damageReport = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
                 .orElseThrow(() -> DamageReportException.notFound(damageId));
 
-        UserDto user = userLookup.getUserByUsername(username);
+        UserDto user = userLookup.getUserById(userId);
 
         if (!damageReport.canBeAssessed()) {
             throw DamageAssessmentException.invalidStatus(damageReport.getStatus().name());
@@ -96,7 +96,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
 
     @Override
     @Transactional
-    public DamageAssessmentResponse updateAssessment(Long damageId, DamageAssessmentRequest request, String username) {
+    public DamageAssessmentResponse updateAssessment(Long damageId, DamageAssessmentRequest request, Long userId) {
         DamageReport damageReport = damageReportRepository.findByIdAndIsDeletedFalse(damageId)
                 .orElseThrow(() -> DamageReportException.notFound(damageId));
 
@@ -104,7 +104,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
             throw DamageAssessmentException.alreadyCharged();
         }
 
-        UserDto user = userLookup.getUserByUsername(username);
+        UserDto user = userLookup.getUserById(userId);
 
         DamageSeverity severity = request.severity() != null
                 ? request.severity()

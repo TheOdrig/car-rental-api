@@ -11,7 +11,7 @@ import java.time.LocalDate;
 
 public interface RentalService extends UserRentalStatisticsProvider {
 
-    RentalResponse requestRental(RentalRequest request, String username);
+    RentalResponse requestRental(RentalRequest request, Long userId);
 
     RentalResponse confirmRental(Long rentalId, String notes);
 
@@ -21,17 +21,17 @@ public interface RentalService extends UserRentalStatisticsProvider {
 
     RentalResponse earlyReturnRental(Long rentalId, String returnNotes);
 
-    RentalResponse cancelRental(Long rentalId, String username, String reason);
+    RentalResponse cancelRental(Long rentalId, Long userId, String reason);
 
-    Page<RentalResponse> getMyRentals(String username, Pageable pageable);
+    Page<RentalResponse> getMyRentals(Long userId, Pageable pageable);
 
     Page<RentalResponse> getAllRentals(Pageable pageable);
 
-    RentalResponse getRentalById(Long id, String username);
+    RentalResponse getRentalById(Long id, Long userId);
 
-    com.akif.payment.api.PaymentIntentResult createPaymentIntent(Long rentalId, String username);
+    com.akif.payment.api.PaymentIntentResult createPaymentIntent(Long rentalId, Long userId);
 
-    com.akif.payment.api.PaymentSummary getRentalPayment(Long rentalId, String username);
+    com.akif.payment.api.PaymentSummary getRentalPayment(Long rentalId, Long userId);
 
     RentalSummaryDto getRentalSummaryById(Long rentalId);
 

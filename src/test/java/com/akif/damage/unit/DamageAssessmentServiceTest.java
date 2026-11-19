@@ -138,11 +138,11 @@ class DamageAssessmentServiceTest {
         @DisplayName("Should assess damage successfully")
         void shouldAssessDamageSuccessfully() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserById(2L)).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            DamageAssessmentResponse result = damageAssessmentService.assessDamage(1L, testAssessmentRequest, "admin");
+            DamageAssessmentResponse result = damageAssessmentService.assessDamage(1L, testAssessmentRequest, 2L);
 
             assertThat(result).isNotNull();
             assertThat(result.damageId()).isEqualTo(1L);
@@ -154,11 +154,11 @@ class DamageAssessmentServiceTest {
         @DisplayName("Should default the damage currency to the rental currency at assessment time")
         void shouldDefaultCurrencyToRentalCurrency() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserById(2L)).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            damageAssessmentService.assessDamage(1L, testAssessmentRequest, "admin");
+            damageAssessmentService.assessDamage(1L, testAssessmentRequest, 2L);
 
             assertThat(testDamageReport.getCurrency()).isEqualTo(com.akif.shared.enums.CurrencyType.TRY);
         }
@@ -171,13 +171,13 @@ class DamageAssessmentServiceTest {
                     java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(3), false, 0,
                     com.akif.shared.enums.CurrencyType.JPY));
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserById(2L)).thenReturn(testUser);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
             DamageAssessmentRequest request = new DamageAssessmentRequest(DamageSeverity.MINOR, DamageCategory.SCRATCH,
                     new BigDecimal("12345.67"), false, null, "n", com.akif.shared.enums.CurrencyType.JPY);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
 
-            damageAssessmentService.assessDamage(1L, request, "admin");
+            damageAssessmentService.assessDamage(1L, request, 2L);
 
             assertThat(testDamageReport.getCustomerLiability()).isEqualTo(new BigDecimal("12346"));
             assertThat(testDamageReport.getRepairCostEstimate()).isEqualTo(new BigDecimal("12346"));
@@ -193,13 +193,13 @@ class DamageAssessmentServiceTest {
                     com.akif.shared.enums.CurrencyType.EUR));
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserById(2L)).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
             DamageAssessmentRequest request = new DamageAssessmentRequest(DamageSeverity.MINOR, DamageCategory.SCRATCH,
                     new BigDecimal("500.00"), true, new BigDecimal("100.00"), "n", com.akif.shared.enums.CurrencyType.EUR);
 
-            damageAssessmentService.assessDamage(1L, request, "admin");
+            damageAssessmentService.assessDamage(1L, request, 2L);
 
             assertThat(testDamageReport.getCurrency()).isEqualTo(com.akif.shared.enums.CurrencyType.EUR);
         }
@@ -208,12 +208,12 @@ class DamageAssessmentServiceTest {
         @DisplayName("Should reject an assessment currency that differs from the rental currency")
         void shouldRejectCurrencyDifferentFromRental() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserById(2L)).thenReturn(testUser);
             DamageAssessmentRequest request = new DamageAssessmentRequest(DamageSeverity.MINOR, DamageCategory.SCRATCH,
                     new BigDecimal("500.00"), true, new BigDecimal("100.00"), "n", com.akif.shared.enums.CurrencyType.EUR);
 
             org.assertj.core.api.Assertions.assertThatThrownBy(
-                            () -> damageAssessmentService.assessDamage(1L, request, "admin"))
+                            () -> damageAssessmentService.assessDamage(1L, request, 2L))
                     .isInstanceOf(com.akif.damage.internal.exception.DamageAssessmentException.class)
                     .hasMessageContaining("TRY");
         }
@@ -222,11 +222,11 @@ class DamageAssessmentServiceTest {
         @DisplayName("Should set customer liability correctly with insurance")
         void shouldSetCustomerLiabilityCorrectlyWithInsurance() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserById(2L)).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            damageAssessmentService.assessDamage(1L, testAssessmentRequest, "admin");
+            damageAssessmentService.assessDamage(1L, testAssessmentRequest, 2L);
 
             ArgumentCaptor<DamageReport> captor = ArgumentCaptor.forClass(DamageReport.class);
             verify(damageReportRepository).save(captor.capture());
@@ -247,11 +247,11 @@ class DamageAssessmentServiceTest {
                     "No insurance");
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserById(2L)).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            damageAssessmentService.assessDamage(1L, requestWithoutInsurance, "admin");
+            damageAssessmentService.assessDamage(1L, requestWithoutInsurance, 2L);
 
             ArgumentCaptor<DamageReport> captor = ArgumentCaptor.forClass(DamageReport.class);
             verify(damageReportRepository).save(captor.capture());
@@ -265,7 +265,7 @@ class DamageAssessmentServiceTest {
         void shouldThrowExceptionWhenDamageReportNotFound() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(999L)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> damageAssessmentService.assessDamage(999L, testAssessmentRequest, "admin"))
+            assertThatThrownBy(() -> damageAssessmentService.assessDamage(999L, testAssessmentRequest, 2L))
                     .isInstanceOf(DamageReportException.class);
 
             verify(eventPublisher, never()).publishEvent(any(Object.class));
@@ -277,9 +277,9 @@ class DamageAssessmentServiceTest {
             ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.CHARGED);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserById(2L)).thenReturn(testUser);
 
-            assertThatThrownBy(() -> damageAssessmentService.assessDamage(1L, testAssessmentRequest, "admin"))
+            assertThatThrownBy(() -> damageAssessmentService.assessDamage(1L, testAssessmentRequest, 2L))
                     .isInstanceOf(DamageAssessmentException.class);
         }
 
@@ -295,11 +295,11 @@ class DamageAssessmentServiceTest {
                     "Major mechanical damage");
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserById(2L)).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("500.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            DamageAssessmentResponse result = damageAssessmentService.assessDamage(1L, majorDamageRequest, "admin");
+            DamageAssessmentResponse result = damageAssessmentService.assessDamage(1L, majorDamageRequest, 2L);
 
             verify(carFleetOperations).markAsMaintenance(testCar.id());
             assertThat(result.carStatusUpdated()).isEqualTo("MAINTENANCE");
@@ -309,11 +309,11 @@ class DamageAssessmentServiceTest {
         @DisplayName("Should publish DamageAssessedEvent when assessment completed")
         void shouldPublishDamageAssessedEventWhenAssessmentCompleted() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserById(2L)).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            damageAssessmentService.assessDamage(1L, testAssessmentRequest, "admin");
+            damageAssessmentService.assessDamage(1L, testAssessmentRequest, 2L);
 
             ArgumentCaptor<DamageAssessedEvent> eventCaptor = ArgumentCaptor.forClass(DamageAssessedEvent.class);
             verify(eventPublisher).publishEvent(eventCaptor.capture());
@@ -333,11 +333,11 @@ class DamageAssessmentServiceTest {
             ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.UNDER_ASSESSMENT);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testUser);
+            when(userLookup.getUserById(2L)).thenReturn(testUser);
             when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            DamageAssessmentResponse result = damageAssessmentService.assessDamage(1L, testAssessmentRequest, "admin");
+            DamageAssessmentResponse result = damageAssessmentService.assessDamage(1L, testAssessmentRequest, 2L);
 
             assertThat(result).isNotNull();
             verify(damageReportRepository).save(any(DamageReport.class));
@@ -350,7 +350,7 @@ class DamageAssessmentServiceTest {
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
 
-            assertThatThrownBy(() -> damageAssessmentService.updateAssessment(1L, testAssessmentRequest, "admin"))
+            assertThatThrownBy(() -> damageAssessmentService.updateAssessment(1L, testAssessmentRequest, 2L))
                     .isInstanceOf(DamageAssessmentException.class);
         }
     }

@@ -157,11 +157,11 @@ class DamageDisputeServiceTest {
         @DisplayName("Should create dispute successfully")
         void shouldCreateDisputeSuccessfully() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("customer")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(rentalService.getRentalSummaryById(testDamageReport.getRentalId())).thenReturn(testRental);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            DamageDisputeResponse result = damageDisputeService.createDispute(1L, testDisputeRequest, "customer");
+            DamageDisputeResponse result = damageDisputeService.createDispute(1L, testDisputeRequest, 1L);
 
             assertThat(result).isNotNull();
             assertThat(result.damageId()).isEqualTo(1L);
@@ -176,11 +176,11 @@ class DamageDisputeServiceTest {
         @DisplayName("Should set dispute details on damage report")
         void shouldSetDisputeDetailsOnDamageReport() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("customer")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(rentalService.getRentalSummaryById(testDamageReport.getRentalId())).thenReturn(testRental);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            damageDisputeService.createDispute(1L, testDisputeRequest, "customer");
+            damageDisputeService.createDispute(1L, testDisputeRequest, 1L);
 
             ArgumentCaptor<DamageReport> captor = ArgumentCaptor.forClass(DamageReport.class);
             verify(damageReportRepository).save(captor.capture());
@@ -198,7 +198,7 @@ class DamageDisputeServiceTest {
         void shouldThrowExceptionWhenDamageReportNotFound() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(999L)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> damageDisputeService.createDispute(999L, testDisputeRequest, "customer"))
+            assertThatThrownBy(() -> damageDisputeService.createDispute(999L, testDisputeRequest, 1L))
                     .isInstanceOf(DamageReportException.class);
 
             verify(eventPublisher, never()).publishEvent(any(Object.class));
@@ -210,10 +210,10 @@ class DamageDisputeServiceTest {
             ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.REPORTED);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("customer")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(rentalService.getRentalSummaryById(testDamageReport.getRentalId())).thenReturn(testRental);
 
-            assertThatThrownBy(() -> damageDisputeService.createDispute(1L, testDisputeRequest, "customer"))
+            assertThatThrownBy(() -> damageDisputeService.createDispute(1L, testDisputeRequest, 1L))
                     .isInstanceOf(DamageDisputeException.class);
         }
 
@@ -224,10 +224,10 @@ class DamageDisputeServiceTest {
                     Set.of(Role.USER), true);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("other")).thenReturn(differentUser);
+            when(userLookup.getUserById(3L)).thenReturn(differentUser);
             when(rentalService.getRentalSummaryById(testDamageReport.getRentalId())).thenReturn(testRental);
 
-            assertThatThrownBy(() -> damageDisputeService.createDispute(1L, testDisputeRequest, "other"))
+            assertThatThrownBy(() -> damageDisputeService.createDispute(1L, testDisputeRequest, 3L))
                     .isInstanceOf(com.akif.damage.internal.exception.DamageReportException.class);
         }
 
@@ -235,11 +235,11 @@ class DamageDisputeServiceTest {
         @DisplayName("Should publish DamageDisputedEvent when dispute created")
         void shouldPublishDamageDisputedEventWhenDisputeCreated() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("customer")).thenReturn(testUser);
+            when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(rentalService.getRentalSummaryById(testDamageReport.getRentalId())).thenReturn(testRental);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            damageDisputeService.createDispute(1L, testDisputeRequest, "customer");
+            damageDisputeService.createDispute(1L, testDisputeRequest, 1L);
 
             ArgumentCaptor<DamageDisputedEvent> eventCaptor = ArgumentCaptor.forClass(DamageDisputedEvent.class);
             verify(eventPublisher).publishEvent(eventCaptor.capture());
@@ -262,12 +262,12 @@ class DamageDisputeServiceTest {
         @DisplayName("Should resolve dispute successfully with partial refund")
         void shouldResolveDisputeSuccessfullyWithPartialRefund() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(userLookup.getUserById(2L)).thenReturn(testAdmin);
             when(paymentService.refund(anyString(), any(BigDecimal.class), anyString()))
                     .thenReturn(new PaymentResult(true, "refund_123", "Refund successful"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            DamageDisputeResponse result = damageDisputeService.resolveDispute(1L, testResolutionDto, "admin");
+            DamageDisputeResponse result = damageDisputeService.resolveDispute(1L, testResolutionDto, 2L);
 
             assertThat(result).isNotNull();
             assertThat(result.status()).isEqualTo(DamageStatus.RESOLVED);
@@ -281,12 +281,12 @@ class DamageDisputeServiceTest {
         @DisplayName("Should update damage report with resolution details")
         void shouldUpdateDamageReportWithResolutionDetails() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(userLookup.getUserById(2L)).thenReturn(testAdmin);
             when(paymentService.refund(anyString(), any(BigDecimal.class), anyString()))
                     .thenReturn(new PaymentResult(true, "refund_123", "Refund successful"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            damageDisputeService.resolveDispute(1L, testResolutionDto, "admin");
+            damageDisputeService.resolveDispute(1L, testResolutionDto, 2L);
 
             ArgumentCaptor<DamageReport> captor = ArgumentCaptor.forClass(DamageReport.class);
             verify(damageReportRepository).save(captor.capture());
@@ -306,9 +306,9 @@ class DamageDisputeServiceTest {
             ReflectionTestUtils.setField(testDamageReport, "status", DamageStatus.CHARGED);
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(userLookup.getUserById(2L)).thenReturn(testAdmin);
 
-            assertThatThrownBy(() -> damageDisputeService.resolveDispute(1L, testResolutionDto, "admin"))
+            assertThatThrownBy(() -> damageDisputeService.resolveDispute(1L, testResolutionDto, 2L))
                     .isInstanceOf(DamageDisputeException.class);
         }
 
@@ -316,11 +316,11 @@ class DamageDisputeServiceTest {
         @DisplayName("Should fail the resolution and publish nothing when the refund fails")
         void shouldFailResolutionWhenRefundFails() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(userLookup.getUserById(2L)).thenReturn(testAdmin);
             when(paymentService.refund(anyString(), any(BigDecimal.class), anyString()))
                     .thenReturn(PaymentResult.failure("card network down"));
 
-            assertThatThrownBy(() -> damageDisputeService.resolveDispute(1L, testResolutionDto, "admin"))
+            assertThatThrownBy(() -> damageDisputeService.resolveDispute(1L, testResolutionDto, 2L))
                     .isInstanceOfSatisfying(DamageDisputeException.class, ex -> {
                         assertThat(ex.getHttpStatus()).isEqualTo(org.springframework.http.HttpStatus.BAD_GATEWAY);
                         assertThat(ex.getMessage()).contains("card network down");
@@ -340,9 +340,9 @@ class DamageDisputeServiceTest {
                     "Raise");
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(userLookup.getUserById(2L)).thenReturn(testAdmin);
 
-            assertThatThrownBy(() -> damageDisputeService.resolveDispute(1L, higher, "admin"))
+            assertThatThrownBy(() -> damageDisputeService.resolveDispute(1L, higher, 2L))
                     .isInstanceOf(DamageDisputeException.class)
                     .hasMessageContaining("cannot exceed");
             verify(damageReportRepository, never()).save(any(DamageReport.class));
@@ -352,12 +352,12 @@ class DamageDisputeServiceTest {
         @DisplayName("Should keep the original liability after resolving")
         void shouldKeepOriginalLiability() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(userLookup.getUserById(2L)).thenReturn(testAdmin);
             when(paymentService.refund(anyString(), any(BigDecimal.class), anyString()))
                     .thenReturn(new PaymentResult(true, "refund_123", "Refund successful"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            DamageDisputeResponse result = damageDisputeService.resolveDispute(1L, testResolutionDto, "admin");
+            DamageDisputeResponse result = damageDisputeService.resolveDispute(1L, testResolutionDto, 2L);
 
             assertThat(result.originalLiability()).isEqualByComparingTo("500.00");
             assertThat(result.adjustedLiability()).isEqualByComparingTo("250.00");
@@ -373,10 +373,10 @@ class DamageDisputeServiceTest {
                     "Dispute rejected - no refund");
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(userLookup.getUserById(2L)).thenReturn(testAdmin);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            DamageDisputeResponse result = damageDisputeService.resolveDispute(1L, noRefundResolution, "admin");
+            DamageDisputeResponse result = damageDisputeService.resolveDispute(1L, noRefundResolution, 2L);
 
             assertThat(result.refundAmount()).isEqualTo(BigDecimal.ZERO);
             verify(paymentService, never()).refund(anyString(), any(), anyString());
@@ -386,12 +386,12 @@ class DamageDisputeServiceTest {
         @DisplayName("Should publish DamageResolvedEvent with refund amount")
         void shouldPublishDamageResolvedEventWithRefundAmount() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
-            when(userLookup.getUserByUsername("admin")).thenReturn(testAdmin);
+            when(userLookup.getUserById(2L)).thenReturn(testAdmin);
             when(paymentService.refund(anyString(), any(BigDecimal.class), anyString()))
                     .thenReturn(new PaymentResult(true, "refund_123", "Refund successful"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
-            damageDisputeService.resolveDispute(1L, testResolutionDto, "admin");
+            damageDisputeService.resolveDispute(1L, testResolutionDto, 2L);
 
             ArgumentCaptor<DamageResolvedEvent> eventCaptor = ArgumentCaptor.forClass(DamageResolvedEvent.class);
             verify(eventPublisher).publishEvent(eventCaptor.capture());

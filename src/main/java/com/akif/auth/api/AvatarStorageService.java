@@ -4,7 +4,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface AvatarStorageService {
 
-    String storeAvatar(String username, MultipartFile file);
+    String storeAvatar(Long userId, MultipartFile file);
 
     void deleteAvatar(String avatarKey);
 

@@ -1,5 +1,6 @@
 package com.akif.damage.web;
 
+import com.akif.shared.security.AuthenticatedUser;
 import com.akif.damage.internal.dto.damage.request.DamageAssessmentRequest;
 import com.akif.damage.internal.dto.damage.response.DamageAssessmentResponse;
 import com.akif.damage.internal.service.damage.DamageAssessmentService;
@@ -14,7 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -38,10 +39,9 @@ public class DamageAssessmentController {
             @Parameter(description = "Damage ID", required = true)
             @PathVariable Long id,
             @Valid @RequestBody DamageAssessmentRequest request,
-            Authentication authentication) {
+            @AuthenticationPrincipal AuthenticatedUser caller) {
 
-        String username = authentication.getName();
-        DamageAssessmentResponse response = damageAssessmentService.assessDamage(id, request, username);
+        DamageAssessmentResponse response = damageAssessmentService.assessDamage(id, request, caller.id());
         return ResponseEntity.ok(response);
     }
 
@@ -56,8 +56,7 @@ public class DamageAssessmentController {
     })
     public ResponseEntity<DamageChargeResponse> chargeDamage(
             @Parameter(description = "Damage ID", required = true)
-            @PathVariable Long id,
-            Authentication authentication) {
+            @PathVariable Long id) {
 
         return ResponseEntity.ok(damageChargeService.charge(id));
     }
@@ -75,10 +74,9 @@ public class DamageAssessmentController {
             @Parameter(description = "Damage ID", required = true)
             @PathVariable Long id,
             @Valid @RequestBody DamageAssessmentRequest request,
-            Authentication authentication) {
+            @AuthenticationPrincipal AuthenticatedUser caller) {
 
-        String username = authentication.getName();
-        DamageAssessmentResponse response = damageAssessmentService.updateAssessment(id, request, username);
+        DamageAssessmentResponse response = damageAssessmentService.updateAssessment(id, request, caller.id());
         return ResponseEntity.ok(response);
     }
 }

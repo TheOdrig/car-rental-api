@@ -1,10 +1,9 @@
 package com.akif.rental.web;
 
+import com.akif.shared.security.AuthenticatedUser;
 import com.akif.rental.internal.dto.penalty.PenaltyWaiverRequest;
 import com.akif.rental.internal.dto.penalty.PenaltyWaiverResponse;
 import com.akif.rental.domain.model.PenaltyWaiver;
-import com.akif.auth.api.UserLookup;
-import com.akif.auth.api.UserDto;
 import com.akif.rental.internal.service.penalty.PenaltyWaiverService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,7 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,7 +28,6 @@ import java.util.stream.Collectors;
 public class PenaltyWaiverController {
 
     private final PenaltyWaiverService penaltyWaiverService;
-    private final UserLookup userLookup;
 
     @PostMapping("/{id}/penalty/waive")
     @Operation(summary = "Waive penalty",
@@ -47,18 +45,14 @@ public class PenaltyWaiverController {
             @PathVariable Long id,
             @Parameter(description = "Waiver request data", required = true)
             @Valid @RequestBody PenaltyWaiverRequest request,
-            Authentication authentication) {
-
-        String username = authentication.getName();
-
-        UserDto admin = userLookup.getUserByUsername(username);
+            @AuthenticationPrincipal AuthenticatedUser caller) {
 
         PenaltyWaiver waiver;
         if (Boolean.TRUE.equals(request.fullWaiver())) {
-            waiver = penaltyWaiverService.waiveFullPenalty(id, request.reason(), admin.id());
+            waiver = penaltyWaiverService.waiveFullPenalty(id, request.reason(), caller.id());
         } else {
             waiver = penaltyWaiverService.waivePenalty(id, request.waiverAmount(), 
-                    request.reason(), admin.id());
+                    request.reason(), caller.id());
         }
 
         PenaltyWaiverResponse response = mapToDto(waiver);

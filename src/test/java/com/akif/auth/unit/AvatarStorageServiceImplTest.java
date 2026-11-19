@@ -50,7 +50,7 @@ class AvatarStorageServiceImplTest {
             when(fileUploadService.validateFileSize(eq(validImage), anyLong())).thenReturn(true);
             when(fileUploadService.uploadFile(eq(validImage), eq("avatars"))).thenReturn("avatars/user1_123.jpg");
 
-            String result = avatarStorageService.storeAvatar("testuser", validImage);
+            String result = avatarStorageService.storeAvatar(1L, validImage);
 
             assertThat(result).isEqualTo("avatars/user1_123.jpg");
             verify(fileUploadService).uploadFile(eq(validImage), eq("avatars"));
@@ -61,7 +61,7 @@ class AvatarStorageServiceImplTest {
         void shouldThrowExceptionForInvalidFileType() {
             when(fileUploadService.validateFileType(eq(invalidImage), anyList())).thenReturn(false);
 
-            assertThatThrownBy(() -> avatarStorageService.storeAvatar("testuser", invalidImage))
+            assertThatThrownBy(() -> avatarStorageService.storeAvatar(1L, invalidImage))
                     .isInstanceOf(FileUploadException.class)
                     .hasMessageContaining("Invalid file type");
 
@@ -74,7 +74,7 @@ class AvatarStorageServiceImplTest {
             when(fileUploadService.validateFileType(eq(largeImage), anyList())).thenReturn(true);
             when(fileUploadService.validateFileSize(eq(largeImage), anyLong())).thenReturn(false);
 
-            assertThatThrownBy(() -> avatarStorageService.storeAvatar("testuser", largeImage))
+            assertThatThrownBy(() -> avatarStorageService.storeAvatar(1L, largeImage))
                     .isInstanceOf(FileUploadException.class)
                     .hasMessageContaining("File size exceeds");
 
@@ -84,7 +84,7 @@ class AvatarStorageServiceImplTest {
         @Test
         @DisplayName("Should throw exception for null file")
         void shouldThrowExceptionForNullFile() {
-            assertThatThrownBy(() -> avatarStorageService.storeAvatar("testuser", null))
+            assertThatThrownBy(() -> avatarStorageService.storeAvatar(1L, null))
                     .isInstanceOf(FileUploadException.class)
                     .hasMessageContaining("required");
         }

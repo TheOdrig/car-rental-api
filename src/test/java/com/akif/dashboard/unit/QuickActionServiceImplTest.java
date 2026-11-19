@@ -119,16 +119,16 @@ class QuickActionServiceImplTest {
             String reason = "Insufficient balance";
             RentalResponse cancelledResponse = createRentalResponse(RentalStatus.CANCELLED);
 
-            when(rentalService.cancelRental(eq(rentalId), eq("admin"), eq(reason))).thenReturn(cancelledResponse);
+            when(rentalService.cancelRental(eq(rentalId), eq(2L), eq(reason))).thenReturn(cancelledResponse);
             when(dashboardQueryService.fetchDailySummary()).thenReturn(testSummary);
 
-            QuickActionResultDto result = quickActionService.rejectRental(rentalId, reason, "admin");
+            QuickActionResultDto result = quickActionService.rejectRental(rentalId, reason, 2L);
 
             assertThat(result.success()).isTrue();
             assertThat(result.message()).isEqualTo("Rental rejected successfully");
             assertThat(result.newStatus()).isEqualTo("CANCELLED");
 
-            verify(rentalService).cancelRental(eq(rentalId), eq("admin"), eq(reason));
+            verify(rentalService).cancelRental(eq(rentalId), eq(2L), eq(reason));
         }
     }
 

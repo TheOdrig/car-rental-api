@@ -128,7 +128,7 @@ class OpenRequestCapConcurrencyTest {
         List<Callable<Object>> tasks = new ArrayList<>();
         for (int i = 0; i < PARALLEL_REQUESTS; i++) {
             Car car = cars.get(i);
-            tasks.add(() -> rentalService.requestRental(request(car), first.getUsername()));
+            tasks.add(() -> rentalService.requestRental(request(car), first.getId()));
         }
 
         List<Throwable> errors = runParallel(tasks);
@@ -149,11 +149,11 @@ class OpenRequestCapConcurrencyTest {
         List<Callable<Object>> tasks = new ArrayList<>();
         for (int i = 0; i < PARALLEL_REQUESTS; i++) {
             Car car = cars.get(i);
-            tasks.add(() -> rentalService.requestRental(request(car), first.getUsername()));
+            tasks.add(() -> rentalService.requestRental(request(car), first.getId()));
         }
         for (int i = 0; i < PARALLEL_REQUESTS; i++) {
             Car car = cars.get(PARALLEL_REQUESTS + i);
-            tasks.add(() -> rentalService.requestRental(request(car), second.getUsername()));
+            tasks.add(() -> rentalService.requestRental(request(car), second.getId()));
         }
 
         runParallel(tasks);
@@ -170,11 +170,11 @@ class OpenRequestCapConcurrencyTest {
         int cap = properties.getMaxOpenRequestsPerUser();
         List<Long> ids = new ArrayList<>();
         for (int i = 0; i < cap; i++) {
-            ids.add(rentalService.requestRental(request(cars.get(i)), first.getUsername()).id());
+            ids.add(rentalService.requestRental(request(cars.get(i)), first.getId()).id());
         }
 
-        rentalService.cancelRental(ids.get(0), first.getUsername(), "changed my mind");
+        rentalService.cancelRental(ids.get(0), first.getId(), "changed my mind");
 
-        assertThat(rentalService.requestRental(request(cars.get(cap)), first.getUsername()).id()).isNotNull();
+        assertThat(rentalService.requestRental(request(cars.get(cap)), first.getId()).id()).isNotNull();
     }
 }

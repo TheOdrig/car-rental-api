@@ -47,10 +47,10 @@ public class AuthServiceImpl implements AuthService, UserLookup {
 
     
     @Override
-    public UserDto getUserByUsername(String username) {
-        log.debug("Getting user by username: {}", username);
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+    public UserDto getUserById(Long userId) {
+        log.debug("Getting user by id: {}", userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
         return userMapper.toDto(user);
     }
     
