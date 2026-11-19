@@ -15,12 +15,22 @@ import java.util.List;
 public interface DamageMapper {
 
     @Mapping(target = "customerName", source = "customerFullName")
+    @Mapping(target = "carSummary.id", source = "carId")
+    @Mapping(target = "carSummary.brand", source = "carBrand")
+    @Mapping(target = "carSummary.model", source = "carModel")
+    @Mapping(target = "carSummary.licensePlate", source = "carLicensePlate")
+    @Mapping(target = "carSummary.thumbnailUrl", ignore = true)
     DamageReportDto toPublicDto(DamageReport damageReport);
 
     List<DamageReportDto> toPublicDtoList(List<DamageReport> damageReports);
 
     @Mapping(target = "customerName", source = "customerFullName")
     @Mapping(target = "refundAmount", source = "disputeRefundAmount")
+    @Mapping(target = "carSummary.id", source = "carId")
+    @Mapping(target = "carSummary.brand", source = "carBrand")
+    @Mapping(target = "carSummary.model", source = "carModel")
+    @Mapping(target = "carSummary.licensePlate", source = "carLicensePlate")
+    @Mapping(target = "carSummary.thumbnailUrl", ignore = true)
     DamageReportResponse toResponseDto(DamageReport damageReport);
 
     List<DamageReportResponse> toResponseDtoList(List<DamageReport> damageReports);

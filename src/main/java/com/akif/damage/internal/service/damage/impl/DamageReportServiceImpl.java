@@ -245,7 +245,9 @@ public class DamageReportServiceImpl implements DamageReportService {
                 damageReport.getDisputeRefundAmount(),
                 damageReport.getResolutionNotes(),
                 damageReport.getResolvedAt(),
-                photos
+                photos,
+                new com.akif.car.api.CarSummaryResponse(damageReport.getCarId(), damageReport.getCarLicensePlate(),
+                        damageReport.getCarBrand(), damageReport.getCarModel(), null)
         );
     }
 

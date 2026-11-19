@@ -268,7 +268,10 @@ class DamageReportControllerIntegrationTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(damageId))
                     .andExpect(jsonPath("$.description").value("Glass damage on windshield"))
-                    .andExpect(jsonPath("$.category").value("GLASS_DAMAGE"));
+                    .andExpect(jsonPath("$.category").value("GLASS_DAMAGE"))
+                    .andExpect(jsonPath("$.carSummary.brand").value(testCar.getBrand()))
+                    .andExpect(jsonPath("$.carSummary.model").value(testCar.getModel()))
+                    .andExpect(jsonPath("$.carSummary.licensePlate").value(testCar.getLicensePlate()));
         }
 
         @Test

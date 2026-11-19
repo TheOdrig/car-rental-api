@@ -1220,6 +1220,9 @@
           "carLicensePlate" : {
             "type" : "string"
           },
+          "carSummary" : {
+            "$ref" : "#/components/schemas/CarSummaryResponse"
+          },
           "category" : {
             "enum" : [ "SCRATCH", "DENT", "GLASS_DAMAGE", "TIRE_DAMAGE", "INTERIOR_DAMAGE", "MECHANICAL_DAMAGE" ],
             "type" : "string"
@@ -1308,6 +1311,9 @@
           },
           "carLicensePlate" : {
             "type" : "string"
+          },
+          "carSummary" : {
+            "$ref" : "#/components/schemas/CarSummaryResponse"
           },
           "category" : {
             "enum" : [ "SCRATCH", "DENT", "GLASS_DAMAGE", "TIRE_DAMAGE", "INTERIOR_DAMAGE", "MECHANICAL_DAMAGE" ],

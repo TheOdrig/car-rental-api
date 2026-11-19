@@ -1,5 +1,6 @@
 package com.akif.damage.internal.dto.damage.response;
 
+import com.akif.car.api.CarSummaryResponse;
 import com.akif.damage.api.DamageCategory;
 import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.api.DamageStatus;
@@ -36,5 +37,6 @@ public record DamageReportResponse(
         BigDecimal refundAmount,
         String resolutionNotes,
         Instant resolvedAt,
-        List<DamagePhotoDto> photos
+        List<DamagePhotoDto> photos,
+        CarSummaryResponse carSummary
 ){ }

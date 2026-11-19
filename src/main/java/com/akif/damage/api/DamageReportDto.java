@@ -1,5 +1,6 @@
 package com.akif.damage.api;
 
+import com.akif.car.api.CarSummaryResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import com.akif.shared.enums.CurrencyType;
@@ -24,7 +25,8 @@ public record DamageReportDto(
     Boolean insuranceCoverage,
     Instant reportedAt,
     Instant assessedAt,
-    CurrencyType currency
+    CurrencyType currency,
+    CarSummaryResponse carSummary
 ) {
 
     public DamageReportDto(
@@ -44,7 +46,7 @@ public record DamageReportDto(
             Instant reportedAt,
             Instant assessedAt) {
         this(id, rentalId, carId, carLicensePlate, customerName, description, damageLocation, severity, category,
-                status, repairCostEstimate, customerLiability, insuranceCoverage, reportedAt, assessedAt, null);
+                status, repairCostEstimate, customerLiability, insuranceCoverage, reportedAt, assessedAt, null, null);
     }
 
     public boolean isPending() {
