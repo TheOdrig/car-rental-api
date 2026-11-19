@@ -27,7 +27,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
@@ -54,6 +56,9 @@ class MyRentalsQueryCountIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Autowired
     private UserRepository userRepository;
@@ -141,14 +146,6 @@ class MyRentalsQueryCountIntegrationTest {
     }
 
     private long statementsFor(int size) throws Exception {
-        long fewest = Long.MAX_VALUE;
-        for (int attempt = 0; attempt < 3; attempt++) {
-            fewest = Math.min(fewest, measureStatements(size));
-        }
-        return fewest;
-    }
-
-    private long measureStatements(int size) throws Exception {
         String token = tokenService.generateAccessToken(new UsernamePasswordAuthenticationToken(
                 customer.getUsername(), null, List.of(new SimpleGrantedAuthority("ROLE_USER"))), customer.getId());
         statistics().clear();
@@ -169,5 +166,11 @@ class MyRentalsQueryCountIntegrationTest {
 
         assertThat(small).isLessThanOrEqualTo(MAX_STATEMENTS);
         assertThat(large).isEqualTo(small);
+    }
+
+    @Test
+    @DisplayName("background schedulers are switched off so they cannot add statements to a measurement")
+    void schedulersAreDisabled() {
+        assertThat(applicationContext.getBeanNamesForType(ScheduledAnnotationBeanPostProcessor.class)).isEmpty();
     }
 }
