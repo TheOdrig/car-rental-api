@@ -22,6 +22,8 @@ public interface PaymentService {
 
     Optional<PaymentDto> getPenaltyPaymentByRentalId(Long rentalId);
 
+    java.util.Map<Long, PaymentStatus> getRentalPaymentStatuses(java.util.Collection<Long> rentalIds);
+
     PaymentResult capturePayment(Long paymentId);
 
     PaymentResult cancelPayment(Long paymentId);

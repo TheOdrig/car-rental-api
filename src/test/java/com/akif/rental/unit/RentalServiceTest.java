@@ -18,6 +18,7 @@ import com.akif.rental.domain.model.Rental;
 import com.akif.rental.api.RentalRequest;
 import com.akif.rental.internal.exception.*;
 import com.akif.rental.internal.mapper.RentalMapper;
+import com.akif.rental.internal.service.RentalAssembler;
 import com.akif.rental.internal.service.PaymentWindow;
 import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.rental.internal.service.RentalServiceImpl;
@@ -122,12 +123,13 @@ class RentalServiceTest {
         RentalRefundService refunds = new RentalRefundService(clock, paymentService, dynamicPricingService, lookups);
         RentalLatePenaltyProcessor penalties = new RentalLatePenaltyProcessor(
                 clock, paymentService, eventPublisher, penaltyCalculationService, penaltyPaymentService);
+        RentalAssembler assembler = new RentalAssembler(rentalMapper, paymentService);
         rentalService = new RentalServiceImpl(
-                new RentalBookingService(clock, rentalRepository, rentalMapper, dynamicPricingService,
+                new RentalBookingService(clock, rentalRepository, assembler, dynamicPricingService,
                         rentalProperties, lookups),
-                new RentalLifecycleService(clock, rentalRepository, rentalMapper, paymentService, eventPublisher,
+                new RentalLifecycleService(clock, rentalRepository, assembler, paymentService, eventPublisher,
                         rentalProperties, lookups, refunds, penalties),
-                new RentalQueryService(clock, rentalRepository, rentalMapper, paymentService,
+                new RentalQueryService(clock, rentalRepository, assembler, paymentService,
                         new PaymentWindow(clock, rentalProperties),
                         lookups));
         testUser = new UserDto(

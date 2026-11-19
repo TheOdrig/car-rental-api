@@ -1,8 +1,7 @@
 package com.akif.rental.api;
 
 import com.akif.car.api.CarSummaryResponse;
-import com.akif.rental.api.RentalStatus;
-import com.akif.rental.api.UserSummaryResponse;
+import com.akif.payment.api.PaymentStatus;
 import com.akif.shared.enums.CurrencyType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -12,6 +11,7 @@ import java.time.LocalDate;
 import java.time.Instant;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@lombok.Builder(toBuilder = true)
 public record RentalResponse(
 
         Long id,
@@ -48,7 +48,9 @@ public record RentalResponse(
 
         Instant updateTime,
 
-        @JsonFormat(pattern = "yyyy-MM-dd") LocalDate paymentOpensOn) {
+        @JsonFormat(pattern = "yyyy-MM-dd") LocalDate paymentOpensOn,
+
+        PaymentStatus paymentStatus) {
 
     public RentalResponse(
             Long id,
@@ -75,7 +77,7 @@ public record RentalResponse(
             Instant updateTime) {
         this(id, carSummary, userSummary, startDate, endDate, days, dailyPrice, totalPrice, currency, status,
                 originalPrice, finalPrice, totalSavings, appliedDiscounts, convertedTotalPrice, displayCurrency,
-                exchangeRate, rateSource, pickupNotes, returnNotes, null, null, createTime, updateTime, null);
+                exchangeRate, rateSource, pickupNotes, returnNotes, null, null, createTime, updateTime, null, null);
     }
 
     public RentalResponse(
@@ -106,16 +108,18 @@ public record RentalResponse(
         this(id, carSummary, userSummary, startDate, endDate, days, dailyPrice, totalPrice, currency, status,
                 originalPrice, finalPrice, totalSavings, appliedDiscounts, convertedTotalPrice, displayCurrency,
                 exchangeRate, rateSource, pickupNotes, returnNotes, approvalNotes, cancellationReason, createTime,
-                updateTime, null);
+                updateTime, null, null);
     }
 
     public RentalResponse withDisplayPrice(com.akif.currency.api.DisplayPrice price) {
         if (price == null) {
             return this;
         }
-        return new RentalResponse(id, carSummary, userSummary, startDate, endDate, days, dailyPrice, totalPrice,
-                currency, status, originalPrice, finalPrice, totalSavings, appliedDiscounts, price.amount(),
-                price.currency(), price.exchangeRate(), price.rateSource(), pickupNotes, returnNotes,
-                approvalNotes, cancellationReason, createTime, updateTime, paymentOpensOn);
+        return toBuilder()
+                .convertedTotalPrice(price.amount())
+                .displayCurrency(price.currency())
+                .exchangeRate(price.exchangeRate())
+                .rateSource(price.rateSource())
+                .build();
     }
 }

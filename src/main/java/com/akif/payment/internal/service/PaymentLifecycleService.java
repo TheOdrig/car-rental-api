@@ -84,6 +84,17 @@ class PaymentLifecycleService {
                 .map(paymentMapper::toDto);
     }
 
+    public java.util.Map<Long, com.akif.payment.api.PaymentStatus> getRentalPaymentStatuses(java.util.Collection<Long> rentalIds) {
+        if (rentalIds == null || rentalIds.isEmpty()) {
+            return java.util.Map.of();
+        }
+        java.util.Map<Long, com.akif.payment.api.PaymentStatus> statuses = new java.util.HashMap<>();
+        for (Object[] row : paymentRepository.findRentalPaymentStatuses(rentalIds)) {
+            statuses.put((Long) row[0], (com.akif.payment.api.PaymentStatus) row[1]);
+        }
+        return statuses;
+    }
+
     public Optional<PaymentDto> getPenaltyPaymentByRentalId(Long rentalId) {
         return paymentRepository.findCapturedPenaltyPayments(rentalId).stream()
                 .findFirst()

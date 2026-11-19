@@ -18,7 +18,7 @@ import com.akif.rental.internal.exception.RentalNotFoundException;
 import com.akif.rental.internal.exception.RentalValidationException;
 import com.akif.rental.api.RentalCancelledEvent;
 import com.akif.rental.api.RentalConfirmedEvent;
-import com.akif.rental.internal.mapper.RentalMapper;
+
 import com.akif.rental.domain.model.Rental;
 import com.akif.auth.api.UserDto;
 import com.akif.rental.internal.repository.RentalRepository;
@@ -43,7 +43,7 @@ public class RentalLifecycleService {
 
     private final Clock clock;
     private final RentalRepository rentalRepository;
-    private final RentalMapper rentalMapper;
+    private final RentalAssembler assembler;
     private final PaymentService paymentService;
     private final ApplicationEventPublisher eventPublisher;
     private final RentalProperties rentalProperties;
@@ -77,7 +77,7 @@ public class RentalLifecycleService {
         rental.confirm(notes);
 
         Rental updatedRental = rentalRepository.save(rental);
-        RentalResponse result = rentalMapper.toDto(updatedRental);
+        RentalResponse result = assembler.toResponse(updatedRental, paymentDto.status());
 
         RentalConfirmedEvent event = new RentalConfirmedEvent(
                 updatedRental.getId(),
@@ -143,7 +143,7 @@ public class RentalLifecycleService {
 
         rental.pickUp(pickupNotes);
         Rental updatedRental = rentalRepository.save(rental);
-        RentalResponse result = rentalMapper.toDto(updatedRental);
+        RentalResponse result = assembler.toResponse(updatedRental);
 
         lookups.logRentalOperationSuccess("picked up", result, "Notes: " + (pickupNotes != null ? pickupNotes : "None"));
         return result;
@@ -196,7 +196,7 @@ public class RentalLifecycleService {
         rental.markReturned(actualReturnTime, returnNotes);
 
         Rental updatedRental = rentalRepository.save(rental);
-        RentalResponse result = rentalMapper.toDto(updatedRental);
+        RentalResponse result = assembler.toResponse(updatedRental);
 
         lookups.logRentalOperationSuccess("returned", result, "Notes: " + (returnNotes != null ? returnNotes : "None"));
         return result;
@@ -227,7 +227,7 @@ public class RentalLifecycleService {
         rental.cancel(reason);
 
         Rental updatedRental = rentalRepository.save(rental);
-        RentalResponse result = rentalMapper.toDto(updatedRental);
+        RentalResponse result = assembler.toResponse(updatedRental);
 
         RentalCancelledEvent event = new RentalCancelledEvent(
                 updatedRental.getId(),

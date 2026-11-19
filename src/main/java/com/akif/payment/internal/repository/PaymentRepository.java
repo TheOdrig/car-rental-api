@@ -48,6 +48,13 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             """)
     List<Payment> findOpenPenaltyPaymentsForUpdate(@Param("rentalId") Long rentalId);
 
+    @Query("""
+            SELECT p.rentalId, p.status FROM Payment p
+            WHERE p.rentalId IN :rentalIds AND p.kind = com.akif.payment.domain.enums.PaymentKind.RENTAL
+            AND p.isDeleted = false
+            """)
+    List<Object[]> findRentalPaymentStatuses(@Param("rentalIds") java.util.Collection<Long> rentalIds);
+
     Optional<Payment> findByKindAndReferenceIdAndIsDeletedFalse(PaymentKind kind, Long referenceId);
 
     Optional<Payment> findFirstByRentalIdAndKindAndIsDeletedFalseOrderByIdDesc(Long rentalId, PaymentKind kind);

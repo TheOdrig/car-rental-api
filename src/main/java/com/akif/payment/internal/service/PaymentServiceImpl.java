@@ -61,6 +61,11 @@ class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    public java.util.Map<Long, com.akif.payment.api.PaymentStatus> getRentalPaymentStatuses(Collection<Long> rentalIds) {
+        return lifecycle.getRentalPaymentStatuses(rentalIds);
+    }
+
+    @Override
     public PaymentResult capturePayment(Long paymentId) {
         return lifecycle.capturePayment(paymentId);
     }

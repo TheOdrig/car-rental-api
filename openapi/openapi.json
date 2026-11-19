@@ -2657,6 +2657,10 @@
             "format" : "date",
             "type" : "string"
           },
+          "paymentStatus" : {
+            "enum" : [ "PENDING", "AUTHORIZED", "CAPTURED", "FAILED", "REFUNDED", "CANCELLED" ],
+            "type" : "string"
+          },
           "pickupNotes" : {
             "type" : "string"
           },

@@ -10,7 +10,7 @@ import com.akif.rental.api.RentalStatus;
 import com.akif.rental.internal.exception.InvalidRentalStateException;
 import com.akif.rental.internal.exception.RentalPaymentNotFoundException;
 import com.akif.rental.internal.exception.RentalNotFoundException;
-import com.akif.rental.internal.mapper.RentalMapper;
+
 import com.akif.rental.domain.model.Rental;
 import com.akif.auth.api.UserDto;
 import com.akif.rental.internal.repository.RentalRepository;
@@ -36,7 +36,7 @@ public class RentalQueryService {
 
     private final Clock clock;
     private final RentalRepository rentalRepository;
-    private final RentalMapper rentalMapper;
+    private final RentalAssembler assembler;
     private final PaymentService paymentService;
     private final PaymentWindow paymentWindow;
     private final RentalLookups lookups;
@@ -46,7 +46,7 @@ public class RentalQueryService {
 
         UserDto user = lookups.findUserById(userId);
         Page<Rental> rentals = rentalRepository.findByUserIdAndIsDeletedFalse(user.id(), Pageables.stable(pageable));
-        Page<RentalResponse> result = rentals.map(rentalMapper::toDto);
+        Page<RentalResponse> result = assembler.toPage(rentals);
 
         log.info("Successfully retrieved {} rentals for user: {}", result.getTotalElements(), userId);
         return result;
@@ -58,7 +58,7 @@ public class RentalQueryService {
         Page<Rental> rentals = statuses == null || statuses.isEmpty()
                 ? rentalRepository.findByIsDeletedFalse(Pageables.stable(pageable))
                 : rentalRepository.findByStatusInAndIsDeletedFalse(statuses, Pageables.stable(pageable));
-        Page<RentalResponse> result = rentals.map(rentalMapper::toDto);
+        Page<RentalResponse> result = assembler.toPage(rentals);
 
         log.info("Successfully retrieved {} rentals. Page {}/{}",
                 result.getNumberOfElements(), result.getNumber() + 1, result.getTotalPages());
@@ -75,7 +75,7 @@ public class RentalQueryService {
             throw new RentalNotFoundException(id);
         }
 
-        RentalResponse result = rentalMapper.toDto(rental);
+        RentalResponse result = assembler.toResponse(rental);
         log.info("Successfully retrieved rental: ID={}, Status={}", result.id(), result.status());
         return result;
     }
@@ -160,22 +160,22 @@ public class RentalQueryService {
 
     public Page<RentalResponse> findPendingApprovals(Pageable pageable) {
         Page<Rental> rentals = rentalRepository.findPendingApprovals(pageable);
-        return rentals.map(rentalMapper::toDto);
+        return assembler.toPage(rentals);
     }
 
     public Page<RentalResponse> findTodaysPickups(Pageable pageable) {
         Page<Rental> rentals = rentalRepository.findTodaysPickups(LocalDate.now(clock), pageable);
-        return rentals.map(rentalMapper::toDto);
+        return assembler.toPage(rentals);
     }
 
     public Page<RentalResponse> findTodaysReturns(Pageable pageable) {
         Page<Rental> rentals = rentalRepository.findTodaysReturns(LocalDate.now(clock), pageable);
-        return rentals.map(rentalMapper::toDto);
+        return assembler.toPage(rentals);
     }
 
     public Page<RentalResponse> findOverdueRentals(Pageable pageable) {
         Page<Rental> rentals = rentalRepository.findOverdueRentals(LocalDate.now(clock), pageable);
-        return rentals.map(rentalMapper::toDto);
+        return assembler.toPage(rentals);
     }
 
     public BigDecimal getAverageRentalDurationDays(LocalDate startDate, LocalDate endDate) {
@@ -229,7 +229,7 @@ public class RentalQueryService {
             rentals = rentalRepository.findByUserIdAndIsDeletedFalse(userId, Pageables.stable(pageable));
         }
 
-        Page<RentalResponse> result = rentals.map(rentalMapper::toDto);
+        Page<RentalResponse> result = assembler.toPage(rentals);
         log.info("Retrieved {} rentals for user: {}", result.getTotalElements(), userId);
         return result;
     }
@@ -244,7 +244,7 @@ public class RentalQueryService {
             rentals = rentalRepository.findByCarIdAndIsDeletedFalse(carId, Pageables.stable(pageable));
         }
 
-        Page<RentalResponse> result = rentals.map(rentalMapper::toDto);
+        Page<RentalResponse> result = assembler.toPage(rentals);
         log.info("Retrieved {} rentals for car: {}", result.getTotalElements(), carId);
         return result;
     }

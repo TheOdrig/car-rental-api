@@ -10,7 +10,7 @@ import com.akif.rental.api.RentalStatus;
 import com.akif.rental.internal.config.RentalProperties;
 import com.akif.rental.internal.exception.OpenRentalRequestLimitException;
 import com.akif.rental.api.RentalRequest;
-import com.akif.rental.internal.mapper.RentalMapper;
+
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.domain.model.RentalDatePolicy;
 import com.akif.auth.api.UserDto;
@@ -38,7 +38,7 @@ public class RentalBookingService {
 
     private final Clock clock;
     private final RentalRepository rentalRepository;
-    private final RentalMapper rentalMapper;
+    private final RentalAssembler assembler;
     private final DynamicPricingService dynamicPricingService;
     private final RentalProperties rentalProperties;
     private final RentalLookups lookups;
@@ -93,36 +93,16 @@ public class RentalBookingService {
                 .build();
 
         Rental savedRental = saveBooking(rental);
-        RentalResponse result = rentalMapper.toDto(savedRental);
+        RentalResponse result = assembler.toResponse(savedRental);
 
-        result = new RentalResponse(
-                result.id(),
-                result.carSummary(),
-                result.userSummary(),
-                result.startDate(),
-                result.endDate(),
-                result.days(),
-                result.dailyPrice(),
-                result.totalPrice(),
-                result.currency(),
-                result.status(),
-                pricingResult.baseTotalPrice(),
-                pricingResult.finalPrice(),
-                pricingResult.totalSavings(),
-                pricingResult.appliedModifiers().stream()
+        result = result.toBuilder()
+                .originalPrice(pricingResult.baseTotalPrice())
+                .finalPrice(pricingResult.finalPrice())
+                .totalSavings(pricingResult.totalSavings())
+                .appliedDiscounts(pricingResult.appliedModifiers().stream()
                         .map(PriceModifier::description)
-                        .toList(),
-                result.convertedTotalPrice(),
-                result.displayCurrency(),
-                result.exchangeRate(),
-                result.rateSource(),
-                result.pickupNotes(),
-                result.returnNotes(),
-                result.approvalNotes(),
-                result.cancellationReason(),
-                result.createTime(),
-                result.updateTime(),
-                result.paymentOpensOn());
+                        .toList())
+                .build();
 
         lookups.logRentalOperationSuccess("created", result);
         return result;

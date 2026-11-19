@@ -6,6 +6,9 @@ import com.akif.auth.internal.repository.UserRepository;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.domain.Car;
 import com.akif.car.internal.repository.CarRepository;
+import com.akif.payment.api.PaymentStatus;
+import com.akif.payment.domain.Payment;
+import com.akif.payment.internal.repository.PaymentRepository;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.enums.LateReturnStatus;
 import com.akif.rental.domain.model.Rental;
@@ -62,6 +65,9 @@ class MyRentalsQueryCountIntegrationTest {
     private RentalRepository rentalRepository;
 
     @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
     private JwtTokenService tokenService;
 
     @Autowired
@@ -71,6 +77,7 @@ class MyRentalsQueryCountIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        paymentRepository.deleteAll();
         rentalRepository.deleteAll();
         carRepository.deleteAll();
         userRepository.deleteAll();
@@ -93,7 +100,7 @@ class MyRentalsQueryCountIntegrationTest {
                     .currencyType(CurrencyType.TRY)
                     .carStatusType(CarStatusType.AVAILABLE)
                     .build());
-            rentalRepository.save(Rental.builder()
+            Rental rental = rentalRepository.save(Rental.builder()
                     .userId(customer.getId())
                     .carId(car.getId())
                     .carBrand(car.getBrand())
@@ -110,11 +117,20 @@ class MyRentalsQueryCountIntegrationTest {
                     .status(RentalStatus.REQUESTED)
                     .lateReturnStatus(LateReturnStatus.ON_TIME)
                     .build());
+            if (index % 2 == 0) {
+                paymentRepository.save(Payment.builder()
+                        .rentalId(rental.getId())
+                        .amount(new BigDecimal("1000.00"))
+                        .currency(CurrencyType.TRY)
+                        .status(PaymentStatus.AUTHORIZED)
+                        .build());
+            }
         }
     }
 
     @AfterEach
     void tearDown() {
+        paymentRepository.deleteAll();
         rentalRepository.deleteAll();
         carRepository.deleteAll();
         userRepository.deleteAll();
@@ -131,7 +147,9 @@ class MyRentalsQueryCountIntegrationTest {
         mockMvc.perform(get("/api/v1/rentals/me").param("size", String.valueOf(size))
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content.length()").value(size));
+                .andExpect(jsonPath("$.content.length()").value(size))
+                .andExpect(jsonPath("$.content[?(@.paymentStatus == 'AUTHORIZED')]").isNotEmpty())
+                .andExpect(jsonPath("$.content[?(!@.paymentStatus)]").isNotEmpty());
         return statistics().getPrepareStatementCount();
     }
 
