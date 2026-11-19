@@ -20,6 +20,12 @@ import com.akif.rental.internal.exception.*;
 import com.akif.rental.internal.mapper.RentalMapper;
 import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.rental.internal.service.RentalServiceImpl;
+import com.akif.rental.internal.service.RentalBookingService;
+import com.akif.rental.internal.service.RentalLatePenaltyProcessor;
+import com.akif.rental.internal.service.RentalLifecycleService;
+import com.akif.rental.internal.service.RentalLookups;
+import com.akif.rental.internal.service.RentalQueryService;
+import com.akif.rental.internal.service.RentalRefundService;
 import com.akif.rental.internal.service.penalty.PenaltyCalculationService;
 import com.akif.rental.internal.service.penalty.PenaltyPaymentService;
 import com.akif.shared.enums.CurrencyType;
@@ -100,7 +106,6 @@ class RentalServiceTest {
     @Spy
     private RentalProperties rentalProperties = new RentalProperties();
 
-    @InjectMocks
     private RentalServiceImpl rentalService;
 
     private UserDto testUser;
@@ -112,6 +117,17 @@ class RentalServiceTest {
 
     @BeforeEach
     void setUp() {
+        RentalLookups lookups = new RentalLookups(rentalRepository, carCatalog, userLookup, paymentService);
+        RentalRefundService refunds = new RentalRefundService(clock, paymentService, dynamicPricingService, lookups);
+        RentalLatePenaltyProcessor penalties = new RentalLatePenaltyProcessor(
+                clock, paymentService, eventPublisher, penaltyCalculationService, penaltyPaymentService);
+        rentalService = new RentalServiceImpl(
+                new RentalBookingService(clock, rentalRepository, rentalMapper, dynamicPricingService,
+                        rentalProperties, lookups),
+                new RentalLifecycleService(clock, rentalRepository, rentalMapper, paymentService, eventPublisher,
+                        rentalProperties, lookups, refunds, penalties),
+                new RentalQueryService(clock, rentalRepository, rentalMapper, paymentService, rentalProperties,
+                        lookups));
         testUser = new UserDto(
                 1L,
                 "testuser",
