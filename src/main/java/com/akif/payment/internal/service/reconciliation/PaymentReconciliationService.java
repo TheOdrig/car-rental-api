@@ -16,6 +16,7 @@ import com.stripe.param.ChargeListParams;
 import com.stripe.param.PaymentIntentRetrieveParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -45,6 +46,9 @@ public class PaymentReconciliationService {
     private final PaymentRepository paymentRepository;
     private final StripeConfig stripeConfig;
 
+    @Value("${payment.reconciliation.max-individual-lookups:200}")
+    private int maxIndividualLookups = 200;
+
     public ReconciliationReport runDailyReconciliation(LocalDate date) {
         LocalDateTime startTimestamp = LocalDateTime.now(clock);
 
@@ -62,8 +66,13 @@ public class PaymentReconciliationService {
                     date, stripePayments.size(), chargesOfTheDay, LocalDateTime.now(clock));
 
             Set<String> knownIntentIds = knownIntentIds(stripePayments);
-            List<StripePayment> looked = withIndividualLookups(dbPayments, stripePayments);
-            List<Discrepancy> discrepancies = comparePayments(dbPayments, looked, knownIntentIds, date);
+            IndividualLookups lookups = lookUpIndividually(dbPayments, stripePayments);
+            List<Payment> comparable = dbPayments.stream()
+                    .filter(p -> !lookups.unresolved().contains(p.getId()))
+                    .toList();
+            List<Discrepancy> discrepancies = new ArrayList<>(
+                    comparePayments(comparable, lookups.payments(), knownIntentIds, date));
+            discrepancies.addAll(lookups.failures());
 
             ReconciliationReport report = new ReconciliationReport(
                     date,
@@ -99,6 +108,10 @@ public class PaymentReconciliationService {
     }
 
     public List<StripePayment> withIndividualLookups(List<Payment> dbPayments, List<StripePayment> stripePayments) {
+        return lookUpIndividually(dbPayments, stripePayments).payments();
+    }
+
+    public IndividualLookups lookUpIndividually(List<Payment> dbPayments, List<StripePayment> stripePayments) {
         Set<String> listed = new HashSet<>();
         for (StripePayment stripePayment : stripePayments) {
             if (stripePayment.paymentIntentId() != null) {
@@ -106,18 +119,51 @@ public class PaymentReconciliationService {
             }
         }
         List<StripePayment> combined = new ArrayList<>(stripePayments);
+        List<Discrepancy> failures = new ArrayList<>();
+        Set<Long> unresolved = new HashSet<>();
+        int lookups = 0;
         for (Payment dbPayment : dbPayments) {
             String intentId = dbPayment.getStripePaymentIntentId();
             if (intentId == null || listed.contains(intentId) || !MONEY_STATUSES.contains(dbPayment.getStatus().name())) {
                 continue;
             }
-            StripePayment found = fetchIntentCharge(intentId);
-            if (found != null) {
-                combined.add(found);
-                listed.add(intentId);
+            if (lookups >= maxIndividualLookups) {
+                unresolved.add(dbPayment.getId());
+                failures.add(lookupFailed(dbPayment, "Individual lookup skipped: the per-run limit of "
+                        + maxIndividualLookups + " lookups was reached"));
+                continue;
+            }
+            lookups++;
+            try {
+                StripePayment found = fetchIntentCharge(intentId);
+                if (found != null) {
+                    combined.add(found);
+                    listed.add(intentId);
+                }
+            } catch (ReconciliationException e) {
+                unresolved.add(dbPayment.getId());
+                failures.add(lookupFailed(dbPayment, "Stripe lookup failed: " + e.getMessage()));
             }
         }
-        return combined;
+        if (!failures.isEmpty()) {
+            log.warn("[AUDIT] Reconciliation: {} payment(s) could not be looked up individually", failures.size());
+        }
+        return new IndividualLookups(combined, failures, unresolved);
+    }
+
+    private Discrepancy lookupFailed(Payment dbPayment, String description) {
+        return new Discrepancy(
+                DiscrepancyType.LOOKUP_FAILED,
+                dbPayment.getId().toString(),
+                dbPayment.getStripePaymentIntentId(),
+                dbPayment.getAmount(),
+                null,
+                dbPayment.getStatus().name(),
+                null,
+                description);
+    }
+
+    public record IndividualLookups(List<StripePayment> payments, List<Discrepancy> failures, Set<Long> unresolved) {
     }
 
     public StripePayment fetchIntentCharge(String intentId) {

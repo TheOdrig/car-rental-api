@@ -366,5 +366,51 @@ class PaymentReconciliationServiceTest {
 
             org.mockito.Mockito.verify(spy, org.mockito.Mockito.never()).fetchIntentCharge(org.mockito.ArgumentMatchers.anyString());
         }
+
+        private Payment oldCapturedPayment(long id, String intentId) {
+            Payment payment = oldCapturedPayment();
+            ReflectionTestUtils.setField(payment, "id", id);
+            ReflectionTestUtils.setField(payment, "stripePaymentIntentId", intentId);
+            return payment;
+        }
+
+        @Test
+        @DisplayName("a failed Stripe lookup is recorded for that payment and the run goes on")
+        void failedLookupIsRecordedAndTheRunContinues() {
+            PaymentReconciliationService spy = org.mockito.Mockito.spy(reconciliationService);
+            org.mockito.Mockito.doThrow(new com.akif.payment.internal.exception.ReconciliationException(DAY, "rate limited"))
+                    .when(spy).fetchIntentCharge("pi_bad");
+            org.mockito.Mockito.doReturn(stripe("pi_good", "100.00", "REFUNDED", null)).when(spy).fetchIntentCharge("pi_good");
+            List<Payment> db = List.of(oldCapturedPayment(1L, "pi_bad"), oldCapturedPayment(2L, "pi_good"));
+
+            PaymentReconciliationService.IndividualLookups lookups = spy.lookUpIndividually(db, List.of());
+
+            assertThat(lookups.payments()).extracting(StripePayment::paymentIntentId).containsExactly("pi_good");
+            assertThat(lookups.failures()).singleElement().satisfies(failure -> {
+                assertThat(failure.type()).isEqualTo(DiscrepancyType.LOOKUP_FAILED);
+                assertThat(failure.paymentId()).isEqualTo("1");
+                assertThat(failure.stripePaymentIntentId()).isEqualTo("pi_bad");
+            });
+            assertThat(lookups.unresolved()).containsExactly(1L);
+        }
+
+        @Test
+        @DisplayName("lookups beyond the per-run limit are skipped and reported, not reported missing")
+        void lookupsAreCappedPerRun() {
+            PaymentReconciliationService spy = org.mockito.Mockito.spy(reconciliationService);
+            ReflectionTestUtils.setField(spy, "maxIndividualLookups", 1);
+            org.mockito.Mockito.doReturn(stripe("pi_a", "100.00", "REFUNDED", null)).when(spy).fetchIntentCharge("pi_a");
+            List<Payment> db = List.of(oldCapturedPayment(1L, "pi_a"), oldCapturedPayment(2L, "pi_b"));
+
+            PaymentReconciliationService.IndividualLookups lookups = spy.lookUpIndividually(db, List.of());
+
+            org.mockito.Mockito.verify(spy, org.mockito.Mockito.never()).fetchIntentCharge("pi_b");
+            assertThat(lookups.failures()).singleElement().satisfies(failure -> {
+                assertThat(failure.type()).isEqualTo(DiscrepancyType.LOOKUP_FAILED);
+                assertThat(failure.paymentId()).isEqualTo("2");
+                assertThat(failure.description()).contains("limit of 1");
+            });
+            assertThat(lookups.unresolved()).containsExactly(2L);
+        }
     }
 }
