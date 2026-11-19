@@ -47,6 +47,7 @@ import com.akif.car.api.DynamicPricingService;
 import com.akif.car.api.PriceModifier;
 import com.akif.car.api.PricingResult;
 import com.akif.shared.enums.*;
+import com.akif.shared.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -284,6 +285,11 @@ public class RentalServiceImpl implements RentalService {
             throw new RentalValidationException("Pickup is not allowed before the start date " + rental.getStartDate());
         }
 
+        LocalDate lastPickupDay = rental.getStartDate().plusDays(rentalProperties.getNoShowDays() - 1L);
+        if (LocalDate.now(clock).isAfter(lastPickupDay)) {
+            throw new RentalValidationException("Pickup is not allowed after " + lastPickupDay
+                    + ", the booking is released as a no-show");
+        }
         if (LocalDate.now(clock).isAfter(rental.getEndDate())) {
             throw new RentalValidationException("Pickup is not allowed after the end date " + rental.getEndDate());
         }
@@ -460,13 +466,7 @@ public class RentalServiceImpl implements RentalService {
         int places = rental.getCurrency().getDecimalPlaces();
         BigDecimal usedPrice = BigDecimal.ZERO;
         if (daysUsed > 0) {
-            LocalDate bookingDate = rental.getCreateTime() != null ? rental.getCreateTime().toLocalDate() : today;
-            usedPrice = dynamicPricingService.calculatePrice(
-                    rental.getCarId(),
-                    rental.getStartDate(),
-                    rental.getStartDate().plusDays(daysUsed - 1),
-                    bookingDate,
-                    rental.getId()).finalPrice();
+            usedPrice = priceOfDaysUsed(rental, payment.amount(), daysUsed, today, places);
         }
         BigDecimal refundAmount = payment.amount()
                 .subtract(usedPrice)
@@ -490,6 +490,31 @@ public class RentalServiceImpl implements RentalService {
         }
 
         return new RefundInfo(true, refundAmount, refundResult.transactionId());
+    }
+
+    private BigDecimal priceOfDaysUsed(Rental rental, BigDecimal paid, long daysUsed, LocalDate today, int places) {
+        BigDecimal prorated = paid.multiply(BigDecimal.valueOf(daysUsed))
+                .divide(BigDecimal.valueOf(rental.getDays()), places, RoundingMode.HALF_UP);
+        try {
+            if (findCarById(rental.getCarId()).currency() != rental.getCurrency()) {
+                log.warn("Car currency changed since booking, prorating the early return of rental {}", rental.getId());
+                return prorated;
+            }
+            LocalDate bookingDate = rental.getCreateTime() != null ? rental.getCreateTime().toLocalDate() : today;
+            BigDecimal repricedWhole = dynamicPricingService.calculatePrice(
+                    rental.getCarId(), rental.getStartDate(), rental.getEndDate(), bookingDate, rental.getId()).finalPrice();
+            if (repricedWhole == null || repricedWhole.signum() <= 0) {
+                return prorated;
+            }
+            BigDecimal repricedUsed = dynamicPricingService.calculatePrice(
+                    rental.getCarId(), rental.getStartDate(), rental.getStartDate().plusDays(daysUsed - 1),
+                    bookingDate, rental.getId()).finalPrice();
+            BigDecimal drift = rental.getTotalPrice().divide(repricedWhole, 8, RoundingMode.HALF_UP);
+            return repricedUsed.multiply(drift).setScale(places, RoundingMode.HALF_UP);
+        } catch (BaseException e) {
+            log.warn("Could not reprice the used days of rental {}, prorating: {}", rental.getId(), e.getMessage());
+            return prorated;
+        }
     }
 
     private static String cancelRefundKey(Long rentalId) {

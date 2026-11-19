@@ -675,6 +675,7 @@ class PaymentCommittedTransactionsIntegrationTest {
         Rental rental = rental(LocalDate.now().minusDays(1), LocalDate.now().plusDays(2), RentalStatus.IN_USE);
         jdbcTemplate.update("UPDATE car_rental.rentals SET currency = 'JPY', total_price = 10000, days = 4 WHERE id = ?",
                 rental.getId());
+        jdbcTemplate.update("UPDATE car_rental.car SET currency_type = 'JPY' WHERE id = ?", car.getId());
         PaymentDto dto = paymentService.createPayment(new CreatePaymentRequest(
                 rental.getId(), rental.getUserEmail(), rental.getCarLicensePlate(),
                 new BigDecimal("10000"), CurrencyType.JPY, "CARD"));
@@ -682,9 +683,13 @@ class PaymentCommittedTransactionsIntegrationTest {
         payment.attachIntent("pi_jpy", "seed");
         payment.capture();
         paymentRepository.saveAndFlush(payment);
-        BigDecimal usedDays = dynamicPricingService.calculatePrice(
+        BigDecimal wholeStay = dynamicPricingService.calculatePrice(
+                car.getId(), rental.getStartDate(), rental.getEndDate(), LocalDate.now(), rental.getId()).finalPrice();
+        BigDecimal usedDaysAtCurrentPrice = dynamicPricingService.calculatePrice(
                 car.getId(), rental.getStartDate(), rental.getStartDate().plusDays(1), LocalDate.now(), rental.getId()).finalPrice();
-        assertThat(usedDays.scale()).isEqualTo(2);
+        BigDecimal usedDays = usedDaysAtCurrentPrice
+                .multiply(new BigDecimal("10000").divide(wholeStay, 8, java.math.RoundingMode.HALF_UP))
+                .setScale(0, java.math.RoundingMode.HALF_UP);
 
         rentalService.earlyReturnRental(rental.getId(), "returned early");
 

@@ -528,6 +528,39 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should refuse pickup once the no-show window has passed, as the sweep releases the booking")
+        void shouldRefusePickupAfterTheNoShowWindow() {
+            testRental.confirm(null);
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now().minusDays(1));
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "endDate", LocalDate.now().plusDays(3));
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
+
+            assertThatThrownBy(() -> rentalService.pickupRental(1L, null))
+                    .isInstanceOf(com.akif.rental.internal.exception.RentalValidationException.class)
+                    .hasMessageContaining("no-show");
+
+            verify(paymentService, never()).capturePayment(anyLong());
+        }
+
+        @Test
+        @DisplayName("Should allow pickup on a later day when the no-show window is longer")
+        void shouldAllowPickupWithinALongerNoShowWindow() {
+            rentalProperties.setNoShowDays(3);
+            testRental.confirm(null);
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now().minusDays(2));
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "endDate", LocalDate.now().plusDays(3));
+            PaymentDto paymentDto = createTestPaymentDto();
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
+            when(carCatalog.getCarForBooking(1L)).thenReturn(testCar);
+            when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(paymentDto));
+            when(paymentService.capturePayment(anyLong())).thenReturn(new PaymentResult(true, "TXN-123", "Captured"));
+            when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
+            when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
+
+            assertThat(rentalService.pickupRental(1L, null)).isNotNull();
+        }
+
+        @Test
         @DisplayName("Should refuse pickup before the start date")
         void shouldRefusePickupBeforeStartDate() {
             testRental.confirm(null);
@@ -581,11 +614,10 @@ class RentalServiceTest {
             when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "totalPrice", new BigDecimal("12750.00"));
             when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(captured));
-            when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any(), any())).thenReturn(
-                    PricingResult.builder().basePrice(new BigDecimal("500.00")).rentalDays(3)
-                            .appliedModifiers(Collections.emptyList()).combinedMultiplier(BigDecimal.ONE)
-                            .finalPrice(new BigDecimal("1500.00")).build());
+            when(carCatalog.getCarForBooking(testCar.id())).thenReturn(testCar);
+            stubRepricing(today.minusDays(2), today.plusDays(27), "12750.00", today, "1500.00");
             when(paymentService.refundPayment(anyLong(), any(BigDecimal.class), any()))
                     .thenReturn(new PaymentResult(true, "re_1", "Refunded"));
 
@@ -597,6 +629,73 @@ class RentalServiceTest {
             ArgumentCaptor<BigDecimal> amount = ArgumentCaptor.forClass(BigDecimal.class);
             verify(paymentService).refundPayment(anyLong(), amount.capture(), any());
             assertThat(amount.getValue()).isEqualByComparingTo("11250.00");
+        }
+
+        private void stubRepricing(LocalDate start, LocalDate end, String wholePrice, LocalDate usedEnd, String usedPrice) {
+            when(dynamicPricingService.calculatePrice(
+                    org.mockito.ArgumentMatchers.eq(testCar.id()), org.mockito.ArgumentMatchers.eq(start),
+                    org.mockito.ArgumentMatchers.eq(end), any(), org.mockito.ArgumentMatchers.eq(1L)))
+                    .thenReturn(pricing(30, wholePrice));
+            when(dynamicPricingService.calculatePrice(
+                    org.mockito.ArgumentMatchers.eq(testCar.id()), org.mockito.ArgumentMatchers.eq(start),
+                    org.mockito.ArgumentMatchers.eq(usedEnd), any(), org.mockito.ArgumentMatchers.eq(1L)))
+                    .thenReturn(pricing(3, usedPrice));
+        }
+
+        private PricingResult pricing(int days, String finalPrice) {
+            return PricingResult.builder().basePrice(new BigDecimal("500.00")).rentalDays(days)
+                    .appliedModifiers(Collections.emptyList()).combinedMultiplier(BigDecimal.ONE)
+                    .finalPrice(new BigDecimal(finalPrice)).build();
+        }
+
+        private void givenThirtyDayRentalThreeDaysIn(LocalDate today) {
+            testRental.confirm(null);
+            testRental.pickUp(null);
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", today.minusDays(2));
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "endDate", today.plusDays(27));
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "days", 30);
+            org.springframework.test.util.ReflectionTestUtils.setField(testRental, "totalPrice", new BigDecimal("12750.00"));
+            PaymentDto captured = new PaymentDto(1L, 1L, testUser.email(), testCar.licensePlate(),
+                    new BigDecimal("12750.00"), testRental.getCurrency(), PaymentStatus.CAPTURED, "CARD",
+                    "TXN-123", null, null, null);
+            when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
+            when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
+            when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
+            when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(captured));
+            when(paymentService.refundPayment(anyLong(), any(BigDecimal.class), any()))
+                    .thenReturn(new PaymentResult(true, "re_1", "Refunded"));
+        }
+
+        @Test
+        @DisplayName("Should ignore a car price change made after the booking when repricing the days used")
+        void shouldNeutraliseCarPriceDriftSinceBooking() {
+            LocalDate today = LocalDate.now(clock);
+            givenThirtyDayRentalThreeDaysIn(today);
+            when(carCatalog.getCarForBooking(testCar.id())).thenReturn(testCar);
+            stubRepricing(today.minusDays(2), today.plusDays(27), "25500.00", today, "3000.00");
+
+            rentalService.earlyReturnRental(1L, null);
+
+            ArgumentCaptor<BigDecimal> amount = ArgumentCaptor.forClass(BigDecimal.class);
+            verify(paymentService).refundPayment(anyLong(), amount.capture(), any());
+            assertThat(amount.getValue()).isEqualByComparingTo("11250.00");
+        }
+
+        @Test
+        @DisplayName("Should prorate the paid amount when the car now uses another currency")
+        void shouldProrateOnCurrencyMismatch() {
+            LocalDate today = LocalDate.now(clock);
+            givenThirtyDayRentalThreeDaysIn(today);
+            CarDto otherCurrency = org.mockito.Mockito.mock(CarDto.class);
+            when(otherCurrency.currency()).thenReturn(CurrencyType.EUR);
+            when(carCatalog.getCarForBooking(testCar.id())).thenReturn(otherCurrency);
+
+            rentalService.earlyReturnRental(1L, null);
+
+            verify(dynamicPricingService, never()).calculatePrice(anyLong(), any(), any(), any(), any());
+            ArgumentCaptor<BigDecimal> amount = ArgumentCaptor.forClass(BigDecimal.class);
+            verify(paymentService).refundPayment(anyLong(), amount.capture(), any());
+            assertThat(amount.getValue()).isEqualByComparingTo("11475.00");
         }
 
         @Test
@@ -614,6 +713,7 @@ class RentalServiceTest {
             when(rentalRepository.save(any(Rental.class))).thenReturn(testRental);
             when(rentalMapper.toDto(any(Rental.class))).thenReturn(testRentalResponse);
             when(paymentService.getPaymentByRentalId(1L)).thenReturn(Optional.of(captured));
+            when(carCatalog.getCarForBooking(testCar.id())).thenReturn(testCar);
             when(dynamicPricingService.calculatePrice(anyLong(), any(), any(), any(), any())).thenReturn(
                     PricingResult.builder().basePrice(new BigDecimal("500.00")).rentalDays(2)
                             .appliedModifiers(Collections.emptyList()).combinedMultiplier(BigDecimal.ONE)
