@@ -78,7 +78,7 @@ bash scripts/verify.sh
 
 `scripts/verify.sh` is the full gate. It checks that no AI or planning files are tracked ([`scripts/check-no-ai-files.sh`](scripts/check-no-ai-files.sh)), runs `scripts/verify.local.sh` (or `.ps1`) when a contributor has added one, requires the OpenAPI artifacts to exist, then runs `./mvnw -B verify`: the full suite of about 1,570 tests against a real PostgreSQL 18 started by Testcontainers (Docker must be running), followed by JaCoCo gates of 80% line and 63% branch coverage overall plus line floors for the `payment`, `rental` and `auth` modules. It takes several minutes. On Windows use `scripts/verify.ps1`.
 
-[`scripts/setup-hooks.sh`](scripts/setup-hooks.sh) installs a pre-push hook that runs only fast checks (the AI-file guard, artifact presence and `LogSafetyTest`, `ModularityTests`, `OpenApiContractTest`, `EndpointInventoryTest`, about a minute), not the full suite; run `scripts/verify.sh` before a release. There is no hosted CI; the local gate is the check.
+[`scripts/setup-hooks.sh`](scripts/setup-hooks.sh) installs a pre-push hook. When the pushed range touches `src/`, `pom.xml`, `scripts/`, `Dockerfile`, `docker-compose.yml`, `.mvn/` or `openapi/`, it runs the full gate (`scripts/verify.sh`); otherwise only the fast checks (the AI-file guard, artifact presence and `LogSafetyTest`, `ModularityTests`, `OpenApiContractTest`, `EndpointInventoryTest`, about a minute). [`scripts/nightly.sh`](scripts/nightly.sh) (or `.ps1`) runs the full gate and, with `NIGHTLY_DEPENDENCY_CHECK=1`, the dependency scan. There is no hosted CI; the local gate is the check.
 
 ## API documentation
 
