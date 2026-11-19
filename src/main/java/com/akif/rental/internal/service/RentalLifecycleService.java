@@ -9,6 +9,7 @@ import com.akif.rental.api.EarlyReturnPreview;
 import com.akif.payment.api.PaymentDto;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.api.CreatePaymentRequest;
+import com.akif.rental.api.CancelledBy;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.internal.config.RentalProperties;
 import com.akif.rental.internal.exception.InvalidRentalStateException;
@@ -218,13 +219,15 @@ public class RentalLifecycleService {
         }
 
         RentalStatus currentStatus = rental.getStatus();
+        CancelledBy cancelledBy = currentUser.isAdmin() ? CancelledBy.ADMIN : CancelledBy.CUSTOMER;
+        String cleanReason = reason == null || reason.isBlank() ? null : reason.trim();
 
         RefundInfo refundInfo = new RefundInfo(false, BigDecimal.ZERO, null);
         if (currentStatus == RentalStatus.CONFIRMED) {
             refundInfo = refunds.refundPayment(rentalId);
         }
 
-        rental.cancel(reason);
+        rental.cancel(cleanReason, cancelledBy);
 
         Rental updatedRental = rentalRepository.save(rental);
         RentalResponse result = assembler.toResponse(updatedRental);
@@ -234,7 +237,8 @@ public class RentalLifecycleService {
                 updatedRental.getUserEmail(),
                 Instant.now(clock),
                 Instant.now(clock),
-                "Cancelled by " + (currentUser.isAdmin() ? "admin" : "customer") + ". Reason: " + reason,
+                "Cancelled by " + cancelledBy.name().toLowerCase(java.util.Locale.ROOT)
+                        + (cleanReason == null ? "." : ". Reason: " + cleanReason),
                 refundInfo.refundProcessed(),
                 refundInfo.refundAmount(),
                 refundInfo.refundTransactionId());

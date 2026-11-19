@@ -146,7 +146,7 @@ public class RentalController {
         }
 
         @PostMapping("/{id}/cancel")
-        @Operation(summary = "Cancel rental", description = "Cancel a REQUESTED or CONFIRMED rental (user can cancel own, admin can cancel any). A rental in use ends only through the return flow.")
+        @Operation(summary = "Cancel rental", description = "Cancel a REQUESTED or CONFIRMED rental (user can cancel own, admin can cancel any). The optional reason is stored with who cancelled (cancelledBy). A rental in use ends only through the return flow.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Rental cancelled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RentalResponse.class))),
                         @ApiResponse(responseCode = "400", description = "Rental cannot be cancelled in its current status (RENTAL_CANCEL_NOT_ALLOWED)"),
@@ -154,11 +154,11 @@ public class RentalController {
         })
         public ResponseEntity<RentalResponse> cancelRental(
                         @Parameter(description = "Rental ID", required = true) @PathVariable Long id,
-                        @RequestBody(required = false) CancelRequest request,
+                        @Valid @RequestBody(required = false) CancelRequest request,
                         @AuthenticationPrincipal AuthenticatedUser caller) {
 
 
-                String reason = (request != null) ? request.reason() : "Cancelled by user";
+                String reason = (request != null) ? request.reason() : null;
                 RentalResponse rental = rentalService.cancelRental(id, caller.id(), reason);
 
                 return ResponseEntity.ok(rental);

@@ -77,18 +77,18 @@ class RentalLifecycleTest {
     void cancelFollowsStatusGuard() {
         Rental rental = rentalIn(RentalStatus.CONFIRMED);
 
-        rental.cancel("customer changed plans");
+        rental.cancel("customer changed plans", com.akif.rental.api.CancelledBy.CUSTOMER);
 
         assertThat(rental.getStatus()).isEqualTo(RentalStatus.CANCELLED);
         assertThat(rental.getCancellationReason()).isEqualTo("customer changed plans");
-        assertThatThrownBy(() -> rentalIn(RentalStatus.RETURNED).cancel("too late"))
+        assertThatThrownBy(() -> rentalIn(RentalStatus.RETURNED).cancel("too late", com.akif.rental.api.CancelledBy.CUSTOMER))
                 .isInstanceOf(InvalidStatusTransitionException.class);
     }
 
     @Test
     @DisplayName("cancel is rejected while the car is in use")
     void cancelRejectedWhileInUse() {
-        assertThatThrownBy(() -> rentalIn(RentalStatus.IN_USE).cancel("keep the refund"))
+        assertThatThrownBy(() -> rentalIn(RentalStatus.IN_USE).cancel("keep the refund", com.akif.rental.api.CancelledBy.CUSTOMER))
                 .isInstanceOf(InvalidStatusTransitionException.class);
     }
 

@@ -1,6 +1,7 @@
 package com.akif.rental.internal.scheduler;
 
 import java.time.Duration;
+import com.akif.rental.api.CancelledBy;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.config.RentalProperties;
@@ -37,7 +38,7 @@ public class RentalRequestExpiryScheduler {
         Instant cutoff = now.minus(Duration.ofHours(properties.getRequestExpiryHours()));
         List<Rental> stale = rentalRepository.findStaleRequests(RentalStatus.REQUESTED, cutoff);
         for (Rental rental : stale) {
-            rental.cancel(EXPIRY_REASON);
+            rental.cancel(EXPIRY_REASON, CancelledBy.SYSTEM);
             rentalRepository.save(rental);
             eventPublisher.publishEvent(new RentalCancelledEvent(
                     rental.getId(),

@@ -425,8 +425,10 @@
         "description" : "Request for cancelling a rental",
         "properties" : {
           "reason" : {
-            "description" : "Reason for cancellation",
+            "description" : "Optional reason for the cancellation",
             "example" : "Customer requested cancellation",
+            "maxLength" : 500,
+            "minLength" : 0,
             "type" : "string"
           }
         },
@@ -2605,6 +2607,10 @@
             "type" : "string"
           },
           "cancellationReason" : {
+            "type" : "string"
+          },
+          "cancelledBy" : {
+            "enum" : [ "CUSTOMER", "ADMIN", "SYSTEM" ],
             "type" : "string"
           },
           "carSummary" : {
@@ -11094,7 +11100,7 @@
     },
     "/api/v1/rentals/{id}/cancel" : {
       "post" : {
-        "description" : "Cancel a REQUESTED or CONFIRMED rental (user can cancel own, admin can cancel any). A rental in use ends only through the return flow.",
+        "description" : "Cancel a REQUESTED or CONFIRMED rental (user can cancel own, admin can cancel any). The optional reason is stored with who cancelled (cancelledBy). A rental in use ends only through the return flow.",
         "operationId" : "cancelRental",
         "parameters" : [ {
           "description" : "Rental ID",

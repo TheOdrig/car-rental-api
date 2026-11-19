@@ -30,6 +30,7 @@ class EnumWireFormatTest {
             RateSource.class,
             PaymentStatus.class,
             RentalStatus.class,
+            com.akif.rental.api.CancelledBy.class,
             LateReturnStatus.class,
             DamageStatus.class,
             DamageSeverity.class,

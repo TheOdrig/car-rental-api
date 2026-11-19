@@ -2,6 +2,7 @@ package com.akif.rental.domain.model;
 
 import com.akif.shared.enums.CurrencyType;
 import com.akif.rental.domain.enums.LateReturnStatus;
+import com.akif.rental.api.CancelledBy;
 import com.akif.rental.api.RentalStatus;
 import com.akif.shared.exception.InvalidStatusTransitionException;
 import com.akif.shared.domain.BaseEntity;
@@ -94,6 +95,10 @@ public class Rental extends BaseEntity {
     @Column(name = "cancellation_reason", columnDefinition = "TEXT")
     private String cancellationReason;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cancelled_by", length = 20)
+    private CancelledBy cancelledBy;
+
     @Column(name = "pickup_reminder_sent")
     @Builder.Default
     private boolean pickupReminderSent = false;
@@ -150,10 +155,11 @@ public class Rental extends BaseEntity {
         this.returnNotes = notes;
     }
 
-    public void cancel(String reason) {
+    public void cancel(String reason, CancelledBy by) {
         requireTransition(status.canCancel(), RentalStatus.CANCELLED);
         this.status = RentalStatus.CANCELLED;
         this.cancellationReason = reason;
+        this.cancelledBy = by;
     }
 
     public void markPickupReminderSent() {

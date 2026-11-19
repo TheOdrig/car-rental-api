@@ -4,6 +4,7 @@ import com.akif.payment.api.PaymentDto;
 import com.akif.payment.api.PaymentResult;
 import com.akif.payment.api.PaymentService;
 import com.akif.payment.api.PaymentStatus;
+import com.akif.rental.api.CancelledBy;
 import com.akif.rental.api.RentalCancelledEvent;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
@@ -97,7 +98,7 @@ public class UnpaidRentalExpiryScheduler {
             }
         }
 
-        rental.cancel(EXPIRY_REASON);
+        rental.cancel(EXPIRY_REASON, CancelledBy.SYSTEM);
         rentalRepository.save(rental);
         Instant now = Instant.now(clock);
         eventPublisher.publishEvent(new RentalCancelledEvent(

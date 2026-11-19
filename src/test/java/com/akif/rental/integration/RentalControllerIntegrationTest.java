@@ -274,7 +274,46 @@ class RentalControllerIntegrationTest {
                         mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
                                         .header("Authorization", userToken))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.status").value("CANCELLED"));
+                                        .andExpect(jsonPath("$.status").value("CANCELLED"))
+                                        .andExpect(jsonPath("$.cancelledBy").value("CUSTOMER"))
+                                        .andExpect(jsonPath("$.cancellationReason").doesNotExist());
+                }
+
+                @Test
+                @DisplayName("Should record the admin and the optional reason when an admin cancels")
+                void shouldRecordAdminCancellation() throws Exception {
+                        Long withReason = requestRental(1, 3);
+                        Long withoutReason = requestRental(10, 12);
+
+                        mockMvc.perform(post("/api/v1/rentals/{id}/cancel", withReason)
+                                        .header("Authorization", adminToken)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content("{\"reason\":\"Vehicle sent to the workshop\"}"))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.cancelledBy").value("ADMIN"))
+                                        .andExpect(jsonPath("$.cancellationReason").value("Vehicle sent to the workshop"));
+                        mockMvc.perform(post("/api/v1/rentals/{id}/cancel", withoutReason)
+                                        .header("Authorization", adminToken))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.cancelledBy").value("ADMIN"))
+                                        .andExpect(jsonPath("$.cancellationReason").doesNotExist());
+                        mockMvc.perform(get("/api/v1/rentals/{id}", withReason)
+                                        .header("Authorization", userToken))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.cancelledBy").value("ADMIN"));
+                }
+
+                @Test
+                @DisplayName("Should reject a cancellation reason longer than 500 characters")
+                void shouldRejectOverlongCancellationReason() throws Exception {
+                        Long rentalId = requestRental(1, 3);
+
+                        mockMvc.perform(post("/api/v1/rentals/{id}/cancel", rentalId)
+                                        .header("Authorization", adminToken)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content("{\"reason\":\"" + "x".repeat(501) + "\"}"))
+                                        .andExpect(status().isBadRequest())
+                                        .andExpect(jsonPath("$.errors[0].field").value("reason"));
                 }
 
                 @Test
@@ -428,21 +467,6 @@ class RentalControllerIntegrationTest {
         @DisplayName("Admin status filter Tests")
         class AdminStatusFilterTests {
 
-                private Long requestRental(int fromDays, int toDays) throws Exception {
-                        RentalRequest request = new RentalRequest(
-                                        testCar.getId(),
-                                        LocalDate.now().plusDays(fromDays),
-                                        LocalDate.now().plusDays(toDays),
-                                        null);
-                        String body = mockMvc.perform(post("/api/v1/rentals/request")
-                                        .header("Authorization", userToken)
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(objectMapper.writeValueAsString(request)))
-                                        .andExpect(status().isCreated())
-                                        .andReturn().getResponse().getContentAsString();
-                        return objectMapper.readTree(body).get("id").asLong();
-                }
-
                 private java.util.List<String> idsAndStatuses(String body) throws Exception {
                         java.util.List<String> out = new java.util.ArrayList<>();
                         for (tools.jackson.databind.JsonNode n : objectMapper.readTree(body).get("content")) {
@@ -521,6 +545,21 @@ class RentalControllerIntegrationTest {
                                         .andExpect(status().isForbidden());
                 }
         }
+
+    private Long requestRental(int fromDays, int toDays) throws Exception {
+        RentalRequest request = new RentalRequest(
+                testCar.getId(),
+                LocalDate.now().plusDays(fromDays),
+                LocalDate.now().plusDays(toDays),
+                null);
+        String body = mockMvc.perform(post("/api/v1/rentals/request")
+                .header("Authorization", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        return objectMapper.readTree(body).get("id").asLong();
+    }
 
     private void startToday(Long rentalId) {
         com.akif.rental.domain.model.Rental rental = rentalRepository.findById(rentalId).orElseThrow();

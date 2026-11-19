@@ -149,7 +149,7 @@ class RentalOverlapConstraintTest {
     @DisplayName("a cancelled booking frees the dates")
     void cancellationFreesDates() {
         Rental first = rentalRepository.saveAndFlush(rental(car, 0, 5, RentalStatus.REQUESTED));
-        first.cancel("changed plans");
+        first.cancel("changed plans", com.akif.rental.api.CancelledBy.CUSTOMER);
         rentalRepository.saveAndFlush(first);
 
         assertThatCode(() -> rentalRepository.saveAndFlush(rental(car, 0, 5, RentalStatus.REQUESTED)))
