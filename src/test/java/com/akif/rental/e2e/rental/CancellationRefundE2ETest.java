@@ -14,6 +14,7 @@ import com.akif.rental.api.RentalCancelledEvent;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.api.RentalRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,9 @@ import com.akif.testsupport.TestcontainersConfiguration;
 import org.springframework.http.MediaType;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +51,22 @@ class CancellationRefundE2ETest extends E2ETestBase {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    private static final Instant TUESDAY_IN_MARCH = Instant.parse("2031-03-11T10:00:00Z");
+
+    @BeforeEach
+    void pinTheCalendar() {
+        clock.pinTo(TUESDAY_IN_MARCH);
+    }
+
+    private RentalRequest weekdayRequest(Long carId) {
+        return TestDataBuilder.createRentalRequest(carId, LocalDate.of(2031, 3, 11), LocalDate.of(2031, 3, 13));
+    }
+
+    private void bookedAtTheCurrentInstant(Long rentalId) {
+        jdbcTemplate.update("UPDATE car_rental.rentals SET create_time = ? WHERE id = ?",
+                LocalDateTime.of(2031, 3, 11, 10, 0), rentalId);
+    }
+
     @Nested
     @DisplayName("REQUESTED Rental Cancellation Tests")
     class RequestedRentalCancellationTests {
@@ -61,7 +81,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
             Car testCar = TestDataBuilder.createAvailableCar();
             testCar = carRepository.save(testCar);
 
-            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
+            RentalRequest rentalRequest = weekdayRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
             Optional<Payment> paymentOptional = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL);
@@ -98,7 +118,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
             Car testCar = TestDataBuilder.createAvailableCar();
             testCar = carRepository.save(testCar);
 
-            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
+            RentalRequest rentalRequest = weekdayRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
 
             mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
@@ -134,8 +154,9 @@ class CancellationRefundE2ETest extends E2ETestBase {
             assertThat(event.rentalId()).isEqualTo(rentalId);
             assertThat(event.customerEmail()).isEqualTo(testUser.getEmail());
             assertThat(event.refundProcessed()).isTrue();
-            assertThat(event.refundAmount()).isNotNull();
-            assertThat(event.refundTransactionId()).isNotNull();
+            assertThat(event.refundAmount()).isEqualByComparingTo("1500.00");
+            assertThat(event.refundTransactionId()).isEqualTo(payment.getStripePaymentIntentId());
+            assertThat(payment.getAmount()).isEqualByComparingTo("1500.00");
 
             log.info("Successfully cancelled CONFIRMED rental with refund");
         }
@@ -149,7 +170,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
             String adminToken = generateAdminToken(testAdmin);
             Car testCar = carRepository.save(TestDataBuilder.createAvailableCar());
 
-            Long rentalId = createAndGetRentalId(TestDataBuilder.createRentalRequest(testCar.getId()), userToken);
+            Long rentalId = createAndGetRentalId(weekdayRequest(testCar.getId()), userToken);
             mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
@@ -175,8 +196,9 @@ class CancellationRefundE2ETest extends E2ETestBase {
         private Long inUseRental(String userToken, String adminToken) throws Exception {
             Car testCar = carRepository.save(TestDataBuilder.createAvailableCar());
 
-            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
+            RentalRequest rentalRequest = weekdayRequest(testCar.getId());
             Long rentalId = createAndGetRentalId(rentalRequest, userToken);
+            bookedAtTheCurrentInstant(rentalId);
 
             mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
@@ -229,12 +251,15 @@ class CancellationRefundE2ETest extends E2ETestBase {
         }
 
         @Test
-        @DisplayName("Only an admin can end an IN_USE rental early, with a partial refund of the unused days")
+        @DisplayName("Only an admin can end an IN_USE rental early, with a refund of exactly the unused days")
         void adminEarlyReturnRefundsUnusedDays() throws Exception {
-            String userToken = generateUserToken(userRepository.save(TestDataBuilder.createTestUser()));
-            String adminToken = generateAdminToken(userRepository.save(TestDataBuilder.createTestAdmin()));
-            Long rentalId = inUseRental(userToken, adminToken);
-            BigDecimal originalAmount = paymentOf(rentalId).getAmount();
+            User customer = userRepository.save(TestDataBuilder.createTestUser());
+            User admin = userRepository.save(TestDataBuilder.createTestAdmin());
+            Long rentalId = inUseRental(generateUserToken(customer), generateAdminToken(admin));
+            assertThat(paymentOf(rentalId).getAmount()).isEqualByComparingTo("1500.00");
+            clock.advance(java.time.Duration.ofDays(1));
+            String userToken = generateUserToken(customer);
+            String adminToken = generateAdminToken(admin);
 
             mockMvc.perform(post("/api/v1/rentals/{id}/early-return", rentalId)
                             .header("Authorization", "Bearer " + userToken))
@@ -246,8 +271,41 @@ class CancellationRefundE2ETest extends E2ETestBase {
                     .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.getDisplayName()));
 
             Payment payment = paymentOf(rentalId);
-            assertThat(payment.refundedTotal()).isPositive();
-            assertThat(payment.refundedTotal()).isLessThanOrEqualTo(originalAmount);
+            assertThat(payment.refundedTotal()).isEqualByComparingTo("500.00");
+            assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CAPTURED);
+        }
+
+        @Test
+        @DisplayName("Returning a 30-day rental after 3 days refunds the paid amount minus 3 days at the short-rental price, not a share of the discounted total")
+        void earlyReturnOfALongRentalDoesNotKeepTheDurationDiscount() throws Exception {
+            User customer = userRepository.save(TestDataBuilder.createTestUser());
+            User admin = userRepository.save(TestDataBuilder.createTestAdmin());
+            Car testCar = carRepository.save(TestDataBuilder.createAvailableCar());
+            clock.pinTo(Instant.parse("2031-03-10T10:00:00Z"));
+            String userToken = generateUserToken(customer);
+            String adminToken = generateAdminToken(admin);
+            Long rentalId = createAndGetRentalId(TestDataBuilder.createRentalRequest(
+                    testCar.getId(), LocalDate.of(2031, 3, 10), LocalDate.of(2031, 4, 8)), userToken);
+            jdbcTemplate.update("UPDATE car_rental.rentals SET create_time = ? WHERE id = ?",
+                    LocalDateTime.of(2031, 3, 10, 10, 0), rentalId);
+            mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk());
+            payRental(rentalId);
+            mockMvc.perform(post("/api/v1/rentals/{id}/pickup", rentalId)
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{}"))
+                    .andExpect(status().isOk());
+            assertThat(paymentOf(rentalId).getAmount()).isEqualByComparingTo("12720.00");
+            clock.advance(java.time.Duration.ofDays(2));
+            adminToken = generateAdminToken(admin);
+
+            mockMvc.perform(post("/api/v1/rentals/{id}/early-return", rentalId)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk());
+
+            assertThat(paymentOf(rentalId).refundedTotal()).isEqualByComparingTo("11220.00");
         }
     }
 }

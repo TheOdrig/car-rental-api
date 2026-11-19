@@ -7,19 +7,19 @@ import com.akif.car.domain.Car;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.e2e.infrastructure.E2ETestBase;
 import com.akif.e2e.infrastructure.TestDataBuilder;
-import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalRequest;
+import com.akif.rental.api.RentalResponse;
+import com.akif.testsupport.TestcontainersConfiguration;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import com.akif.testsupport.TestcontainersConfiguration;
 import org.springframework.http.MediaType;
 
-import java.math.BigDecimal;
-import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,11 +32,38 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("Dynamic Pricing Integration E2E Tests")
 class PricingIntegrationE2ETest extends E2ETestBase {
 
+    private static final Instant SATURDAY_IN_MARCH = Instant.parse("2031-03-08T10:00:00Z");
+
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private CarRepository carRepository;
+
+    private String userToken;
+    private Car car;
+
+    @BeforeEach
+    void pinTheCalendar() {
+        clock.pinTo(SATURDAY_IN_MARCH);
+        User user = userRepository.save(TestDataBuilder.createTestUser());
+        userToken = generateUserToken(user);
+        car = carRepository.save(TestDataBuilder.createAvailableCar());
+    }
+
+    private RentalResponse request(LocalDate startDate, LocalDate endDate) throws Exception {
+        RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(car.getId(), startDate, endDate);
+        String responseJson = mockMvc.perform(post("/api/v1/rentals/request")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(rentalRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        return objectMapper.readValue(responseJson, RentalResponse.class);
+    }
 
     @Nested
     @DisplayName("Early Booking Discount Tests")
@@ -45,35 +72,13 @@ class PricingIntegrationE2ETest extends E2ETestBase {
         @Test
         @DisplayName("Should apply 15% early booking discount when rental is requested 30+ days in advance")
         void shouldApplyEarlyBookingDiscount_whenBooking30DaysInAdvance() throws Exception {
-            User testUser = TestDataBuilder.createTestUser();
-            testUser = userRepository.save(testUser);
-            String userToken = generateUserToken(testUser);
+            RentalResponse response = request(LocalDate.of(2031, 4, 14), LocalDate.of(2031, 4, 17));
 
-            Car testCar = TestDataBuilder.createAvailableCar();
-            testCar = carRepository.save(testCar);
-
-            RentalRequest rentalRequest = TestDataBuilder.createEarlyBookingRentalRequest(testCar.getId());
-
-            String responseJson = mockMvc.perform(post("/api/v1/rentals/request")
-                            .header("Authorization", "Bearer " + userToken)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(rentalRequest)))
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.id").exists())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
-
-            RentalResponse response = objectMapper.readValue(responseJson, RentalResponse.class);
-
-            assertThat(response.appliedDiscounts()).isNotNull();
-            assertThat(response.appliedDiscounts())
-                    .anyMatch(discount -> discount.toLowerCase().contains("early booking"));
-
-            assertThat(response.totalSavings()).isNotNull();
-            assertThat(response.totalSavings()).isGreaterThan(BigDecimal.ZERO);
-
-            assertThat(response.finalPrice()).isLessThan(response.originalPrice());
+            assertThat(response.appliedDiscounts()).anyMatch(text -> text.contains("Early booking discount (30+ days advance)"));
+            assertThat(response.originalPrice()).isEqualByComparingTo("2000.00");
+            assertThat(response.finalPrice()).isEqualByComparingTo("1700.00");
+            assertThat(response.totalSavings()).isEqualByComparingTo("300.00");
+            assertThat(response.totalPrice()).isEqualByComparingTo("1700.00");
         }
     }
 
@@ -84,35 +89,13 @@ class PricingIntegrationE2ETest extends E2ETestBase {
         @Test
         @DisplayName("Should apply duration discount when rental is requested for 14+ days")
         void shouldApplyDurationDiscount_whenRentalDuration14Days() throws Exception {
-            User testUser = TestDataBuilder.createTestUser();
-            testUser = userRepository.save(testUser);
-            String userToken = generateUserToken(testUser);
+            RentalResponse response = request(LocalDate.of(2031, 3, 10), LocalDate.of(2031, 3, 23));
 
-            Car testCar = TestDataBuilder.createAvailableCar();
-            testCar = carRepository.save(testCar);
-
-            RentalRequest rentalRequest = TestDataBuilder.createLongDurationRentalRequest(testCar.getId());
-
-            String responseJson = mockMvc.perform(post("/api/v1/rentals/request")
-                            .header("Authorization", "Bearer " + userToken)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(rentalRequest)))
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.id").exists())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
-
-            RentalResponse response = objectMapper.readValue(responseJson, RentalResponse.class);
-
-            assertThat(response.appliedDiscounts()).isNotNull();
-            assertThat(response.appliedDiscounts())
-                    .anyMatch(discount -> discount.toLowerCase().contains("rental discount"));
-
-            assertThat(response.totalSavings()).isNotNull();
-            assertThat(response.totalSavings()).isGreaterThan(BigDecimal.ZERO);
-
-            assertThat(response.finalPrice()).isLessThan(response.originalPrice());
+            assertThat(response.days()).isEqualTo(14);
+            assertThat(response.appliedDiscounts()).anyMatch(text -> text.toLowerCase().contains("rental discount"));
+            assertThat(response.originalPrice()).isEqualByComparingTo("7000.00");
+            assertThat(response.finalPrice()).isEqualByComparingTo("6332.59");
+            assertThat(response.totalSavings()).isEqualByComparingTo("667.41");
         }
     }
 
@@ -123,40 +106,12 @@ class PricingIntegrationE2ETest extends E2ETestBase {
         @Test
         @DisplayName("Should apply weekend surcharge when rental includes weekend days")
         void shouldApplyWeekendSurcharge_whenRentalIncludesWeekend() throws Exception {
-            User testUser = TestDataBuilder.createTestUser();
-            testUser = userRepository.save(testUser);
-            String userToken = generateUserToken(testUser);
+            RentalResponse response = request(LocalDate.of(2031, 3, 8), LocalDate.of(2031, 3, 10));
 
-            Car testCar = TestDataBuilder.createAvailableCar();
-            testCar = carRepository.save(testCar);
-
-            LocalDate startDate = LocalDate.now().plusDays(1);
-            while (startDate.getDayOfWeek() != DayOfWeek.SATURDAY) {
-                startDate = startDate.plusDays(1);
-            }
-            LocalDate endDate = startDate.plusDays(2);
-
-            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(
-                    testCar.getId(), startDate, endDate);
-
-            String responseJson = mockMvc.perform(post("/api/v1/rentals/request")
-                            .header("Authorization", "Bearer " + userToken)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(rentalRequest)))
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.id").exists())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
-
-            RentalResponse response = objectMapper.readValue(responseJson, RentalResponse.class);
-
-            assertThat(response.appliedDiscounts()).isNotNull();
-            assertThat(response.appliedDiscounts())
-                    .anyMatch(discount -> discount.toLowerCase().contains("weekend"));
-
-            assertThat(response.finalPrice()).isNotNull();
-            assertThat(response.originalPrice()).isNotNull();
+            assertThat(response.appliedDiscounts()).anyMatch(text -> text.contains("Weekend pricing (2/3 days)"));
+            assertThat(response.originalPrice()).isEqualByComparingTo("1500.00");
+            assertThat(response.finalPrice()).isEqualByComparingTo("1650.00");
+            assertThat(response.totalPrice()).isEqualByComparingTo("1650.00");
         }
     }
 
@@ -165,37 +120,22 @@ class PricingIntegrationE2ETest extends E2ETestBase {
     class PriceBreakdownVerificationTests {
 
         @Test
-        @DisplayName("Should include all applied modifiers in price breakdown")
+        @DisplayName("Should include every strategy in the price breakdown and price a plain weekday rental at the base rate")
         void shouldIncludeAllAppliedModifiersInPriceBreakdown() throws Exception {
-            User testUser = TestDataBuilder.createTestUser();
-            testUser = userRepository.save(testUser);
-            String userToken = generateUserToken(testUser);
+            RentalResponse response = request(LocalDate.of(2031, 3, 11), LocalDate.of(2031, 3, 13));
 
-            Car testCar = TestDataBuilder.createAvailableCar();
-            testCar = carRepository.save(testCar);
-
-            RentalRequest rentalRequest = TestDataBuilder.createRentalRequest(testCar.getId());
-
-            String responseJson = mockMvc.perform(post("/api/v1/rentals/request")
-                            .header("Authorization", "Bearer " + userToken)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(rentalRequest)))
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.id").exists())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
-
-            RentalResponse response = objectMapper.readValue(responseJson, RentalResponse.class);
-
-            assertThat(response.originalPrice()).isNotNull();
-            assertThat(response.finalPrice()).isNotNull();
-            assertThat(response.totalSavings()).isNotNull();
-            assertThat(response.appliedDiscounts()).isNotNull();
-
-            assertThat(response.days()).isGreaterThan(0);
-            assertThat(response.dailyPrice()).isNotNull();
-            assertThat(response.totalPrice()).isNotNull();
+            assertThat(response.appliedDiscounts()).containsExactlyInAnyOrder(
+                    "Regular season",
+                    "No early booking discount",
+                    "No duration discount",
+                    "No weekend days",
+                    "Normal demand (0% occupancy)");
+            assertThat(response.days()).isEqualTo(3);
+            assertThat(response.dailyPrice()).isEqualByComparingTo("500.00");
+            assertThat(response.originalPrice()).isEqualByComparingTo("1500.00");
+            assertThat(response.finalPrice()).isEqualByComparingTo("1500.00");
+            assertThat(response.totalSavings()).isEqualByComparingTo("0.00");
+            assertThat(response.totalPrice()).isEqualByComparingTo("1500.00");
         }
     }
 }

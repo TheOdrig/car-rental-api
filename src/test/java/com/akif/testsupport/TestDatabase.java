@@ -3,14 +3,17 @@ package com.akif.testsupport;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.Duration;
 import java.util.List;
+
+import static org.awaitility.Awaitility.await;
 
 public final class TestDatabase {
 
     private static final String SCHEMA = "car_rental";
     private static final List<String> KEPT_TABLES = List.of("flyway_schema_history", "installation_identity");
-    private static final int MAX_ATTEMPTS = 40;
-    private static final long RETRY_PAUSE_MILLIS = 250;
+    private static final Duration MAX_WAIT = Duration.ofSeconds(10);
+    private static final Duration POLL_INTERVAL = Duration.ofMillis(250);
 
     private TestDatabase() {
     }
@@ -27,25 +30,9 @@ public final class TestDatabase {
         if (targets == null) {
             return;
         }
-        DataAccessException last = null;
-        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-            try {
-                jdbcTemplate.execute("TRUNCATE TABLE " + targets + " RESTART IDENTITY CASCADE");
-                return;
-            } catch (DataAccessException e) {
-                last = e;
-                pause();
-            }
-        }
-        throw last;
-    }
-
-    private static void pause() {
-        try {
-            Thread.sleep(RETRY_PAUSE_MILLIS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted while waiting to truncate", e);
-        }
+        await().atMost(MAX_WAIT)
+                .pollInterval(POLL_INTERVAL)
+                .ignoreException(DataAccessException.class)
+                .untilAsserted(() -> jdbcTemplate.execute("TRUNCATE TABLE " + targets + " RESTART IDENTITY CASCADE"));
     }
 }

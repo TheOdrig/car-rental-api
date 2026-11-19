@@ -106,16 +106,17 @@ class EventPublicationRegistryIntegrationTest {
 
     @Test
     @DisplayName("never runs the listener and stores no publication when the publishing transaction rolls back")
-    void rollbackSuppressesListener() throws InterruptedException {
+    void rollbackSuppressesListener() {
         transactionTemplate.executeWithoutResult(status -> {
             eventPublisher.publishEvent(event());
             status.setRollbackOnly();
         });
 
-        Thread.sleep(1000);
-        verify(emailNotificationService, never()).sendRentalConfirmation(any());
-        assertThat(incompleteEmailPublications()).isZero();
-        assertThat(completedEmailPublications()).isZero();
+        await().during(Duration.ofSeconds(1)).atMost(Duration.ofSeconds(5)).untilAsserted(() -> {
+            verify(emailNotificationService, never()).sendRentalConfirmation(any());
+            assertThat(incompleteEmailPublications()).isZero();
+            assertThat(completedEmailPublications()).isZero();
+        });
     }
 
     @Test

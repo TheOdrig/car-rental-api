@@ -8,10 +8,12 @@ import java.time.ZoneOffset;
 
 public class MutableClock extends Clock {
 
-    private final Clock base;
+    private final Clock initialBase;
+    private volatile Clock base;
     private volatile Duration offset = Duration.ZERO;
 
     public MutableClock(Clock base) {
+        this.initialBase = base;
         this.base = base;
     }
 
@@ -19,7 +21,13 @@ public class MutableClock extends Clock {
         offset = offset.plus(duration);
     }
 
+    public void pinTo(Instant instant) {
+        base = Clock.fixed(instant, initialBase.getZone());
+        offset = Duration.ZERO;
+    }
+
     public void reset() {
+        base = initialBase;
         offset = Duration.ZERO;
     }
 
@@ -30,7 +38,8 @@ public class MutableClock extends Clock {
 
     @Override
     public Clock withZone(ZoneId zone) {
-        MutableClock clone = new MutableClock(base.withZone(zone));
+        MutableClock clone = new MutableClock(initialBase.withZone(zone));
+        clone.base = base.withZone(zone);
         clone.offset = offset;
         return clone;
     }
@@ -42,5 +51,9 @@ public class MutableClock extends Clock {
 
     public static MutableClock systemUtc() {
         return new MutableClock(Clock.system(ZoneOffset.UTC));
+    }
+
+    public static MutableClock fixedAt(Instant instant) {
+        return new MutableClock(Clock.fixed(instant, ZoneOffset.UTC));
     }
 }
