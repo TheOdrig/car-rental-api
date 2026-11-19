@@ -81,6 +81,7 @@ public class RentalBookingService {
                 .carModel(car.model())
                 .carLicensePlate(car.licensePlate())
                 .carThumbnailUrl(car.thumbnailUrl())
+                .userUsername(user.username())
                 .userEmail(user.email())
                 .userFullName(user.firstName() + " " + user.lastName())
                 .startDate(request.startDate())

@@ -84,6 +84,22 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("Should record the last login only after a successful password login")
+    void shouldRecordLastLogin() throws Exception {
+        org.assertj.core.api.Assertions.assertThat(userRepository.findByUsername("admin").orElseThrow().getLastLoginAt()).isNull();
+
+        mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new LoginRequest("admin", "wrong-password"))))
+                .andExpect(status().isUnauthorized());
+        org.assertj.core.api.Assertions.assertThat(userRepository.findByUsername("admin").orElseThrow().getLastLoginAt()).isNull();
+
+        mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new LoginRequest("admin", "admin123"))))
+                .andExpect(status().isOk());
+        org.assertj.core.api.Assertions.assertThat(userRepository.findByUsername("admin").orElseThrow().getLastLoginAt()).isNotNull();
+    }
+
+    @Test
     @DisplayName("Should refuse an e-mail address that differs only by case")
     void shouldRefuseCaseVariantEmail() throws Exception {
         RegisterRequest first = new RegisterRequest("caseuser", "Case.User@Example.com", "password123", "Case", "User");

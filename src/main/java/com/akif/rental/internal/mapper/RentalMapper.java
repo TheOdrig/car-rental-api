@@ -15,7 +15,7 @@ public interface RentalMapper {
     @Mapping(target = "carSummary.licensePlate", source = "carLicensePlate")
     @Mapping(target = "carSummary.thumbnailUrl", source = "carThumbnailUrl")
     @Mapping(target = "userSummary.id", source = "userId")
-    @Mapping(target = "userSummary.username", source = "userEmail")
+    @Mapping(target = "userSummary.username", source = "userUsername")
     @Mapping(target = "userSummary.email", source = "userEmail")
     @Mapping(target = "userSummary.fullName", source = "userFullName")
     @Mapping(target = "paymentOpensOn", source = "startDate", qualifiedByName = "paymentOpensOn")

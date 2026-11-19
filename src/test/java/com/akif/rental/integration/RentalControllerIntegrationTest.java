@@ -157,6 +157,8 @@ class RentalControllerIntegrationTest {
                                         .content(objectMapper.writeValueAsString(request)))
                                         .andExpect(status().isCreated())
                                         .andExpect(jsonPath("$.id").exists())
+                                        .andExpect(jsonPath("$.userSummary.username").value(testUser.getUsername()))
+                                        .andExpect(jsonPath("$.userSummary.email").value(testUser.getEmail()))
                                         .andExpect(jsonPath("$.status").value("REQUESTED"));
                 }
 

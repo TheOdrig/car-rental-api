@@ -49,6 +49,9 @@ public class Rental extends BaseEntity {
     @Column(name = "user_email", length = 255, nullable = false)
     private String userEmail;
 
+    @Column(name = "user_username", length = 255)
+    private String userUsername;
+
     @Column(name = "user_full_name", length = 255, nullable = false)
     private String userFullName;
 

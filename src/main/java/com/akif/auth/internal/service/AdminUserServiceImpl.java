@@ -78,9 +78,9 @@ public class AdminUserServiceImpl implements AdminUserService {
                 new TreeSet<>(user.getRoles()),
                 userStatus,
                 user.getAvatarUrl(),
-                user.getEnabled() != null && user.getEnabled(),
+                user.hasVerifiedEmail(),
                 user.getCreateTime(),
-                user.getUpdateTime());
+                user.getLastLoginAt());
     }
 
     private String getUserStatus(User user) {
@@ -114,7 +114,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 user.getAvatarUrl(),
                 new TreeSet<>(user.getRoles()),
                 user.getCreateTime(),
-                null,
+                user.getLastLoginAt(),
                 verification,
                 statistics,
                 accountStatus,
@@ -123,7 +123,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     private VerificationInfo buildVerificationInfo(User user) {
         return new VerificationInfo(
-                true,
+                user.hasVerifiedEmail(),
                 user.getPhone() != null && !user.getPhone().isEmpty(),
                 "PENDING",
                 Collections.emptyList());

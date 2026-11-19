@@ -118,6 +118,30 @@ class AdminUserServiceImplTest {
         }
 
         @Test
+        @DisplayName("Should report the stored email verification and last login")
+        void shouldReportStoredVerificationAndLastLogin() {
+            User unverified = createTestUser(false, null);
+            when(userRepository.findById(1L)).thenReturn(Optional.of(unverified));
+            when(rentalService.getUserStatistics(1L)).thenReturn(testRentalStats);
+            when(damageService.getUserDamageStatistics(1L)).thenReturn(testDamageStats);
+
+            AdminUserDetailResponse result = adminUserService.getUserDetailForAdmin(1L);
+
+            assertThat(result.verification().emailVerified()).isFalse();
+            assertThat(result.lastLoginDate()).isNull();
+        }
+
+        @Test
+        @DisplayName("Should expose the recorded last login")
+        void shouldExposeRecordedLastLogin() {
+            when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+            when(rentalService.getUserStatistics(1L)).thenReturn(testRentalStats);
+            when(damageService.getUserDamageStatistics(1L)).thenReturn(testDamageStats);
+
+            assertThat(adminUserService.getUserDetailForAdmin(1L).lastLoginDate()).isEqualTo(LAST_LOGIN);
+        }
+
+        @Test
         @DisplayName("Should include correct statistics in response")
         void shouldIncludeCorrectStatistics() {
             when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
@@ -312,7 +336,13 @@ class AdminUserServiceImplTest {
         }
     }
 
+    private static final Instant LAST_LOGIN = Instant.parse("2026-11-10T08:30:00Z");
+
     private User createTestUser() {
+        return createTestUser(true, LAST_LOGIN);
+    }
+
+    private User createTestUser(boolean emailVerified, Instant lastLoginAt) {
         return User.builder()
                 .id(1L)
                 .username("johndoe")
@@ -325,6 +355,8 @@ class AdminUserServiceImplTest {
                 .enabled(true)
                 .isDeleted(false)
                 .isBanned(false)
+                .emailVerified(emailVerified)
+                .lastLoginAt(lastLoginAt)
                 .createTime(Instant.now().minus(Duration.ofDays(180)))
                 .updateTime(Instant.now())
                 .build();

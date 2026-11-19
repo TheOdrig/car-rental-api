@@ -28,6 +28,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
@@ -44,6 +46,7 @@ public class AuthServiceImpl implements AuthService, UserLookup {
     private final JwtTokenService tokenService;
     private final RefreshTokenService refreshTokenService;
     private final UserMapper userMapper;
+    private final Clock clock;
 
     
     @Override
@@ -188,6 +191,7 @@ public class AuthServiceImpl implements AuthService, UserLookup {
         User user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
+        userRepository.recordLogin(user.getId(), Instant.now(clock));
         return buildResponse(user, refreshTokenService.issue(user.getId()));
     }
 

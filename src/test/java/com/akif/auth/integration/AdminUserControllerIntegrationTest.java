@@ -102,6 +102,7 @@ class AdminUserControllerIntegrationTest {
                 .phone("+1234567890")
                 .roles(Set.of(Role.USER))
                 .enabled(true)
+                .emailVerified(true)
                 .build();
         testCustomer = userRepository.save(testCustomer);
 

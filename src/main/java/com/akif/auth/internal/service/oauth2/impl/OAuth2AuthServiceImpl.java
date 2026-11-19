@@ -131,6 +131,7 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user.getUsername(),
                 null, authorities);
 
+        userRepository.recordLogin(user.getId(), Instant.now(clock));
         String accessToken = jwtTokenService.generateAccessToken(authentication, user.getId());
         String refreshToken = refreshTokenService.issue(user.getId());
         long expiresIn = jwtTokenService.accessTokenTtl().toSeconds();

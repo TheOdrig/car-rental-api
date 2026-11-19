@@ -68,6 +68,9 @@ public class User extends BaseEntity {
     @Builder.Default
     private Boolean emailVerified = false;
 
+    @Column(name = "last_login_at")
+    private Instant lastLoginAt;
+
     @Column(name = "is_banned", nullable = false)
     @Builder.Default
     private Boolean isBanned = false;
