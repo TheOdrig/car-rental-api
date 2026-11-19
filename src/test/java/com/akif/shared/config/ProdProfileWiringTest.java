@@ -82,8 +82,15 @@ class ProdProfileWiringTest {
     @Test
     @DisplayName("registers the production configuration validator as an environment post processor")
     void validatesConfigurationAtStartup() {
-        try (java.io.InputStream stream = getClass().getClassLoader().getResourceAsStream("META-INF/spring.factories")) {
-            assertThat(new String(stream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8))
+        try {
+            java.util.List<String> declared = new java.util.ArrayList<>();
+            for (java.net.URL url : java.util.Collections.list(getClass().getClassLoader().getResources("META-INF/spring.factories"))) {
+                try (java.io.InputStream stream = url.openStream()) {
+                    declared.add(new String(stream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8));
+                }
+            }
+            assertThat(String.join("
+", declared))
                     .contains("org.springframework.boot.EnvironmentPostProcessor=" + ProdConfigurationValidator.class.getName());
         } catch (java.io.IOException e) {
             throw new java.io.UncheckedIOException(e);
