@@ -2697,7 +2697,7 @@
             "type" : "integer"
           },
           "spentByCurrency" : {
-            "description" : "Amount spent on returned rentals, grouped by rental currency; amounts of different currencies are never summed together.",
+            "description" : "Net amount paid for the rentals of the user (rental, late-return penalty and damage payments, after refunds), grouped by currency; amounts of different currencies are never summed together.",
             "items" : {
               "$ref" : "#/components/schemas/RentalSpendTotals"
             },

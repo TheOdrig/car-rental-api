@@ -38,6 +38,8 @@ public interface PaymentService {
 
     List<CollectedRevenue> sumCollectedBetween(LocalDateTime start, LocalDateTime end);
 
+    List<NetPaid> sumNetPaidForRentals(java.util.Collection<Long> rentalIds);
+
     List<DailyRevenue> getDailyRevenue(int days);
 
     List<MonthlyRevenue> getMonthlyRevenue(int months);

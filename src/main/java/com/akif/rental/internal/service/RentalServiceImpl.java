@@ -805,9 +805,9 @@ public class RentalServiceImpl implements RentalService {
         int activeRentals = rentalRepository.countByUserIdAndStatusAndIsDeletedFalse(userId, RentalStatus.IN_USE);
 
         List<UserRentalStatisticsDto.RentalSpendTotals> spentByCurrency =
-                rentalRepository.sumTotalPriceByCurrencyForReturnedRentals(userId).stream()
-                        .map(row -> new UserRentalStatisticsDto.RentalSpendTotals(
-                                (CurrencyType) row[0], (Long) row[1], (BigDecimal) row[2]))
+                paymentService.sumNetPaidForRentals(rentalRepository.findIdsByUserId(userId)).stream()
+                        .map(paid -> new UserRentalStatisticsDto.RentalSpendTotals(
+                                paid.currency(), paid.rentalCount(), paid.amount()))
                         .toList();
 
         Double avgDuration = rentalRepository.averageRentalDurationByUserId(userId);

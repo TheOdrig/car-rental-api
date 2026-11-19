@@ -267,15 +267,8 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
         @Query(value = "SELECT 1 FROM (SELECT pg_advisory_xact_lock(hashtextextended(:lockKey, 0))) AS acquired", nativeQuery = true)
         int acquireAdvisoryTransactionLock(@Param("lockKey") String lockKey);
 
-        @Query("""
-                        SELECT r.currency, COUNT(r), SUM(r.totalPrice) FROM Rental r
-                        WHERE r.userId = :userId
-                        AND r.status = com.akif.rental.api.RentalStatus.RETURNED
-                        AND r.isDeleted = false
-                        GROUP BY r.currency
-                        ORDER BY r.currency
-                        """)
-        List<Object[]> sumTotalPriceByCurrencyForReturnedRentals(@Param("userId") Long userId);
+        @Query("SELECT r.id FROM Rental r WHERE r.userId = :userId AND r.isDeleted = false")
+        List<Long> findIdsByUserId(@Param("userId") Long userId);
 
         @Query("""
                         SELECT COALESCE(AVG(r.days), 0.0) FROM Rental r

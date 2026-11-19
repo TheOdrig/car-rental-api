@@ -6,6 +6,7 @@ import com.akif.payment.api.CollectedRevenue;
 import com.akif.payment.api.CreatePaymentRequest;
 import com.akif.payment.api.DailyRevenue;
 import com.akif.payment.api.MonthlyRevenue;
+import com.akif.payment.api.NetPaid;
 import com.akif.payment.api.PaymentCategory;
 import com.akif.payment.api.InvalidPaymentStateException;
 import com.akif.payment.api.PaymentDto;
@@ -646,6 +647,16 @@ class PaymentServiceImpl implements PaymentService {
                         (CurrencyType) row[1],
                         (BigDecimal) row[2],
                         (Long) row[3]))
+                .toList();
+    }
+
+    @Override
+    public List<NetPaid> sumNetPaidForRentals(java.util.Collection<Long> rentalIds) {
+        if (rentalIds == null || rentalIds.isEmpty()) {
+            return List.of();
+        }
+        return paymentRepository.sumNetPaidByRentalIds(rentalIds).stream()
+                .map(row -> new NetPaid((CurrencyType) row[0], (Long) row[1], (BigDecimal) row[2]))
                 .toList();
     }
 

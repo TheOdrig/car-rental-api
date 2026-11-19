@@ -101,5 +101,16 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             """)
     List<Payment> findCapturedSince(@Param("start") LocalDateTime start);
 
+    @Query("""
+            SELECT p.currency, COUNT(DISTINCT p.rentalId), COALESCE(SUM(p.amount - COALESCE(p.refundedAmount, 0)), 0)
+            FROM Payment p
+            WHERE p.rentalId IN :rentalIds
+            AND p.status = com.akif.payment.api.PaymentStatus.CAPTURED
+            AND p.isDeleted = false
+            GROUP BY p.currency
+            ORDER BY p.currency
+            """)
+    List<Object[]> sumNetPaidByRentalIds(@Param("rentalIds") java.util.Collection<Long> rentalIds);
+
     int countByStatusAndIsDeletedFalse(PaymentStatus status);
 }

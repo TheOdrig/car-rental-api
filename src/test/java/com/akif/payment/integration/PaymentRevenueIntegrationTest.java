@@ -166,6 +166,47 @@ class PaymentRevenueIntegrationTest extends E2ETestBase {
     }
 
     @Test
+    @DisplayName("what a user paid is the net of refunds across rental, penalty and damage payments, per currency")
+    void netPaidIncludesEveryKindAfterRefunds() {
+        LocalDateTime at = LocalDateTime.of(2031, 3, 10, 12, 0);
+        Rental second = otherRental();
+        savePaymentFor(rental.getId(), PaymentKind.RENTAL, CurrencyType.TRY, "1000.00", "400.00", PaymentStatus.CAPTURED, at);
+        savePaymentFor(rental.getId(), PaymentKind.PENALTY, CurrencyType.TRY, "150.00", null, PaymentStatus.CAPTURED, at);
+        savePaymentFor(rental.getId(), PaymentKind.DAMAGE, CurrencyType.TRY, "300.00", "50.00", PaymentStatus.CAPTURED, at);
+        savePaymentFor(second.getId(), PaymentKind.RENTAL, CurrencyType.TRY, "200.00", null, PaymentStatus.CAPTURED, at);
+        savePaymentFor(second.getId(), PaymentKind.PENALTY, CurrencyType.USD, "20.00", null, PaymentStatus.CAPTURED, at);
+        savePaymentFor(second.getId(), PaymentKind.DAMAGE, CurrencyType.TRY, "90.00", null, PaymentStatus.FAILED, null);
+
+        var paid = paymentService.sumNetPaidForRentals(List.of(rental.getId(), second.getId()));
+
+        assertThat(paid).hasSize(2);
+        var lira = paid.stream().filter(p -> p.currency() == CurrencyType.TRY).findFirst().orElseThrow();
+        assertThat(lira.amount()).isEqualByComparingTo("1200.00");
+        assertThat(lira.rentalCount()).isEqualTo(2);
+        var dollars = paid.stream().filter(p -> p.currency() == CurrencyType.USD).findFirst().orElseThrow();
+        assertThat(dollars.amount()).isEqualByComparingTo("20.00");
+        assertThat(paymentService.sumNetPaidForRentals(List.of())).isEmpty();
+    }
+
+    private Payment savePaymentFor(Long rentalId, PaymentKind kind, CurrencyType currency, String amount, String refunded,
+                                   PaymentStatus status, LocalDateTime capturedAt) {
+        return paymentRepository.save(Payment.builder()
+                .rentalId(rentalId)
+                .kind(kind)
+                .userEmail("owner@example.com")
+                .carLicensePlate("34TEST1")
+                .amount(new BigDecimal(amount))
+                .currency(currency)
+                .status(status)
+                .paymentMethod(kind.name())
+                .stripePaymentIntentId("pi_net_" + rentalId + "_" + kind + "_" + currency + "_" + System.nanoTime())
+                .refundedAmount(refunded == null ? null : new BigDecimal(refunded))
+                .capturedAt(capturedAt)
+                .isDeleted(false)
+                .build());
+    }
+
+    @Test
     @DisplayName("capturing a payment stamps the capture time once")
     void captureStampsTheTime() {
         Payment pending = payment(PaymentKind.RENTAL, CurrencyType.TRY, "100.00", null, PaymentStatus.AUTHORIZED, null);

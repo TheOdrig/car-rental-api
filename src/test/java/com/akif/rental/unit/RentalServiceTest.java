@@ -646,23 +646,25 @@ class RentalServiceTest {
     class UserStatisticsTests {
 
         @Test
-        @DisplayName("spending is reported per currency and never summed across currencies")
-        void spendingIsGroupedByCurrency() {
-            when(rentalRepository.sumTotalPriceByCurrencyForReturnedRentals(1L)).thenReturn(List.of(
-                    new Object[] { CurrencyType.EUR, 1L, new BigDecimal("100.00") },
-                    new Object[] { CurrencyType.TRY, 2L, new BigDecimal("900.00") }));
+        @DisplayName("spending is the net amount paid per currency, never summed across currencies")
+        void spendingIsTheNetPaidGroupedByCurrency() {
+            when(rentalRepository.findIdsByUserId(1L)).thenReturn(List.of(10L, 11L, 12L));
+            when(paymentService.sumNetPaidForRentals(List.of(10L, 11L, 12L))).thenReturn(List.of(
+                    new com.akif.payment.api.NetPaid(CurrencyType.EUR, 1L, new BigDecimal("100.00")),
+                    new com.akif.payment.api.NetPaid(CurrencyType.TRY, 2L, new BigDecimal("1150.00"))));
 
             UserRentalStatisticsDto stats = rentalService.getUserStatistics(1L);
 
             assertThat(stats.spentByCurrency()).containsExactly(
                     new UserRentalStatisticsDto.RentalSpendTotals(CurrencyType.EUR, 1L, new BigDecimal("100.00")),
-                    new UserRentalStatisticsDto.RentalSpendTotals(CurrencyType.TRY, 2L, new BigDecimal("900.00")));
+                    new UserRentalStatisticsDto.RentalSpendTotals(CurrencyType.TRY, 2L, new BigDecimal("1150.00")));
         }
 
         @Test
-        @DisplayName("a user with no returned rentals has no spending entries")
+        @DisplayName("a user without payments has no spending entries")
         void noSpendingMeansNoEntries() {
-            when(rentalRepository.sumTotalPriceByCurrencyForReturnedRentals(1L)).thenReturn(List.of());
+            when(rentalRepository.findIdsByUserId(1L)).thenReturn(List.of());
+            when(paymentService.sumNetPaidForRentals(List.of())).thenReturn(List.of());
 
             assertThat(rentalService.getUserStatistics(1L).spentByCurrency()).isEmpty();
         }

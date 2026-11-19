@@ -35,7 +35,7 @@ public record AdminUserDetailResponse(
             int completedRentals,
             int cancelledRentals,
             int activeRentals,
-            @Schema(description = "Amount spent on returned rentals, grouped by rental currency; amounts of different currencies are never summed together.")
+            @Schema(description = "Net amount paid for the rentals of the user (rental, late-return penalty and damage payments, after refunds), grouped by currency; amounts of different currencies are never summed together.")
             List<UserRentalStatisticsDto.RentalSpendTotals> spentByCurrency,
             double averageRentalDuration,
             int totalDamageReports,
