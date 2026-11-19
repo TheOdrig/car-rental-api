@@ -1,5 +1,6 @@
 package com.akif.dashboard.unit;
 
+import java.time.Duration;
 import com.akif.dashboard.api.dto.DailySummaryDto;
 import com.akif.dashboard.api.dto.DailyRevenueDto;
 import com.akif.dashboard.api.dto.FleetStatusDto;
@@ -28,7 +29,7 @@ import org.springframework.data.domain.Pageable;
 import com.akif.shared.enums.CurrencyType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.YearMonth;
 import java.util.Collections;
 import java.util.List;
@@ -59,7 +60,7 @@ class DashboardServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         LocalDate today = LocalDate.now();
 
         testDailySummary = new DailySummaryDto(
@@ -161,7 +162,7 @@ class DashboardServiceImplTest {
         @DisplayName("getDailySummary - should handle zero values")
         void shouldHandleZeroValues() {
             DailySummaryDto emptySummary = new DailySummaryDto(
-                    0, 0, 0, 0, 0, LocalDateTime.now());
+                    0, 0, 0, 0, 0, Instant.now());
             when(queryService.fetchDailySummary()).thenReturn(emptySummary);
 
             DailySummaryDto result = dashboardService.getDailySummary();
@@ -207,7 +208,7 @@ class DashboardServiceImplTest {
         @DisplayName("getFleetStatus - should handle zero cars")
         void shouldHandleZeroCars() {
             FleetStatusDto emptyFleet = new FleetStatusDto(
-                    0, 0, 0, 0, 0, 0, 0, BigDecimal.ZERO, LocalDateTime.now());
+                    0, 0, 0, 0, 0, 0, 0, BigDecimal.ZERO, Instant.now());
             when(queryService.fetchFleetStatus()).thenReturn(emptyFleet);
 
             FleetStatusDto result = dashboardService.getFleetStatus();
@@ -287,7 +288,7 @@ class DashboardServiceImplTest {
             LocalDate today = LocalDate.now();
             LocalDate startOfMonth = today.withDayOfMonth(1);
             MonthlyMetricsDto emptyMetrics = new MonthlyMetricsDto(
-                    List.of(), 0, 0, BigDecimal.ZERO, startOfMonth, today, LocalDateTime.now());
+                    List.of(), 0, 0, BigDecimal.ZERO, startOfMonth, today, Instant.now());
             when(queryService.fetchMonthlyMetrics(startOfMonth, today)).thenReturn(emptyMetrics);
 
             MonthlyMetricsDto result = dashboardService.getMonthlyMetrics();
@@ -346,7 +347,7 @@ class DashboardServiceImplTest {
                     Collections.emptyList(),
                     Collections.emptyList(),
                     List.of(),
-                    LocalDateTime.now());
+                    Instant.now());
             when(queryService.fetchRevenueAnalytics()).thenReturn(emptyAnalytics);
 
             RevenueAnalyticsDto result = dashboardService.getRevenueAnalytics();
@@ -400,7 +401,7 @@ class DashboardServiceImplTest {
         void shouldReturnOverdueRentals() {
             PendingItemDto overdueItem = createPendingItemDto(2L, "lateuser", "late@example.com", 200L, "BMW", "320i",
                     "35XYZ789", LocalDate.now().minusDays(10), LocalDate.now().minusDays(3), new BigDecimal("5000.00"),
-                    "IN_USE", 72L, LocalDateTime.now().minusDays(10));
+                    "IN_USE", 72L, Instant.now().minus(Duration.ofDays(10)));
             Page<PendingItemDto> overdueItems = new PageImpl<>(List.of(overdueItem));
             when(queryService.fetchOverdueRentals(testPageable)).thenReturn(overdueItems);
 
@@ -485,7 +486,7 @@ class DashboardServiceImplTest {
 
     private PendingItemDto createPendingItemDto(Long rentalId, String customerName, String customerEmail, Long carId,
             String carBrand, String carModel, String licensePlate, LocalDate startDate, LocalDate endDate,
-            BigDecimal totalAmount, String status, Long lateHours, LocalDateTime createdAt) {
+            BigDecimal totalAmount, String status, Long lateHours, Instant createdAt) {
         return new PendingItemDto(
                 rentalId,
                 10L,

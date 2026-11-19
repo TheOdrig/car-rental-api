@@ -43,7 +43,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
                         "AND r.createTime < :cutoff " +
                         "AND r.isDeleted = false")
         List<Rental> findStaleRequests(@Param("status") RentalStatus status,
-                        @Param("cutoff") java.time.LocalDateTime cutoff);
+                        @Param("cutoff") java.time.Instant cutoff);
 
         Page<Rental> findByIsDeletedFalse(Pageable pageable);
 

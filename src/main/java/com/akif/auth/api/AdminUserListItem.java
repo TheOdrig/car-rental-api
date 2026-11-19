@@ -2,7 +2,7 @@ package com.akif.auth.api;
 
 import com.akif.shared.enums.Role;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Set;
 
 
@@ -15,8 +15,8 @@ public record AdminUserListItem(
         String status,
         String avatarUrl,
         boolean isEmailVerified,
-        LocalDateTime createdAt,
-        LocalDateTime lastLoginAt) {
+        Instant createdAt,
+        Instant lastLoginAt) {
     public String fullName() {
         if (firstName == null && lastName == null) {
             return email;

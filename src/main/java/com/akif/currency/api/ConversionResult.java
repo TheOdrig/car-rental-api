@@ -4,7 +4,7 @@ import com.akif.shared.enums.CurrencyType;
 import com.akif.currency.api.RateSource;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record ConversionResult(
         BigDecimal originalAmount,
@@ -12,7 +12,7 @@ public record ConversionResult(
         BigDecimal convertedAmount,
         CurrencyType targetCurrency,
         BigDecimal exchangeRate,
-        LocalDateTime rateTimestamp,
+        Instant rateTimestamp,
         RateSource source
 ) {
     

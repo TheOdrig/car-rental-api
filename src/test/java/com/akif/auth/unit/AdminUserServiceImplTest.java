@@ -1,5 +1,6 @@
 package com.akif.auth.unit;
 
+import java.time.Duration;
 import com.akif.auth.api.AdminUserDetailResponse;
 import com.akif.auth.api.AdminUserDetailResponse.UserStatistics;
 import com.akif.auth.domain.User;
@@ -27,7 +28,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -221,8 +222,8 @@ class AdminUserServiceImplTest {
                     .roles(Set.of(Role.USER))
                     .enabled(true)
                     .isDeleted(false)
-                    .createTime(LocalDateTime.now().minusDays(30))
-                    .updateTime(LocalDateTime.now())
+                    .createTime(Instant.now().minus(Duration.ofDays(30)))
+                    .updateTime(Instant.now())
                     .build();
 
             when(userRepository.findById(2L)).thenReturn(Optional.of(userWithoutPhone));
@@ -247,8 +248,8 @@ class AdminUserServiceImplTest {
                     .roles(Set.of(Role.USER))
                     .enabled(false)
                     .isDeleted(false)
-                    .createTime(LocalDateTime.now().minusDays(30))
-                    .updateTime(LocalDateTime.now())
+                    .createTime(Instant.now().minus(Duration.ofDays(30)))
+                    .updateTime(Instant.now())
                     .build();
 
             when(userRepository.findById(3L)).thenReturn(Optional.of(disabledUser));
@@ -272,8 +273,8 @@ class AdminUserServiceImplTest {
                     .roles(Set.of(Role.USER))
                     .enabled(true)
                     .isDeleted(true)
-                    .createTime(LocalDateTime.now().minusDays(30))
-                    .updateTime(LocalDateTime.now())
+                    .createTime(Instant.now().minus(Duration.ofDays(30)))
+                    .updateTime(Instant.now())
                     .build();
 
             when(userRepository.findById(4L)).thenReturn(Optional.of(deletedUser));
@@ -293,7 +294,7 @@ class AdminUserServiceImplTest {
         @Test
         @DisplayName("banning an already banned user raises a domain exception")
         void banTwice() {
-            testUser.ban("spam", 9L, LocalDateTime.now());
+            testUser.ban("spam", 9L, Instant.now());
             when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
             assertThatThrownBy(() -> adminUserService.banUser(1L, "spam", 9L))
@@ -324,8 +325,8 @@ class AdminUserServiceImplTest {
                 .enabled(true)
                 .isDeleted(false)
                 .isBanned(false)
-                .createTime(LocalDateTime.now().minusDays(180))
-                .updateTime(LocalDateTime.now())
+                .createTime(Instant.now().minus(Duration.ofDays(180)))
+                .updateTime(Instant.now())
                 .build();
     }
 

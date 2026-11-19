@@ -5,7 +5,7 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -31,7 +31,7 @@ public class PasswordResetToken {
     private String email;
 
     @Column(name = "expiry_date", nullable = false)
-    private LocalDateTime expiryDate;
+    private Instant expiryDate;
 
     @Column(name = "used", nullable = false)
     @Builder.Default
@@ -39,13 +39,13 @@ public class PasswordResetToken {
 
     @Column(name = "created_at", nullable = false)
     @CreatedDate
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
-    public boolean isExpiredAt(LocalDateTime now) {
+    public boolean isExpiredAt(Instant now) {
         return now.isAfter(expiryDate);
     }
 
-    public boolean isValidAt(LocalDateTime now) {
+    public boolean isValidAt(Instant now) {
         return !used && !isExpiredAt(now);
     }
 

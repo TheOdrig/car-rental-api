@@ -2,17 +2,17 @@ package com.akif.rental.api;
 
 import com.akif.shared.enums.CurrencyType;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record PenaltySummaryEvent(
         Long rentalId,
         String customerEmail,
-        LocalDateTime occurredAt,
+        Instant occurredAt,
         String carBrand,
         String carModel,
         String licensePlate,
-        LocalDateTime scheduledReturnTime,
-        LocalDateTime actualReturnTime,
+        Instant scheduledReturnTime,
+        Instant actualReturnTime,
         int lateHours,
         int lateDays,
         BigDecimal finalPenaltyAmount,

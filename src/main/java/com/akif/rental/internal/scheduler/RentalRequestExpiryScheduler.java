@@ -1,5 +1,6 @@
 package com.akif.rental.internal.scheduler;
 
+import java.time.Duration;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.config.RentalProperties;
@@ -14,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Component
@@ -32,8 +33,8 @@ public class RentalRequestExpiryScheduler {
     @Scheduled(cron = "${rental.request-expiry-cron:0 */10 * * * *}")
     @Transactional
     public int expireStaleRequests() {
-        LocalDateTime now = LocalDateTime.now(clock);
-        LocalDateTime cutoff = now.minusHours(properties.getRequestExpiryHours());
+        Instant now = Instant.now(clock);
+        Instant cutoff = now.minus(Duration.ofHours(properties.getRequestExpiryHours()));
         List<Rental> stale = rentalRepository.findStaleRequests(RentalStatus.REQUESTED, cutoff);
         for (Rental rental : stale) {
             rental.cancel(EXPIRY_REASON);

@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Import;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -72,7 +72,7 @@ class PaymentRepairE2ETest extends E2ETestBase {
 
     private void makeStale(Payment payment) {
         jdbcTemplate.update("UPDATE car_rental.payments SET update_time = ?, last_synced_at = NULL WHERE id = ?",
-                LocalDateTime.now(clock).minusHours(2), payment.getId());
+                java.sql.Timestamp.from(Instant.now(clock).minus(Duration.ofHours(2))), payment.getId());
     }
 
     private Payment reload(Payment payment) {

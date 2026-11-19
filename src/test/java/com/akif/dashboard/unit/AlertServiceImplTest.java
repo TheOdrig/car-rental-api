@@ -35,7 +35,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -79,7 +79,7 @@ class AlertServiceImplTest {
     private ArgumentCaptor<Alert> alertCaptor;
 
     private static FleetStatusDto fleet(int available) {
-        return new FleetStatusDto(100, available, 0, 0, 0, 0, 0, BigDecimal.ZERO, LocalDateTime.now());
+        return new FleetStatusDto(100, available, 0, 0, 0, 0, 0, BigDecimal.ZERO, Instant.now());
     }
 
     private Alert testAlert;
@@ -108,7 +108,7 @@ class AlertServiceImplTest {
                 false,
                 null,
                 null,
-                LocalDateTime.now());
+                Instant.now());
     }
 
     @Nested
@@ -247,7 +247,7 @@ class AlertServiceImplTest {
         @Test
         @DisplayName("Should return existing alert when already acknowledged")
         void shouldReturnExistingAlertWhenAlreadyAcknowledged() {
-            testAlert.acknowledge("previousAdmin", LocalDateTime.now());
+            testAlert.acknowledge("previousAdmin", Instant.now());
             when(alertRepository.findById(1L)).thenReturn(Optional.of(testAlert));
             when(dashboardMapper.toAlertDto(testAlert)).thenReturn(testAlertDto);
 

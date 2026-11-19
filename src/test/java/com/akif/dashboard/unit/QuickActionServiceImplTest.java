@@ -20,7 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -59,7 +59,7 @@ class QuickActionServiceImplTest {
                 2,
                 1,
                 0,
-                LocalDateTime.now());
+                Instant.now());
 
         confirmedRentalResponse = createRentalResponse(RentalStatus.CONFIRMED);
         inUseRentalResponse = createRentalResponse(RentalStatus.IN_USE);
@@ -214,8 +214,8 @@ class QuickActionServiceImplTest {
         @DisplayName("Should return fresh summary after each action")
         void shouldReturnFreshSummaryAfterEachAction() {
             Long rentalId = 1L;
-            DailySummaryDto initialSummary = new DailySummaryDto(10, 5, 3, 2, 1, LocalDateTime.now());
-            DailySummaryDto updatedSummary = new DailySummaryDto(9, 5, 3, 2, 1, LocalDateTime.now());
+            DailySummaryDto initialSummary = new DailySummaryDto(10, 5, 3, 2, 1, Instant.now());
+            DailySummaryDto updatedSummary = new DailySummaryDto(9, 5, 3, 2, 1, Instant.now());
 
             when(rentalService.confirmRental(rentalId, null)).thenReturn(confirmedRentalResponse);
             when(dashboardQueryService.fetchDailySummary()).thenReturn(updatedSummary);

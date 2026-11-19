@@ -1,5 +1,6 @@
 package com.akif.rental.scheduler;
 
+import java.time.Duration;
 import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
@@ -24,7 +25,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -72,12 +73,12 @@ class RentalRequestExpirySchedulerTest {
         userRepository.deleteAll();
     }
 
-    private Rental rental(RentalStatus status, LocalDateTime createdAt, int offsetDays) {
+    private Rental rental(RentalStatus status, Instant createdAt, int offsetDays) {
         Car car = carRepository.save(TestDataBuilder.createAvailableCar());
         LocalDate start = LocalDate.now().plusDays(10 + offsetDays);
         Rental saved = rentalRepository.save(
                 TestDataBuilder.createRental(car, user, start, start.plusDays(3), status));
-        jdbcTemplate.update("UPDATE car_rental.rentals SET create_time = ? WHERE id = ?", createdAt, saved.getId());
+        jdbcTemplate.update("UPDATE car_rental.rentals SET create_time = ? WHERE id = ?", java.sql.Timestamp.from(createdAt), saved.getId());
         return saved;
     }
 
@@ -88,10 +89,10 @@ class RentalRequestExpirySchedulerTest {
     @Test
     @DisplayName("cancels requests older than the configured window and leaves the rest alone")
     void cancelsOnlyStaleRequests() {
-        LocalDateTime now = LocalDateTime.now(clock);
-        Rental stale = rental(RentalStatus.REQUESTED, now.minusHours(40), 0);
-        Rental fresh = rental(RentalStatus.REQUESTED, now.minusHours(10), 1);
-        Rental oldConfirmed = rental(RentalStatus.CONFIRMED, now.minusHours(72), 2);
+        Instant now = Instant.now(clock);
+        Rental stale = rental(RentalStatus.REQUESTED, now.minus(Duration.ofHours(40)), 0);
+        Rental fresh = rental(RentalStatus.REQUESTED, now.minus(Duration.ofHours(10)), 1);
+        Rental oldConfirmed = rental(RentalStatus.CONFIRMED, now.minus(Duration.ofHours(72)), 2);
 
         int expired = scheduler.expireStaleRequests();
 
@@ -107,9 +108,9 @@ class RentalRequestExpirySchedulerTest {
     @DisplayName("uses the configured expiry window")
     void usesConfiguredWindow() {
         properties.setRequestExpiryHours(6);
-        LocalDateTime now = LocalDateTime.now(clock);
-        Rental twelveHoursOld = rental(RentalStatus.REQUESTED, now.minusHours(12), 0);
-        Rental oneHourOld = rental(RentalStatus.REQUESTED, now.minusHours(1), 1);
+        Instant now = Instant.now(clock);
+        Rental twelveHoursOld = rental(RentalStatus.REQUESTED, now.minus(Duration.ofHours(12)), 0);
+        Rental oneHourOld = rental(RentalStatus.REQUESTED, now.minus(Duration.ofHours(1)), 1);
 
         scheduler.expireStaleRequests();
 
@@ -120,7 +121,7 @@ class RentalRequestExpirySchedulerTest {
     @Test
     @DisplayName("an expired request frees its dates for another booking")
     void expiredRequestFreesDates() {
-        Rental stale = rental(RentalStatus.REQUESTED, LocalDateTime.now(clock).minusHours(30), 0);
+        Rental stale = rental(RentalStatus.REQUESTED, Instant.now(clock).minus(Duration.ofHours(30)), 0);
 
         scheduler.expireStaleRequests();
 

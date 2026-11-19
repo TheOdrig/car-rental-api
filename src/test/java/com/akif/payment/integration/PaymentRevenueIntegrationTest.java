@@ -1,5 +1,9 @@
 package com.akif.payment.integration;
 
+import com.akif.shared.time.UtcDates;
+import java.time.ZoneOffset;
+import java.time.LocalDateTime;
+import java.time.Duration;
 import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
@@ -29,7 +33,7 @@ import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -72,7 +76,7 @@ class PaymentRevenueIntegrationTest extends E2ETestBase {
     }
 
     private Payment payment(PaymentKind kind, CurrencyType currency, String amount, String refunded,
-                            PaymentStatus status, LocalDateTime capturedAt) {
+                            PaymentStatus status, Instant capturedAt) {
         Long rentalId = kind == PaymentKind.RENTAL ? otherRental().getId() : rental.getId();
         Payment payment = Payment.builder()
                 .rentalId(rentalId)
@@ -101,7 +105,7 @@ class PaymentRevenueIntegrationTest extends E2ETestBase {
     @Test
     @DisplayName("revenue is grouped by kind and currency, net of refunds, and counts only captured payments")
     void groupsByKindAndCurrencyNetOfRefunds() {
-        LocalDateTime at = LocalDateTime.of(2031, 3, 10, 12, 0);
+        Instant at = LocalDateTime.of(2031, 3, 10, 12, 0).toInstant(ZoneOffset.UTC);
         payment(PaymentKind.RENTAL, CurrencyType.TRY, "1000.00", null, PaymentStatus.CAPTURED, at);
         payment(PaymentKind.RENTAL, CurrencyType.TRY, "500.00", "200.00", PaymentStatus.CAPTURED, at);
         payment(PaymentKind.PENALTY, CurrencyType.TRY, "150.00", null, PaymentStatus.CAPTURED, at);
@@ -112,7 +116,7 @@ class PaymentRevenueIntegrationTest extends E2ETestBase {
         payment(PaymentKind.RENTAL, CurrencyType.TRY, "800.00", null, PaymentStatus.AUTHORIZED, null);
 
         List<CollectedRevenue> rows = paymentService.sumCollectedBetween(
-                LocalDateTime.of(2031, 3, 1, 0, 0), LocalDateTime.of(2031, 4, 1, 0, 0));
+                LocalDateTime.of(2031, 3, 1, 0, 0).toInstant(ZoneOffset.UTC), LocalDateTime.of(2031, 4, 1, 0, 0).toInstant(ZoneOffset.UTC));
 
         assertThat(rows).hasSize(5);
         assertThat(find(rows, PaymentCategory.RENTAL, CurrencyType.TRY).amount()).isEqualByComparingTo("1300.00");
@@ -127,14 +131,14 @@ class PaymentRevenueIntegrationTest extends E2ETestBase {
     @DisplayName("a payment created in March and captured in April belongs to April")
     void attributedToTheCaptureTime() {
         Payment created = payment(PaymentKind.RENTAL, CurrencyType.TRY, "900.00", null, PaymentStatus.CAPTURED,
-                LocalDateTime.of(2031, 4, 2, 9, 0));
+                LocalDateTime.of(2031, 4, 2, 9, 0).toInstant(ZoneOffset.UTC));
         jdbcTemplate.update("UPDATE car_rental.payments SET create_time = ? WHERE id = ?",
-                LocalDateTime.of(2031, 3, 1, 9, 0), created.getId());
+                java.sql.Timestamp.from(LocalDateTime.of(2031, 3, 1, 9, 0).toInstant(ZoneOffset.UTC)), created.getId());
 
         List<CollectedRevenue> march = paymentService.sumCollectedBetween(
-                LocalDateTime.of(2031, 3, 1, 0, 0), LocalDateTime.of(2031, 4, 1, 0, 0));
+                LocalDateTime.of(2031, 3, 1, 0, 0).toInstant(ZoneOffset.UTC), LocalDateTime.of(2031, 4, 1, 0, 0).toInstant(ZoneOffset.UTC));
         List<CollectedRevenue> april = paymentService.sumCollectedBetween(
-                LocalDateTime.of(2031, 4, 1, 0, 0), LocalDateTime.of(2031, 5, 1, 0, 0));
+                LocalDateTime.of(2031, 4, 1, 0, 0).toInstant(ZoneOffset.UTC), LocalDateTime.of(2031, 5, 1, 0, 0).toInstant(ZoneOffset.UTC));
 
         assertThat(march).isEmpty();
         assertThat(april).hasSize(1);
@@ -144,31 +148,31 @@ class PaymentRevenueIntegrationTest extends E2ETestBase {
     @Test
     @DisplayName("daily and monthly charts are grouped per currency from the capture time")
     void chartsAreGroupedPerCurrency() {
-        LocalDateTime now = LocalDateTime.now(clock);
-        payment(PaymentKind.RENTAL, CurrencyType.TRY, "100.00", null, PaymentStatus.CAPTURED, now.minusDays(1));
-        payment(PaymentKind.PENALTY, CurrencyType.TRY, "50.00", "20.00", PaymentStatus.CAPTURED, now.minusDays(1));
-        payment(PaymentKind.RENTAL, CurrencyType.USD, "70.00", null, PaymentStatus.CAPTURED, now.minusDays(1));
-        payment(PaymentKind.RENTAL, CurrencyType.TRY, "10.00", null, PaymentStatus.CAPTURED, now.minusDays(45));
+        Instant now = Instant.now(clock);
+        payment(PaymentKind.RENTAL, CurrencyType.TRY, "100.00", null, PaymentStatus.CAPTURED, now.minus(Duration.ofDays(1)));
+        payment(PaymentKind.PENALTY, CurrencyType.TRY, "50.00", "20.00", PaymentStatus.CAPTURED, now.minus(Duration.ofDays(1)));
+        payment(PaymentKind.RENTAL, CurrencyType.USD, "70.00", null, PaymentStatus.CAPTURED, now.minus(Duration.ofDays(1)));
+        payment(PaymentKind.RENTAL, CurrencyType.TRY, "10.00", null, PaymentStatus.CAPTURED, now.minus(Duration.ofDays(45)));
 
         List<DailyRevenue> daily = paymentService.getDailyRevenue(30);
         List<MonthlyRevenue> monthly = paymentService.getMonthlyRevenue(12);
 
         assertThat(daily).hasSize(2);
         DailyRevenue lira = daily.stream().filter(d -> d.currency() == CurrencyType.TRY).findFirst().orElseThrow();
-        assertThat(lira.date()).isEqualTo(now.minusDays(1).toLocalDate());
+        assertThat(lira.date()).isEqualTo(UtcDates.toDate(now.minus(Duration.ofDays(1))));
         assertThat(lira.revenue()).isEqualByComparingTo("130.00");
         assertThat(lira.paymentCount()).isEqualTo(2);
         assertThat(daily.stream().filter(d -> d.currency() == CurrencyType.USD).findFirst().orElseThrow().revenue())
                 .isEqualByComparingTo("70.00");
         assertThat(monthly).extracting(MonthlyRevenue::currency).contains(CurrencyType.TRY, CurrencyType.USD);
         assertThat(monthly.stream().mapToInt(MonthlyRevenue::paymentCount).sum()).isEqualTo(4);
-        assertThat(monthly).allSatisfy(m -> assertThat(m.month().isAfter(YearMonth.from(now))).isFalse());
+        assertThat(monthly).allSatisfy(m -> assertThat(m.month().isAfter(YearMonth.from(UtcDates.toDate(now)))).isFalse());
     }
 
     @Test
     @DisplayName("what a user paid is the net of refunds across rental, penalty and damage payments, per currency")
     void netPaidIncludesEveryKindAfterRefunds() {
-        LocalDateTime at = LocalDateTime.of(2031, 3, 10, 12, 0);
+        Instant at = LocalDateTime.of(2031, 3, 10, 12, 0).toInstant(ZoneOffset.UTC);
         Rental second = otherRental();
         savePaymentFor(rental.getId(), PaymentKind.RENTAL, CurrencyType.TRY, "1000.00", "400.00", PaymentStatus.CAPTURED, at);
         savePaymentFor(rental.getId(), PaymentKind.PENALTY, CurrencyType.TRY, "150.00", null, PaymentStatus.CAPTURED, at);
@@ -189,7 +193,7 @@ class PaymentRevenueIntegrationTest extends E2ETestBase {
     }
 
     private Payment savePaymentFor(Long rentalId, PaymentKind kind, CurrencyType currency, String amount, String refunded,
-                                   PaymentStatus status, LocalDateTime capturedAt) {
+                                   PaymentStatus status, Instant capturedAt) {
         return paymentRepository.save(Payment.builder()
                 .rentalId(rentalId)
                 .kind(kind)
@@ -212,7 +216,7 @@ class PaymentRevenueIntegrationTest extends E2ETestBase {
         Payment pending = payment(PaymentKind.RENTAL, CurrencyType.TRY, "100.00", null, PaymentStatus.AUTHORIZED, null);
 
         paymentStateService.markCaptured(paymentRepository.findById(pending.getId()).orElseThrow(), "pi_captured");
-        LocalDateTime first = paymentRepository.findById(pending.getId()).orElseThrow().getCapturedAt();
+        Instant first = paymentRepository.findById(pending.getId()).orElseThrow().getCapturedAt();
         clock.advance(java.time.Duration.ofHours(3));
         paymentStateService.markCaptured(paymentRepository.findById(pending.getId()).orElseThrow(), "pi_captured");
 

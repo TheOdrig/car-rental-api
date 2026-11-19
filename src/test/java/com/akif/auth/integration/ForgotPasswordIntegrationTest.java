@@ -1,5 +1,6 @@
 package com.akif.auth.integration;
 
+import java.time.Duration;
 import com.akif.CarRentalApplication;
 import com.akif.auth.domain.PasswordResetToken;
 import com.akif.auth.domain.User;
@@ -27,7 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -132,9 +133,9 @@ class ForgotPasswordIntegrationTest {
                         PasswordResetToken oldToken = PasswordResetToken.builder()
                                         .token(UUID.randomUUID().toString())
                                         .email("test@example.com")
-                                        .expiryDate(LocalDateTime.now().plusHours(1))
+                                        .expiryDate(Instant.now().plus(Duration.ofHours(1)))
                                         .used(false)
-                                        .createdAt(LocalDateTime.now())
+                                        .createdAt(Instant.now())
                                         .build();
                         tokenRepository.save(oldToken);
 
@@ -161,9 +162,9 @@ class ForgotPasswordIntegrationTest {
                         PasswordResetToken token = PasswordResetToken.builder()
                                         .token(TokenHashing.sha256Hex(tokenValue))
                                         .email("test@example.com")
-                                        .expiryDate(LocalDateTime.now().plusHours(1))
+                                        .expiryDate(Instant.now().plus(Duration.ofHours(1)))
                                         .used(false)
-                                        .createdAt(LocalDateTime.now())
+                                        .createdAt(Instant.now())
                                         .build();
                         tokenRepository.save(token);
 
@@ -188,9 +189,9 @@ class ForgotPasswordIntegrationTest {
                         PasswordResetToken token = PasswordResetToken.builder()
                                         .token(TokenHashing.sha256Hex(tokenValue))
                                         .email("test@example.com")
-                                        .expiryDate(LocalDateTime.now().minusHours(1))
+                                        .expiryDate(Instant.now().minus(Duration.ofHours(1)))
                                         .used(false)
-                                        .createdAt(LocalDateTime.now().minusHours(2))
+                                        .createdAt(Instant.now().minus(Duration.ofHours(2)))
                                         .build();
                         tokenRepository.save(token);
 
@@ -220,9 +221,9 @@ class ForgotPasswordIntegrationTest {
                         PasswordResetToken token = PasswordResetToken.builder()
                                         .token(TokenHashing.sha256Hex(tokenValue))
                                         .email("test@example.com")
-                                        .expiryDate(LocalDateTime.now().plusHours(1))
+                                        .expiryDate(Instant.now().plus(Duration.ofHours(1)))
                                         .used(true)
-                                        .createdAt(LocalDateTime.now())
+                                        .createdAt(Instant.now())
                                         .build();
                         tokenRepository.save(token);
 
@@ -241,9 +242,9 @@ class ForgotPasswordIntegrationTest {
                         PasswordResetToken token = PasswordResetToken.builder()
                                         .token(TokenHashing.sha256Hex(tokenValue))
                                         .email("test@example.com")
-                                        .expiryDate(LocalDateTime.now().plusHours(1))
+                                        .expiryDate(Instant.now().plus(Duration.ofHours(1)))
                                         .used(false)
-                                        .createdAt(LocalDateTime.now())
+                                        .createdAt(Instant.now())
                                         .build();
                         tokenRepository.save(token);
 

@@ -36,7 +36,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import com.akif.shared.enums.CurrencyType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 
@@ -136,7 +136,7 @@ class DamageDisputeServiceTest {
                 .repairCostEstimate(new BigDecimal("500.00"))
                 .paymentId(1L)
                 .transactionId("txn_123456")
-                .reportedAt(LocalDateTime.now())
+                .reportedAt(Instant.now())
                 .build();
 
         testDisputeRequest = new DamageDisputeRequest(

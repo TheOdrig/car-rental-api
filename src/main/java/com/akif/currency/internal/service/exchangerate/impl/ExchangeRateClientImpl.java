@@ -15,7 +15,6 @@ import org.springframework.web.client.RestClientException;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -76,11 +75,9 @@ public class ExchangeRateClientImpl implements ExchangeRateClient {
             }
         }
 
-        LocalDateTime timestamp = apiResponse.timeLastUpdated() != null
-                ? LocalDateTime.ofInstant(
-                        Instant.ofEpochSecond(apiResponse.timeLastUpdated()),
-                        clock.getZone())
-                : LocalDateTime.now(clock);
+        Instant timestamp = apiResponse.timeLastUpdated() != null
+                ? Instant.ofEpochSecond(apiResponse.timeLastUpdated())
+                : Instant.now(clock);
 
         return new ExchangeRateResponse(
                 baseCurrency,

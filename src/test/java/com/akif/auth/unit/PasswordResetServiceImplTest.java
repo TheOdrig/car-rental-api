@@ -1,5 +1,6 @@
 package com.akif.auth.unit;
 
+import java.time.Duration;
 import com.akif.auth.api.PasswordResetRequestedEvent;
 import com.akif.auth.api.PasswordService;
 import com.akif.auth.domain.PasswordResetToken;
@@ -25,7 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,18 +81,18 @@ class PasswordResetServiceImplTest {
                 .id(1L)
                 .token("valid-token-123")
                 .email("test@example.com")
-                .expiryDate(LocalDateTime.now().plusHours(1))
+                .expiryDate(Instant.now().plus(Duration.ofHours(1)))
                 .used(false)
-                .createdAt(LocalDateTime.now())
+                .createdAt(Instant.now())
                 .build();
 
         expiredToken = PasswordResetToken.builder()
                 .id(2L)
                 .token("expired-token-123")
                 .email("test@example.com")
-                .expiryDate(LocalDateTime.now().minusHours(1))
+                .expiryDate(Instant.now().minus(Duration.ofHours(1)))
                 .used(false)
-                .createdAt(LocalDateTime.now().minusHours(2))
+                .createdAt(Instant.now().minus(Duration.ofHours(2)))
                 .build();
     }
 

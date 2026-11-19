@@ -1,7 +1,7 @@
 package com.akif.damage.api;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record DamageChargeFailedEvent(
         Long damageReportId,
@@ -9,5 +9,5 @@ public record DamageChargeFailedEvent(
         String customerEmail,
         BigDecimal amount,
         String failureReason,
-        LocalDateTime failedAt) {
+        Instant failedAt) {
 }

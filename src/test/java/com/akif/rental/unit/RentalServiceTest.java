@@ -47,7 +47,7 @@ import org.springframework.security.access.AccessDeniedException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -179,8 +179,8 @@ class RentalServiceTest {
                 null, null, null, null,
                 rental.getPickupNotes(),
                 rental.getReturnNotes(),
-                LocalDateTime.now(),
-                LocalDateTime.now());
+                Instant.now(),
+                Instant.now());
     }
 
     @Nested

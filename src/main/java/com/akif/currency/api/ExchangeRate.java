@@ -4,13 +4,13 @@ import com.akif.shared.enums.CurrencyType;
 import com.akif.currency.api.RateSource;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record ExchangeRate(
         CurrencyType from,
         CurrencyType to,
         BigDecimal rate,
-        LocalDateTime timestamp,
+        Instant timestamp,
         RateSource source
 ) {
     

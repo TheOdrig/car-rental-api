@@ -598,7 +598,7 @@ class PaymentCommittedTransactionsIntegrationTest {
 
         paymentCancelledListener.onPaymentCancelled(new PaymentCancelledEvent(
                 1L, rental.getId(), rental.getUserEmail(), new BigDecimal("10.00"), CurrencyType.TRY,
-                java.time.LocalDateTime.now()));
+                java.time.Instant.now()));
 
         org.awaitility.Awaitility.await().atMost(java.time.Duration.ofSeconds(10)).untilAsserted(
                 () -> assertThat(eventCaptor.getEventsOfType(PaymentRetryRequestedEvent.class)).hasSize(1));
@@ -619,7 +619,7 @@ class PaymentCommittedTransactionsIntegrationTest {
         for (Rental target : List.of(early, cancelled)) {
             paymentCancelledListener.onPaymentCancelled(new PaymentCancelledEvent(
                     1L, target.getId(), target.getUserEmail(), BigDecimal.TEN, CurrencyType.TRY,
-                    java.time.LocalDateTime.now()));
+                    java.time.Instant.now()));
         }
 
         org.awaitility.Awaitility.await().during(java.time.Duration.ofSeconds(2)).atMost(java.time.Duration.ofSeconds(6))

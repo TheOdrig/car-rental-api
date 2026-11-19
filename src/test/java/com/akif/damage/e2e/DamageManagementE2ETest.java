@@ -1,5 +1,6 @@
 package com.akif.damage.e2e;
 
+import java.time.Duration;
 import com.akif.CarRentalApplication;
 import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.auth.domain.User;
@@ -257,8 +258,8 @@ class DamageManagementE2ETest extends E2ETestBase {
                                         .andExpect(jsonPath("$.customerLiability").value(750.00));
 
                         var recovered = paymentService.sumCollectedBetween(
-                                        java.time.LocalDateTime.now(clock).minusDays(1),
-                                        java.time.LocalDateTime.now(clock).plusDays(1));
+                                        java.time.Instant.now(clock).minus(Duration.ofDays(1)),
+                                        java.time.Instant.now(clock).plus(Duration.ofDays(1)));
                         assertThat(recovered).anySatisfy(row -> {
                                 assertThat(row.category()).isEqualTo(com.akif.payment.api.PaymentCategory.DAMAGE);
                                 assertThat(row.amount()).isEqualByComparingTo("750.00");

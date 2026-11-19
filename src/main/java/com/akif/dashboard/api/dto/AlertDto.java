@@ -3,7 +3,7 @@ package com.akif.dashboard.api.dto;
 import com.akif.dashboard.api.AlertSeverity;
 import com.akif.dashboard.api.AlertType;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record AlertDto(
     Long id,
@@ -13,8 +13,8 @@ public record AlertDto(
     String message,
     String actionUrl,
     boolean acknowledged,
-    LocalDateTime acknowledgedAt,
+    Instant acknowledgedAt,
     String acknowledgedBy,
-    LocalDateTime createdAt
+    Instant createdAt
 ) {}
 

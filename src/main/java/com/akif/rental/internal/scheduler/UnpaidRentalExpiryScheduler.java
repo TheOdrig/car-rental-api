@@ -18,7 +18,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -94,7 +94,7 @@ public class UnpaidRentalExpiryScheduler {
 
         rental.cancel(EXPIRY_REASON);
         rentalRepository.save(rental);
-        LocalDateTime now = LocalDateTime.now(clock);
+        Instant now = Instant.now(clock);
         eventPublisher.publishEvent(new RentalCancelledEvent(
                 rental.getId(),
                 rental.getUserEmail(),

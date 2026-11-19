@@ -1,7 +1,7 @@
 package com.akif.payment.internal.dto;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public record ReconciliationReport(
@@ -10,5 +10,5 @@ public record ReconciliationReport(
     int totalStripePayments,
     List<Discrepancy> discrepancies,
     boolean hasDiscrepancies,
-    LocalDateTime generatedAt
+    Instant generatedAt
 ) {}

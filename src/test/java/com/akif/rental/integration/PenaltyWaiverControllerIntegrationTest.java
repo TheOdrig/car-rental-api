@@ -1,5 +1,6 @@
 package com.akif.rental.integration;
 
+import java.time.Duration;
 import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
@@ -35,7 +36,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
@@ -135,7 +136,7 @@ class PenaltyWaiverControllerIntegrationTest {
                 .totalPrice(new BigDecimal("3000"))
                 .status(RentalStatus.RETURNED)
                 .lateReturnStatus(LateReturnStatus.LATE)
-                .lateDetectedAt(LocalDateTime.now().minusDays(1))
+                .lateDetectedAt(Instant.now().minus(Duration.ofDays(1)))
                 .lateHours(30)
                 .penaltyAmount(new BigDecimal("1500"))
                 .penaltyPaid(false)
@@ -245,7 +246,7 @@ class PenaltyWaiverControllerIntegrationTest {
                 .remainingPenalty(new BigDecimal("1000"))
                 .reason("First waiver - partial")
                 .adminId(adminUser.getId())
-                .waivedAt(LocalDateTime.now())
+                .waivedAt(Instant.now())
                 .refundInitiated(false)
                 .build();
         penaltyWaiverRepository.save(waiver);
@@ -285,7 +286,7 @@ class PenaltyWaiverControllerIntegrationTest {
                 .remainingPenalty(new BigDecimal("1000"))
                 .reason("First waiver")
                 .adminId(adminUser.getId())
-                .waivedAt(LocalDateTime.now().minusDays(1))
+                .waivedAt(Instant.now().minus(Duration.ofDays(1)))
                 .refundInitiated(false)
                 .build();
         penaltyWaiverRepository.save(waiver1);
@@ -297,7 +298,7 @@ class PenaltyWaiverControllerIntegrationTest {
                 .remainingPenalty(new BigDecimal("500"))
                 .reason("Second waiver")
                 .adminId(adminUser.getId())
-                .waivedAt(LocalDateTime.now())
+                .waivedAt(Instant.now())
                 .refundInitiated(false)
                 .build();
         penaltyWaiverRepository.save(waiver2);

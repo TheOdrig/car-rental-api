@@ -2,7 +2,7 @@ package com.akif.payment.api;
 
 import com.akif.shared.enums.CurrencyType;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record PaymentCancelledEvent(
         Long paymentId,
@@ -10,5 +10,5 @@ public record PaymentCancelledEvent(
         String customerEmail,
         BigDecimal amount,
         CurrencyType currency,
-        LocalDateTime occurredAt) {
+        Instant occurredAt) {
 }

@@ -418,7 +418,7 @@ class PenaltyCollectionE2ETest extends E2ETestBase {
 
     private void makeStale(Payment payment) {
         jdbcTemplate.update("UPDATE car_rental.payments SET update_time = ?, last_synced_at = NULL WHERE id = ?",
-                java.time.LocalDateTime.now(clock).minusHours(2), payment.getId());
+                java.sql.Timestamp.from(java.time.Instant.now(clock).minus(Duration.ofHours(2))), payment.getId());
     }
 
     @Test
@@ -508,9 +508,9 @@ class PenaltyCollectionE2ETest extends E2ETestBase {
     void alertsAreDeduplicatedPerPayment() throws Exception {
         givenOverdueRental(2);
         PenaltyChargeFailedEvent first = new PenaltyChargeFailedEvent(rental.getId(), 9001L, rental.getUserEmail(),
-                java.time.LocalDateTime.now(clock), new BigDecimal("10.00"), rental.getCurrency(), "declined");
+                java.time.Instant.now(clock), new BigDecimal("10.00"), rental.getCurrency(), "declined");
         PenaltyChargeFailedEvent second = new PenaltyChargeFailedEvent(rental.getId(), 9002L, rental.getUserEmail(),
-                java.time.LocalDateTime.now(clock), new BigDecimal("10.00"), rental.getCurrency(), "declined");
+                java.time.Instant.now(clock), new BigDecimal("10.00"), rental.getCurrency(), "declined");
 
         new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
             eventPublisher.publishEvent(first);

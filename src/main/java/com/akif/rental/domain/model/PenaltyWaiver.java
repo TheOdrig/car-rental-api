@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "penalty_waivers",
@@ -42,7 +42,7 @@ public class PenaltyWaiver extends BaseEntity {
     private Long adminId;
 
     @Column(name = "waived_at", nullable = false)
-    private LocalDateTime waivedAt;
+    private Instant waivedAt;
 
     @Column(name = "refund_initiated")
     private Boolean refundInitiated;

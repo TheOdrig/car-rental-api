@@ -34,7 +34,7 @@ import org.mockito.quality.Strictness;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 
@@ -113,7 +113,7 @@ class DamageAssessmentServiceTest {
                 .description("Scratch on front bumper")
                 .status(DamageStatus.REPORTED)
                 .reportedBy(1L)
-                .reportedAt(LocalDateTime.now())
+                .reportedAt(Instant.now())
                 .build();
 
         when(rentalService.getRentalSummaryById(any())).thenReturn(new com.akif.rental.api.RentalSummaryDto(

@@ -1,17 +1,20 @@
 package com.akif.auth.domain;
 
+import java.time.ZoneOffset;
+import java.time.LocalDateTime;
+import java.time.Duration;
 import com.akif.auth.domain.enums.AuthProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("User behaviour")
 class UserBehaviourTest {
 
-    private final LocalDateTime now = LocalDateTime.of(2026, 11, 18, 9, 0);
+    private final Instant now = LocalDateTime.of(2026, 11, 18, 9, 0).toInstant(ZoneOffset.UTC);
 
     private User activeUser() {
         return User.builder().username("jane").email("jane@example.com").enabled(true).build();
@@ -37,10 +40,10 @@ class UserBehaviourTest {
         User user = activeUser();
         user.ban("fraud", 7L, now);
 
-        user.unban(now.plusDays(2));
+        user.unban(now.plus(Duration.ofDays(2)));
 
         assertThat(user.getIsBanned()).isFalse();
-        assertThat(user.getUnbannedAt()).isEqualTo(now.plusDays(2));
+        assertThat(user.getUnbannedAt()).isEqualTo(now.plus(Duration.ofDays(2)));
         assertThat(user.getEnabled()).isTrue();
     }
 

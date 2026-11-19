@@ -1,5 +1,6 @@
 package com.akif.rental.internal.service.penalty.impl;
 
+import com.akif.shared.time.UtcDates;
 import com.akif.rental.internal.config.PenaltyConfig;
 import com.akif.rental.internal.dto.penalty.PenaltyResult;
 import com.akif.rental.domain.enums.LateReturnStatus;
@@ -14,7 +15,7 @@ import com.akif.shared.enums.CurrencyType;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -24,11 +25,11 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
     private final PenaltyConfig penaltyConfig;
 
     @Override
-    public PenaltyResult calculatePenalty(Rental rental, LocalDateTime returnTime) {
+    public PenaltyResult calculatePenalty(Rental rental, Instant returnTime) {
         log.debug("Calculating penalty for rental: {}, return time: {}", rental.getId(), returnTime);
 
         BigDecimal dailyRate = rental.getDailyPrice();
-        LocalDateTime endDateTime = rental.getEndDate().atTime(23, 59, 59);
+        Instant endDateTime = UtcDates.endOfDayWholeSecond(rental.getEndDate());
 
         Duration lateDuration = Duration.between(endDateTime, returnTime);
         long totalMinutesLate = lateDuration.toMinutes();

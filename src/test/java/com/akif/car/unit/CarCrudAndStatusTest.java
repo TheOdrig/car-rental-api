@@ -32,7 +32,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,8 +79,8 @@ class CarCrudAndStatusTest {
                 .price(new BigDecimal("250000"))
                 .currencyType(CurrencyType.TRY)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .createTime(LocalDateTime.now())
-                .updateTime(LocalDateTime.now())
+                .createTime(Instant.now())
+                .updateTime(Instant.now())
                 .build();
 
         testCar2 = Car.builder()
@@ -93,8 +93,8 @@ class CarCrudAndStatusTest {
                 .price(new BigDecimal("300000"))
                 .currencyType(CurrencyType.TRY)
                 .carStatusType(CarStatusType.AVAILABLE)
-                .createTime(LocalDateTime.now())
-                .updateTime(LocalDateTime.now())
+                .createTime(Instant.now())
+                .updateTime(Instant.now())
                 .build();
 
         testCarRequest = CarRequest.builder()

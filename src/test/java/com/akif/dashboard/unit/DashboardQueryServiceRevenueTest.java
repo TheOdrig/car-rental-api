@@ -1,5 +1,6 @@
 package com.akif.dashboard.unit;
 
+import java.time.LocalDateTime;
 import com.akif.car.api.CarCatalog;
 import com.akif.damage.api.DamageService;
 import com.akif.damage.api.RepairCostTotal;
@@ -26,7 +27,6 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -135,7 +135,7 @@ class DashboardQueryServiceRevenueTest {
         metrics();
 
         verify(paymentService).sumCollectedBetween(
-                LocalDateTime.of(2031, 3, 1, 0, 0), LocalDateTime.of(2031, 3, 21, 0, 0));
+                LocalDateTime.of(2031, 3, 1, 0, 0).toInstant(ZoneOffset.UTC), LocalDateTime.of(2031, 3, 21, 0, 0).toInstant(ZoneOffset.UTC));
     }
 
     @Test

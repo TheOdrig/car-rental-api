@@ -1,6 +1,6 @@
 package com.akif.dashboard.api.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record DailySummaryDto(
     int pendingApprovals,
@@ -8,6 +8,6 @@ public record DailySummaryDto(
     int todaysReturns,
     int overdueRentals,
     int pendingDamageAssessments,
-    LocalDateTime generatedAt
+    Instant generatedAt
 ) {}
 

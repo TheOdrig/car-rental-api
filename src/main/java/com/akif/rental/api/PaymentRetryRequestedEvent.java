@@ -4,12 +4,12 @@ import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record PaymentRetryRequestedEvent(
         Long rentalId,
         String customerEmail,
-        LocalDateTime occurredAt,
+        Instant occurredAt,
         String carBrand,
         String carModel,
         LocalDate payBy,

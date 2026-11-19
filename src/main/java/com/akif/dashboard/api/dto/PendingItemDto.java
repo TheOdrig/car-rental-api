@@ -4,7 +4,7 @@ import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record PendingItemDto(
         Long rentalId,
@@ -22,5 +22,5 @@ public record PendingItemDto(
         CurrencyType currency,
         String status,
         Long lateHours,
-        LocalDateTime createdAt) {
+        Instant createdAt) {
 }

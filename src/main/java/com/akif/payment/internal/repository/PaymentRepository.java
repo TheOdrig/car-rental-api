@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,7 +65,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             WHERE p.updateTime >= :startDate AND p.updateTime < :endDate
             AND p.stripePaymentIntentId IS NOT NULL AND p.isDeleted = false
             """)
-    List<Payment> findWithIntentUpdatedBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+    List<Payment> findWithIntentUpdatedBetween(@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
 
     @Query("SELECT p FROM Payment p WHERE p.stripePaymentIntentId IN :intentIds AND p.isDeleted = false")
     List<Payment> findByStripePaymentIntentIdIn(@Param("intentIds") java.util.Collection<String> intentIds);
@@ -78,7 +78,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             AND COALESCE(p.lastSyncedAt, p.updateTime) < :cutoff
             ORDER BY p.id
             """)
-    List<Object[]> findStaleNonTerminal(@Param("cutoff") LocalDateTime cutoff, org.springframework.data.domain.Pageable pageable);
+    List<Object[]> findStaleNonTerminal(@Param("cutoff") Instant cutoff, org.springframework.data.domain.Pageable pageable);
 
     @Query("""
             SELECT p.id FROM Payment p
@@ -89,7 +89,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             AND COALESCE(p.lastSyncedAt, p.updateTime) < :cutoff
             ORDER BY p.id
             """)
-    List<Long> findStalePenaltiesWithoutIntent(@Param("cutoff") LocalDateTime cutoff, org.springframework.data.domain.Pageable pageable);
+    List<Long> findStalePenaltiesWithoutIntent(@Param("cutoff") Instant cutoff, org.springframework.data.domain.Pageable pageable);
 
     @Query("""
             SELECT p.id FROM Payment p
@@ -99,7 +99,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             AND p.updateTime < :cutoff
             ORDER BY p.id
             """)
-    List<Long> findClosedCapturedForRefund(@Param("cutoff") LocalDateTime cutoff, org.springframework.data.domain.Pageable pageable);
+    List<Long> findClosedCapturedForRefund(@Param("cutoff") Instant cutoff, org.springframework.data.domain.Pageable pageable);
 
     Optional<Payment> findByStripePaymentIntentIdAndIsDeletedFalse(String stripePaymentIntentId);
 
@@ -113,7 +113,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             GROUP BY p.kind, p.currency
             ORDER BY p.kind, p.currency
             """)
-    List<Object[]> sumCollectedBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    List<Object[]> sumCollectedBetween(@Param("start") Instant start, @Param("end") Instant end);
 
     @Query("""
             SELECT p FROM Payment p
@@ -122,7 +122,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             AND p.isDeleted = false
             ORDER BY p.capturedAt
             """)
-    List<Payment> findCapturedSince(@Param("start") LocalDateTime start);
+    List<Payment> findCapturedSince(@Param("start") Instant start);
 
     @Query("""
             SELECT p.currency, COUNT(DISTINCT p.rentalId), COALESCE(SUM(p.amount - COALESCE(p.refundedAmount, 0)), 0)

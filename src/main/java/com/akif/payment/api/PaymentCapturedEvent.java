@@ -2,7 +2,7 @@ package com.akif.payment.api;
 
 import com.akif.shared.enums.CurrencyType;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record PaymentCapturedEvent(
         Long paymentId,
@@ -11,5 +11,5 @@ public record PaymentCapturedEvent(
         BigDecimal amount,
         CurrencyType currency,
         String transactionId,
-        LocalDateTime paymentDate) {
+        Instant paymentDate) {
 }

@@ -1,5 +1,6 @@
 package com.akif.payment.internal.service.reconciliation;
 
+import java.time.Duration;
 import com.akif.payment.api.PaymentAttentionEvent;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.domain.Payment;
@@ -17,7 +18,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Clock;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,7 +54,7 @@ public class PaymentRepairService {
     }
 
     public int repairStalePayments() {
-        LocalDateTime cutoff = LocalDateTime.now(clock).minusMinutes(minAgeMinutes);
+        Instant cutoff = Instant.now(clock).minus(Duration.ofMinutes(minAgeMinutes));
         List<Object[]> candidates = paymentRepository.findStaleNonTerminal(cutoff, PageRequest.of(0, BATCH_SIZE));
         int repaired = 0;
         for (Object[] candidate : candidates) {
@@ -77,7 +78,7 @@ public class PaymentRepairService {
         return repaired;
     }
 
-    private int repairPenaltiesWithoutIntent(LocalDateTime cutoff) {
+    private int repairPenaltiesWithoutIntent(Instant cutoff) {
         int repaired = 0;
         for (Long paymentId : paymentRepository.findStalePenaltiesWithoutIntent(cutoff, PageRequest.of(0, BATCH_SIZE))) {
             try {
@@ -107,7 +108,7 @@ public class PaymentRepairService {
             return false;
         }
         Payment payment = locked.get();
-        payment.markSynced(LocalDateTime.now(clock));
+        payment.markSynced(Instant.now(clock));
         boolean unresolved = !payment.isClosed()
                 && payment.getStatus() == PaymentStatus.PENDING
                 && payment.getStripePaymentIntentId() == null
@@ -125,7 +126,7 @@ public class PaymentRepairService {
         return true;
     }
 
-    private int refundClosedCaptures(LocalDateTime cutoff) {
+    private int refundClosedCaptures(Instant cutoff) {
         int refunded = 0;
         for (Long paymentId : paymentRepository.findClosedCapturedForRefund(cutoff, PageRequest.of(0, BATCH_SIZE))) {
             try {
@@ -149,7 +150,7 @@ public class PaymentRepairService {
             return false;
         }
         Payment payment = locked.get();
-        payment.markSynced(LocalDateTime.now(clock));
+        payment.markSynced(Instant.now(clock));
         boolean sameIntent = intentId == null
                 ? payment.getStripePaymentIntentId() == null
                 : intentId.equals(payment.getStripePaymentIntentId());

@@ -25,7 +25,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,7 +62,7 @@ class EmailEventListenerIntegrationTest {
             RentalConfirmedEvent event = new RentalConfirmedEvent(
                     1L,
                     "customer@example.com",
-                    LocalDateTime.now(),
+                    Instant.now(),
                     "Toyota",
                     "Corolla",
                     LocalDate.now().plusDays(1),
@@ -104,7 +104,7 @@ class EmailEventListenerIntegrationTest {
                     new BigDecimal("2000.00"),
                     CurrencyType.TRY,
                     "txn_123456",
-                    LocalDateTime.now());
+                    Instant.now());
 
             publishInTransaction(event);
 
@@ -137,7 +137,7 @@ class EmailEventListenerIntegrationTest {
             PickupReminderEvent event = new PickupReminderEvent(
                     1L,
                     "customer@example.com",
-                    LocalDateTime.now(),
+                    Instant.now(),
                     LocalDate.now().plusDays(1),
                     "Toyota",
                     "Corolla");
@@ -173,7 +173,7 @@ class EmailEventListenerIntegrationTest {
             ReturnReminderEvent event = new ReturnReminderEvent(
                     1L,
                     "customer@example.com",
-                    LocalDateTime.now(),
+                    Instant.now(),
                     LocalDate.now(),
                     CurrencyType.TRY,
                     new BigDecimal("12.50"),
@@ -210,8 +210,8 @@ class EmailEventListenerIntegrationTest {
             RentalCancelledEvent event = new RentalCancelledEvent(
                     1L,
                     "customer@example.com",
-                    LocalDateTime.now(),
-                    LocalDateTime.now(),
+                    Instant.now(),
+                    Instant.now(),
                     "Customer request",
                     true,
                     new BigDecimal("2000.00"),
@@ -243,8 +243,8 @@ class EmailEventListenerIntegrationTest {
             RentalCancelledEvent event = new RentalCancelledEvent(
                     2L,
                     "customer@example.com",
-                    LocalDateTime.now(),
-                    LocalDateTime.now(),
+                    Instant.now(),
+                    Instant.now(),
                     "Customer request",
                     false,
                     null,

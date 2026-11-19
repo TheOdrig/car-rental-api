@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,15 +24,15 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE RefreshToken t SET t.revokedAt = :now WHERE t.familyId = :familyId AND t.revokedAt IS NULL")
-    int revokeFamily(@Param("familyId") UUID familyId, @Param("now") LocalDateTime now);
+    int revokeFamily(@Param("familyId") UUID familyId, @Param("now") Instant now);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE RefreshToken t SET t.revokedAt = :now WHERE t.userId = :userId AND t.revokedAt IS NULL")
-    int revokeAllForUser(@Param("userId") Long userId, @Param("now") LocalDateTime now);
+    int revokeAllForUser(@Param("userId") Long userId, @Param("now") Instant now);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("DELETE FROM RefreshToken t WHERE t.expiresAt < :cutoff")
-    int deleteExpiredBefore(@Param("cutoff") LocalDateTime cutoff);
+    int deleteExpiredBefore(@Param("cutoff") Instant cutoff);
 
     long countByFamilyIdAndRevokedAtIsNull(UUID familyId);
 }

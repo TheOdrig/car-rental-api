@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 
 @Component
@@ -45,7 +45,7 @@ public class PaymentCancelledListener {
         eventPublisher.publishEvent(new PaymentRetryRequestedEvent(
                 rental.getId(),
                 rental.getUserEmail(),
-                LocalDateTime.now(clock),
+                Instant.now(clock),
                 rental.getCarBrand(),
                 rental.getCarModel(),
                 rental.getStartDate(),

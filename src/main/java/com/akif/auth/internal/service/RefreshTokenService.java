@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -53,12 +53,12 @@ public class RefreshTokenService {
 
     @Transactional
     public String issue(Long userId) {
-        return persistNew(userId, UUID.randomUUID(), LocalDateTime.now(clock)).rawToken();
+        return persistNew(userId, UUID.randomUUID(), Instant.now(clock)).rawToken();
     }
 
     @Transactional(noRollbackFor = {InvalidTokenException.class, TokenExpiredException.class})
     public Rotation rotate(String rawToken) {
-        LocalDateTime now = LocalDateTime.now(clock);
+        Instant now = Instant.now(clock);
         RefreshToken current = repository.findByTokenHashForUpdate(hash(rawToken))
                 .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
 
@@ -87,24 +87,24 @@ public class RefreshTokenService {
     @Transactional
     public void revoke(String rawToken) {
         repository.findByTokenHashForUpdate(hash(rawToken))
-                .ifPresent(token -> repository.revokeFamily(token.getFamilyId(), LocalDateTime.now(clock)));
+                .ifPresent(token -> repository.revokeFamily(token.getFamilyId(), Instant.now(clock)));
     }
 
     @Transactional
     public void revokeAllForUser(Long userId) {
-        repository.revokeAllForUser(userId, LocalDateTime.now(clock));
+        repository.revokeAllForUser(userId, Instant.now(clock));
     }
 
     @Transactional
     public int purgeExpired(Duration retention) {
-        return repository.deleteExpiredBefore(LocalDateTime.now(clock).minus(retention));
+        return repository.deleteExpiredBefore(Instant.now(clock).minus(retention));
     }
 
-    private Issued persistNew(Long userId, UUID familyId, LocalDateTime now) {
+    private Issued persistNew(Long userId, UUID familyId, Instant now) {
         byte[] bytes = new byte[TOKEN_BYTES];
         secureRandom.nextBytes(bytes);
         String rawToken = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-        LocalDateTime expiresAt = now.plus(Duration.ofMillis(jwtProperties.refreshTokenExpiration()));
+        Instant expiresAt = now.plus(Duration.ofMillis(jwtProperties.refreshTokenExpiration()));
         RefreshToken saved = repository.saveAndFlush(
                 RefreshToken.issue(userId, familyId, hash(rawToken), now, expiresAt));
         return new Issued(saved, rawToken);

@@ -1,7 +1,7 @@
 package com.akif.dashboard.api.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record FleetStatusDto(
         int totalCars,
@@ -12,6 +12,6 @@ public record FleetStatusDto(
         int inspectionCars,
         int damagedCars,
         BigDecimal occupancyRate,
-        LocalDateTime generatedAt) {
+        Instant generatedAt) {
 }
 

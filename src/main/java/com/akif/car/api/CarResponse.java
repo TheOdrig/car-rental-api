@@ -7,7 +7,7 @@ import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -39,8 +39,8 @@ public record CarResponse(
         String imageUrl,
         String thumbnailUrl,
         BigDecimal rating,
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC") LocalDateTime createTime,
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC") LocalDateTime updateTime,
+        Instant createTime,
+        Instant updateTime,
         Long version,
         String formattedPrice,
         String formattedPriceWithSeparators,

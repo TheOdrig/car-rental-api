@@ -1,6 +1,6 @@
 package com.akif.damage.api;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record DamageReportedEvent(
         Long damageReportId,
@@ -11,5 +11,5 @@ public record DamageReportedEvent(
         String customerFullName,
         String description,
         DamageSeverity severity,
-        LocalDateTime reportedAt) {
+        Instant reportedAt) {
 }

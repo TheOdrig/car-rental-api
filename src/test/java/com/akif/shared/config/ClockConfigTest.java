@@ -1,12 +1,12 @@
 package com.akif.shared.config;
 
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.auditing.DateTimeProvider;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,6 +35,6 @@ class ClockConfigTest {
 
         DateTimeProvider provider = config.auditingDateTimeProvider(fixed);
 
-        assertThat(provider.getNow()).contains(LocalDateTime.of(2026, 3, 1, 10, 15, 30));
+        assertThat(provider.getNow()).contains(LocalDateTime.of(2026, 3, 1, 10, 15, 30).toInstant(ZoneOffset.UTC));
     }
 }

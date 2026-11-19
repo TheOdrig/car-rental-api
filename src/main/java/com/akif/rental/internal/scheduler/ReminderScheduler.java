@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
@@ -118,7 +118,7 @@ public class ReminderScheduler {
         PickupReminderEvent event = new PickupReminderEvent(
                 rental.getId(),
                 rental.getUserEmail(),
-                LocalDateTime.now(clock),
+                Instant.now(clock),
                 rental.getStartDate(),
                 rental.getCarBrand(),
                 rental.getCarModel()
@@ -131,7 +131,7 @@ public class ReminderScheduler {
         ReturnReminderEvent event = new ReturnReminderEvent(
                 rental.getId(),
                 rental.getUserEmail(),
-                LocalDateTime.now(clock),
+                Instant.now(clock),
                 rental.getEndDate(),
                 currency,
                 rental.getDailyPrice().multiply(penaltyConfig.getHourlyPenaltyRate())

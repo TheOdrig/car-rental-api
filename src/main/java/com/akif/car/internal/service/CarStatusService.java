@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -70,7 +70,7 @@ public class CarStatusService implements CarFleetOperations {
     }
 
     private CarResponse saveAndMap(Car car) {
-        car.setUpdateTime(LocalDateTime.now(clock));
+        car.setUpdateTime(Instant.now(clock));
         return carMapper.toDto(carRepository.save(car));
     }
 }

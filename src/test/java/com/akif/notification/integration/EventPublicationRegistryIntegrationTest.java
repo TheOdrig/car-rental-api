@@ -22,7 +22,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -67,7 +67,7 @@ class EventPublicationRegistryIntegrationTest {
         return new RentalConfirmedEvent(
                 42L,
                 "customer@example.com",
-                LocalDateTime.now(),
+                Instant.now(),
                 "Toyota",
                 "Corolla",
                 LocalDate.now().plusDays(1),

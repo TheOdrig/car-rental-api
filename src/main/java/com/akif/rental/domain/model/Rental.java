@@ -11,7 +11,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "rentals", indexes = {
@@ -101,10 +101,10 @@ public class Rental extends BaseEntity {
     private LateReturnStatus lateReturnStatus;
 
     @Column(name = "late_detected_at")
-    private LocalDateTime lateDetectedAt;
+    private Instant lateDetectedAt;
 
     @Column(name = "actual_return_time")
-    private LocalDateTime actualReturnTime;
+    private Instant actualReturnTime;
 
     @Column(name = "late_hours")
     private Integer lateHours;
@@ -136,7 +136,7 @@ public class Rental extends BaseEntity {
         this.pickupNotes = notes;
     }
 
-    public void markReturned(LocalDateTime returnedAt, String notes) {
+    public void markReturned(Instant returnedAt, String notes) {
         requireTransition(status.canReturn(), RentalStatus.RETURNED);
         this.status = RentalStatus.RETURNED;
         this.actualReturnTime = returnedAt;
@@ -157,7 +157,7 @@ public class Rental extends BaseEntity {
         this.returnReminderSent = true;
     }
 
-    public void flagLate(LateReturnStatus newStatus, LocalDateTime detectedAt, int hoursLate) {
+    public void flagLate(LateReturnStatus newStatus, Instant detectedAt, int hoursLate) {
         this.lateReturnStatus = newStatus;
         if (this.lateDetectedAt == null && newStatus != LateReturnStatus.ON_TIME) {
             this.lateDetectedAt = detectedAt;

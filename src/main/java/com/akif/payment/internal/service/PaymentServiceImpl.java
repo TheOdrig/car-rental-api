@@ -1,5 +1,8 @@
 package com.akif.payment.internal.service;
 
+import com.akif.shared.time.UtcDates;
+import java.time.ZoneOffset;
+import java.time.Duration;
 import java.time.Clock;
 
 import com.akif.payment.api.CollectedRevenue;
@@ -176,8 +179,8 @@ class PaymentServiceImpl implements PaymentService {
             if (payment == null) {
                 return false;
             }
-            LocalDateTime now = LocalDateTime.now(clock);
-            LocalDateTime last = payment.getLastSyncedAt();
+            Instant now = Instant.now(clock);
+            Instant last = payment.getLastSyncedAt();
             if (last != null && last.plusSeconds(syncMinIntervalSeconds).isAfter(now)) {
                 return false;
             }
@@ -698,7 +701,7 @@ class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public List<CollectedRevenue> sumCollectedBetween(LocalDateTime start, LocalDateTime end) {
+    public List<CollectedRevenue> sumCollectedBetween(Instant start, Instant end) {
         return paymentRepository.sumCollectedBetween(start, end).stream()
                 .map(row -> new CollectedRevenue(
                         PaymentCategory.valueOf(((PaymentKind) row[0]).name()),
@@ -720,9 +723,9 @@ class PaymentServiceImpl implements PaymentService {
 
     @Override
     public List<DailyRevenue> getDailyRevenue(int days) {
-        LocalDateTime startDate = LocalDateTime.now(clock).minusDays(days);
+        Instant startDate = Instant.now(clock).minus(Duration.ofDays(days));
         Map<RevenueKey<LocalDate>, List<Payment>> grouped = paymentRepository.findCapturedSince(startDate).stream()
-                .collect(Collectors.groupingBy(p -> new RevenueKey<>(p.getCapturedAt().toLocalDate(), p.getCurrency())));
+                .collect(Collectors.groupingBy(p -> new RevenueKey<>(UtcDates.toDate(p.getCapturedAt()), p.getCurrency())));
 
         return grouped.entrySet().stream()
                 .map(entry -> new DailyRevenue(
@@ -736,9 +739,9 @@ class PaymentServiceImpl implements PaymentService {
 
     @Override
     public List<MonthlyRevenue> getMonthlyRevenue(int months) {
-        LocalDateTime startDate = LocalDateTime.now(clock).minusMonths(months);
+        Instant startDate = Instant.now(clock).atZone(ZoneOffset.UTC).minusMonths(months).toInstant();
         Map<RevenueKey<YearMonth>, List<Payment>> grouped = paymentRepository.findCapturedSince(startDate).stream()
-                .collect(Collectors.groupingBy(p -> new RevenueKey<>(YearMonth.from(p.getCapturedAt()), p.getCurrency())));
+                .collect(Collectors.groupingBy(p -> new RevenueKey<>(YearMonth.from(UtcDates.toDate(p.getCapturedAt())), p.getCurrency())));
 
         return grouped.entrySet().stream()
                 .map(entry -> new MonthlyRevenue(

@@ -1,5 +1,6 @@
 package com.akif.dashboard.internal.service;
 
+import com.akif.shared.time.UtcDates;
 import java.time.Clock;
 
 import com.akif.car.api.CarCatalog;
@@ -32,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -69,7 +70,7 @@ public class DashboardQueryService {
                 todaysReturns,
                 overdueRentals,
                 pendingDamageAssessments,
-                LocalDateTime.now(clock));
+                Instant.now(clock));
     }
 
     public FleetStatusDto fetchFleetStatus() {
@@ -115,14 +116,14 @@ public class DashboardQueryService {
                 inspectionCars,
                 damagedCars,
                 occupancyRate,
-                LocalDateTime.now(clock));
+                Instant.now(clock));
     }
 
     public MonthlyMetricsDto fetchMonthlyMetrics(LocalDate startDate, LocalDate endDate) {
         log.debug("Fetching monthly metrics for period: {} to {}", startDate, endDate);
 
-        LocalDateTime startDateTime = startDate.atStartOfDay();
-        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
+        Instant startDateTime = UtcDates.startOfDay(startDate);
+        Instant endDateTime = UtcDates.startOfDay(endDate.plusDays(1));
 
         List<RevenueBreakdownDto> revenueByCurrency = revenueByCurrency(startDateTime, endDateTime, startDate, endDate);
         int completedRentals = rentalService.countByStatus(RentalStatus.RETURNED);
@@ -136,7 +137,7 @@ public class DashboardQueryService {
                 averageRentalDurationDays,
                 startDate,
                 endDate,
-                LocalDateTime.now(clock));
+                Instant.now(clock));
     }
 
     public RevenueAnalyticsDto fetchRevenueAnalytics() {
@@ -151,13 +152,13 @@ public class DashboardQueryService {
         LocalDate endDate = LocalDate.now(clock);
         LocalDate startDate = endDate.minusMonths(12);
         List<RevenueBreakdownDto> breakdown = revenueByCurrency(
-                startDate.atStartOfDay(), endDate.plusDays(1).atStartOfDay(), startDate, endDate);
+                UtcDates.startOfDay(startDate), UtcDates.startOfDay(endDate.plusDays(1)), startDate, endDate);
 
         return new RevenueAnalyticsDto(
                 dailyRevenue,
                 monthlyRevenue,
                 breakdown,
-                LocalDateTime.now(clock));
+                Instant.now(clock));
     }
 
     private List<MonthlyRevenueDto> monthlyRevenueWithGrowth(List<MonthlyRevenue> months) {
@@ -212,7 +213,7 @@ public class DashboardQueryService {
     }
 
     private List<RevenueBreakdownDto> revenueByCurrency(
-            LocalDateTime from, LocalDateTime to, LocalDate startDate, LocalDate endDate) {
+            Instant from, Instant to, LocalDate startDate, LocalDate endDate) {
         Map<CurrencyType, Map<PaymentCategory, BigDecimal>> collected = new EnumMap<>(CurrencyType.class);
         for (CollectedRevenue revenue : paymentService.sumCollectedBetween(from, to)) {
             collected.computeIfAbsent(revenue.currency(), key -> new EnumMap<>(PaymentCategory.class))
@@ -293,6 +294,6 @@ public class DashboardQueryService {
         }
         return java.time.temporal.ChronoUnit.HOURS.between(
                 endDate.atStartOfDay(),
-                LocalDateTime.now(clock));
+                Instant.now(clock));
     }
 }

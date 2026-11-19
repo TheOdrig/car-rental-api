@@ -38,7 +38,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -199,7 +199,7 @@ class AdminUserControllerIntegrationTest {
                 .currency(damageCurrency)
                 .customerLiability(new BigDecimal("150.00"))
                 .reportedBy(adminUser.getId())
-                .reportedAt(LocalDateTime.now())
+                .reportedAt(Instant.now())
                 .build();
         return damageReportRepository.save(damage);
     }

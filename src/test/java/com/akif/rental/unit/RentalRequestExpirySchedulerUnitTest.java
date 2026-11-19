@@ -1,5 +1,6 @@
 package com.akif.rental.unit;
 
+import java.time.LocalDateTime;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.config.RentalProperties;
@@ -11,7 +12,6 @@ import org.mockito.ArgumentCaptor;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
@@ -41,9 +41,9 @@ class RentalRequestExpirySchedulerUnitTest {
 
         scheduler.expireStaleRequests();
 
-        ArgumentCaptor<LocalDateTime> cutoff = ArgumentCaptor.forClass(LocalDateTime.class);
+        ArgumentCaptor<Instant> cutoff = ArgumentCaptor.forClass(Instant.class);
         verify(repository).findStaleRequests(org.mockito.ArgumentMatchers.eq(RentalStatus.REQUESTED), cutoff.capture());
-        assertThat(cutoff.getValue()).isEqualTo(LocalDateTime.of(2026, 11, 18, 2, 0));
+        assertThat(cutoff.getValue()).isEqualTo(LocalDateTime.of(2026, 11, 18, 2, 0).toInstant(ZoneOffset.UTC));
     }
 
     @Test
@@ -87,7 +87,7 @@ class RentalRequestExpirySchedulerUnitTest {
         assertThat(event.getValue().cancellationReason()).contains("Request expired without approval");
         assertThat(event.getValue().refundProcessed()).isFalse();
         assertThat(event.getValue().refundAmount()).isEqualByComparingTo("0");
-        assertThat(event.getValue().occurredAt()).isEqualTo(LocalDateTime.of(2026, 11, 18, 12, 0));
+        assertThat(event.getValue().occurredAt()).isEqualTo(LocalDateTime.of(2026, 11, 18, 12, 0).toInstant(ZoneOffset.UTC));
     }
 
     @Test

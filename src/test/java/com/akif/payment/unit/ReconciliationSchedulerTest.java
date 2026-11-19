@@ -1,5 +1,6 @@
 package com.akif.payment.unit;
 
+import java.time.LocalDateTime;
 import com.akif.payment.domain.enums.DiscrepancyType;
 import com.akif.payment.internal.dto.Discrepancy;
 import com.akif.payment.internal.dto.ReconciliationReport;
@@ -12,7 +13,6 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
@@ -60,6 +60,6 @@ class ReconciliationSchedulerTest {
 
     private static ReconciliationReport report(List<Discrepancy> discrepancies) {
         return new ReconciliationReport(YESTERDAY, 1, 1, discrepancies, !discrepancies.isEmpty(),
-                LocalDateTime.of(2026, 3, 10, 2, 0));
+                LocalDateTime.of(2026, 3, 10, 2, 0).toInstant(ZoneOffset.UTC));
     }
 }

@@ -26,7 +26,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -90,7 +90,7 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
                 .remainingPenalty(remainingPenalty)
                 .reason(reason)
                 .adminId(adminId)
-                .waivedAt(LocalDateTime.now(clock))
+                .waivedAt(Instant.now(clock))
                 .refundInitiated(false)
                 .isDeleted(false)
                 .build();
@@ -134,7 +134,7 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
                             PaymentAttentionEvent.Reason.AUTO_REFUND_FAILED,
                             waiver.getWaivedAmount(),
                             waiver.getRental().getCurrency(),
-                            LocalDateTime.now(clock))));
+                            Instant.now(clock))));
         }
     }
 
@@ -175,7 +175,7 @@ public class PenaltyWaiverServiceImpl implements PenaltyWaiverService {
                             rental.getId(),
                             null,
                             rental.getUserEmail(),
-                            LocalDateTime.now(clock),
+                            Instant.now(clock),
                             remainingPenalty,
                             rental.getCurrency(),
                             reason)));

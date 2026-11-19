@@ -1,5 +1,8 @@
 package com.akif.damage.domain;
 
+import java.time.ZoneOffset;
+import java.time.LocalDateTime;
+import java.time.Duration;
 import com.akif.damage.api.DamageSeverity;
 import com.akif.damage.api.DamageCategory;
 import com.akif.damage.api.DamageStatus;
@@ -8,14 +11,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("DamageReport lifecycle")
 class DamageReportLifecycleTest {
 
-    private final LocalDateTime now = LocalDateTime.of(2026, 11, 18, 10, 0);
+    private final Instant now = LocalDateTime.of(2026, 11, 18, 10, 0).toInstant(ZoneOffset.UTC);
 
     private DamageReport assessedReport() {
         DamageReport report = DamageReport.builder().build();
@@ -54,20 +57,20 @@ class DamageReportLifecycleTest {
     void disputeThenResolve() {
         DamageReport report = assessedReport();
 
-        report.dispute("pre-existing", "photos attached", 9L, now.plusDays(1));
+        report.dispute("pre-existing", "photos attached", 9L, now.plus(Duration.ofDays(1)));
         assertThat(report.getStatus()).isEqualTo(DamageStatus.DISPUTED);
         assertThat(report.getDisputedBy()).isEqualTo(9L);
         assertThat(report.getDisputeReason()).isEqualTo("pre-existing");
 
         BigDecimal charged = report.getCustomerLiability();
         report.resolveDispute(new BigDecimal("100.00"), new BigDecimal("250.00"),
-                charged.subtract(new BigDecimal("100.00")), "partially accepted", 5L, now.plusDays(3));
+                charged.subtract(new BigDecimal("100.00")), "partially accepted", 5L, now.plus(Duration.ofDays(3)));
         assertThat(report.getOriginalLiability()).isEqualByComparingTo(charged);
         assertThat(report.getStatus()).isEqualTo(DamageStatus.RESOLVED);
         assertThat(report.getCustomerLiability()).isEqualByComparingTo("100.00");
         assertThat(report.getRepairCostEstimate()).isEqualByComparingTo("250.00");
         assertThat(report.getResolutionNotes()).isEqualTo("partially accepted");
-        assertThat(report.getResolvedAt()).isEqualTo(now.plusDays(3));
+        assertThat(report.getResolvedAt()).isEqualTo(now.plus(Duration.ofDays(3)));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.akif.rental.integration;
 
+import java.time.Duration;
 import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
@@ -30,7 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
@@ -111,7 +112,7 @@ class LateReturnControllerIntegrationTest {
                 .totalPrice(new BigDecimal("3000"))
                 .status(RentalStatus.IN_USE)
                 .lateReturnStatus(LateReturnStatus.LATE)
-                .lateDetectedAt(LocalDateTime.now().minusDays(1))
+                .lateDetectedAt(Instant.now().minus(Duration.ofDays(1)))
                 .lateHours(30)
                 .penaltyAmount(new BigDecimal("1500"))
                 .penaltyPaid(false)
@@ -134,7 +135,7 @@ class LateReturnControllerIntegrationTest {
                 .totalPrice(new BigDecimal("5000"))
                 .status(RentalStatus.IN_USE)
                 .lateReturnStatus(LateReturnStatus.SEVERELY_LATE)
-                .lateDetectedAt(LocalDateTime.now().minusDays(4))
+                .lateDetectedAt(Instant.now().minus(Duration.ofDays(4)))
                 .lateHours(100)
                 .penaltyAmount(new BigDecimal("5000"))
                 .penaltyPaid(true)

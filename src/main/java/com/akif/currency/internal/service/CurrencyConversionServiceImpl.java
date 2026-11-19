@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +40,7 @@ public class CurrencyConversionServiceImpl implements CurrencyConversionService 
                     amount,
                     to,
                     BigDecimal.ONE,
-                    LocalDateTime.now(clock),
+                    Instant.now(clock),
                     RateSource.LIVE
             );
         }
@@ -67,7 +67,7 @@ public class CurrencyConversionServiceImpl implements CurrencyConversionService 
         log.debug("Getting exchange rate from {} to {}", from, to);
 
         if (from.equals(to)) {
-            return new ExchangeRate(from, to, BigDecimal.ONE, LocalDateTime.now(clock), RateSource.LIVE);
+            return new ExchangeRate(from, to, BigDecimal.ONE, Instant.now(clock), RateSource.LIVE);
         }
 
         ExchangeRateResponse ratesResponse = cacheService.getCachedRates(from);
@@ -76,7 +76,7 @@ public class CurrencyConversionServiceImpl implements CurrencyConversionService 
         if (rate == null) {
             log.warn("Rate not found for {} -> {}, using cross-rate calculation", from, to);
             rate = calculateCrossRate(from, to);
-            return new ExchangeRate(from, to, rate, LocalDateTime.now(clock), ratesResponse.source());
+            return new ExchangeRate(from, to, rate, Instant.now(clock), ratesResponse.source());
         }
 
         return new ExchangeRate(from, to, rate, ratesResponse.timestamp(), ratesResponse.source());

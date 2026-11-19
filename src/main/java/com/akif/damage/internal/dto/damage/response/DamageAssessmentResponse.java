@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record DamageAssessmentResponse(
@@ -19,7 +19,7 @@ public record DamageAssessmentResponse(
     Boolean insuranceCoverage,
     BigDecimal insuranceDeductible,
     String assessmentNotes,
-    LocalDateTime assessedAt,
+    Instant assessedAt,
     Long assessedBy,
     String carStatusUpdated
 ) {}

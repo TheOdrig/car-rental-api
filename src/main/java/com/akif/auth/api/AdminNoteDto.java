@@ -1,6 +1,6 @@
 package com.akif.auth.api;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record AdminNoteDto(
         Long id,
@@ -8,5 +8,5 @@ public record AdminNoteDto(
         Long adminId,
         String adminUsername,
         String text,
-        LocalDateTime createdAt) {
+        Instant createdAt) {
 }

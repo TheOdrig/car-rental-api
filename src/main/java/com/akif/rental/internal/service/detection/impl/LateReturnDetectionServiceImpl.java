@@ -1,5 +1,6 @@
 package com.akif.rental.internal.service.detection.impl;
 
+import com.akif.shared.time.UtcDates;
 import java.time.Clock;
 
 import com.akif.rental.internal.config.PenaltyConfig;
@@ -23,7 +24,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
         log.info("Starting late return detection process");
 
         LocalDate currentDate = LocalDate.now(clock);
-        LocalDateTime currentTime = LocalDateTime.now(clock);
+        Instant currentTime = Instant.now(clock);
         List<Long> overdueIds = rentalRepository.findOverdueRentalIds(currentDate);
         int totalUpdated = 0;
 
@@ -79,7 +80,7 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
         log.info("Late return detection completed. Processed: {}, Updated: {}", overdueIds.size(), totalUpdated);
     }
 
-    private boolean flagIfStatusChanged(Long rentalId, LocalDate currentDate, LocalDateTime currentTime) {
+    private boolean flagIfStatusChanged(Long rentalId, LocalDate currentDate, Instant currentTime) {
         Rental rental = rentalRepository.findByIdForUpdate(rentalId).orElse(null);
         if (rental == null || rental.getStatus() != RentalStatus.IN_USE || !rental.getEndDate().isBefore(currentDate)) {
             return false;
@@ -99,12 +100,12 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
         return true;
     }
     @Override
-    public LateReturnStatus calculateLateStatus(Rental rental, LocalDateTime currentTime) {
+    public LateReturnStatus calculateLateStatus(Rental rental, Instant currentTime) {
         if (rental == null || rental.getEndDate() == null) {
             throw new IllegalArgumentException("Rental and end date cannot be null");
         }
 
-        LocalDateTime rentalEndDateTime = rental.getEndDate().atTime(LocalTime.MAX);
+        Instant rentalEndDateTime = UtcDates.endOfDay(rental.getEndDate());
 
         if (!currentTime.isAfter(rentalEndDateTime)) {
             return LateReturnStatus.ON_TIME;
@@ -126,12 +127,12 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
     }
 
     @Override
-    public long calculateLateHours(Rental rental, LocalDateTime currentTime) {
+    public long calculateLateHours(Rental rental, Instant currentTime) {
         if (rental == null || rental.getEndDate() == null) {
             return 0;
         }
 
-        LocalDateTime rentalEndDateTime = rental.getEndDate().atTime(LocalTime.MAX);
+        Instant rentalEndDateTime = UtcDates.endOfDay(rental.getEndDate());
 
         if (!currentTime.isAfter(rentalEndDateTime)) {
             return 0;
@@ -149,18 +150,18 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
     }
 
     @Override
-    public long calculateLateDays(Rental rental, LocalDateTime currentTime) {
+    public long calculateLateDays(Rental rental, Instant currentTime) {
         long lateHours = calculateLateHours(rental, currentTime);
 
         return (long) Math.ceil(lateHours / 24.0);
     }
     
-    private void publishEventForStatusChange(Rental rental, LateReturnStatus newStatus, LocalDateTime currentTime) {
+    private void publishEventForStatusChange(Rental rental, LateReturnStatus newStatus, Instant currentTime) {
         try {
             String carBrand = rental.getCarBrand();
             String carModel = rental.getCarModel();
             String licensePlate = rental.getCarLicensePlate();
-            LocalDateTime scheduledReturnTime = rental.getEndDate().atTime(LocalTime.MAX);
+            Instant scheduledReturnTime = UtcDates.endOfDay(rental.getEndDate());
             
             switch (newStatus) {
                 case GRACE_PERIOD:
@@ -183,9 +184,9 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
         }
     }
     
-    private void publishGracePeriodWarning(Rental rental, LocalDateTime currentTime, 
+    private void publishGracePeriodWarning(Rental rental, Instant currentTime, 
                                           String carBrand, String carModel, String licensePlate,
-                                          LocalDateTime scheduledReturnTime) {
+                                          Instant scheduledReturnTime) {
         long minutesLate = Duration.between(scheduledReturnTime, currentTime).toMinutes();
         int remainingGraceMinutes = (int) (penaltyConfig.getGracePeriodMinutes() - minutesLate);
         
@@ -208,9 +209,9 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
         log.info("Published GracePeriodWarningEvent for rental: {}", rental.getId());
     }
     
-    private void publishLateReturnNotification(Rental rental, LocalDateTime currentTime,
+    private void publishLateReturnNotification(Rental rental, Instant currentTime,
                                               String carBrand, String carModel, String licensePlate,
-                                              LocalDateTime scheduledReturnTime) {
+                                              Instant scheduledReturnTime) {
         int lateHours = rental.getLateHours() != null ? rental.getLateHours() : 0;
         
         PenaltyResult penaltyResult = penaltyCalculationService.calculatePenalty(rental, currentTime);
@@ -232,9 +233,9 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
         log.info("Published LateReturnNotificationEvent for rental: {}", rental.getId());
     }
     
-    private void publishSeverelyLateNotification(Rental rental, LocalDateTime currentTime,
+    private void publishSeverelyLateNotification(Rental rental, Instant currentTime,
                                                 String carBrand, String carModel, String licensePlate,
-                                                LocalDateTime scheduledReturnTime) {
+                                                Instant scheduledReturnTime) {
         int lateHours = rental.getLateHours() != null ? rental.getLateHours() : 0;
         int lateDays = (int) calculateLateDays(rental, currentTime);
         

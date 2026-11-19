@@ -1,14 +1,14 @@
 package com.akif.rental.api;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record GracePeriodWarningEvent(
         Long rentalId,
         String customerEmail,
-        LocalDateTime occurredAt,
+        Instant occurredAt,
         String carBrand,
         String carModel,
         String licensePlate,
-        LocalDateTime scheduledReturnTime,
+        Instant scheduledReturnTime,
         int remainingGraceMinutes) implements RentalEvent {
 }

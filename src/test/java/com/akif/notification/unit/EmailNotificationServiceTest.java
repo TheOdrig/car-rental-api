@@ -1,5 +1,7 @@
 package com.akif.notification.unit;
 
+import java.time.ZoneOffset;
+import java.time.LocalDateTime;
 import com.akif.notification.domain.EmailType;
 import com.akif.notification.internal.dto.EmailMessage;
 import com.akif.notification.internal.exception.EmailSendException;
@@ -25,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -59,7 +61,7 @@ class EmailNotificationServiceTest {
             event = new RentalConfirmedEvent(
                 1L,
                 "customer@example.com",
-                LocalDateTime.now(),
+                Instant.now(),
                 "Toyota",
                 "Corolla",
                 LocalDate.of(2025, 12, 10),
@@ -138,7 +140,7 @@ class EmailNotificationServiceTest {
                 new BigDecimal("2500.00"),
                 CurrencyType.TRY,
                 "TXN-123456",
-                LocalDateTime.of(2025, 12, 5, 14, 30)
+                LocalDateTime.of(2025, 12, 5, 14, 30).toInstant(ZoneOffset.UTC)
             );
         }
 
@@ -192,7 +194,7 @@ class EmailNotificationServiceTest {
             event = new PickupReminderEvent(
                 1L,
                 "customer@example.com",
-                LocalDateTime.now(),
+                Instant.now(),
                 LocalDate.of(2025, 12, 10),
                 "Toyota",
                 "Corolla");
@@ -248,7 +250,7 @@ class EmailNotificationServiceTest {
             event = new ReturnReminderEvent(
                 1L,
                 "customer@example.com",
-                LocalDateTime.now(),
+                Instant.now(),
                 LocalDate.of(2025, 12, 15),
                 CurrencyType.TRY,
                 new BigDecimal("12.50"),
@@ -306,8 +308,8 @@ class EmailNotificationServiceTest {
             event = new RentalCancelledEvent(
                 1L,
                 "customer@example.com",
-                LocalDateTime.now(),
-                LocalDateTime.of(2025, 12, 5, 10, 0),
+                Instant.now(),
+                LocalDateTime.of(2025, 12, 5, 10, 0).toInstant(ZoneOffset.UTC),
                 "Customer request",
                 true,
                 new BigDecimal("2500.00"),
@@ -365,7 +367,7 @@ class EmailNotificationServiceTest {
             event = new RentalConfirmedEvent(
                 1L,
                 "customer@example.com",
-                LocalDateTime.now(),
+                Instant.now(),
                 "Toyota",
                 "Corolla",
                 LocalDate.of(2025, 12, 10),

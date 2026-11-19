@@ -1,5 +1,6 @@
 package com.akif.auth.integration;
 
+import java.time.Duration;
 import com.akif.CarRentalApplication;
 import com.akif.auth.domain.PasswordResetToken;
 import com.akif.auth.internal.repository.PasswordResetTokenRepository;
@@ -12,7 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,7 +33,7 @@ class PasswordResetTokenRepositoryTest {
         repository.save(PasswordResetToken.builder()
                 .token("token-mixed-case")
                 .email("Mixed.Case@Example.com")
-                .expiryDate(LocalDateTime.now().plusHours(1))
+                .expiryDate(Instant.now().plus(Duration.ofHours(1)))
                 .build());
         repository.flush();
 

@@ -6,11 +6,11 @@ import com.akif.rental.domain.model.Rental;
 import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public interface PenaltyCalculationService {
 
-    PenaltyResult calculatePenalty(Rental rental, LocalDateTime returnTime);
+    PenaltyResult calculatePenalty(Rental rental, Instant returnTime);
 
     BigDecimal calculateHourlyPenalty(BigDecimal dailyRate, int lateHours, CurrencyType currency);
 

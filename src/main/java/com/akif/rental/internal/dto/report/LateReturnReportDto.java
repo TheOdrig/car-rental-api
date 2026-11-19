@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record LateReturnReportDto(
         Long rentalId,
@@ -17,8 +17,7 @@ public record LateReturnReportDto(
         String licensePlate,
         @JsonFormat(pattern = "yyyy-MM-dd")
         LocalDate endDate,
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-        LocalDateTime actualReturnTime,
+        Instant actualReturnTime,
         Integer lateHours,
         Integer lateDays,
         LateReturnStatus status,

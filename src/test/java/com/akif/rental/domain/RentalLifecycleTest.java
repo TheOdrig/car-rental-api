@@ -1,5 +1,8 @@
 package com.akif.rental.domain;
 
+import java.time.ZoneOffset;
+import java.time.LocalDateTime;
+import java.time.Duration;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.enums.LateReturnStatus;
 import com.akif.rental.domain.model.Rental;
@@ -8,7 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -60,7 +63,7 @@ class RentalLifecycleTest {
     @DisplayName("markReturned records the return time and notes")
     void markReturnedRecordsReturn() {
         Rental rental = rentalIn(RentalStatus.IN_USE);
-        LocalDateTime returnedAt = LocalDateTime.of(2026, 11, 20, 10, 30);
+        Instant returnedAt = LocalDateTime.of(2026, 11, 20, 10, 30).toInstant(ZoneOffset.UTC);
 
         rental.markReturned(returnedAt, "no issues");
 
@@ -93,10 +96,10 @@ class RentalLifecycleTest {
     @DisplayName("flagLate keeps the first detection time and updates the late hours")
     void flagLateKeepsFirstDetectionTime() {
         Rental rental = rentalIn(RentalStatus.IN_USE);
-        LocalDateTime first = LocalDateTime.of(2026, 11, 20, 8, 0);
+        Instant first = LocalDateTime.of(2026, 11, 20, 8, 0).toInstant(ZoneOffset.UTC);
 
         rental.flagLate(LateReturnStatus.LATE, first, 2);
-        rental.flagLate(LateReturnStatus.SEVERELY_LATE, first.plusHours(30), 32);
+        rental.flagLate(LateReturnStatus.SEVERELY_LATE, first.plus(Duration.ofHours(30)), 32);
 
         assertThat(rental.getLateReturnStatus()).isEqualTo(LateReturnStatus.SEVERELY_LATE);
         assertThat(rental.getLateDetectedAt()).isEqualTo(first);

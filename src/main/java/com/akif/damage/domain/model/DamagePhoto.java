@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "damage_photos",
@@ -38,7 +38,7 @@ public class DamagePhoto extends BaseEntity {
     private Long uploadedBy;
     
     @Column(name = "uploaded_at", nullable = false)
-    private LocalDateTime uploadedAt;
+    private Instant uploadedAt;
     
     @Column(name = "display_order")
     private Integer displayOrder;

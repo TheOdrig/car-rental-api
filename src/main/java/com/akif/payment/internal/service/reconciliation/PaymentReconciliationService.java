@@ -1,5 +1,6 @@
 package com.akif.payment.internal.service.reconciliation;
 
+import com.akif.shared.time.UtcDates;
 import com.akif.payment.domain.Payment;
 import com.akif.payment.domain.enums.DiscrepancyType;
 import com.akif.payment.internal.config.StripeConfig;
@@ -22,7 +23,6 @@ import org.springframework.stereotype.Service;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,20 +50,20 @@ public class PaymentReconciliationService {
     private int maxIndividualLookups = 200;
 
     public ReconciliationReport runDailyReconciliation(LocalDate date) {
-        LocalDateTime startTimestamp = LocalDateTime.now(clock);
+        Instant startTimestamp = Instant.now(clock);
 
         log.info("[AUDIT] Reconciliation: STARTED | Date: {} | Timestamp: {}", date, startTimestamp);
 
         try {
             List<Payment> dbPayments = fetchDatabasePayments(date);
             log.info("[AUDIT] Reconciliation: DATABASE_FETCH_COMPLETED | Date: {} | DB Payments Count: {} | Timestamp: {}",
-                    date, dbPayments.size(), LocalDateTime.now(clock));
+                    date, dbPayments.size(), Instant.now(clock));
 
             List<StripePayment> stripePayments = fetchStripePayments(
                     date.minusDays(AUTHORIZATION_LOOKBACK_DAYS), date.plusDays(1));
             long chargesOfTheDay = stripePayments.stream().filter(p -> date.equals(p.createdOn())).count();
             log.info("[AUDIT] Reconciliation: STRIPE_FETCH_COMPLETED | Date: {} | Stripe Payments Count: {} | Created On Date: {} | Timestamp: {}",
-                    date, stripePayments.size(), chargesOfTheDay, LocalDateTime.now(clock));
+                    date, stripePayments.size(), chargesOfTheDay, Instant.now(clock));
 
             Set<String> knownIntentIds = knownIntentIds(stripePayments);
             IndividualLookups lookups = lookUpIndividually(dbPayments, stripePayments);
@@ -80,29 +80,29 @@ public class PaymentReconciliationService {
                     stripePayments.size(),
                     discrepancies,
                     !discrepancies.isEmpty(),
-                    LocalDateTime.now(clock)
+                    Instant.now(clock)
             );
 
             if (!discrepancies.isEmpty()) {
                 log.warn("[AUDIT] Reconciliation: DISCREPANCIES_FOUND | Date: {} | Total Discrepancies: {} | Timestamp: {}",
-                        date, discrepancies.size(), LocalDateTime.now(clock));
+                        date, discrepancies.size(), Instant.now(clock));
 
                 for (Discrepancy discrepancy : discrepancies) {
                     log.warn("[AUDIT] Reconciliation Discrepancy: {} | Payment ID: {} | Stripe Payment Intent ID: {} | DB Amount: {} | Stripe Amount: {} | DB Status: {} | Stripe Status: {} | Description: {} | Timestamp: {}",
                             discrepancy.type(), discrepancy.paymentId(), discrepancy.stripePaymentIntentId(),
                             discrepancy.databaseAmount(), discrepancy.stripeAmount(), discrepancy.databaseStatus(),
-                            discrepancy.stripeStatus(), discrepancy.description(), LocalDateTime.now(clock));
+                            discrepancy.stripeStatus(), discrepancy.description(), Instant.now(clock));
                 }
             }
 
             log.info("[AUDIT] Reconciliation: COMPLETED | Date: {} | DB Payments: {} | Stripe Payments: {} | Discrepancies: {} | Has Discrepancies: {} | Duration: {}ms | Timestamp: {}",
                     date, dbPayments.size(), stripePayments.size(), discrepancies.size(), !discrepancies.isEmpty(),
-                    java.time.Duration.between(startTimestamp, LocalDateTime.now(clock)).toMillis(), LocalDateTime.now(clock));
+                    java.time.Duration.between(startTimestamp, Instant.now(clock)).toMillis(), Instant.now(clock));
 
             return report;
         } catch (Exception e) {
             log.error("[AUDIT] Reconciliation: FAILED | Date: {} | Error: {} | Timestamp: {}",
-                    date, e.getMessage(), LocalDateTime.now(clock));
+                    date, e.getMessage(), Instant.now(clock));
             throw new ReconciliationException(date, e.getMessage(), e);
         }
     }
@@ -184,8 +184,8 @@ public class PaymentReconciliationService {
     }
 
     public List<Payment> fetchDatabasePayments(LocalDate date) {
-        LocalDateTime startOfDay = date.atStartOfDay();
-        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+        Instant startOfDay = UtcDates.startOfDay(date);
+        Instant endOfDay = UtcDates.startOfDay(date.plusDays(1));
 
         List<Payment> payments = paymentRepository.findWithIntentUpdatedBetween(startOfDay, endOfDay);
         log.debug("Fetched {} payments from database for date: {}", payments.size(), date);
@@ -218,7 +218,7 @@ public class PaymentReconciliationService {
 
         } catch (StripeException e) {
             log.error("[AUDIT] Reconciliation: STRIPE_FETCH_FAILED | From: {} | To: {} | Stripe Error Code: {} | Error: {} | Timestamp: {}",
-                    fromInclusive, toExclusive, e.getCode(), e.getMessage(), LocalDateTime.now(clock));
+                    fromInclusive, toExclusive, e.getCode(), e.getMessage(), Instant.now(clock));
             throw new ReconciliationException(toExclusive.minusDays(1), "Failed to fetch Stripe payments", e);
         }
     }

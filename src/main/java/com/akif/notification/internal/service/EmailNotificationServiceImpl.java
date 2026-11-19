@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +45,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         try {
             emailSender.send(message);
             log.info("Rental confirmation email sent successfully. RentalId: {}, Timestamp: {}",
-                    event.rentalId(), LocalDateTime.now(clock));
+                    event.rentalId(), Instant.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -70,7 +70,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         try {
             emailSender.send(message);
             log.info("Payment receipt email sent successfully. PaymentId: {}, Amount: {}, Timestamp: {}",
-                    event.paymentId(), event.amount(), LocalDateTime.now(clock));
+                    event.paymentId(), event.amount(), Instant.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. PaymentId: {}, Error: {}, SMTP Code: {}",
                     event.paymentId(), e.getMessage(), e.getSmtpErrorCode());
@@ -95,7 +95,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         try {
             emailSender.send(message);
             log.info("Pickup reminder email sent successfully. RentalId: {}, Timestamp: {}",
-                    event.rentalId(), LocalDateTime.now(clock));
+                    event.rentalId(), Instant.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -120,7 +120,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         try {
             emailSender.send(message);
             log.info("Return reminder email sent successfully. RentalId: {}, Timestamp: {}",
-                    event.rentalId(), LocalDateTime.now(clock));
+                    event.rentalId(), Instant.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -145,7 +145,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         try {
             emailSender.send(message);
             log.info("Cancellation confirmation email sent successfully. RentalId: {}, Timestamp: {}",
-                    event.rentalId(), LocalDateTime.now(clock));
+                    event.rentalId(), Instant.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -170,7 +170,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         try {
             emailSender.send(message);
             log.info("Grace period warning email sent successfully. RentalId: {}, Timestamp: {}",
-                    event.rentalId(), LocalDateTime.now(clock));
+                    event.rentalId(), Instant.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -195,7 +195,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         try {
             emailSender.send(message);
             log.info("Late return notification email sent successfully. RentalId: {}, Timestamp: {}",
-                    event.rentalId(), LocalDateTime.now(clock));
+                    event.rentalId(), Instant.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -220,7 +220,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         try {
             emailSender.send(message);
             log.info("Severely late notification email sent successfully. RentalId: {}, Timestamp: {}",
-                    event.rentalId(), LocalDateTime.now(clock));
+                    event.rentalId(), Instant.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -245,7 +245,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         try {
             emailSender.send(message);
             log.info("Penalty summary email sent successfully. RentalId: {}, Timestamp: {}",
-                    event.rentalId(), LocalDateTime.now(clock));
+                    event.rentalId(), Instant.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());
@@ -426,7 +426,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         try {
             emailSender.send(message);
             log.info("Payment retry email sent successfully. RentalId: {}, Timestamp: {}",
-                    event.rentalId(), LocalDateTime.now(clock));
+                    event.rentalId(), Instant.now(clock));
         } catch (EmailSendException e) {
             log.warn("Email send attempt failed. RentalId: {}, Error: {}, SMTP Code: {}",
                     event.rentalId(), e.getMessage(), e.getSmtpErrorCode());

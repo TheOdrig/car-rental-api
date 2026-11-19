@@ -34,7 +34,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
@@ -184,11 +184,11 @@ class CarAvailabilityServiceImplTest {
                         ConversionResult dailyConversion = new ConversionResult(
                                         new BigDecimal("450"), CurrencyType.TRY,
                                         new BigDecimal("15"), CurrencyType.USD,
-                                        new BigDecimal("0.033"), LocalDateTime.now(), RateSource.LIVE);
+                                        new BigDecimal("0.033"), Instant.now(), RateSource.LIVE);
                         ConversionResult totalConversion = new ConversionResult(
                                         new BigDecimal("2250"), CurrencyType.TRY,
                                         new BigDecimal("75"), CurrencyType.USD,
-                                        new BigDecimal("0.033"), LocalDateTime.now(), RateSource.LIVE);
+                                        new BigDecimal("0.033"), Instant.now(), RateSource.LIVE);
 
                         when(carRepository.findAvailableCarsForDateRange(
                                         anyCollection(), anyList(),

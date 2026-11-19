@@ -18,7 +18,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -92,7 +92,7 @@ public class NoShowRentalScheduler {
 
         rental.cancel(NO_SHOW_REASON);
         rentalRepository.save(rental);
-        LocalDateTime now = LocalDateTime.now(clock);
+        Instant now = Instant.now(clock);
         eventPublisher.publishEvent(new RentalCancelledEvent(
                 rental.getId(),
                 rental.getUserEmail(),

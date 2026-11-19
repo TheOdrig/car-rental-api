@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Clock;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Slf4j
 @Service
@@ -65,6 +65,6 @@ public class CapturedPaymentRefunder {
                 reason,
                 payment.getAmount(),
                 payment.getCurrency(),
-                LocalDateTime.now(clock)));
+                Instant.now(clock)));
     }
 }

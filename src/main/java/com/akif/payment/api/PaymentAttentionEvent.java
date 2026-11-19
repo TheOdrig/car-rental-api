@@ -3,7 +3,7 @@ package com.akif.payment.api;
 import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record PaymentAttentionEvent(
         Long paymentId,
@@ -11,7 +11,7 @@ public record PaymentAttentionEvent(
         Reason reason,
         BigDecimal amount,
         CurrencyType currency,
-        LocalDateTime occurredAt) {
+        Instant occurredAt) {
 
     public enum Reason {
         CHARGE_OUTCOME_UNKNOWN,

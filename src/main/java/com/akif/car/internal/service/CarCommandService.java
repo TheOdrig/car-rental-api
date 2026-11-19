@@ -18,7 +18,7 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -44,7 +44,7 @@ public class CarCommandService {
         checkVinNumberUniqueness(carRequest.vinNumber());
 
         Car car = carMapper.toEntity(carRequest);
-        car.setCreateTime(LocalDateTime.now(clock));
+        car.setCreateTime(Instant.now(clock));
         car.setIsDeleted(false);
 
         CarResponse result = carMapper.toDto(carRepository.save(car));
@@ -73,7 +73,7 @@ public class CarCommandService {
         }
 
         carMapper.updateEntity(carRequest, existingCar);
-        existingCar.setUpdateTime(LocalDateTime.now(clock));
+        existingCar.setUpdateTime(Instant.now(clock));
 
         CarResponse result = carMapper.toDto(carRepository.save(existingCar));
 
@@ -94,7 +94,7 @@ public class CarCommandService {
         log.debug("Soft deleting car with id: {}", id);
         Car car = carLookup.requireActiveById(id);
         car.softDelete();
-        car.setUpdateTime(LocalDateTime.now(clock));
+        car.setUpdateTime(Instant.now(clock));
         carRepository.save(car);
         log.info("Successfully soft deleted car: ID={}", id);
     }
@@ -104,7 +104,7 @@ public class CarCommandService {
         log.debug("Restoring car with id: {}", id);
         Car car = carLookup.requireAnyById(id);
         car.restore();
-        car.setUpdateTime(LocalDateTime.now(clock));
+        car.setUpdateTime(Instant.now(clock));
 
         CarResponse result = carMapper.toDto(carRepository.save(car));
 
@@ -120,7 +120,7 @@ public class CarCommandService {
         BigDecimal oldPrice = car.getPrice();
         car.setPrice(priceUpdateRequest.price());
         car.setCurrencyType(priceUpdateRequest.currencyType());
-        car.setUpdateTime(LocalDateTime.now(clock));
+        car.setUpdateTime(Instant.now(clock));
 
         CarResponse result = carMapper.toDto(carRepository.save(car));
 

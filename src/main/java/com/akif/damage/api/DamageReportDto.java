@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record DamageReportDto(
@@ -22,8 +22,8 @@ public record DamageReportDto(
     BigDecimal repairCostEstimate,
     BigDecimal customerLiability,
     Boolean insuranceCoverage,
-    LocalDateTime reportedAt,
-    LocalDateTime assessedAt,
+    Instant reportedAt,
+    Instant assessedAt,
     CurrencyType currency
 ) {
 
@@ -41,8 +41,8 @@ public record DamageReportDto(
             BigDecimal repairCostEstimate,
             BigDecimal customerLiability,
             Boolean insuranceCoverage,
-            LocalDateTime reportedAt,
-            LocalDateTime assessedAt) {
+            Instant reportedAt,
+            Instant assessedAt) {
         this(id, rentalId, carId, carLicensePlate, customerName, description, damageLocation, severity, category,
                 status, repairCostEstimate, customerLiability, insuranceCoverage, reportedAt, assessedAt, null);
     }

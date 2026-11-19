@@ -36,7 +36,7 @@ public interface PaymentService {
 
     PaymentResult refund(String transactionId, BigDecimal amount, String operationKey);
 
-    List<CollectedRevenue> sumCollectedBetween(LocalDateTime start, LocalDateTime end);
+    List<CollectedRevenue> sumCollectedBetween(Instant start, Instant end);
 
     List<NetPaid> sumNetPaidForRentals(java.util.Collection<Long> rentalIds);
 

@@ -1,5 +1,8 @@
 package com.akif.payment.unit;
 
+import com.akif.shared.time.UtcDates;
+import java.time.ZoneOffset;
+import java.time.Duration;
 import com.akif.payment.api.PaymentStatus;
 import com.akif.payment.domain.Payment;
 import com.akif.payment.domain.enums.DiscrepancyType;
@@ -19,7 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -285,8 +288,8 @@ class PaymentReconciliationServiceTest {
         @Test
         @DisplayName("Should fetch the payments touched on a specific date")
         void shouldFetchPaymentsForSpecificDate() {
-            LocalDateTime startOfDay = DAY.atStartOfDay();
-            LocalDateTime endOfDay = DAY.plusDays(1).atStartOfDay();
+            Instant startOfDay = UtcDates.startOfDay(DAY);
+            Instant endOfDay = UtcDates.startOfDay(DAY.plusDays(1));
             List<Payment> expectedPayments = List.of(
                     createPayment(1L, "pi_123", new BigDecimal("100.00"), PaymentStatus.CAPTURED));
             when(paymentRepository.findWithIntentUpdatedBetween(startOfDay, endOfDay)).thenReturn(expectedPayments);
@@ -300,7 +303,7 @@ class PaymentReconciliationServiceTest {
         @Test
         @DisplayName("Should return empty list when no payments found")
         void shouldReturnEmptyListWhenNoPaymentsFound() {
-            when(paymentRepository.findWithIntentUpdatedBetween(DAY.atStartOfDay(), DAY.plusDays(1).atStartOfDay()))
+            when(paymentRepository.findWithIntentUpdatedBetween(UtcDates.startOfDay(DAY), UtcDates.startOfDay(DAY.plusDays(1))))
                     .thenReturn(new ArrayList<>());
 
             assertThat(reconciliationService.fetchDatabasePayments(DAY)).isEmpty();

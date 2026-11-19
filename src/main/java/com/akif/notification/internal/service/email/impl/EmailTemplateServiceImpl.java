@@ -25,7 +25,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
-            .ofPattern("MMMM dd, yyyy 'at' HH:mm");
+            .ofPattern("MMMM dd, yyyy 'at' HH:mm").withZone(java.time.ZoneOffset.UTC);
 
     @Override
     public String renderConfirmationEmail(RentalConfirmedEvent event) {
@@ -53,7 +53,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
         context.setVariable("transactionId", event.transactionId());
         context.setVariable("amount", event.amount());
         context.setVariable("currency", event.currency().name());
-        context.setVariable("paymentDate", event.paymentDate().format(DATE_TIME_FORMATTER));
+        context.setVariable("paymentDate", DATE_TIME_FORMATTER.format(event.paymentDate()));
 
         return templateEngine.process("email/payment/payment-receipt", context);
     }
@@ -92,7 +92,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
         Context context = new Context();
         context.setVariable("rentalId", event.rentalId());
-        context.setVariable("cancellationDate", event.cancellationDate().format(DATE_TIME_FORMATTER));
+        context.setVariable("cancellationDate", DATE_TIME_FORMATTER.format(event.cancellationDate()));
         context.setVariable("cancellationReason", event.cancellationReason());
         context.setVariable("refundProcessed", event.refundProcessed());
         context.setVariable("refundAmount", event.refundAmount());
@@ -181,7 +181,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
         Context context = new Context();
         context.setVariable("rentalId", event.rentalId());
         context.setVariable("carLicensePlate", event.carLicensePlate());
-        context.setVariable("reportDate", event.reportedAt().format(DATE_TIME_FORMATTER));
+        context.setVariable("reportDate", DATE_TIME_FORMATTER.format(event.reportedAt()));
         context.setVariable("description", event.description());
         context.setVariable("severity", event.severity().name());
 
@@ -199,7 +199,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
         context.setVariable("repairCost", event.repairCostEstimate());
         context.setVariable("customerLiability", event.customerLiability());
         context.setVariable("currency", "TRY");
-        context.setVariable("assessedAt", event.assessedAt().format(DATE_TIME_FORMATTER));
+        context.setVariable("assessedAt", DATE_TIME_FORMATTER.format(event.assessedAt()));
 
         return templateEngine.process("email/damage/damage-assessed", context);
     }
@@ -213,7 +213,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
         context.setVariable("transactionId", event.transactionId());
         context.setVariable("chargedAmount", event.chargeAmount());
         context.setVariable("currency", "TRY");
-        context.setVariable("paymentDate", event.chargedAt().format(DATE_TIME_FORMATTER));
+        context.setVariable("paymentDate", DATE_TIME_FORMATTER.format(event.chargedAt()));
 
         return templateEngine.process("email/damage/damage-charged", context);
     }
@@ -226,7 +226,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
         context.setVariable("rentalId", event.rentalId());
         context.setVariable("currency", "TRY");
         context.setVariable("disputeReason", event.disputeReason());
-        context.setVariable("disputeDate", event.disputedAt().format(DATE_TIME_FORMATTER));
+        context.setVariable("disputeDate", DATE_TIME_FORMATTER.format(event.disputedAt()));
 
         return templateEngine.process("email/damage/damage-disputed", context);
     }
@@ -241,7 +241,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
         context.setVariable("refundAmount", event.refundAmount());
         context.setVariable("currency", "TRY");
         context.setVariable("resolutionNotes", event.resolutionNotes());
-        context.setVariable("resolvedAt", event.resolvedAt().format(DATE_TIME_FORMATTER));
+        context.setVariable("resolvedAt", DATE_TIME_FORMATTER.format(event.resolvedAt()));
 
         return templateEngine.process("email/damage/damage-resolved", context);
     }
@@ -255,7 +255,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
         context.setVariable("amount", event.amount());
         context.setVariable("currency", "TRY");
         context.setVariable("failureReason", event.failureReason());
-        context.setVariable("failedAt", event.failedAt().format(DATE_TIME_FORMATTER));
+        context.setVariable("failedAt", DATE_TIME_FORMATTER.format(event.failedAt()));
 
         return templateEngine.process("email/damage/damage-charge-failed", context);
     }

@@ -4,7 +4,7 @@ import com.akif.damage.api.DamageStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record DamageDisputeResponse(
@@ -17,6 +17,6 @@ public record DamageDisputeResponse(
     BigDecimal originalLiability,
     BigDecimal adjustedLiability,
     BigDecimal refundAmount,
-    LocalDateTime disputedAt,
-    LocalDateTime resolvedAt
+    Instant disputedAt,
+    Instant resolvedAt
 ) {}

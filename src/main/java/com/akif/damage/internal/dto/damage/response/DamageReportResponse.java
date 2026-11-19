@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -27,14 +27,14 @@ public record DamageReportResponse(
         BigDecimal customerLiability,
         CurrencyType currency,
         Boolean insuranceCoverage,
-        LocalDateTime reportedAt,
-        LocalDateTime assessedAt,
+        Instant reportedAt,
+        Instant assessedAt,
         String disputeReason,
         String disputeComments,
-        LocalDateTime disputedAt,
+        Instant disputedAt,
         BigDecimal originalLiability,
         BigDecimal refundAmount,
         String resolutionNotes,
-        LocalDateTime resolvedAt,
+        Instant resolvedAt,
         List<DamagePhotoDto> photos
 ){ }

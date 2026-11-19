@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Clock;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Slf4j
 @Service
@@ -66,7 +66,7 @@ public class PaymentStateService {
             late = payment.captureAfterClose();
         }
         if (transitioned || late) {
-            payment.stampCaptured(LocalDateTime.now(clock));
+            payment.stampCaptured(Instant.now(clock));
         }
         if (transactionId != null && payment.getStripePaymentIntentId() == null) {
             payment.attachIntent(transactionId, payment.getIdempotencyKey());
@@ -97,14 +97,14 @@ public class PaymentStateService {
                     payment.getAmount(),
                     payment.getCurrency(),
                     payment.getTransactionId(),
-                    LocalDateTime.now(clock)));
+                    Instant.now(clock)));
         } else if (transitioned && payment.getKind() == PaymentKind.PENALTY) {
             eventPublisher.publishEvent(new PenaltyPaymentCapturedEvent(
                     payment.getId(),
                     payment.getRentalId(),
                     payment.getAmount(),
                     payment.getCurrency(),
-                    LocalDateTime.now(clock)));
+                    Instant.now(clock)));
         }
         return transitioned || late;
     }
@@ -122,7 +122,7 @@ public class PaymentStateService {
                 reason,
                 payment.getAmount(),
                 payment.getCurrency(),
-                LocalDateTime.now(clock)));
+                Instant.now(clock)));
     }
 
     private static boolean isLateCaptureKind(Payment payment) {
@@ -154,7 +154,7 @@ public class PaymentStateService {
                     payment.getUserEmail(),
                     payment.getAmount(),
                     payment.getCurrency(),
-                    LocalDateTime.now(clock)));
+                    Instant.now(clock)));
         }
         return changed;
     }

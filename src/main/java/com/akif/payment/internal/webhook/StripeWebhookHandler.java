@@ -33,7 +33,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Clock;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -142,7 +142,7 @@ public class StripeWebhookHandler {
 
         dispatch(event);
 
-        stored.markProcessed(LocalDateTime.now(clock));
+        stored.markProcessed(Instant.now(clock));
         webhookEventRepository.save(stored);
         log.info("[AUDIT] Webhook processed | Event: {} | Type: {}", event.getId(), event.getType());
     }

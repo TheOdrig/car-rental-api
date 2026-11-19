@@ -15,7 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -155,7 +155,7 @@ public interface DamageReportRepository extends JpaRepository<DamageReport, Long
                         AND d.status = com.akif.damage.api.DamageStatus.DISPUTED
                         AND d.reportedAt < :cutoffDate
                         """)
-        int countUnresolvedDisputesOlderThan(@Param("cutoffDate") LocalDateTime cutoffDate);
+        int countUnresolvedDisputesOlderThan(@Param("cutoffDate") Instant cutoffDate);
 
         int countByCustomerUserIdAndIsDeletedFalse(Long customerUserId);
 

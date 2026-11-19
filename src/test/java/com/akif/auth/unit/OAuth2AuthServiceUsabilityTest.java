@@ -1,5 +1,6 @@
 package com.akif.auth.unit;
 
+import java.time.LocalDateTime;
 import com.akif.auth.api.AuthResponse;
 import com.akif.auth.domain.LinkedAccount;
 import com.akif.auth.domain.User;
@@ -32,7 +33,6 @@ import org.springframework.http.HttpStatus;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -105,7 +105,7 @@ class OAuth2AuthServiceUsabilityTest {
     @DisplayName("a banned user with a linked account cannot sign in")
     void bannedLinkedUserRejected() {
         User user = user();
-        user.ban("abuse", 1L, LocalDateTime.of(2026, 11, 1, 0, 0));
+        user.ban("abuse", 1L, LocalDateTime.of(2026, 11, 1, 0, 0).toInstant(ZoneOffset.UTC));
         linkedTo(user);
 
         assertRejected();
@@ -135,7 +135,7 @@ class OAuth2AuthServiceUsabilityTest {
     @DisplayName("a banned user is not auto-linked by email and no account is created")
     void bannedUserNotAutoLinked() {
         User user = user();
-        user.ban("abuse", 1L, LocalDateTime.of(2026, 11, 1, 0, 0));
+        user.ban("abuse", 1L, LocalDateTime.of(2026, 11, 1, 0, 0).toInstant(ZoneOffset.UTC));
         when(linkedAccountRepository.findByProviderAndProviderId(OAuth2Provider.GOOGLE, "g-1"))
                 .thenReturn(Optional.empty());
         when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));

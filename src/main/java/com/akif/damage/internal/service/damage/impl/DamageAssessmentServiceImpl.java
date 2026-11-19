@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -70,7 +70,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
         BigDecimal customerLiability = round(calculateCustomerLiability(repairCost, hasInsurance, deductible), places);
 
         damageReport.assess(severity, request.category(), repairCost, customerLiability,
-                hasInsurance, deductible, request.assessmentNotes(), user.id(), LocalDateTime.now(clock));
+                hasInsurance, deductible, request.assessmentNotes(), user.id(), Instant.now(clock));
         damageReport.assignCurrency(currency);
 
         damageReport = damageReportRepository.save(damageReport);
@@ -121,7 +121,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
         BigDecimal customerLiability = round(calculateCustomerLiability(repairCost, hasInsurance, deductible), places);
 
         damageReport.reviseAssessment(severity, request.category(), repairCost, customerLiability,
-                hasInsurance, deductible, request.assessmentNotes(), user.id(), LocalDateTime.now(clock));
+                hasInsurance, deductible, request.assessmentNotes(), user.id(), Instant.now(clock));
         damageReport.assignCurrency(currency);
 
         damageReport = damageReportRepository.save(damageReport);

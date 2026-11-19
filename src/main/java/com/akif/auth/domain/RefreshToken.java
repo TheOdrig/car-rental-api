@@ -10,7 +10,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -33,19 +33,19 @@ public class RefreshToken {
     private String tokenHash;
 
     @Column(name = "issued_at", nullable = false, updatable = false)
-    private LocalDateTime issuedAt;
+    private Instant issuedAt;
 
     @Column(name = "expires_at", nullable = false, updatable = false)
-    private LocalDateTime expiresAt;
+    private Instant expiresAt;
 
     @Column(name = "revoked_at")
-    private LocalDateTime revokedAt;
+    private Instant revokedAt;
 
     @Column(name = "replaced_by_id")
     private Long replacedById;
 
     public static RefreshToken issue(Long userId, UUID familyId, String tokenHash,
-                                     LocalDateTime issuedAt, LocalDateTime expiresAt) {
+                                     Instant issuedAt, Instant expiresAt) {
         RefreshToken token = new RefreshToken();
         token.userId = userId;
         token.familyId = familyId;
@@ -59,20 +59,20 @@ public class RefreshToken {
         return revokedAt != null;
     }
 
-    public boolean wasRotatedWithin(java.time.Duration window, LocalDateTime now) {
+    public boolean wasRotatedWithin(java.time.Duration window, Instant now) {
         return revokedAt != null && replacedById != null && !now.isAfter(revokedAt.plus(window));
     }
 
-    public boolean isExpiredAt(LocalDateTime now) {
+    public boolean isExpiredAt(Instant now) {
         return !now.isBefore(expiresAt);
     }
 
-    public void rotateTo(RefreshToken successor, LocalDateTime now) {
+    public void rotateTo(RefreshToken successor, Instant now) {
         this.revokedAt = now;
         this.replacedById = successor.getId();
     }
 
-    public void revoke(LocalDateTime now) {
+    public void revoke(Instant now) {
         if (revokedAt == null) {
             this.revokedAt = now;
         }

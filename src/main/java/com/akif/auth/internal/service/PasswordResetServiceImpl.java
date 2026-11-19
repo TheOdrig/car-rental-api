@@ -1,5 +1,6 @@
 package com.akif.auth.internal.service;
 
+import java.time.Duration;
 import com.akif.auth.internal.exception.UserNotFoundException;
 import java.time.Clock;
 
@@ -19,7 +20,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -57,9 +58,9 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         PasswordResetToken resetToken = PasswordResetToken.builder()
                 .token(TokenHashing.sha256Hex(token))
                 .email(email)
-                .expiryDate(LocalDateTime.now(clock).plusHours(TOKEN_EXPIRY_HOURS))
+                .expiryDate(Instant.now(clock).plus(Duration.ofHours(TOKEN_EXPIRY_HOURS)))
                 .used(false)
-                .createdAt(LocalDateTime.now(clock))
+                .createdAt(Instant.now(clock))
                 .build();
 
         tokenRepository.save(resetToken);
@@ -79,7 +80,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
                 .orElseThrow(() -> new InvalidTokenException("Invalid or expired password reset token",
                         HttpStatus.BAD_REQUEST));
 
-        if (resetToken.isExpiredAt(LocalDateTime.now(clock))) {
+        if (resetToken.isExpiredAt(Instant.now(clock))) {
             throw new InvalidTokenException("Password reset token has expired", HttpStatus.BAD_REQUEST);
         }
 
@@ -99,7 +100,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     @Override
     public boolean validateToken(String token) {
         return tokenRepository.findByTokenAndUsedFalse(TokenHashing.sha256Hex(token))
-                .map(t -> t.isValidAt(LocalDateTime.now(clock)))
+                .map(t -> t.isValidAt(Instant.now(clock)))
                 .orElse(false);
     }
 

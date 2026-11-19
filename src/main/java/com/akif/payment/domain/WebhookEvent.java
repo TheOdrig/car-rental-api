@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "webhook_events",
@@ -36,12 +36,12 @@ public class WebhookEvent extends BaseEntity {
     private WebhookEventStatus status = WebhookEventStatus.RECEIVED;
 
     @Column(name = "processed_at")
-    private LocalDateTime processedAt;
+    private Instant processedAt;
 
     @Column(name = "error_message", length = 1000)
     private String errorMessage;
 
-    public void markProcessed(LocalDateTime processedTime) {
+    public void markProcessed(Instant processedTime) {
         this.status = WebhookEventStatus.PROCESSED;
         this.processedAt = processedTime;
     }

@@ -1,5 +1,6 @@
 package com.akif.rental.unit.report;
 
+import java.time.Duration;
 import com.akif.rental.domain.enums.LateReturnStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.rental.domain.model.Rental;
@@ -24,7 +25,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -74,7 +75,7 @@ class LateReturnReportServiceImplTest {
                 .lateHours(5)
                 .penaltyAmount(new BigDecimal("100.00"))
                 .penaltyPaid(false)
-                .actualReturnTime(LocalDateTime.now().minusDays(1))
+                .actualReturnTime(Instant.now().minus(Duration.ofDays(1)))
                 .build();
 
         testRental2 = Rental.builder()
@@ -94,7 +95,7 @@ class LateReturnReportServiceImplTest {
                 .lateHours(48)
                 .penaltyAmount(new BigDecimal("500.00"))
                 .penaltyPaid(true)
-                .actualReturnTime(LocalDateTime.now().minusDays(3))
+                .actualReturnTime(Instant.now().minus(Duration.ofDays(3)))
                 .build();
     }
 

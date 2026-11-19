@@ -29,7 +29,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -136,7 +136,7 @@ class EmailRegistryAndExecutorIntegrationTest {
         return new RentalConfirmedEvent(
  77L,
  "customer@example.com",
- LocalDateTime.now(),
+ Instant.now(),
  "Toyota",
  "Corolla",
  LocalDate.now().plusDays(1),

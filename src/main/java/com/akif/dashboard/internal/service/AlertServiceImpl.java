@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -76,7 +76,7 @@ public class AlertServiceImpl implements AlertService {
             return dashboardMapper.toAlertDto(alert);
         }
 
-        alert.acknowledge(adminUsername, LocalDateTime.now(clock));
+        alert.acknowledge(adminUsername, Instant.now(clock));
         Alert savedAlert = alertRepository.save(alert);
 
         log.info("Alert {} acknowledged successfully", alertId);

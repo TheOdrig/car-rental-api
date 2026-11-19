@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,7 +81,7 @@ public class DamageReportServiceImpl implements DamageReportService {
                 .category(request.category())
                 .status(DamageStatus.REPORTED)
                 .reportedBy(user.id())
-                .reportedAt(LocalDateTime.now(clock))
+                .reportedAt(Instant.now(clock))
                 .build();
 
         damageReport = damageReportRepository.save(damageReport);
@@ -150,7 +150,7 @@ public class DamageReportServiceImpl implements DamageReportService {
                     .fileSize(photo.getSize())
                     .contentType(photo.getContentType())
                     .uploadedBy(user.id())
-                    .uploadedAt(LocalDateTime.now(clock))
+                    .uploadedAt(Instant.now(clock))
                     .displayOrder(++displayOrder)
                     .build();
 

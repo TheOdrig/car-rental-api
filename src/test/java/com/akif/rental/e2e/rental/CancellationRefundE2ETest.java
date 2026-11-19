@@ -1,5 +1,8 @@
 package com.akif.rental.e2e.rental;
 
+import java.time.ZoneOffset;
+import java.time.LocalDateTime;
+import java.time.Duration;
 import com.akif.CarRentalApplication;
 import com.akif.auth.domain.User;
 import com.akif.auth.internal.repository.UserRepository;
@@ -27,7 +30,6 @@ import org.springframework.http.MediaType;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,7 +66,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
 
     private void bookedAtTheCurrentInstant(Long rentalId) {
         jdbcTemplate.update("UPDATE car_rental.rentals SET create_time = ? WHERE id = ?",
-                LocalDateTime.of(2031, 3, 11, 10, 0), rentalId);
+                java.sql.Timestamp.from(LocalDateTime.of(2031, 3, 11, 10, 0).toInstant(ZoneOffset.UTC)), rentalId);
     }
 
     @Nested
@@ -287,7 +289,7 @@ class CancellationRefundE2ETest extends E2ETestBase {
             Long rentalId = createAndGetRentalId(TestDataBuilder.createRentalRequest(
                     testCar.getId(), LocalDate.of(2031, 3, 10), LocalDate.of(2031, 4, 8)), userToken);
             jdbcTemplate.update("UPDATE car_rental.rentals SET create_time = ? WHERE id = ?",
-                    LocalDateTime.of(2031, 3, 10, 10, 0), rentalId);
+                    java.sql.Timestamp.from(LocalDateTime.of(2031, 3, 10, 10, 0).toInstant(ZoneOffset.UTC)), rentalId);
             mockMvc.perform(post("/api/v1/rentals/{id}/confirm", rentalId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());

@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -76,6 +76,6 @@ public class ExchangeRateCacheServiceImpl implements ExchangeRateCacheService {
             }
         }
 
-        return new ExchangeRateResponse(baseCurrency, LocalDateTime.now(clock), rates, RateSource.FALLBACK);
+        return new ExchangeRateResponse(baseCurrency, Instant.now(clock), rates, RateSource.FALLBACK);
     }
 }

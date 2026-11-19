@@ -20,7 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,11 +40,11 @@ class CurrencyConversionServiceImplTest {
     private CurrencyConversionServiceImpl currencyConversionService;
 
     private ExchangeRateResponse mockRateResponse;
-    private LocalDateTime testTimestamp;
+    private Instant testTimestamp;
 
     @BeforeEach
     void setUp() {
-        testTimestamp = LocalDateTime.now();
+        testTimestamp = Instant.now();
         
         Map<CurrencyType, BigDecimal> rates = Map.of(
                 CurrencyType.USD, BigDecimal.ONE,

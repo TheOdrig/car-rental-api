@@ -1,5 +1,6 @@
 package com.akif.damage.internal.service;
 
+import java.time.Duration;
 import java.time.Clock;
 
 import com.akif.damage.api.DamageService;
@@ -17,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -61,7 +62,7 @@ public class DamageServiceImpl implements DamageService {
 
     @Override
     public int countUnresolvedDisputesOlderThan(int days) {
-        LocalDateTime cutoffDate = LocalDateTime.now(clock).minusDays(days);
+        Instant cutoffDate = Instant.now(clock).minus(Duration.ofDays(days));
         return damageReportRepository.countUnresolvedDisputesOlderThan(cutoffDate);
     }
 

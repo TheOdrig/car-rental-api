@@ -18,7 +18,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -113,7 +113,7 @@ public class DamageChargeServiceImpl implements DamageChargeService {
                     damageReport.getCustomerEmail(),
                     damageReport.getCustomerLiability(),
                     result.transactionId(),
-                    LocalDateTime.now(clock)
+                    Instant.now(clock)
             ));
             log.info("Damage charged successfully: damageId={}, transactionId={}",
                     damageReport.getId(), result.transactionId());

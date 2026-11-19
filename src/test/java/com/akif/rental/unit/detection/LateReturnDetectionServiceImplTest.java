@@ -1,5 +1,8 @@
 package com.akif.rental.unit.detection;
 
+import com.akif.shared.time.UtcDates;
+import java.time.ZoneOffset;
+import java.time.Duration;
 import com.akif.auth.domain.User;
 import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.car.domain.Car;
@@ -28,7 +31,7 @@ import org.springframework.transaction.TransactionStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -119,7 +122,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return ON_TIME when rental is not yet due")
         void shouldReturnOnTimeWhenRentalIsNotYetDue() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(12, 0, 0);
+            Instant currentTime = testRental.getEndDate().atTime(12, 0, 0).toInstant(ZoneOffset.UTC);
 
             LateReturnStatus status = service.calculateLateStatus(testRental, currentTime);
 
@@ -129,7 +132,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return ON_TIME when returned exactly at end time")
         void shouldReturnOnTimeWhenReturnedExactlyAtEndTime() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59);
+            Instant currentTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate());
 
             LateReturnStatus status = service.calculateLateStatus(testRental, currentTime);
 
@@ -139,7 +142,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should calculate zero late hours for on-time rental")
         void shouldCalculateZeroLateHoursForOnTimeRental() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(12, 0, 0);
+            Instant currentTime = testRental.getEndDate().atTime(12, 0, 0).toInstant(ZoneOffset.UTC);
 
             long lateHours = service.calculateLateHours(testRental, currentTime);
 
@@ -154,7 +157,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return GRACE_PERIOD when within grace period")
         void shouldReturnGracePeriodWhenWithinGracePeriod() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusMinutes(30);
+            Instant currentTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofMinutes(30));
 
             LateReturnStatus status = service.calculateLateStatus(testRental, currentTime);
 
@@ -164,7 +167,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return GRACE_PERIOD at exactly grace period limit")
         void shouldReturnGracePeriodAtExactlyGracePeriodLimit() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusMinutes(60);
+            Instant currentTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofMinutes(60));
 
             LateReturnStatus status = service.calculateLateStatus(testRental, currentTime);
 
@@ -174,7 +177,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should calculate zero late hours during grace period")
         void shouldCalculateZeroLateHoursDuringGracePeriod() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusMinutes(45);
+            Instant currentTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofMinutes(45));
 
             long lateHours = service.calculateLateHours(testRental, currentTime);
 
@@ -189,7 +192,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return LATE when 1 minute after grace period")
         void shouldReturnLateWhen1MinuteAfterGracePeriod() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusMinutes(62);
+            Instant currentTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofMinutes(62));
 
             LateReturnStatus status = service.calculateLateStatus(testRental, currentTime);
 
@@ -199,7 +202,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return LATE when 5 hours late")
         void shouldReturnLateWhen5HoursLate() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(6);
+            Instant currentTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(6));
 
             LateReturnStatus status = service.calculateLateStatus(testRental, currentTime);
 
@@ -209,7 +212,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return LATE when 23 hours late")
         void shouldReturnLateWhen23HoursLate() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(24);
+            Instant currentTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(24));
 
             LateReturnStatus status = service.calculateLateStatus(testRental, currentTime);
 
@@ -219,7 +222,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should calculate correct late hours for 3 hours late")
         void shouldCalculateCorrectLateHoursFor3HoursLate() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(4);
+            Instant currentTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(4));
 
             long lateHours = service.calculateLateHours(testRental, currentTime);
 
@@ -234,7 +237,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return SEVERELY_LATE when exactly 24 hours late")
         void shouldReturnSeverelyLateWhenExactly24HoursLate() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(25);
+            Instant currentTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(25));
 
             LateReturnStatus status = service.calculateLateStatus(testRental, currentTime);
 
@@ -244,7 +247,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return SEVERELY_LATE when 48 hours late")
         void shouldReturnSeverelyLateWhen48HoursLate() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(49);
+            Instant currentTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(49));
 
             LateReturnStatus status = service.calculateLateStatus(testRental, currentTime);
 
@@ -254,7 +257,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return SEVERELY_LATE when 5 days late")
         void shouldReturnSeverelyLateWhen5DaysLate() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusDays(5);
+            Instant currentTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofDays(5));
 
             LateReturnStatus status = service.calculateLateStatus(testRental, currentTime);
 
@@ -264,7 +267,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should calculate correct late hours for 48 hours late")
         void shouldCalculateCorrectLateHoursFor48HoursLate() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(49);
+            Instant currentTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(49));
 
             long lateHours = service.calculateLateHours(testRental, currentTime);
 
@@ -274,7 +277,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should calculate correct late days for 3 days late")
         void shouldCalculateCorrectLateDaysFor3DaysLate() {
-            LocalDateTime currentTime = testRental.getEndDate().atTime(23, 59, 59).plusDays(3).plusHours(1);
+            Instant currentTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofDays(3)).plus(Duration.ofHours(1));
 
             long lateDays = service.calculateLateDays(testRental, currentTime);
 
@@ -332,7 +335,7 @@ class LateReturnDetectionServiceImplTest {
                     "Test",
                     false
             );
-            when(penaltyCalculationService.calculatePenalty(any(Rental.class), any(LocalDateTime.class)))
+            when(penaltyCalculationService.calculatePenalty(any(Rental.class), any(Instant.class)))
                     .thenReturn(penaltyResult);
 
             service.detectLateReturns();
@@ -399,7 +402,7 @@ class LateReturnDetectionServiceImplTest {
                     "Test",
                     false
             );
-            when(penaltyCalculationService.calculatePenalty(any(Rental.class), any(LocalDateTime.class)))
+            when(penaltyCalculationService.calculatePenalty(any(Rental.class), any(Instant.class)))
                     .thenReturn(penaltyResult);
 
             service.detectLateReturns();
@@ -461,7 +464,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should throw exception when rental is null")
         void shouldThrowExceptionWhenRentalIsNull() {
-            LocalDateTime currentTime = LocalDateTime.now();
+            Instant currentTime = Instant.now();
 
             assertThatThrownBy(() -> service.calculateLateStatus(null, currentTime))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -472,7 +475,7 @@ class LateReturnDetectionServiceImplTest {
         @DisplayName("Should throw exception when end date is null")
         void shouldThrowExceptionWhenEndDateIsNull() {
             ReflectionTestUtils.setField(testRental, "endDate", null);
-            LocalDateTime currentTime = LocalDateTime.now();
+            Instant currentTime = Instant.now();
 
             assertThatThrownBy(() -> service.calculateLateStatus(testRental, currentTime))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -482,7 +485,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return zero late hours when rental is null")
         void shouldReturnZeroLateHoursWhenRentalIsNull() {
-            LocalDateTime currentTime = LocalDateTime.now();
+            Instant currentTime = Instant.now();
 
             long lateHours = service.calculateLateHours(null, currentTime);
 
@@ -507,7 +510,7 @@ class LateReturnDetectionServiceImplTest {
                     "Test",
                     false
             );
-            when(penaltyCalculationService.calculatePenalty(any(Rental.class), any(LocalDateTime.class)))
+            when(penaltyCalculationService.calculatePenalty(any(Rental.class), any(Instant.class)))
                     .thenReturn(penaltyResult);
 
             service.detectLateReturns();
@@ -519,7 +522,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should not update late detected timestamp if already set")
         void shouldNotUpdateLateDetectedTimestampIfAlreadySet() {
-            LocalDateTime originalDetectionTime = LocalDateTime.now().minusHours(5);
+            Instant originalDetectionTime = Instant.now().minus(Duration.ofHours(5));
             ReflectionTestUtils.setField(testRental, "lateDetectedAt", originalDetectionTime);
             ReflectionTestUtils.setField(testRental, "lateReturnStatus", LateReturnStatus.LATE);
 
@@ -534,7 +537,7 @@ class LateReturnDetectionServiceImplTest {
                     "Test",
                     false
             );
-            when(penaltyCalculationService.calculatePenalty(any(Rental.class), any(LocalDateTime.class)))
+            when(penaltyCalculationService.calculatePenalty(any(Rental.class), any(Instant.class)))
                     .thenReturn(penaltyResult);
 
             service.detectLateReturns();

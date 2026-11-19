@@ -9,7 +9,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "payments",
@@ -99,10 +99,10 @@ public class Payment extends BaseEntity {
     private String failureReason;
 
     @Column(name = "last_synced_at")
-    private LocalDateTime lastSyncedAt;
+    private Instant lastSyncedAt;
 
     @Column(name = "captured_at")
-    private LocalDateTime capturedAt;
+    private Instant capturedAt;
 
     public void applyStatus(PaymentStatus newStatus, String newTransactionId, String newFailureReason) {
         this.status = newStatus;
@@ -239,13 +239,13 @@ public class Payment extends BaseEntity {
         }
     }
 
-    public void stampCaptured(LocalDateTime at) {
+    public void stampCaptured(Instant at) {
         if (this.capturedAt == null) {
             this.capturedAt = at;
         }
     }
 
-    public void markSynced(LocalDateTime at) {
+    public void markSynced(Instant at) {
         this.lastSyncedAt = at;
     }
 

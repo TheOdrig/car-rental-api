@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.proxy.HibernateProxy;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -73,7 +73,7 @@ public class User extends BaseEntity {
     private Boolean isBanned = false;
 
     @Column(name = "banned_at")
-    private LocalDateTime bannedAt;
+    private Instant bannedAt;
 
     @Column(name = "banned_by")
     private Long bannedBy;
@@ -82,7 +82,7 @@ public class User extends BaseEntity {
     private String banReason;
 
     @Column(name = "unbanned_at")
-    private LocalDateTime unbannedAt;
+    private Instant unbannedAt;
 
     public boolean hasVerifiedEmail() {
         return Boolean.TRUE.equals(emailVerified);
@@ -92,7 +92,7 @@ public class User extends BaseEntity {
         return Boolean.TRUE.equals(enabled) && !Boolean.TRUE.equals(isBanned) && !isDeleted();
     }
 
-    public void ban(String reason, Long adminId, LocalDateTime bannedAtTime) {
+    public void ban(String reason, Long adminId, Instant bannedAtTime) {
         this.isBanned = true;
         this.bannedAt = bannedAtTime;
         this.bannedBy = adminId;
@@ -100,7 +100,7 @@ public class User extends BaseEntity {
         this.enabled = false;
     }
 
-    public void unban(LocalDateTime unbannedAtTime) {
+    public void unban(Instant unbannedAtTime) {
         this.isBanned = false;
         this.unbannedAt = unbannedAtTime;
         this.enabled = true;

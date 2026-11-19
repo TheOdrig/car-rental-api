@@ -21,7 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,7 +48,7 @@ class DamageStatisticsCurrencyIntegrationTest {
                 .rentalStartDate(LocalDate.now().minusDays(5)).rentalEndDate(LocalDate.now().minusDays(1))
                 .customerEmail("c@example.com").customerFullName("Customer").customerUserId(1L)
                 .description("dent").severity(DamageSeverity.MINOR).category(DamageCategory.DENT)
-                .status(DamageStatus.ASSESSED).reportedBy(1L).reportedAt(LocalDateTime.now())
+                .status(DamageStatus.ASSESSED).reportedBy(1L).reportedAt(Instant.now())
                 .currency(currency)
                 .repairCostEstimate(repair == null ? null : new BigDecimal(repair))
                 .customerLiability(liability == null ? null : new BigDecimal(liability))

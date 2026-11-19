@@ -45,7 +45,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -160,7 +160,7 @@ class DamageReportServiceTest {
                 .category(DamageCategory.SCRATCH)
                 .status(DamageStatus.REPORTED)
                 .reportedBy(1L)
-                .reportedAt(LocalDateTime.now())
+                .reportedAt(Instant.now())
                 .build();
 
         testDamagePhoto = DamagePhoto.builder()
@@ -171,7 +171,7 @@ class DamageReportServiceTest {
                 .fileSize(1024L)
                 .contentType("image/jpeg")
                 .uploadedBy(1L)
-                .uploadedAt(LocalDateTime.now())
+                .uploadedAt(Instant.now())
                 .displayOrder(1)
                 .build();
 

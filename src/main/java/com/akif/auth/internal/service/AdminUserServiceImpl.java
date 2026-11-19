@@ -1,5 +1,6 @@
 package com.akif.auth.internal.service;
 
+import com.akif.shared.time.UtcDates;
 import com.akif.auth.internal.exception.InvalidUserStateException;
 import java.time.Clock;
 
@@ -28,7 +29,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
@@ -135,8 +136,8 @@ public class AdminUserServiceImpl implements AdminUserService {
         int customerSinceDays = 0;
         if (user.getCreateTime() != null) {
             customerSinceDays = (int) ChronoUnit.DAYS.between(
-                    user.getCreateTime().toLocalDate(),
-                    LocalDateTime.now(clock).toLocalDate());
+                    UtcDates.toDate(user.getCreateTime()),
+                    UtcDates.toDate(Instant.now(clock)));
         }
 
         return new UserStatistics(
@@ -185,7 +186,7 @@ public class AdminUserServiceImpl implements AdminUserService {
             throw new InvalidUserStateException("User is already banned");
         }
 
-        user.ban(reason, adminId, LocalDateTime.now(clock));
+        user.ban(reason, adminId, Instant.now(clock));
 
         userRepository.save(user);
         refreshTokenService.revokeAllForUser(userId);
@@ -205,7 +206,7 @@ public class AdminUserServiceImpl implements AdminUserService {
             throw new InvalidUserStateException("User is not banned");
         }
 
-        user.unban(LocalDateTime.now(clock));
+        user.unban(Instant.now(clock));
 
         userRepository.save(user);
         log.info("User {} has been unbanned by admin {}", userId, adminId);
@@ -224,7 +225,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .adminId(adminId)
                 .adminUsername(adminUsername)
                 .text(text)
-                .createdAt(LocalDateTime.now(clock))
+                .createdAt(Instant.now(clock))
                 .build();
 
         AdminNote saved = adminNoteRepository.save(note);

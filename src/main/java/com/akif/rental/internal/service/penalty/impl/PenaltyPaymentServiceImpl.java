@@ -7,7 +7,7 @@ import com.akif.payment.api.PaymentService;
 import com.akif.rental.api.PenaltyChargeFailedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import java.time.Clock;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.service.penalty.PenaltyPaymentService;
 import lombok.RequiredArgsConstructor;
@@ -84,7 +84,7 @@ public class PenaltyPaymentServiceImpl implements PenaltyPaymentService {
                 payment.rentalId(),
                 payment.id(),
                 payment.userEmail(),
-                LocalDateTime.now(clock),
+                Instant.now(clock),
                 payment.amount(),
                 payment.currency(),
                 failureReason));

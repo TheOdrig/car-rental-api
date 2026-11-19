@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "dashboard_alerts",
@@ -54,12 +54,12 @@ public class Alert extends BaseEntity {
     private Boolean acknowledged = false;
 
     @Column(name = "acknowledged_at")
-    private LocalDateTime acknowledgedAt;
+    private Instant acknowledgedAt;
 
     @Column(name = "acknowledged_by", length = 100)
     private String acknowledgedBy;
 
-    public void acknowledge(String adminUsername, LocalDateTime at) {
+    public void acknowledge(String adminUsername, Instant at) {
         this.acknowledged = true;
         this.acknowledgedAt = at;
         this.acknowledgedBy = adminUsername;

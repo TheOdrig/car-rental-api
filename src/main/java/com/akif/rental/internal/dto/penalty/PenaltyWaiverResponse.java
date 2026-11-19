@@ -1,10 +1,9 @@
 package com.akif.rental.internal.dto.penalty;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record PenaltyWaiverResponse(
@@ -17,8 +16,7 @@ public record PenaltyWaiverResponse(
     String reason,
     Long adminId,
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    LocalDateTime waivedAt,
+    Instant waivedAt,
 
     Boolean refundInitiated,
     String refundTransactionId

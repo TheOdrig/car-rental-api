@@ -1,5 +1,7 @@
 package com.akif.notification.integration;
 
+import java.time.ZoneOffset;
+import java.time.LocalDateTime;
 import com.akif.notification.EmailNotificationService;
 import com.akif.notification.internal.listener.EmailEventListener;
 import com.akif.payment.api.PaymentCapturedEvent;
@@ -19,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.mockito.Mockito.verify;
 
@@ -44,7 +46,7 @@ class EmailEventListenerTest {
             event = new RentalConfirmedEvent(
                     1L,
                     "customer@example.com",
-                    LocalDateTime.now(),
+                    Instant.now(),
                     "Toyota",
                     "Corolla",
                     LocalDate.of(2025, 12, 10),
@@ -78,7 +80,7 @@ class EmailEventListenerTest {
                     new BigDecimal("2500.00"),
                     CurrencyType.TRY,
                     "TXN-123456",
-                    LocalDateTime.of(2025, 12, 5, 14, 30));
+                    LocalDateTime.of(2025, 12, 5, 14, 30).toInstant(ZoneOffset.UTC));
         }
 
         @Test
@@ -101,7 +103,7 @@ class EmailEventListenerTest {
             event = new PickupReminderEvent(
                     1L,
                     "customer@example.com",
-                    LocalDateTime.now(),
+                    Instant.now(),
                     LocalDate.of(2025, 12, 10),
                     "Toyota",
                     "Corolla");
@@ -127,7 +129,7 @@ class EmailEventListenerTest {
             event = new ReturnReminderEvent(
                     1L,
                     "customer@example.com",
-                    LocalDateTime.now(),
+                    Instant.now(),
                     LocalDate.of(2025, 12, 15),
                     CurrencyType.TRY,
                     new BigDecimal("12.50"),
@@ -154,8 +156,8 @@ class EmailEventListenerTest {
             event = new RentalCancelledEvent(
                     1L,
                     "customer@example.com",
-                    LocalDateTime.now(),
-                    LocalDateTime.of(2025, 12, 5, 10, 0),
+                    Instant.now(),
+                    LocalDateTime.of(2025, 12, 5, 10, 0).toInstant(ZoneOffset.UTC),
                     "Customer request",
                     true,
                     new BigDecimal("2500.00"),
@@ -182,7 +184,7 @@ class EmailEventListenerTest {
             RentalConfirmedEvent confirmedEvent = new RentalConfirmedEvent(
                     1L,
                     "customer@example.com",
-                    LocalDateTime.now(),
+                    Instant.now(),
                     "Toyota",
                     "Corolla",
                     LocalDate.of(2025, 12, 10),
@@ -198,7 +200,7 @@ class EmailEventListenerTest {
                     new BigDecimal("2500.00"),
                     CurrencyType.TRY,
                     "TXN-123456",
-                    LocalDateTime.of(2025, 12, 5, 14, 30));
+                    LocalDateTime.of(2025, 12, 5, 14, 30).toInstant(ZoneOffset.UTC));
 
             emailEventListener.handleRentalConfirmed(confirmedEvent);
             emailEventListener.handlePaymentCaptured(paymentEvent);

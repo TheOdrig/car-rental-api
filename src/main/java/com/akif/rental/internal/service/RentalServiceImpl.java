@@ -1,5 +1,6 @@
 package com.akif.rental.internal.service;
 
+import com.akif.shared.time.UtcDates;
 import com.akif.shared.web.Pageables;
 import java.time.Clock;
 
@@ -66,7 +67,7 @@ import java.util.Optional;
 import java.sql.SQLException;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Service
@@ -254,7 +255,7 @@ public class RentalServiceImpl implements RentalService {
         RentalConfirmedEvent event = new RentalConfirmedEvent(
                 updatedRental.getId(),
                 updatedRental.getUserEmail(),
-                LocalDateTime.now(clock),
+                Instant.now(clock),
                 updatedRental.getCarBrand(),
                 updatedRental.getCarModel(),
                 updatedRental.getStartDate(),
@@ -345,9 +346,9 @@ public class RentalServiceImpl implements RentalService {
                     RentalStatus.IN_USE.name());
         }
 
-        LocalDateTime actualReturnTime = LocalDateTime.now(clock);
+        Instant actualReturnTime = Instant.now(clock);
 
-        if (actualReturnTime.isAfter(rental.getEndDate().atTime(23, 59, 59))) {
+        if (actualReturnTime.isAfter(UtcDates.endOfDayWholeSecond(rental.getEndDate()))) {
             log.info("Processing late return penalty for rental: {}", rentalId);
             processPenaltyForLateReturn(rental, actualReturnTime);
         }
@@ -396,8 +397,8 @@ public class RentalServiceImpl implements RentalService {
         RentalCancelledEvent event = new RentalCancelledEvent(
                 updatedRental.getId(),
                 updatedRental.getUserEmail(),
-                LocalDateTime.now(clock),
-                LocalDateTime.now(clock),
+                Instant.now(clock),
+                Instant.now(clock),
                 "Cancelled by " + (currentUser.isAdmin() ? "admin" : "customer") + ". Reason: " + reason,
                 refundInfo.refundProcessed(),
                 refundInfo.refundAmount(),
@@ -500,7 +501,7 @@ public class RentalServiceImpl implements RentalService {
                 log.warn("Car currency changed since booking, prorating the early return of rental {}", rental.getId());
                 return prorated;
             }
-            LocalDate bookingDate = rental.getCreateTime() != null ? rental.getCreateTime().toLocalDate() : today;
+            LocalDate bookingDate = rental.getCreateTime() != null ? UtcDates.toDate(rental.getCreateTime()) : today;
             BigDecimal repricedWhole = dynamicPricingService.calculatePrice(
                     rental.getCarId(), rental.getStartDate(), rental.getEndDate(), bookingDate, rental.getId()).finalPrice();
             if (repricedWhole == null || repricedWhole.signum() <= 0) {
@@ -643,7 +644,7 @@ public class RentalServiceImpl implements RentalService {
                 operation, result.id(), result.status(), extraInfo);
     }
 
-    private void processPenaltyForLateReturn(Rental rental, LocalDateTime actualReturnTime) {
+    private void processPenaltyForLateReturn(Rental rental, Instant actualReturnTime) {
         log.debug("Processing penalty for late rental: {}", rental.getId());
 
         try {
@@ -702,13 +703,13 @@ public class RentalServiceImpl implements RentalService {
     }
 
     private void publishPenaltySummaryEvent(Rental rental, PenaltyResult penaltyResult,
-            LocalDateTime actualReturnTime) {
-        LocalDateTime scheduledReturnTime = rental.getEndDate().atTime(23, 59, 59);
+            Instant actualReturnTime) {
+        Instant scheduledReturnTime = UtcDates.endOfDayWholeSecond(rental.getEndDate());
 
         PenaltySummaryEvent event = new PenaltySummaryEvent(
                 rental.getId(),
                 rental.getUserEmail(),
-                LocalDateTime.now(clock),
+                Instant.now(clock),
                 rental.getCarBrand(),
                 rental.getCarModel(),
                 rental.getCarLicensePlate(),

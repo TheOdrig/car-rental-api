@@ -16,7 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +38,7 @@ class PenaltyPaymentCapturedListenerTest {
     private PenaltyPaymentCapturedListener listener;
 
     private final PenaltyPaymentCapturedEvent event = new PenaltyPaymentCapturedEvent(
-            5L, 1L, new BigDecimal("1500.00"), CurrencyType.TRY, LocalDateTime.now());
+            5L, 1L, new BigDecimal("1500.00"), CurrencyType.TRY, Instant.now());
 
     private Rental rentalWithPenalty(String penalty) {
         Rental rental = Rental.builder().id(1L).penaltyAmount(new BigDecimal(penalty)).penaltyPaid(false).build();

@@ -1,6 +1,6 @@
 package com.akif.rental.api;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public interface RentalEvent {
 
@@ -8,5 +8,5 @@ public interface RentalEvent {
 
     String customerEmail();
 
-    LocalDateTime occurredAt();
+    Instant occurredAt();
 }

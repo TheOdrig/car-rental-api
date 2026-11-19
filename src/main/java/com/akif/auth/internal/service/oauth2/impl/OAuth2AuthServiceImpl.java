@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Clock;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
@@ -326,6 +326,6 @@ public class OAuth2AuthServiceImpl implements OAuth2AuthService {
                 "Social account linked successfully",
                 provider,
                 email,
-                LocalDateTime.now(clock).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                Instant.now(clock).toString());
     }
 }

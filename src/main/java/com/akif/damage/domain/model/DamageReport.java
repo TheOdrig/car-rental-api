@@ -11,7 +11,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,13 +85,13 @@ public class DamageReport extends BaseEntity {
     private Long reportedBy;
 
     @Column(name = "reported_at", nullable = false)
-    private LocalDateTime reportedAt;
+    private Instant reportedAt;
 
     @Column(name = "assessed_by")
     private Long assessedBy;
 
     @Column(name = "assessed_at")
-    private LocalDateTime assessedAt;
+    private Instant assessedAt;
 
     @Column(name = "repair_cost_estimate", precision = 12, scale = 2)
     private BigDecimal repairCostEstimate;
@@ -137,7 +137,7 @@ public class DamageReport extends BaseEntity {
     private Long disputedBy;
 
     @Column(name = "disputed_at")
-    private LocalDateTime disputedAt;
+    private Instant disputedAt;
 
     @Column(name = "resolution_notes", length = 1000)
     private String resolutionNotes;
@@ -146,7 +146,7 @@ public class DamageReport extends BaseEntity {
     private Long resolvedBy;
 
     @Column(name = "resolved_at")
-    private LocalDateTime resolvedAt;
+    private Instant resolvedAt;
 
     @OneToMany(mappedBy = "damageReport", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -154,7 +154,7 @@ public class DamageReport extends BaseEntity {
 
     public void assess(DamageSeverity severity, DamageCategory category, BigDecimal repairCost,
                        BigDecimal liability, boolean insured, BigDecimal deductible, String notes,
-                       Long assessorId, LocalDateTime assessedTime) {
+                       Long assessorId, Instant assessedTime) {
         reviseAssessment(severity, category, repairCost, liability, insured, deductible, notes, assessorId,
                 assessedTime);
         this.status = DamageStatus.ASSESSED;
@@ -162,7 +162,7 @@ public class DamageReport extends BaseEntity {
 
     public void reviseAssessment(DamageSeverity severity, DamageCategory category, BigDecimal repairCost,
                                  BigDecimal liability, boolean insured, BigDecimal deductible, String notes,
-                                 Long assessorId, LocalDateTime assessedTime) {
+                                 Long assessorId, Instant assessedTime) {
         this.severity = severity;
         this.category = category;
         this.repairCostEstimate = repairCost;
@@ -180,7 +180,7 @@ public class DamageReport extends BaseEntity {
         }
     }
 
-    public void dispute(String reason, String comments, Long customerId, LocalDateTime disputedTime) {
+    public void dispute(String reason, String comments, Long customerId, Instant disputedTime) {
         this.disputeReason = reason;
         this.disputeComments = comments;
         this.disputedBy = customerId;
@@ -189,7 +189,7 @@ public class DamageReport extends BaseEntity {
     }
 
     public void resolveDispute(BigDecimal adjustedLiability, BigDecimal adjustedRepairCost, BigDecimal refundAmount,
-                               String notes, Long resolverId, LocalDateTime resolvedTime) {
+                               String notes, Long resolverId, Instant resolvedTime) {
         if (this.originalLiability == null) {
             this.originalLiability = this.customerLiability;
         }

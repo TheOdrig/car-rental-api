@@ -1,5 +1,7 @@
 package com.akif.rental.unit.penalty;
 
+import com.akif.shared.time.UtcDates;
+import java.time.Duration;
 import com.akif.car.domain.Car;
 import org.springframework.test.util.ReflectionTestUtils;
 import com.akif.rental.domain.enums.LateReturnStatus;
@@ -19,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -74,7 +76,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should calculate penalty for 1 hour late")
         void shouldCalculatePenaltyFor1HourLate() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(2);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(2));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -88,7 +90,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should calculate penalty for 3 hours late")
         void shouldCalculatePenaltyFor3HoursLate() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(4);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(4));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -100,7 +102,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should calculate penalty for 6 hours late")
         void shouldCalculatePenaltyFor6HoursLate() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(7);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(7));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -131,7 +133,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should calculate penalty for 7-24 hours late (1 day)")
         void shouldCalculatePenaltyFor7To24HoursLate() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(10);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(10));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -144,7 +146,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should calculate penalty for exactly 24 hours late")
         void shouldCalculatePenaltyForExactly24HoursLate() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(25);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(25));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -156,7 +158,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should count a started day as a full day, matching the late return email")
         void shouldCountAStartedDayAsFullDay() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(26);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(26));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -168,7 +170,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should calculate penalty for 2 days late")
         void shouldCalculatePenaltyFor2DaysLate() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(49);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(49));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -181,7 +183,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should calculate penalty for 5 days late")
         void shouldCalculatePenaltyFor5DaysLate() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusDays(5).plusHours(1);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofDays(5)).plus(Duration.ofHours(1));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -213,7 +215,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should enforce penalty cap at 5x daily rate")
         void shouldEnforcePenaltyCapAt5xDailyRate() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusDays(10);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofDays(10));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -226,7 +228,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should not apply cap when penalty is below maximum")
         void shouldNotApplyCapWhenPenaltyIsBelowMaximum() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(3);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(3));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -257,7 +259,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should apply zero penalty within grace period")
         void shouldApplyZeroPenaltyWithinGracePeriod() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusMinutes(30);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofMinutes(30));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -271,7 +273,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should apply zero penalty at exactly grace period limit")
         void shouldApplyZeroPenaltyAtExactlyGracePeriodLimit() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusMinutes(60);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofMinutes(60));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -282,7 +284,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should apply penalty immediately after grace period")
         void shouldApplyPenaltyImmediatelyAfterGracePeriod() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusMinutes(61);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofMinutes(61));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -299,7 +301,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should handle fractional hours correctly with ceiling")
         void shouldHandleFractionalHoursCorrectlyWithCeiling() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusMinutes(150);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofMinutes(150));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -310,7 +312,7 @@ class PenaltyCalculationServiceImplTest {
         @Test
         @DisplayName("Should include breakdown information in result")
         void shouldIncludeBreakdownInformationInResult() {
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(3);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(3));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -324,7 +326,7 @@ class PenaltyCalculationServiceImplTest {
         @DisplayName("Should handle different daily rates correctly")
         void shouldHandleDifferentDailyRatesCorrectly() {
             ReflectionTestUtils.setField(testRental, "dailyPrice", new BigDecimal("1000.00"));
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(2);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(2));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 
@@ -357,7 +359,7 @@ class PenaltyCalculationServiceImplTest {
                     .dailyPrice(new BigDecimal("1234"))
                     .currency(CurrencyType.JPY)
                     .build();
-            LocalDateTime returnTime = testRental.getEndDate().atTime(23, 59, 59).plusHours(3);
+            Instant returnTime = UtcDates.endOfDayWholeSecond(testRental.getEndDate()).plus(Duration.ofHours(3));
 
             PenaltyResult result = service.calculatePenalty(testRental, returnTime);
 

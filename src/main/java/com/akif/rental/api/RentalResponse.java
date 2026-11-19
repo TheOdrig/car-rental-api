@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record RentalResponse(
@@ -44,9 +44,9 @@ public record RentalResponse(
         String approvalNotes,
         String cancellationReason,
 
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC") LocalDateTime createTime,
+        Instant createTime,
 
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC") LocalDateTime updateTime) {
+        Instant updateTime) {
 
     public RentalResponse(
             Long id,
@@ -69,8 +69,8 @@ public record RentalResponse(
             String rateSource,
             String pickupNotes,
             String returnNotes,
-            LocalDateTime createTime,
-            LocalDateTime updateTime) {
+            Instant createTime,
+            Instant updateTime) {
         this(id, carSummary, userSummary, startDate, endDate, days, dailyPrice, totalPrice, currency, status,
                 originalPrice, finalPrice, totalSavings, appliedDiscounts, convertedTotalPrice, displayCurrency,
                 exchangeRate, rateSource, pickupNotes, returnNotes, null, null, createTime, updateTime);

@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -65,7 +65,7 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
             throw DamageDisputeException.invalidStatus(damageReport.getStatus().name());
         }
 
-        damageReport.dispute(request.reason(), request.comments(), user.id(), LocalDateTime.now(clock));
+        damageReport.dispute(request.reason(), request.comments(), user.id(), Instant.now(clock));
         damageReport = damageReportRepository.save(damageReport);
 
         eventPublisher.publishEvent(new DamageDisputedEvent(
@@ -111,7 +111,7 @@ public class DamageDisputeServiceImpl implements DamageDisputeService {
         }
 
         damageReport.resolveDispute(adjustedLiability, adjustedRepairCost, refundAmount, resolution.resolutionNotes(),
-                user.id(), LocalDateTime.now(clock));
+                user.id(), Instant.now(clock));
         damageReport = damageReportRepository.save(damageReport);
 
         eventPublisher.publishEvent(new DamageResolvedEvent(

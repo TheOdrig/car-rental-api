@@ -4,7 +4,7 @@ import com.akif.shared.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
@@ -16,8 +16,8 @@ public record AdminUserDetailResponse(
         String phone,
         String avatarUrl,
         Set<Role> roles,
-        LocalDateTime registrationDate,
-        LocalDateTime lastLoginDate,
+        Instant registrationDate,
+        Instant lastLoginDate,
         VerificationInfo verification,
         UserStatistics statistics,
         AccountStatus accountStatus,
@@ -47,9 +47,9 @@ public record AdminUserDetailResponse(
 
     public record AccountStatus(
             String status,
-            LocalDateTime bannedAt,
+            Instant bannedAt,
             String banReason,
             Long bannedBy,
-            LocalDateTime lastStatusChange) {
+            Instant lastStatusChange) {
     }
 }

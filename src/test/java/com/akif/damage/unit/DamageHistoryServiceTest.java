@@ -1,5 +1,6 @@
 package com.akif.damage.unit;
 
+import java.time.Duration;
 import com.akif.damage.api.DamageReportDto;
 import com.akif.damage.api.DamageCategory;
 import com.akif.damage.api.DamageSeverity;
@@ -29,7 +30,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -84,7 +85,7 @@ class DamageHistoryServiceTest {
                 .status(DamageStatus.REPORTED)
                 .repairCostEstimate(new BigDecimal("500.00"))
                 .customerLiability(new BigDecimal("500.00"))
-                .reportedAt(LocalDateTime.now())
+                .reportedAt(Instant.now())
                 .build();
 
         testDamageReport2 = DamageReport.builder()
@@ -103,7 +104,7 @@ class DamageHistoryServiceTest {
                 .status(DamageStatus.ASSESSED)
                 .repairCostEstimate(new BigDecimal("1500.00"))
                 .customerLiability(new BigDecimal("1000.00"))
-                .reportedAt(LocalDateTime.now().minusDays(1))
+                .reportedAt(Instant.now().minus(Duration.ofDays(1)))
                 .build();
 
         testDto1 = new DamageReportDto(
@@ -120,7 +121,7 @@ class DamageHistoryServiceTest {
                 new BigDecimal("500.00"),
                 new BigDecimal("500.00"),
                 null,
-                LocalDateTime.now(),
+                Instant.now(),
                 null
         );
 
@@ -138,7 +139,7 @@ class DamageHistoryServiceTest {
                 new BigDecimal("1500.00"),
                 new BigDecimal("1000.00"),
                 null,
-                LocalDateTime.now().minusDays(1),
+                Instant.now().minus(Duration.ofDays(1)),
                 null
         );
 
