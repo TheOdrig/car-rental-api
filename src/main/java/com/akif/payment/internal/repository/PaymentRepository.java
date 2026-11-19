@@ -23,7 +23,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Query("""
             SELECT p FROM Payment p
             WHERE p.rentalId = :rentalId AND p.kind = com.akif.payment.domain.enums.PaymentKind.PENALTY
-            AND p.status = com.akif.payment.api.PaymentStatus.CAPTURED AND p.isDeleted = false
+            AND p.status = com.akif.payment.api.PaymentStatus.CAPTURED
+            AND p.closed = false AND p.isDeleted = false
             ORDER BY p.id DESC
             """)
     List<Payment> findCapturedPenaltyPayments(@Param("rentalId") Long rentalId);
@@ -32,7 +33,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             SELECT COUNT(p) > 0 FROM Payment p
             WHERE p.rentalId = :rentalId AND p.id <> :paymentId
             AND p.kind = com.akif.payment.domain.enums.PaymentKind.PENALTY
-            AND p.status = com.akif.payment.api.PaymentStatus.CAPTURED AND p.isDeleted = false
+            AND p.status = com.akif.payment.api.PaymentStatus.CAPTURED
+            AND p.closed = false AND p.isDeleted = false
             """)
     boolean existsCapturedPenaltyOtherThan(@Param("rentalId") Long rentalId, @Param("paymentId") Long paymentId);
 
