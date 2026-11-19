@@ -211,7 +211,9 @@ class ForgotPasswordIntegrationTest {
                         mockMvc.perform(post("/api/v1/auth/reset-password")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(request)))
-                                        .andExpect(status().isBadRequest());
+                                        .andExpect(status().isBadRequest())
+                                        .andExpect(jsonPath("$.code").value("INVALID_TOKEN"))
+                                        .andExpect(jsonPath("$.detail").value("Invalid password reset token"));
                 }
 
                 @Test

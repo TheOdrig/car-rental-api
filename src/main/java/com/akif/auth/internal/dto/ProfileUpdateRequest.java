@@ -14,6 +14,6 @@ public record ProfileUpdateRequest(
         @Size(min = 1, max = 50, message = "Last name must be between 1 and 50 characters")
         String lastName,
 
-        @Pattern(regexp = "^$|^\\+?[1-9]\\d{1,14}$", message = "Invalid phone number format (E.164)")
+        @Pattern(regexp = "^$|^\\+?[1-9]\\d{6,14}$", message = "Phone number must have 7 to 15 digits, with an optional leading +")
         String phone) {
 }

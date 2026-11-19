@@ -77,7 +77,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         log.info("Password reset attempt with token");
 
         PasswordResetToken resetToken = tokenRepository.findByTokenAndUsedFalse(TokenHashing.sha256Hex(token))
-                .orElseThrow(() -> new InvalidTokenException("Invalid or expired password reset token",
+                .orElseThrow(() -> new InvalidTokenException("Invalid password reset token",
                         HttpStatus.BAD_REQUEST));
 
         if (resetToken.isExpiredAt(Instant.now(clock))) {

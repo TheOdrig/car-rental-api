@@ -172,7 +172,7 @@ class PasswordResetServiceImplTest {
 
             assertThatThrownBy(() -> passwordResetService.resetPassword("invalid-token", "newPassword"))
                     .isInstanceOf(InvalidTokenException.class)
-                    .hasMessageContaining("Invalid or expired");
+                    .hasMessage("Invalid password reset token");
         }
 
         @Test

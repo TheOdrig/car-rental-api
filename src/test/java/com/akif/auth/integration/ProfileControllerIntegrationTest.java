@@ -171,6 +171,35 @@ class ProfileControllerIntegrationTest {
                     .andExpect(jsonPath("$.phone").value("+9876543210"));
         }
 
+        @org.junit.jupiter.params.ParameterizedTest
+        @org.junit.jupiter.params.provider.ValueSource(strings = {"12345", "+123456", "abc1234567", "+1234567890123456", "0123456789", "123 456 7890"})
+        @DisplayName("Should reject an implausible phone number with a field error")
+        void shouldRejectInvalidPhone(String phone) throws Exception {
+            ProfileUpdateRequest request = new ProfileUpdateRequest("John", "Doe", phone);
+
+            mockMvc.perform(put("/api/v1/users/me/profile")
+                    .header("Authorization", userToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                    .andExpect(jsonPath("$.errors[0].field").value("phone"));
+        }
+
+        @org.junit.jupiter.params.ParameterizedTest
+        @org.junit.jupiter.params.provider.ValueSource(strings = {"+1234567", "905551234567", "+441234567890123"})
+        @DisplayName("Should accept phone numbers of 7 to 15 digits")
+        void shouldAcceptPlausiblePhone(String phone) throws Exception {
+            ProfileUpdateRequest request = new ProfileUpdateRequest("John", "Doe", phone);
+
+            mockMvc.perform(put("/api/v1/users/me/profile")
+                    .header("Authorization", userToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.phone").value(phone));
+        }
+
         @Test
         @DisplayName("Should clear phone when empty string provided")
         void shouldClearPhoneWhenEmptyStringProvided() throws Exception {
