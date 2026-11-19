@@ -62,7 +62,7 @@ public record PricingResult(
             BigDecimal effectiveDailyPrice = rentalDays > 0 
                 ? finalPrice.divide(BigDecimal.valueOf(rentalDays), scale, RoundingMode.HALF_UP)
                 : finalPrice;
-            BigDecimal totalSavings = baseTotalPrice.subtract(finalPrice);
+            BigDecimal totalSavings = baseTotalPrice.subtract(finalPrice).max(BigDecimal.ZERO);
 
             return new PricingResult(
                 basePrice,

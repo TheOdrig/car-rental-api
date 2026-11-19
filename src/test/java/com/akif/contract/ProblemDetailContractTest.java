@@ -98,6 +98,38 @@ class ProblemDetailContractTest {
     }
 
     @Test
+    @DisplayName("a body value of the wrong type names the field")
+    void wrongTypeNamesTheField() throws Exception {
+        assertProblem(mockMvc.perform(post("/api/v1/rentals/request")
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"carId\":\"abc\",\"startDate\":\"2031-01-01\",\"endDate\":\"2031-01-03\"}")),
+                400, "INVALID_JSON")
+                .andExpect(jsonPath("$.detail").value("Invalid value for field 'carId'"));
+    }
+
+    @Test
+    @DisplayName("an impossible date names the field")
+    void impossibleDateNamesTheField() throws Exception {
+        assertProblem(mockMvc.perform(post("/api/v1/rentals/request")
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"carId\":1,\"startDate\":\"2027-13-45\",\"endDate\":\"2031-01-03\"}")),
+                400, "INVALID_JSON")
+                .andExpect(jsonPath("$.detail").value("Invalid value for field 'startDate'"));
+    }
+
+    @Test
+    @DisplayName("sorting an endpoint that cannot sort says so instead of listing no fields")
+    void unsupportedSortSaysSo() throws Exception {
+        assertProblem(mockMvc.perform(get("/api/v1/admin/users")
+                .param("sort", "email")
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"), new SimpleGrantedAuthority("ROLE_ADMIN")))),
+                400, "INVALID_PARAMETER")
+                .andExpect(jsonPath("$.detail").value("Sorting is not supported on this endpoint"));
+    }
+
+    @Test
     @DisplayName("an invalid body lists field errors with real field names")
     void validationErrors() throws Exception {
         assertProblem(mockMvc.perform(post("/api/v1/cars/availability/search")

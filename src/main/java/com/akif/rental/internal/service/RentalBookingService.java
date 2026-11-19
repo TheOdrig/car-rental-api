@@ -102,6 +102,7 @@ public class RentalBookingService {
                 .finalPrice(pricingResult.finalPrice())
                 .totalSavings(pricingResult.totalSavings())
                 .appliedDiscounts(pricingResult.appliedModifiers().stream()
+                        .filter(PriceModifier::isDiscount)
                         .map(PriceModifier::description)
                         .toList())
                 .build();

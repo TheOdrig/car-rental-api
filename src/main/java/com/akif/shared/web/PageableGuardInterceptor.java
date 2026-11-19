@@ -65,7 +65,10 @@ public class PageableGuardInterceptor implements HandlerInterceptor {
                     continue;
                 }
                 if (!allowed.contains(trimmed)) {
-                    String supported = allowed.isEmpty() ? "none" : String.join(", ", allowed.stream().sorted().toList());
+                    if (allowed.isEmpty()) {
+                        throw new InvalidParameterException("Sorting is not supported on this endpoint");
+                    }
+                    String supported = String.join(", ", allowed.stream().sorted().toList());
                     throw new InvalidParameterException(
                             "Cannot sort by '" + trimmed + "'. Supported sort fields: " + supported);
                 }

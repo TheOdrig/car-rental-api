@@ -249,8 +249,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             }
         }
         log.warn("[{}] Invalid JSON: {}", ERROR_CODE_INVALID_JSON, ex.getMessage());
+        String message = "Invalid JSON format in request body";
+        for (Throwable cause = ex; cause != null; cause = cause.getCause()) {
+            if (cause instanceof tools.jackson.databind.DatabindException databind) {
+                String field = bodyFieldOf(databind);
+                if (!"body".equals(field)) {
+                    message = "Invalid value for field '" + field + "'";
+                    break;
+                }
+            }
+        }
         return respondObject(problems.create(HttpStatus.BAD_REQUEST, ERROR_CODE_INVALID_JSON,
-                "Invalid JSON format in request body", extractPath(request)));
+                message, extractPath(request)));
     }
 
     @Override
@@ -307,7 +317,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 "Invalid value for '" + sorted.get(0).field() + "'", extractPath(request), sorted));
     }
 
-    private static String bodyFieldOf(tools.jackson.databind.exc.InvalidFormatException format) {
+    private static String bodyFieldOf(tools.jackson.core.JacksonException format) {
         StringBuilder path = new StringBuilder();
         for (tools.jackson.core.JacksonException.Reference reference : format.getPath()) {
             if (reference.getPropertyName() != null) {
