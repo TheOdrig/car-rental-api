@@ -22,6 +22,7 @@ import com.akif.payment.internal.service.gateway.ChargeResult;
 import com.akif.payment.internal.service.gateway.GatewayIntent;
 import com.akif.payment.internal.service.gateway.GatewayIntentStatus;
 import com.akif.payment.internal.service.gateway.PaymentGateway;
+import com.akif.rental.api.PenaltyChargeFailedEvent;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.enums.LateReturnStatus;
 import com.akif.rental.domain.model.Rental;
@@ -36,6 +37,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
@@ -50,6 +52,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -81,6 +85,9 @@ class PenaltyCollectionE2ETest extends E2ETestBase {
 
     @Autowired
     private PlatformTransactionManager transactionManager;
+
+    @Autowired
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @MockitoSpyBean
     private PaymentGateway paymentGateway;
@@ -430,5 +437,208 @@ class PenaltyCollectionE2ETest extends E2ETestBase {
             });
         });
         assertThat(reload().getPenaltyPaid()).isFalse();
+    }
+    private void awaitPenaltyAlert(Long paymentId, String messagePart) {
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> assertThat(alertRepository
+                .findByTypeAndAcknowledgedFalse(AlertType.FAILED_PAYMENT)).anySatisfy(alert -> {
+            assertThat(alert.getReferenceId()).isEqualTo(rental.getId());
+            assertThat(alert.getTitle()).isEqualTo("Late return penalty not collected");
+            assertThat(alert.getMessage()).contains(messagePart).contains("(payment #" + paymentId + ")");
+        }));
+    }
+
+    @Test
+    @DisplayName("an unknown-outcome penalty that never reached the gateway is failed with an alert once it is stale")
+    void unknownOutcomeThatNeverReachedTheGatewayIsFailedAndAlerted() throws Exception {
+        givenOverdueRental(2);
+        doReturn(ChargeResult.ambiguous("Gateway timeout")).when(paymentGateway).chargeSavedMethod(any(), anyString());
+        returnRental();
+        Payment pending = penaltyPayment();
+        assertThat(pending.hasUnknownOutcome()).isTrue();
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> assertThat(alertRepository
+                .findByTypeAndAcknowledgedFalse(AlertType.FAILED_PAYMENT))
+                .anySatisfy(alert -> assertThat(alert.getTitle()).contains("do not collect manually")));
+        makeStale(pending);
+
+        assertThat(repairService.repairStalePayments()).isEqualTo(1);
+
+        Payment failed = paymentRepository.findById(pending.getId()).orElseThrow();
+        assertThat(failed.getStatus()).isEqualTo(PaymentStatus.FAILED);
+        assertThat(failed.hasUnknownOutcome()).isFalse();
+        assertThat(failed.isClosed()).isFalse();
+        awaitPenaltyAlert(pending.getId(), "never completed");
+        assertThat(reload().getPenaltyPaid()).isFalse();
+    }
+
+    @Test
+    @DisplayName("an unknown-outcome penalty whose intent the gateway shows as declined is failed with an alert")
+    void unknownOutcomeThatWasDeclinedIsFailedAndAlerted() throws Exception {
+        givenOverdueRental(2);
+        doReturn(ChargeResult.ambiguous("Gateway timeout")).when(paymentGateway).chargeSavedMethod(any(), anyString());
+        returnRental();
+        Payment pending = penaltyPayment();
+        makeStale(pending);
+        doReturn(Optional.of(new GatewayIntent("pi_declined", null, GatewayIntentStatus.REQUIRES_PAYMENT_METHOD, "pm_test",
+                "cus_test", 150000L, "try"))).when(paymentGateway).findIntentByPayment(pending.getId());
+
+        assertThat(repairService.repairStalePayments()).isEqualTo(1);
+
+        assertThat(paymentRepository.findById(pending.getId()).orElseThrow().getStatus()).isEqualTo(PaymentStatus.FAILED);
+        awaitPenaltyAlert(pending.getId(), "never completed");
+    }
+
+    @Test
+    @DisplayName("an unknown-outcome penalty still in flight at the gateway is left alone")
+    void unknownOutcomeStillInFlightIsLeftAlone() throws Exception {
+        givenOverdueRental(2);
+        doReturn(ChargeResult.ambiguous("Gateway timeout")).when(paymentGateway).chargeSavedMethod(any(), anyString());
+        returnRental();
+        Payment pending = penaltyPayment();
+        makeStale(pending);
+        doReturn(Optional.of(new GatewayIntent("pi_processing", null, GatewayIntentStatus.PROCESSING, "pm_test",
+                "cus_test", 150000L, "try"))).when(paymentGateway).findIntentByPayment(pending.getId());
+
+        assertThat(repairService.repairStalePayments()).isZero();
+
+        assertThat(paymentRepository.findById(pending.getId()).orElseThrow().getStatus()).isEqualTo(PaymentStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("two uncollected penalty payments of one rental raise two alerts")
+    void alertsAreDeduplicatedPerPayment() throws Exception {
+        givenOverdueRental(2);
+        PenaltyChargeFailedEvent first = new PenaltyChargeFailedEvent(rental.getId(), 9001L, rental.getUserEmail(),
+                java.time.LocalDateTime.now(clock), new BigDecimal("10.00"), rental.getCurrency(), "declined");
+        PenaltyChargeFailedEvent second = new PenaltyChargeFailedEvent(rental.getId(), 9002L, rental.getUserEmail(),
+                java.time.LocalDateTime.now(clock), new BigDecimal("10.00"), rental.getCurrency(), "declined");
+
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            eventPublisher.publishEvent(first);
+            eventPublisher.publishEvent(second);
+            eventPublisher.publishEvent(first);
+        });
+
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> assertThat(alertRepository
+                .findByTypeAndAcknowledgedFalse(AlertType.FAILED_PAYMENT))
+                .filteredOn(alert -> rental.getId().equals(alert.getReferenceId()))
+                .extracting(Alert::getMessage)
+                .hasSize(2)
+                .anyMatch(message -> message.contains("(payment #9001)"))
+                .anyMatch(message -> message.contains("(payment #9002)")));
+    }
+
+    @Test
+    @DisplayName("a closed late capture awaiting its refund does not make the remainder charge look like a duplicate")
+    void closedLateCaptureDoesNotMakeTheRemainderADuplicate() throws Exception {
+        givenOverdueRental(2);
+        doReturn(ChargeResult.ambiguous("Gateway timeout")).when(paymentGateway).chargeSavedMethod(any(), anyString());
+        returnRental();
+        Payment first = penaltyPayment();
+        waive(new BigDecimal("500.00"));
+        Payment remainder = penaltyPayment();
+        assertThat(remainder.getId()).isNotEqualTo(first.getId());
+        assertThat(remainder.getStatus()).isEqualTo(PaymentStatus.PENDING);
+        doReturn(PaymentResult.failure("Stripe unavailable")).when(paymentGateway)
+                .refund(anyString(), any(BigDecimal.class), any(), anyString());
+
+        captureOutsideTheReturn(first, "pi_late_first");
+
+        await().atMost(Duration.ofSeconds(15)).untilAsserted(() -> assertThat(alertRepository
+                .findByTypeAndAcknowledgedFalse(AlertType.FAILED_PAYMENT))
+                .anySatisfy(alert -> assertThat(alert.getTitle()).isEqualTo("Automatic refund failed")));
+        Payment lateFirst = paymentRepository.findById(first.getId()).orElseThrow();
+        assertThat(lateFirst.getStatus()).isEqualTo(PaymentStatus.CAPTURED);
+        assertThat(lateFirst.isClosed()).isTrue();
+
+        captureOutsideTheReturn(remainder, "pi_remainder");
+
+        Payment kept = paymentRepository.findById(remainder.getId()).orElseThrow();
+        assertThat(kept.getStatus()).isEqualTo(PaymentStatus.CAPTURED);
+        assertThat(kept.isClosed()).isFalse();
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> assertThat(reload().getPenaltyPaid()).isTrue());
+
+        doCallRealMethod().when(paymentGateway).refund(anyString(), any(BigDecimal.class), any(), anyString());
+        makeStale(first);
+        repairService.repairStalePayments();
+
+        assertThat(paymentRepository.findById(first.getId()).orElseThrow().getStatus()).isEqualTo(PaymentStatus.REFUNDED);
+        assertThat(paymentRepository.findById(remainder.getId()).orElseThrow().getStatus()).isEqualTo(PaymentStatus.CAPTURED);
+        verify(paymentGateway, never()).refund(eq("pi_remainder"), any(BigDecimal.class), any(), anyString());
+        assertThat(reload().getPenaltyPaid()).isTrue();
+    }
+
+    @Test
+    @DisplayName("a remainder charge that blows up keeps the waiver, leaves the remainder open and raises an alert")
+    void remainderChargeFailureDoesNotRollBackTheWaiver() throws Exception {
+        givenOverdueRental(2);
+        doReturn(ChargeResult.ambiguous("Gateway timeout")).doThrow(new IllegalStateException("gateway down"))
+                .when(paymentGateway).chargeSavedMethod(any(), anyString());
+        returnRental();
+        Payment first = penaltyPayment();
+
+        waive(new BigDecimal("500.00"));
+
+        Integer waivers = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM car_rental.penalty_waivers WHERE rental_id = ?", Integer.class, rental.getId());
+        assertThat(waivers).isEqualTo(1);
+        assertThat(reload().getPenaltyAmount()).isEqualByComparingTo("1000.00");
+        Payment old = paymentRepository.findById(first.getId()).orElseThrow();
+        assertThat(old.getStatus()).isEqualTo(PaymentStatus.CANCELLED);
+        assertThat(old.isClosed()).isTrue();
+        Payment remainder = penaltyPayment();
+        assertThat(remainder.getId()).isNotEqualTo(first.getId());
+        assertThat(remainder.getStatus()).isEqualTo(PaymentStatus.PENDING);
+        awaitPenaltyAlert(remainder.getId(), "gateway down");
+    }
+
+    @Test
+    @DisplayName("a declined remainder charge after a waiver raises an alert for the remainder payment")
+    void declinedRemainderRaisesAnAlert() throws Exception {
+        givenOverdueRental(2);
+        doReturn(ChargeResult.ambiguous("Gateway timeout")).doReturn(ChargeResult.declined("Your card was declined"))
+                .when(paymentGateway).chargeSavedMethod(any(), anyString());
+        returnRental();
+
+        waive(new BigDecimal("500.00"));
+
+        Payment remainder = penaltyPayment();
+        assertThat(remainder.getStatus()).isEqualTo(PaymentStatus.FAILED);
+        awaitPenaltyAlert(remainder.getId(), "declined");
+    }
+
+    @Test
+    @DisplayName("a waiver resolves open payments and charges the remainder without a transaction open around gateway calls")
+    void waiverDoesNotHoldATransactionAroundGatewayCalls() throws Exception {
+        givenOverdueRental(2);
+        java.util.Map<String, java.util.List<Boolean>> inTransaction = new java.util.concurrent.ConcurrentHashMap<>();
+        java.util.concurrent.atomic.AtomicInteger charges = new java.util.concurrent.atomic.AtomicInteger();
+        doAnswer(invocation -> {
+            if (charges.getAndIncrement() == 0) {
+                return ChargeResult.ambiguous("Gateway timeout");
+            }
+            inTransaction.computeIfAbsent("charge", k -> new java.util.concurrent.CopyOnWriteArrayList<>())
+                    .add(TransactionSynchronizationManager.isActualTransactionActive());
+            return invocation.callRealMethod();
+        }).when(paymentGateway).chargeSavedMethod(any(), anyString());
+        returnRental();
+        Payment pending = penaltyPayment();
+        doAnswer(invocation -> {
+            inTransaction.computeIfAbsent("find", k -> new java.util.concurrent.CopyOnWriteArrayList<>())
+                    .add(TransactionSynchronizationManager.isActualTransactionActive());
+            return Optional.of(new GatewayIntent("pi_open", null, GatewayIntentStatus.REQUIRES_PAYMENT_METHOD, "pm_test",
+                    "cus_test", 150000L, "try"));
+        }).when(paymentGateway).findIntentByPayment(pending.getId());
+        doAnswer(invocation -> {
+            inTransaction.computeIfAbsent("cancel", k -> new java.util.concurrent.CopyOnWriteArrayList<>())
+                    .add(TransactionSynchronizationManager.isActualTransactionActive());
+            return invocation.callRealMethod();
+        }).when(paymentGateway).cancel(anyString(), anyString());
+
+        waive(new BigDecimal("500.00"));
+
+        assertThat(inTransaction).containsKeys("find", "cancel", "charge");
+        inTransaction.forEach((call, flags) -> assertThat(flags).as(call).isNotEmpty().containsOnly(false));
+        assertThat(penaltyPayment().getStatus()).isEqualTo(PaymentStatus.CAPTURED);
+        assertThat(reload().getPenaltyPaid()).isTrue();
     }
 }
