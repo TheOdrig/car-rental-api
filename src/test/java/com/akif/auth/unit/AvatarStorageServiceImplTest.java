@@ -169,4 +169,26 @@ class AvatarStorageServiceImplTest {
             verify(fileUploadService, never()).generateSecureUrl(any(), anyInt());
         }
     }
+
+    @Nested
+    @DisplayName("Provider hosted avatars")
+    class ProviderHostedAvatars {
+
+        @Test
+        @DisplayName("Should hand back an https avatar from an OAuth provider untouched instead of presigning it")
+        void shouldReturnExternalAvatarAsIs() {
+            String result = avatarStorageService.generateAvatarUrl("https://avatars.example.com/u/42", 60);
+
+            assertThat(result).isEqualTo("https://avatars.example.com/u/42");
+            verifyNoInteractions(fileUploadService);
+        }
+
+        @Test
+        @DisplayName("Should not try to delete a provider hosted avatar from storage")
+        void shouldNotDeleteExternalAvatar() {
+            avatarStorageService.deleteAvatar("https://avatars.example.com/u/42");
+
+            verifyNoInteractions(fileUploadService);
+        }
+    }
 }

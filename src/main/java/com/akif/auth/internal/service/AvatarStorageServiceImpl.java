@@ -44,6 +44,10 @@ public class AvatarStorageServiceImpl implements AvatarStorageService {
             log.debug("No avatar key provided, skipping deletion");
             return;
         }
+        if (isExternal(avatarKey)) {
+            log.debug("Avatar is hosted by an OAuth provider, nothing to delete");
+            return;
+        }
 
         log.info("Deleting stored avatar");
         fileUploadService.deleteFile(avatarKey);
@@ -56,8 +60,16 @@ public class AvatarStorageServiceImpl implements AvatarStorageService {
             return null;
         }
 
+        if (isExternal(avatarKey)) {
+            return avatarKey;
+        }
+
         int expiration = expirationMinutes > 0 ? expirationMinutes : DEFAULT_URL_EXPIRATION_MINUTES;
         return fileUploadService.generateSecureUrl(avatarKey, expiration);
+    }
+
+    private static boolean isExternal(String avatarKey) {
+        return avatarKey.startsWith("https://");
     }
 
     private void validateFile(MultipartFile file) {
