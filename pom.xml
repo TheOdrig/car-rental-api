@@ -12,19 +12,17 @@
     <artifactId>car-rental-api</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Car Rental API</name>
-    <description>Production-ready REST API for car rental management</description>
-    <url/>
+    <description>REST API for a car rental platform: fleet, rentals, payments, damages and admin tooling.</description>
+    <url>https://github.com/TheOdrig/car-rental</url>
     <licenses>
-        <license/>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
     </licenses>
-    <developers>
-        <developer/>
-    </developers>
     <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
+        <connection>scm:git:https://github.com/TheOdrig/car-rental.git</connection>
+        <url>https://github.com/TheOdrig/car-rental</url>
     </scm>
 
     <properties>
@@ -110,7 +108,6 @@
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-            <version>3.1.8</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -134,7 +131,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.18.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -184,7 +180,6 @@
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <version>4.2.0</version>
             <scope>test</scope>
         </dependency>
 

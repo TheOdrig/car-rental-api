@@ -1,0 +1,13 @@
+DROP INDEX car_rental.idx_car_brand;
+DROP INDEX car_rental.idx_car_status;
+DROP INDEX car_rental.idx_car_price;
+DROP INDEX car_rental.index_car_year;
+DROP INDEX car_rental.index_car_create_time;
+DROP INDEX car_rental.idx_car_transmission_type;
+DROP INDEX car_rental.idx_car_body_type;
+DROP INDEX car_rental.idx_car_fuel_type;
+DROP INDEX car_rental.idx_car_seats;
+DROP INDEX car_rental.idx_users_enabled;
+DROP INDEX car_rental.idx_alert_severity;
+DROP INDEX car_rental.idx_alert_acknowledged;
+ALTER TABLE car_rental.users DROP CONSTRAINT uk_users_email;

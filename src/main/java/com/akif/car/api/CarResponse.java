@@ -57,7 +57,7 @@ public record CarResponse(
     }
 
     public CarResponse publicView() {
-        return toBuilder().vinNumber(null).licensePlate(null).build();
+        return toBuilder().vinNumber(null).build();
     }
 
     public CarResponse withConversion(CurrencyType currency, BigDecimal converted, BigDecimal rate, String source) {
