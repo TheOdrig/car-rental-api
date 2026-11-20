@@ -1,7 +1,9 @@
 package com.akif.car.internal.service.availability.impl;
 
 import com.akif.car.api.PricingResult;
+import com.akif.car.internal.config.AvailabilityProperties;
 import com.akif.car.internal.config.SimilarCarProperties;
+import com.akif.car.internal.service.availability.RentalWindow;
 import com.akif.car.internal.dto.availability.SimilarCarDto;
 import com.akif.car.internal.service.pricing.BatchPricing;
 import com.akif.car.api.CarStatusType;
@@ -37,15 +39,22 @@ public class SimilarCarServiceImpl implements SimilarCarService {
     private final CarBookingCalendar bookingCalendar;
     private final BatchPricing batchPricing;
     private final SimilarCarProperties properties;
+    private final AvailabilityProperties availabilityProperties;
     private final Clock clock;
 
     @Override
     public List<SimilarCarDto> findSimilarAvailableCars(Long carId, LocalDate requestedStart, LocalDate requestedEnd,
                                                         Integer requestedLimit) {
-        LocalDate startDate = requestedStart != null ? requestedStart : LocalDate.now(clock);
+        LocalDate today = LocalDate.now(clock);
+        boolean datesGiven = requestedStart != null || requestedEnd != null;
+        LocalDate startDate = requestedStart != null ? requestedStart : today;
         LocalDate endDate = requestedEnd != null
                 ? requestedEnd
-                : LocalDate.now(clock).plusDays(properties.defaultWindowDays());
+                : (datesGiven ? startDate : today.plusDays(properties.defaultWindowDays()));
+        if (datesGiven) {
+            RentalWindow.validate(startDate, endDate, today, availabilityProperties.maxSearchDays());
+        }
+        LocalDate pricingEnd = datesGiven ? endDate : startDate;
         int limit = requestedLimit != null ? requestedLimit : properties.defaultLimit();
         log.debug("Finding similar available cars for car: {} from {} to {}, limit: {}",
                 carId, startDate, endDate, limit);
@@ -87,7 +96,7 @@ public class SimilarCarServiceImpl implements SimilarCarService {
 
         Map<Long, PricingResult> prices = candidates.isEmpty()
                 ? Map.of()
-                : batchPricing.priceCars(candidates, startDate, endDate, LocalDate.now(clock));
+                : batchPricing.priceCars(candidates, startDate, pricingEnd, today);
 
         List<SimilarCarDto> similarCars = new ArrayList<>();
 

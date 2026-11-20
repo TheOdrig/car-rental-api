@@ -2,6 +2,8 @@ package com.akif.car.web;
 
 import java.time.Clock;
 
+import com.akif.car.internal.config.AvailabilityProperties;
+import com.akif.car.internal.service.availability.RentalWindow;
 import com.akif.car.internal.dto.response.PricingResponse;
 import com.akif.car.internal.dto.pricing.PricingRequest;
 import com.akif.car.api.DynamicPricingService;
@@ -31,6 +33,7 @@ public class PricingController {
 
     private final DynamicPricingService dynamicPricingService;
     private final PricingStrategyCatalog pricingStrategyCatalog;
+    private final AvailabilityProperties availabilityProperties;
 
     @PostMapping("/calculate")
     @Operation(summary = "Calculate rental price", 
@@ -61,6 +64,7 @@ public class PricingController {
 
         LocalDate start = LocalDate.parse(startDate);
         LocalDate end = LocalDate.parse(endDate);
+        RentalWindow.validate(start, end, LocalDate.now(clock), availabilityProperties.maxSearchDays());
 
         PricingResult result = dynamicPricingService.previewPrice(carId, start, end);
         PricingResponse response = PricingResponse.fromPricingResult(result);

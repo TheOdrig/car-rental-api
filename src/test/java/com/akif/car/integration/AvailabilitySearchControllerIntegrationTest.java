@@ -192,6 +192,29 @@ class AvailabilitySearchControllerIntegrationTest {
         }
 
         @Test
+        @DisplayName("Should reject reversed, zero-length and oversized ranges")
+        void shouldRejectInvalidRanges() throws Exception {
+            LocalDate today = LocalDate.now();
+            LocalDate[][] ranges = {
+                    { today.plusDays(5), today.plusDays(4) },
+                    { today.plusDays(5), today.plusDays(5) },
+                    { today.plusDays(1), today.plusDays(1).plusDays(30) },
+                    { today.plusDays(1), LocalDate.of(9999, 12, 31) }
+            };
+            for (LocalDate[] range : ranges) {
+                AvailabilitySearchRequest request = AvailabilitySearchRequest.builder()
+                        .startDate(range[0])
+                        .endDate(range[1])
+                        .build();
+                mockMvc.perform(post("/api/v1/cars/availability/search")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+            }
+        }
+
+        @Test
         @DisplayName("Should exclude cars with blocking status - Requirement 1.2")
         void shouldExcludeCarsWithBlockingStatus() throws Exception {
             AvailabilitySearchRequest request = AvailabilitySearchRequest.builder()
@@ -553,13 +576,53 @@ class AvailabilitySearchControllerIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should reject a non-positive or oversized limit")
+        @DisplayName("Should reject a non-positive or oversized limit with a problem body")
         void shouldRejectOutOfRangeLimit() throws Exception {
             for (String limit : new String[] { "0", "-1", "11" }) {
                 mockMvc.perform(get("/api/v1/cars/{id}/similar", availableCar.getId())
                                 .param("limit", limit))
-                        .andExpect(status().isBadRequest());
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().contentTypeCompatibleWith(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON))
+                        .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                        .andExpect(jsonPath("$.errors[0].field").value("limit"));
             }
+        }
+
+        @Test
+        @DisplayName("Should reject reversed, past and oversized ranges")
+        void shouldRejectInvalidRanges() throws Exception {
+            LocalDate today = LocalDate.now();
+            String[][] ranges = {
+                    { today.plusDays(5).toString(), today.plusDays(4).toString() },
+                    { today.minusDays(1).toString(), today.plusDays(2).toString() },
+                    { today.plusDays(1).toString(), "+999999999-12-30" },
+                    { today.plusDays(1).toString(), today.plusDays(1).plusDays(30).toString() },
+                    { null, today.minusDays(1).toString() }
+            };
+            for (String[] range : ranges) {
+                var request = get("/api/v1/cars/{id}/similar", availableCar.getId());
+                if (range[0] != null) {
+                    request = request.param("startDate", range[0]);
+                }
+                mockMvc.perform(request.param("endDate", range[1]))
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().contentTypeCompatibleWith(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON))
+                        .andExpect(jsonPath("$.code").value("RENTAL_VALIDATION_FAILED"));
+            }
+        }
+
+        @Test
+        @DisplayName("Should accept a zero-length range and a range of exactly the maximum length")
+        void shouldAcceptBoundaryRanges() throws Exception {
+            LocalDate today = LocalDate.now();
+            mockMvc.perform(get("/api/v1/cars/{id}/similar", availableCar.getId())
+                            .param("startDate", today.plusDays(1).toString())
+                            .param("endDate", today.plusDays(1).toString()))
+                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/v1/cars/{id}/similar", availableCar.getId())
+                            .param("startDate", today.plusDays(1).toString())
+                            .param("endDate", today.plusDays(30).toString()))
+                    .andExpect(status().isOk());
         }
     }
 }

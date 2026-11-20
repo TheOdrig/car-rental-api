@@ -65,6 +65,7 @@ class SimilarCarServiceImplTest {
         void setUp() {
                 similarCarService = new SimilarCarServiceImpl(carRepository, bookingCalendar, batchPricing,
                                 new SimilarCarProperties(new BigDecimal("0.20"), 3, 5, 30, 50, 30, 20),
+                                new com.akif.car.internal.config.AvailabilityProperties(30),
                                 java.time.Clock.systemDefaultZone());
                 when(batchPricing.priceCars(any(), any(), any(), any())).thenAnswer(inv -> {
                         java.util.Map<Long, PricingResult> map = new java.util.HashMap<>();
@@ -362,6 +363,49 @@ class SimilarCarServiceImplTest {
                         assertThat(result.get(0).totalPrice()).isEqualByComparingTo(pricingResult.finalPrice());
                         assertThat(result.get(0).dailyRate()).isEqualByComparingTo(pricingResult.effectiveDailyPrice());
                         verify(batchPricing).priceCars(eq(List.of(similarCar1)), eq(startDate), eq(endDate), any());
+                }
+
+                @Test
+                @DisplayName("Should price a single day starting today when no dates are given")
+                void shouldPriceSingleDayWithoutDates() {
+                        when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(referenceCar));
+                        when(carRepository.findSimilarCars(anyString(), any(BigDecimal.class), any(BigDecimal.class),
+                                        anyLong(), anyList(), any(Pageable.class)))
+                                        .thenReturn(new PageImpl<>(List.of(similarCar1)));
+
+                        similarCarService.findSimilarAvailableCars(1L, null, null, 5);
+
+                        LocalDate today = LocalDate.now();
+                        verify(batchPricing).priceCars(eq(List.of(similarCar1)), eq(today), eq(today), eq(today));
+                }
+
+                @Test
+                @DisplayName("Should price the requested range when dates are given")
+                void shouldPriceRequestedRange() {
+                        when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(referenceCar));
+                        when(carRepository.findSimilarCars(anyString(), any(BigDecimal.class), any(BigDecimal.class),
+                                        anyLong(), anyList(), any(Pageable.class)))
+                                        .thenReturn(new PageImpl<>(List.of(similarCar1)));
+
+                        similarCarService.findSimilarAvailableCars(1L, startDate, null, 5);
+
+                        verify(batchPricing).priceCars(eq(List.of(similarCar1)), eq(startDate), eq(startDate), any());
+                }
+
+                @Test
+                @DisplayName("Should reject reversed, past and oversized ranges before querying")
+                void shouldRejectInvalidRanges() {
+                        LocalDate today = LocalDate.now();
+                        for (LocalDate[] range : new LocalDate[][] {
+                                        { today.plusDays(5), today.plusDays(4) },
+                                        { today.minusDays(1), today.plusDays(2) },
+                                        { today.plusDays(1), LocalDate.MAX },
+                                        { today.plusDays(1), today.plusDays(31) } }) {
+                                assertThatThrownBy(() -> similarCarService.findSimilarAvailableCars(
+                                                1L, range[0], range[1], 5))
+                                                .isInstanceOf(com.akif.car.internal.exception.AvailabilityValidationException.class);
+                        }
+                        verifyNoInteractions(carRepository, batchPricing);
                 }
 
                 @Test

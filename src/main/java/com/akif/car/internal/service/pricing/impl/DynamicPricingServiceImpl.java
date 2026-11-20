@@ -134,6 +134,9 @@ public class DynamicPricingServiceImpl implements DynamicPricingService, Pricing
     }
 
     private BigDecimal applyPriceCaps(BigDecimal calculatedPrice, int rentalDays, CurrencyType currency) {
+        if (rentalDays <= 0) {
+            throw new IllegalArgumentException("Rental days must be positive");
+        }
         int places = currency.getDecimalPlaces();
         BigDecimal dailyPrice = calculatedPrice.divide(
             BigDecimal.valueOf(rentalDays), 

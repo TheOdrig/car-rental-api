@@ -212,6 +212,40 @@ class PricingControllerIntegrationTest {
 
         @Test
         @WithMockUser
+        @DisplayName("Should reject reversed, past and oversized ranges")
+        void shouldRejectInvalidRanges() throws Exception {
+            LocalDate today = LocalDate.now();
+            String[][] ranges = {
+                    { today.plusDays(10).toString(), today.plusDays(9).toString() },
+                    { today.minusDays(1).toString(), today.plusDays(3).toString() },
+                    { today.plusDays(1).toString(), "+999999999-12-30" },
+                    { today.plusDays(1).toString(), today.plusDays(31).toString() }
+            };
+            for (String[] range : ranges) {
+                mockMvc.perform(get("/api/v1/pricing/preview")
+                                .param("carId", testCar.getId().toString())
+                                .param("startDate", range[0])
+                                .param("endDate", range[1]))
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                        .andExpect(jsonPath("$.code").value("RENTAL_VALIDATION_FAILED"));
+            }
+        }
+
+        @Test
+        @WithMockUser
+        @DisplayName("Should preview a single day")
+        void shouldPreviewSingleDay() throws Exception {
+            mockMvc.perform(get("/api/v1/pricing/preview")
+                            .param("carId", testCar.getId().toString())
+                            .param("startDate", LocalDate.now().plusDays(10).toString())
+                            .param("endDate", LocalDate.now().plusDays(10).toString()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.rentalDays").value(1));
+        }
+
+        @Test
+        @WithMockUser
         @DisplayName("Should return 400 for invalid date format")
         void shouldReturn400ForInvalidDateFormat() throws Exception {
             mockMvc.perform(get("/api/v1/pricing/preview")

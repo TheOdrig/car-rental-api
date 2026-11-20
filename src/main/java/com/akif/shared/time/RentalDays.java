@@ -12,11 +12,11 @@ public final class RentalDays {
     }
 
     public static int inclusiveDays(LocalDate startDate, LocalDate endDate) {
-        return (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        return Math.toIntExact(ChronoUnit.DAYS.between(startDate, endDate) + 1);
     }
 
     public static int daysBetween(LocalDate from, LocalDate to) {
-        return (int) ChronoUnit.DAYS.between(from, to);
+        return Math.toIntExact(ChronoUnit.DAYS.between(from, to));
     }
 
     public static int elapsedInclusiveDays(LocalDate startDate, LocalDate today) {

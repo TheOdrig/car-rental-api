@@ -20,6 +20,7 @@ import com.akif.car.api.BookedPeriod;
 import com.akif.car.internal.config.AvailabilityProperties;
 import com.akif.car.api.CarBookingCalendar;
 import com.akif.car.internal.service.availability.CarAvailabilityService;
+import com.akif.car.internal.service.availability.RentalWindow;
 import com.akif.currency.api.CurrencyConversionService;
 import com.akif.car.internal.service.pricing.BatchPricing;
 import com.akif.car.api.PriceModifier;
@@ -212,20 +213,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
     }
 
     private void validateRentalDates(LocalDate startDate, LocalDate endDate) {
-        if (startDate.isBefore(LocalDate.now(clock))) {
-            throw new AvailabilityValidationException("Start date cannot be in the past");
-        }
-        if (endDate.isBefore(startDate)) {
-            throw new AvailabilityValidationException("End date must be after start date");
-        }
-        if (startDate.isAfter(endDate)) {
-            throw new AvailabilityValidationException("Invalid date range");
-        }
-
-        int maxDays = availabilityProperties.maxSearchDays();
-        if (RentalDays.inclusiveDays(startDate, endDate) > maxDays) {
-            throw new AvailabilityValidationException("Rental period cannot exceed " + maxDays + " days");
-        }
+        RentalWindow.validate(startDate, endDate, LocalDate.now(clock), availabilityProperties.maxSearchDays());
     }
 
     private void validatePageSize(Integer size) {
