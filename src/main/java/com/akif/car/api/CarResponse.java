@@ -50,7 +50,9 @@ public record CarResponse(
         BigDecimal convertedPrice,
         CurrencyType displayCurrency,
         BigDecimal exchangeRate,
-        String rateSource) {
+        String rateSource,
+        CarOccupancy occupancy,
+        Long currentRentalId) {
 
     public PublicCarResponse publicView() {
         return PublicCarResponse.from(this);

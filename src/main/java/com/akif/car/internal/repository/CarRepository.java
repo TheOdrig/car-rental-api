@@ -79,6 +79,9 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             + "(CAST(:maxPrice AS DECIMAL) IS NULL OR c.price <= CAST(:maxPrice AS DECIMAL)) AND "
             + "(CAST(:currencyType AS VARCHAR) IS NULL OR c.currency_type = CAST(:currencyType AS VARCHAR)) AND "
             + "(CAST(:carStatusType AS VARCHAR) IS NULL OR c.car_status_type = CAST(:carStatusType AS VARCHAR)) AND "
+            + "(CAST(:idMode AS VARCHAR) IS NULL OR "
+            + "(CAST(:idMode AS VARCHAR) = 'IN' AND c.id IN (:ids)) OR "
+            + "(CAST(:idMode AS VARCHAR) = 'NOT_IN' AND c.id NOT IN (:ids))) AND "
             + "c.is_deleted = false";
 
     @Query(value = "SELECT * FROM {h-schema}car c WHERE " + CRITERIA_FILTER,
@@ -103,6 +106,8 @@ public interface CarRepository extends JpaRepository<Car, Long> {
                                  @Param("maxPrice") BigDecimal maxPrice,
                                  @Param("currencyType") String currencyType,
                                  @Param("carStatusType") String carStatusType,
+                                 @Param("idMode") String idMode,
+                                 @Param("ids") java.util.Collection<Long> ids,
                                  Pageable pageable);
 
     @Query("SELECT AVG(c.price) FROM Car c WHERE c.isDeleted = false")

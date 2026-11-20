@@ -656,6 +656,10 @@
             "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
             "type" : "string"
           },
+          "currentRentalId" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
           "displayCurrency" : {
             "enum" : [ "TRY", "USD", "EUR", "GBP", "JPY" ],
             "type" : "string"
@@ -722,6 +726,10 @@
             "type" : "string"
           },
           "notes" : {
+            "type" : "string"
+          },
+          "occupancy" : {
+            "enum" : [ "FREE", "RESERVED", "IN_USE" ],
             "type" : "string"
           },
           "price" : {
@@ -3271,7 +3279,7 @@
     },
     "/api/v1/admin/cars" : {
       "get" : {
-        "description" : "Server-side search, status and brand filters, paging and sorting over all non-deleted cars, including the VIN",
+        "description" : "Server-side search, status, brand and occupancy filters, paging and sorting over all non-deleted cars, including the VIN and the current occupancy",
         "operationId" : "searchFleet",
         "parameters" : [ {
           "description" : "Free text matched against license plate, brand and model",
@@ -3296,6 +3304,15 @@
           "required" : false,
           "schema" : {
             "enum" : [ "AVAILABLE", "MAINTENANCE", "DAMAGED", "INSPECTION" ],
+            "type" : "string"
+          }
+        }, {
+          "description" : "Current occupancy: FREE, RESERVED (confirmed rental covering today) or IN_USE (picked up, not returned)",
+          "in" : "query",
+          "name" : "occupancy",
+          "required" : false,
+          "schema" : {
+            "enum" : [ "FREE", "RESERVED", "IN_USE" ],
             "type" : "string"
           }
         }, {

@@ -199,6 +199,13 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
                         "AND r.isDeleted = false")
         List<Long> findCarIdsReservedOn(@Param("date") LocalDate date);
 
+        @Query("SELECT r.carId, r.id, r.status FROM Rental r " +
+                        "WHERE r.isDeleted = false AND (r.status = com.akif.rental.api.RentalStatus.IN_USE OR " +
+                        "(r.status = com.akif.rental.api.RentalStatus.CONFIRMED " +
+                        "AND r.startDate <= :date AND r.endDate >= :date)) " +
+                        "ORDER BY r.carId, CASE WHEN r.status = com.akif.rental.api.RentalStatus.IN_USE THEN 0 ELSE 1 END, r.startDate, r.id")
+        List<Object[]> findCurrentRentalRows(@Param("date") LocalDate date);
+
         @Query("""
                         SELECT COUNT(r) FROM Rental r
                         WHERE r.status = com.akif.rental.api.RentalStatus.CONFIRMED

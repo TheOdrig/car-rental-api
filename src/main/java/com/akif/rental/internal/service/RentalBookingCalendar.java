@@ -3,6 +3,8 @@ package com.akif.rental.internal.service;
 import com.akif.car.api.BookedPeriod;
 import com.akif.car.api.CarBooking;
 import com.akif.car.api.CarBookingCalendar;
+import com.akif.car.api.CarCurrentRental;
+import com.akif.car.api.CarOccupancy;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.repository.RentalRepository;
@@ -12,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Set;
 
@@ -50,5 +54,16 @@ public class RentalBookingCalendar implements CarBookingCalendar {
         return rentalRepository.findCommittedBookings(COMMITTED_STATUSES, startDate, endDate).stream()
                 .map(row -> new CarBooking((Long) row[0], (Long) row[1], (LocalDate) row[2], (LocalDate) row[3]))
                 .toList();
+    }
+
+    @Override
+    public Map<Long, CarCurrentRental> findCurrentRentals(LocalDate today) {
+        Map<Long, CarCurrentRental> current = new LinkedHashMap<>();
+        for (Object[] row : rentalRepository.findCurrentRentalRows(today)) {
+            Long carId = (Long) row[0];
+            CarOccupancy occupancy = row[2] == RentalStatus.IN_USE ? CarOccupancy.IN_USE : CarOccupancy.RESERVED;
+            current.putIfAbsent(carId, new CarCurrentRental(carId, (Long) row[1], occupancy));
+        }
+        return current;
     }
 }

@@ -26,6 +26,8 @@ public abstract class CarMapper {
     @Mapping(target = "displayCurrency", ignore = true)
     @Mapping(target = "exchangeRate", ignore = true)
     @Mapping(target = "rateSource", ignore = true)
+    @Mapping(target = "occupancy", ignore = true)
+    @Mapping(target = "currentRentalId", ignore = true)
     public abstract CarResponse toDto(Car car);
 
     @Mapping(target = "id", ignore = true)

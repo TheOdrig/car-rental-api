@@ -41,6 +41,8 @@ public class CarQueryService implements CarCatalog {
     private final CarMapper carMapper;
     private final CarLookup carLookup;
 
+    private static final List<Long> NO_IDS = List.of(-1L);
+
     @Override
     @Cacheable(value = CacheConfig.CARS_CACHE, key = "'dto:' + #id")
     public CarDto getCarDtoById(Long id) {
@@ -143,6 +145,7 @@ public class CarQueryService implements CarCatalog {
                 searchRequest.maxPrice(),
                 currencyType,
                 carStatusType,
+                null, NO_IDS,
                 pageable);
 
         PageResponse<CarResponse> result = PageResponse.of(cars.map(carMapper::toDto));
@@ -228,19 +231,21 @@ public class CarQueryService implements CarCatalog {
         Page<CarResponse> result = carRepository.findCarsByCriteria(
                 containsPattern(searchTerm), containsPattern(brand), containsPattern(model),
                 null, null, null, null, null, null, null, null, null, null, null, null,
-                minPrice, maxPrice, null, status != null ? status.name() : null,
+                minPrice, maxPrice, null, status != null ? status.name() : null, null, NO_IDS,
                 pageable).map(carMapper::toDto);
 
         log.info("Found {} cars matching search criteria", result.getTotalElements());
         return result;
     }
 
-    public Page<CarResponse> searchForAdmin(String search, String brand, CarStatusType status, Pageable pageable) {
+    public Page<CarResponse> searchForAdmin(String search, String brand, CarStatusType status,
+                                            String idMode, java.util.Collection<Long> ids, Pageable pageable) {
         Pageable sorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), adminSort(pageable.getSort()));
         return carRepository.findCarsByCriteria(
                 containsPattern(search), exactPattern(brand), null,
                 null, null, null, null, null, null, null, null, null, null, null, null,
                 null, null, null, status != null ? status.name() : null,
+                idMode, ids == null || ids.isEmpty() ? NO_IDS : ids,
                 sorted).map(carMapper::toDto);
     }
 
