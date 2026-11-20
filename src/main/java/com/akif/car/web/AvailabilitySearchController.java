@@ -94,7 +94,7 @@ public class AvailabilitySearchController {
 
     @GetMapping("/{id}/similar")
     @Operation(summary = "Get similar available cars", 
-               description = "Find similar cars that are available for the specified date range. If dates are not provided, defaults to today + 30 days.")
+               description = "Find similar cars that are available for the specified date range. If no dates are provided, availability is checked for the next 30 days and prices are for a single day starting today. If dates are provided, prices cover that range.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Similar cars retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid car ID or date parameters"),
@@ -105,7 +105,7 @@ public class AvailabilitySearchController {
             @PathVariable Long id,
             @Parameter(description = "Rental start date (default: today)", example = "2025-01-15")
             @RequestParam(required = false) String startDate,
-            @Parameter(description = "Rental end date (default: today + 30 days)", example = "2025-01-20")
+            @Parameter(description = "Rental end date (default: start date when a start date is given)", example = "2025-01-20")
             @RequestParam(required = false) String endDate,
             @Parameter(description = "Maximum number of similar cars to return (default: 5, max: 10)",
                     schema = @Schema(type = "integer", format = "int32", defaultValue = "5"))
