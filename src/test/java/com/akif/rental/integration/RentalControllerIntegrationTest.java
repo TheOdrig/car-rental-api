@@ -550,6 +550,23 @@ class RentalControllerIntegrationTest {
                 }
 
                 @Test
+                @DisplayName("Should treat an empty status value like no filter")
+                void shouldTreatEmptyStatusAsNoFilter() throws Exception {
+                        Long requested = requestRental(1, 3);
+
+                        String body = mockMvc.perform(get("/api/v1/rentals/admin")
+                                        .header("Authorization", adminToken)
+                                        .param("size", "100")
+                                        .param("status", ""))
+                                        .andExpect(status().isOk())
+                                        .andReturn().getResponse().getContentAsString();
+
+                        org.assertj.core.api.Assertions.assertThat(idsAndStatuses(body))
+                                        .isEqualTo(idsAndStatuses(adminList()))
+                                        .contains(requested + ":REQUESTED");
+                }
+
+                @Test
                 @DisplayName("Should answer 400 INVALID_PARAMETER for an unknown status")
                 void shouldRejectUnknownStatus() throws Exception {
                         mockMvc.perform(get("/api/v1/rentals/admin")
