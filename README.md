@@ -19,14 +19,16 @@ docker compose up --build
 This starts PostgreSQL and the API with the `dev` profile, applies the Flyway migrations and loads seed data (users, cars, rentals, payments, damages). Payments use a stub gateway, and no Stripe or OAuth credentials are needed.
 
 - API: http://localhost:8082/api/v1, for example `GET /api/v1/cars`
-- Swagger UI (dev only): http://localhost:8082/swagger-ui/index.html
-- Health and metrics: http://localhost:8081/actuator/health
+- Swagger UI (disabled in `prod`): http://localhost:8082/swagger-ui/index.html
+- Health: http://localhost:8081/actuator/health · Prometheus metrics: http://localhost:8081/actuator/prometheus
 
 The seed has an `admin` account in [`R__seed_01_users.sql`](src/main/resources/db/seed/R__seed_01_users.sql); it exists only with the `dev` profile. Remove everything, data included, with `docker compose down -v`.
 
 ## Architecture
 
-A modular monolith with nine Spring Modulith modules under [`src/main/java/com/akif`](src/main/java/com/akif). Each module declares in its `package-info.java` which others it may use, and only through their `api` packages. [`ModularityTests`](src/test/java/com/akif/ModularityTests.java) verifies the structure.
+A modular monolith with nine Spring Modulith modules under [`src/main/java/com/akif`](src/main/java/com/akif). Domain modules declare their allowed dependencies. Modules expose named API packages for cross-module use, and `shared` is an open module. [`ModularityTests`](src/test/java/com/akif/ModularityTests.java) verifies the structure.
+
+**Selected module dependencies and event listeners**
 
 ```mermaid
 graph LR
@@ -36,20 +38,21 @@ graph LR
     dashboard --> car & damage & payment & rental
     notification -.listens.-> auth & damage & payment & rental
     dashboard -.listens.-> damage & payment & rental
-    rental -.listens.-> payment
+    rental -.listens.-> auth & payment
+    damage -.listens.-> auth
 ```
 
-Every module also depends on `shared` (security, error handling, configuration), left out of the diagram. Solid arrows are API calls, dotted arrows are application events.
+Solid arrows show allowed dependencies, and dotted arrows point from listeners to event sources.
 
 ## Highlights
 
 | Topic | What it does | Proof |
 | --- | --- | --- |
 | Booking integrity | The database prevents overlapping rentals with a `btree_gist` exclusion constraint | [`V4__rental_overlap_exclusion.sql`](src/main/resources/db/migration/V4__rental_overlap_exclusion.sql), [`RentalOverlapConstraintTest`](src/test/java/com/akif/rental/integration/RentalOverlapConstraintTest.java) |
-| Authentication | Stateless JWT access tokens; opaque refresh tokens stored as hashes, rotated on every use, with family revocation on reuse | [`RefreshTokenService`](src/main/java/com/akif/auth/internal/service/RefreshTokenService.java), [`RefreshTokenIntegrationTest`](src/test/java/com/akif/auth/integration/RefreshTokenIntegrationTest.java) |
+| Authentication | Access tokens are JWTs. Refresh tokens are opaque, stored as hashes and rotated on successful use. Reuse after a short grace period revokes the token family. | [`RefreshTokenService`](src/main/java/com/akif/auth/internal/service/RefreshTokenService.java), [`RefreshTokenIntegrationTest`](src/test/java/com/akif/auth/integration/RefreshTokenIntegrationTest.java) |
 | Rate limiting | Per-category token buckets for login, register, refresh, password reset, rentals and payments | [`RateLimitFilter`](src/main/java/com/akif/shared/security/ratelimit/RateLimitFilter.java), [`RateLimitIntegrationTest`](src/test/java/com/akif/shared/security/ratelimit/RateLimitIntegrationTest.java) |
 | Payments | Stripe PaymentIntents with manual capture, deterministic idempotency keys, signature-verified webhooks | [`IdempotencyKeyGenerator`](src/main/java/com/akif/payment/internal/service/gateway/IdempotencyKeyGenerator.java), [`StripeWebhookSignedIntegrationTest`](src/test/java/com/akif/payment/integration/StripeWebhookSignedIntegrationTest.java) |
-| Events | Cross-module events go through Spring Modulith's JPA-backed publication registry and are republished after a restart | [`EventPublicationRegistryIntegrationTest`](src/test/java/com/akif/notification/integration/EventPublicationRegistryIntegrationTest.java) |
+| Events | Spring Modulith records deliveries to module listeners in PostgreSQL and retries outstanding publications on restart. | [`EventPublicationRegistryIntegrationTest`](src/test/java/com/akif/notification/integration/EventPublicationRegistryIntegrationTest.java) |
 | Errors | RFC 9457 problem details with stable error codes | [`ProblemDetailContractTest`](src/test/java/com/akif/contract/ProblemDetailContractTest.java) |
 | API contract | The committed OpenAPI file and endpoint inventory are compared with the running app, so drift fails the build | [`OpenApiContractTest`](src/test/java/com/akif/contract/OpenApiContractTest.java), [`openapi/openapi.json`](openapi/openapi.json) |
 
