@@ -4,7 +4,7 @@ A Spring Boot backend for a car rental service: catalogue and availability searc
 
 This is a portfolio project, built to show how a modular Spring service is structured and verified. It is not deployed anywhere, and Stripe runs in test mode only.
 
-![Swagger UI of the API](docs-public/swagger-ui.webp)
+![Swagger UI of the API](docs/images/swagger-ui.webp)
 
 The web client is [TheOdrig/car-rental-web](https://github.com/TheOdrig/car-rental-web).
 
