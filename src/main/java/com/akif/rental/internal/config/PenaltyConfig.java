@@ -1,5 +1,6 @@
 package com.akif.rental.internal.config;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
@@ -18,5 +19,17 @@ public record PenaltyConfig(
         @DefaultValue("0.10") @NotNull @DecimalMin("0.05") @DecimalMax("0.25") BigDecimal hourlyPenaltyRate,
         @DefaultValue("1.50") @NotNull @DecimalMin("1.00") @DecimalMax("2.00") BigDecimal dailyPenaltyRate,
         @DefaultValue("5.0") @NotNull @DecimalMin("3.0") @DecimalMax("10.0") BigDecimal penaltyCapMultiplier,
-        @DefaultValue("24") @Min(1) int severelyLateThresholdHours) {
+        @DefaultValue("24") @Min(1) int severelyLateThresholdHours,
+        @DefaultValue("6") @Min(1) int hourlyTierMaxHours,
+        @DefaultValue("24") @Min(1) int singleDayTierMaxHours) {
+
+    @AssertTrue(message = "penalty.hourly-tier-max-hours must be below penalty.single-day-tier-max-hours")
+    public boolean isTiersOrdered() {
+        return hourlyTierMaxHours < singleDayTierMaxHours;
+    }
+
+    @AssertTrue(message = "penalty.hourly-tier-max-hours must be below penalty.severely-late-threshold-hours")
+    public boolean isHourlyTierBelowSeverelyLate() {
+        return hourlyTierMaxHours < severelyLateThresholdHours;
+    }
 }

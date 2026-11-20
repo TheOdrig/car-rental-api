@@ -63,6 +63,13 @@ class ConfigurationFailFastTest {
     }
 
     @Test
+    @DisplayName("rejects an hourly penalty tier that reaches the severely late threshold")
+    void rejectsHourlyTierAboveSeverelyLate() {
+        runner().withPropertyValues("penalty.hourly-tier-max-hours=30")
+                .run(context -> assertThat(context).hasFailed());
+    }
+
+    @Test
     @DisplayName("rejects a payment grace period out of range")
     void rejectsInvalidRentalGrace() {
         runner().withPropertyValues("rental.payment-grace-hours=500")

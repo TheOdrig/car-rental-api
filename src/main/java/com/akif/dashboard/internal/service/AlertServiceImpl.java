@@ -41,7 +41,6 @@ public class AlertServiceImpl implements AlertService {
 
     private static final BigDecimal LOW_AVAILABILITY_THRESHOLD = new BigDecimal("20.00");
     private static final int DISPUTE_DAYS_THRESHOLD = 7;
-    private static final int LATE_HOURS_CRITICAL_THRESHOLD = 24;
 
     private final AlertRepository alertRepository;
     private final DashboardMapper dashboardMapper;
@@ -99,7 +98,7 @@ public class AlertServiceImpl implements AlertService {
     }
 
     private void generateLateReturnAlerts() {
-        log.debug("Checking for late return alerts (>24 hours)");
+        log.debug("Checking for severely late return alerts");
 
         Pageable pageable = PageRequest.of(0, 100);
         List<RentalResponse> overdueRentals = rentalService.findOverdueRentals(pageable).getContent();
@@ -107,7 +106,7 @@ public class AlertServiceImpl implements AlertService {
         for (RentalResponse rental : overdueRentals) {
             long hoursLate = calculateHoursLate(rental.endDate());
 
-            if (hoursLate >= LATE_HOURS_CRITICAL_THRESHOLD) {
+            if (hoursLate >= lateHoursPolicy.severelyLateThresholdHours()) {
                 boolean alertExists = alertRepository.existsByTypeAndReferenceIdAndAcknowledgedFalse(
                         AlertType.LATE_RETURN, rental.id());
 

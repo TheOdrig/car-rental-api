@@ -51,7 +51,7 @@ class PenaltyCalculationServiceImplTest {
         when(penaltyConfig.hourlyPenaltyRate()).thenReturn(new BigDecimal("0.10"));
         when(penaltyConfig.dailyPenaltyRate()).thenReturn(new BigDecimal("1.50"));
         when(penaltyConfig.penaltyCapMultiplier()).thenReturn(new BigDecimal("5.0"));
-        when(penaltyConfig.severelyLateThresholdHours()).thenReturn(24);
+        when(penaltyConfig.severelyLateThresholdHours()).thenReturn(24);        when(penaltyConfig.hourlyTierMaxHours()).thenReturn(6);        when(penaltyConfig.singleDayTierMaxHours()).thenReturn(24);
 
         testCar = Car.builder()
                 .id(1L)

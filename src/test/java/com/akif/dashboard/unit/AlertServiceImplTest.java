@@ -91,6 +91,7 @@ class AlertServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        org.mockito.Mockito.lenient().when(lateHoursPolicy.severelyLateThresholdHours()).thenReturn(24L);
         testAlert = Alert.builder()
                 .id(1L)
                 .type(AlertType.LATE_RETURN)

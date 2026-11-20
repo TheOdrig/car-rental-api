@@ -24,13 +24,13 @@ public final class ConfigFixtures {
     }
 
     public static PenaltyConfig penaltyConfig() {
-        return new PenaltyConfig(60, new BigDecimal("0.10"), new BigDecimal("1.50"), new BigDecimal("5.0"), 24);
+        return new PenaltyConfig(60, new BigDecimal("0.10"), new BigDecimal("1.50"), new BigDecimal("5.0"), 24, 6, 24);
     }
 
     public static PenaltyConfig penaltyConfig(int graceMinutes, String hourlyRate, String dailyRate,
                                               int severelyLateHours) {
         return new PenaltyConfig(graceMinutes, new BigDecimal(hourlyRate), new BigDecimal(dailyRate),
-                new BigDecimal("5.0"), severelyLateHours);
+                new BigDecimal("5.0"), severelyLateHours, 6, 24);
     }
 
     public static PricingConfig pricingConfig() {

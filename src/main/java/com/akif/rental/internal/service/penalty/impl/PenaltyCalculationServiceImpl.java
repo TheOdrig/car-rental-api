@@ -56,14 +56,14 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
         BigDecimal penalty;
         String breakdown;
         
-        if (lateHours <= 6) {
+        if (lateHours <= penaltyConfig.hourlyTierMaxHours()) {
             penalty = calculateHourlyPenalty(dailyRate, lateHours, rental.getCurrency());
             breakdown = String.format("Hourly penalty: %d hours × %.0f%% × %s = %s",
                 lateHours,
                 penaltyConfig.hourlyPenaltyRate().multiply(new BigDecimal("100")),
                 dailyRate,
                 penalty);
-        } else if (lateHours <= 24) {
+        } else if (lateHours <= penaltyConfig.singleDayTierMaxHours()) {
             penalty = calculateDailyPenalty(dailyRate, 1, rental.getCurrency());
             breakdown = String.format("Daily penalty: 1 day × %.0f%% × %s = %s",
                 penaltyConfig.dailyPenaltyRate().multiply(new BigDecimal("100")),
@@ -104,8 +104,9 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
 
     @Override
     public BigDecimal calculateHourlyPenalty(BigDecimal dailyRate, int lateHours, CurrencyType currency) {
-        if (lateHours <= 0 || lateHours > 6) {
-            throw new IllegalArgumentException("Hourly penalty applies only for 1-6 hours late");
+        if (lateHours <= 0 || lateHours > penaltyConfig.hourlyTierMaxHours()) {
+            throw new IllegalArgumentException(
+                "Hourly penalty applies only for 1-" + penaltyConfig.hourlyTierMaxHours() + " hours late");
         }
 
         BigDecimal penalty = dailyRate

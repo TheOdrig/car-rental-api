@@ -10,7 +10,7 @@ public enum LateReturnStatus {
     ON_TIME("On Time", "Returned on or before end date"),
     GRACE_PERIOD("Grace Period", "Within grace period, no penalty"),
     LATE("Late", "Past grace period, penalty applies"),
-    SEVERELY_LATE("Severely Late", "More than 24 hours late");
+    SEVERELY_LATE("Severely Late", "Past the severely late threshold");
 
     private final String displayName;
     private final String description;
