@@ -15,13 +15,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.Instant;
+import java.time.ZoneOffset;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -365,6 +369,32 @@ class PenaltyCalculationServiceImplTest {
 
             assertThat(result.penaltyAmount().scale()).isZero();
             assertThat(result.penaltyAmount()).isEqualTo(new BigDecimal("247"));
+        }
+    }
+
+    @Nested
+    @DisplayName("Time of day")
+    class TimeOfDay {
+
+        @ParameterizedTest(name = "returned at {0} two UTC days after the end date")
+        @CsvSource({
+                "2026-11-20T00:15:00Z, 24, 1, 750.00",
+                "2026-11-20T00:59:00Z, 24, 1, 750.00",
+                "2026-11-20T01:01:00Z, 25, 2, 1500.00",
+                "2026-11-20T12:00:00Z, 35, 2, 1500.00",
+                "2026-11-20T21:15:00Z, 45, 2, 1500.00",
+                "2026-11-20T23:59:30Z, 47, 2, 1500.00"
+        })
+        @DisplayName("Should measure lateness from the UTC end of the end date, so the same calendar gap is one or two days")
+        void shouldMeasureLatenessFromTheUtcEndOfTheEndDate(Instant now, int lateHours, int lateDays, BigDecimal penalty) {
+            Clock clock = Clock.fixed(now, ZoneOffset.UTC);
+            ReflectionTestUtils.setField(testRental, "endDate", LocalDate.now(clock).minusDays(2));
+
+            PenaltyResult result = service.calculatePenalty(testRental, Instant.now(clock));
+
+            assertThat(result.lateHours()).isEqualTo(lateHours);
+            assertThat(result.lateDays()).isEqualTo(lateDays);
+            assertThat(result.penaltyAmount()).isEqualByComparingTo(penalty);
         }
     }
 }

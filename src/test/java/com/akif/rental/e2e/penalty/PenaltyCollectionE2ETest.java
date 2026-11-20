@@ -43,6 +43,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -96,6 +97,7 @@ class PenaltyCollectionE2ETest extends E2ETestBase {
     private Rental rental;
 
     private void givenOverdueRental(int daysOverdue) {
+        moveClockToUtcTimeOfDay(LocalTime.NOON);
         User user = userRepository.save(TestDataBuilder.createTestUser());
         admin = userRepository.save(TestDataBuilder.createTestAdmin());
         Car car = carRepository.save(TestDataBuilder.createAvailableCar());

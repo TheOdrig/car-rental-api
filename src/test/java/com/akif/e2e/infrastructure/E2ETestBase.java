@@ -34,6 +34,8 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -88,6 +90,10 @@ public abstract class E2ETestBase {
     protected void moveStartToToday(Long rentalId) {
         jdbcTemplate.update("UPDATE car_rental.rentals SET start_date = ? WHERE id = ? AND start_date > ?",
                 LocalDate.now(clock), rentalId, LocalDate.now(clock));
+    }
+
+    protected void moveClockToUtcTimeOfDay(LocalTime time) {
+        clock.advance(Duration.between(clock.instant(), LocalDate.now(clock).atTime(time).toInstant(ZoneOffset.UTC)));
     }
 
     protected void advanceClockToPaymentWindowOf(Long rentalId) {

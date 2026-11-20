@@ -95,8 +95,8 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
     }
 
     private Rental createPastRental(User user, Car car, int daysAgo) {
-        LocalDate pastStart = LocalDate.now().minusDays(daysAgo + 3);
-        LocalDate pastEnd = LocalDate.now().minusDays(daysAgo);
+        LocalDate pastStart = LocalDate.now(clock).minusDays(daysAgo + 3);
+        LocalDate pastEnd = LocalDate.now(clock).minusDays(daysAgo);
 
         return Rental.builder()
                 .userId(user.getId())
@@ -179,7 +179,7 @@ class LateReturnPenaltyE2ETest extends E2ETestBase {
         User testUser = userRepository.save(TestDataBuilder.createTestUser());
         Car testCar = carRepository.save(TestDataBuilder.createAvailableCar());
 
-        LocalDate yesterday = LocalDate.now().minusDays(1);
+        LocalDate yesterday = LocalDate.now(clock).minusDays(1);
         Rental rental = Rental.builder()
                 .userId(testUser.getId())
                 .userEmail(testUser.getEmail())

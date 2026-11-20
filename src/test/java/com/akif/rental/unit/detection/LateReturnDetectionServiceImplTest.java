@@ -59,7 +59,7 @@ class LateReturnDetectionServiceImplTest {
     private ApplicationEventPublisher eventPublisher;
 
     @Spy
-    private Clock clock = Clock.systemDefaultZone();
+    private Clock clock = Clock.fixed(Instant.parse("2026-11-20T12:00:00Z"), ZoneOffset.UTC);
 
     @Mock
     private PlatformTransactionManager transactionManager;
@@ -106,8 +106,8 @@ class LateReturnDetectionServiceImplTest {
                 .carBrand(testCar.getBrand())
                 .carModel(testCar.getModel())
                 .carLicensePlate(testCar.getLicensePlate())
-                .startDate(LocalDate.now().minusDays(5))
-                .endDate(LocalDate.now().minusDays(2))
+                .startDate(LocalDate.now(clock).minusDays(5))
+                .endDate(LocalDate.now(clock).minusDays(2))
                 .dailyPrice(new BigDecimal("500.00"))
                 .currency(CurrencyType.TRY)
                 .status(RentalStatus.IN_USE)
@@ -301,7 +301,7 @@ class LateReturnDetectionServiceImplTest {
                     .carBrand(testCar.getBrand())
                     .carModel(testCar.getModel())
                     .carLicensePlate(testCar.getLicensePlate())
-                    .endDate(LocalDate.now().minusDays(1))
+                    .endDate(LocalDate.now(clock).minusDays(1))
                     .dailyPrice(new BigDecimal("500.00"))
                     .currency(CurrencyType.TRY)
                     .status(RentalStatus.IN_USE)
@@ -317,7 +317,7 @@ class LateReturnDetectionServiceImplTest {
                     .carBrand(testCar.getBrand())
                     .carModel(testCar.getModel())
                     .carLicensePlate(testCar.getLicensePlate())
-                    .endDate(LocalDate.now().minusDays(2))
+                    .endDate(LocalDate.now(clock).minusDays(2))
                     .dailyPrice(new BigDecimal("600.00"))
                     .currency(CurrencyType.TRY)
                     .status(RentalStatus.IN_USE)
@@ -365,7 +365,7 @@ class LateReturnDetectionServiceImplTest {
                     .carBrand(testCar.getBrand())
                     .carModel(testCar.getModel())
                     .carLicensePlate(testCar.getLicensePlate())
-                    .endDate(LocalDate.now().minusDays(1))
+                    .endDate(LocalDate.now(clock).minusDays(1))
                     .dailyPrice(new BigDecimal("500.00"))
                     .currency(CurrencyType.TRY)
                     .status(RentalStatus.IN_USE)
@@ -381,7 +381,7 @@ class LateReturnDetectionServiceImplTest {
                     .carBrand(testCar.getBrand())
                     .carModel(testCar.getModel())
                     .carLicensePlate(testCar.getLicensePlate())
-                    .endDate(LocalDate.now().minusDays(2))
+                    .endDate(LocalDate.now(clock).minusDays(2))
                     .dailyPrice(new BigDecimal("600.00"))
                     .currency(CurrencyType.TRY)
                     .status(RentalStatus.IN_USE)
@@ -448,7 +448,7 @@ class LateReturnDetectionServiceImplTest {
                     .carBrand(testCar.getBrand())
                     .carModel(testCar.getModel())
                     .carLicensePlate(testCar.getLicensePlate())
-                    .endDate(LocalDate.now().minusDays(daysAgo))
+                    .endDate(LocalDate.now(clock).minusDays(daysAgo))
                     .dailyPrice(new BigDecimal("500.00"))
                     .currency(CurrencyType.TRY)
                     .status(RentalStatus.IN_USE)
@@ -464,7 +464,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should throw exception when rental is null")
         void shouldThrowExceptionWhenRentalIsNull() {
-            Instant currentTime = Instant.now();
+            Instant currentTime = Instant.now(clock);
 
             assertThatThrownBy(() -> service.calculateLateStatus(null, currentTime))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -475,7 +475,7 @@ class LateReturnDetectionServiceImplTest {
         @DisplayName("Should throw exception when end date is null")
         void shouldThrowExceptionWhenEndDateIsNull() {
             ReflectionTestUtils.setField(testRental, "endDate", null);
-            Instant currentTime = Instant.now();
+            Instant currentTime = Instant.now(clock);
 
             assertThatThrownBy(() -> service.calculateLateStatus(testRental, currentTime))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -485,7 +485,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should return zero late hours when rental is null")
         void shouldReturnZeroLateHoursWhenRentalIsNull() {
-            Instant currentTime = Instant.now();
+            Instant currentTime = Instant.now(clock);
 
             long lateHours = service.calculateLateHours(null, currentTime);
 
@@ -495,7 +495,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should set late detected timestamp on first late detection")
         void shouldSetLateDetectedTimestampOnFirstLateDetection() {
-            ReflectionTestUtils.setField(testRental, "endDate", LocalDate.now().minusDays(3));
+            ReflectionTestUtils.setField(testRental, "endDate", LocalDate.now(clock).minusDays(3));
             ReflectionTestUtils.setField(testRental, "lateDetectedAt", null);
             ReflectionTestUtils.setField(testRental, "lateReturnStatus", LateReturnStatus.ON_TIME);
 
@@ -522,7 +522,7 @@ class LateReturnDetectionServiceImplTest {
         @Test
         @DisplayName("Should not update late detected timestamp if already set")
         void shouldNotUpdateLateDetectedTimestampIfAlreadySet() {
-            Instant originalDetectionTime = Instant.now().minus(Duration.ofHours(5));
+            Instant originalDetectionTime = Instant.now(clock).minus(Duration.ofHours(5));
             ReflectionTestUtils.setField(testRental, "lateDetectedAt", originalDetectionTime);
             ReflectionTestUtils.setField(testRental, "lateReturnStatus", LateReturnStatus.LATE);
 
