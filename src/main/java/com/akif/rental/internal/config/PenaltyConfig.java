@@ -1,6 +1,5 @@
 package com.akif.rental.internal.config;
 
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
@@ -23,13 +22,14 @@ public record PenaltyConfig(
         @DefaultValue("6") @Min(1) int hourlyTierMaxHours,
         @DefaultValue("24") @Min(1) int singleDayTierMaxHours) {
 
-    @AssertTrue(message = "penalty.hourly-tier-max-hours must be below penalty.single-day-tier-max-hours")
-    public boolean isTiersOrdered() {
-        return hourlyTierMaxHours < singleDayTierMaxHours;
-    }
-
-    @AssertTrue(message = "penalty.hourly-tier-max-hours must be below penalty.severely-late-threshold-hours")
-    public boolean isHourlyTierBelowSeverelyLate() {
-        return hourlyTierMaxHours < severelyLateThresholdHours;
+    public PenaltyConfig {
+        if (hourlyTierMaxHours >= singleDayTierMaxHours) {
+            throw new IllegalArgumentException(
+                    "penalty.hourly-tier-max-hours must be below penalty.single-day-tier-max-hours");
+        }
+        if (hourlyTierMaxHours >= severelyLateThresholdHours) {
+            throw new IllegalArgumentException(
+                    "penalty.hourly-tier-max-hours must be below penalty.severely-late-threshold-hours");
+        }
     }
 }

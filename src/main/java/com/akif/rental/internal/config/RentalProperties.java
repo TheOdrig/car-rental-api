@@ -1,6 +1,5 @@
 package com.akif.rental.internal.config;
 
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -20,8 +19,10 @@ public record RentalProperties(
 
     private static final int STRIPE_HOLD_DAYS = 7;
 
-    @AssertTrue(message = "rental.no-show-days must release the hold before the 7-day authorisation expires")
-    public boolean isNoShowWithinAuthorisationWindow() {
-        return noShowDays <= Math.max(1, STRIPE_HOLD_DAYS - 1 - paymentWindowDays);
+    public RentalProperties {
+        if (noShowDays > Math.max(1, STRIPE_HOLD_DAYS - 1 - paymentWindowDays)) {
+            throw new IllegalArgumentException(
+                    "rental.no-show-days must release the hold before the 7-day authorisation expires");
+        }
     }
 }

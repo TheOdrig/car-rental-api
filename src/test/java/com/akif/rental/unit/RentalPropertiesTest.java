@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("RentalProperties validation")
 class RentalPropertiesTest {
@@ -26,7 +27,9 @@ class RentalPropertiesTest {
     @Test
     @DisplayName("rejects a no-show window that would outlive the 7-day authorisation")
     void rejectsNoShowBeyondAuthorisationWindow() {
-        assertThat(validator.validate(properties(5, 12, 4))).isNotEmpty();
+        assertThatThrownBy(() -> properties(5, 12, 4))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("rental.no-show-days");
     }
 
     @Test

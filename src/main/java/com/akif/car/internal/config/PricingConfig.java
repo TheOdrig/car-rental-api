@@ -2,7 +2,6 @@ package com.akif.car.internal.config;
 
 import com.akif.shared.enums.CurrencyType;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
@@ -39,6 +38,18 @@ public record PricingConfig(
 
     public PricingConfig {
         dailyLimits = dailyLimits == null ? Map.of() : Map.copyOf(dailyLimits);
+        if (minDailyPrice != null && maxDailyPrice != null && minDailyPrice.compareTo(maxDailyPrice) > 0) {
+            throw new IllegalArgumentException("pricing.min-daily-price must not exceed pricing.max-daily-price");
+        }
+        for (Map.Entry<CurrencyType, DailyLimits> entry : dailyLimits.entrySet()) {
+            DailyLimits limits = entry.getValue();
+            BigDecimal low = limits != null && limits.min() != null ? limits.min() : minDailyPrice;
+            BigDecimal high = limits != null && limits.max() != null ? limits.max() : maxDailyPrice;
+            if (low != null && high != null && low.compareTo(high) > 0) {
+                throw new IllegalArgumentException(
+                        "pricing.daily-limits." + entry.getKey() + " must have min not above max");
+            }
+        }
     }
 
     public BigDecimal minDailyPriceFor(CurrencyType currency) {
@@ -51,20 +62,6 @@ public record PricingConfig(
         return limits != null && limits.max() != null ? limits.max() : maxDailyPrice;
     }
 
-    @AssertTrue(message = "pricing.min-daily-price must not exceed pricing.max-daily-price")
-    public boolean isDefaultLimitsOrdered() {
-        return minDailyPrice == null || maxDailyPrice == null || minDailyPrice.compareTo(maxDailyPrice) <= 0;
-    }
-
-    @AssertTrue(message = "every pricing.daily-limits entry must have min not above max")
-    public boolean isCurrencyLimitsOrdered() {
-        return dailyLimits.keySet().stream().allMatch(currency -> {
-            BigDecimal low = minDailyPriceFor(currency);
-            BigDecimal high = maxDailyPriceFor(currency);
-            return low == null || high == null || low.compareTo(high) <= 0;
-        });
-    }
-
     public record DailyLimits(
             @DecimalMin("0.01") BigDecimal min,
             @DecimalMin("0.01") BigDecimal max) {
@@ -74,11 +71,14 @@ public record PricingConfig(
             @Valid @NotNull SeasonPeriod peak,
             @Valid @NotNull SeasonPeriod offpeak) {
 
-        @AssertTrue(message = "pricing.season.peak.multiplier must be a surcharge and pricing.season.offpeak.multiplier a discount")
-        public boolean isMultipliersDirected() {
-            return peak == null || offpeak == null || peak.multiplier() == null || offpeak.multiplier() == null
-                    || (peak.multiplier().compareTo(BigDecimal.ONE) >= 0
-                            && offpeak.multiplier().compareTo(BigDecimal.ONE) <= 0);
+        public SeasonConfig {
+            if (peak != null && offpeak != null && peak.multiplier() != null && offpeak.multiplier() != null
+                    && (peak.multiplier().compareTo(BigDecimal.ONE) < 0
+                            || offpeak.multiplier().compareTo(BigDecimal.ONE) > 0)) {
+                throw new IllegalArgumentException(
+                        "pricing.season.peak.multiplier must be a surcharge and "
+                                + "pricing.season.offpeak.multiplier a discount");
+            }
         }
     }
 
@@ -93,10 +93,11 @@ public record PricingConfig(
             @Valid @NotNull Tier tier2,
             @Valid @NotNull Tier tier3) {
 
-        @AssertTrue(message = "pricing.early-booking tiers must have strictly decreasing days")
-        public boolean isTiersOrdered() {
-            return tier1 == null || tier2 == null || tier3 == null
-                    || (tier1.days() > tier2.days() && tier2.days() > tier3.days());
+        public EarlyBookingConfig {
+            if (tier1 != null && tier2 != null && tier3 != null
+                    && !(tier1.days() > tier2.days() && tier2.days() > tier3.days())) {
+                throw new IllegalArgumentException("pricing.early-booking tiers must have strictly decreasing days");
+            }
         }
     }
 
@@ -105,10 +106,11 @@ public record PricingConfig(
             @Valid @NotNull Tier tier2,
             @Valid @NotNull Tier tier3) {
 
-        @AssertTrue(message = "pricing.duration tiers must have strictly increasing days")
-        public boolean isTiersOrdered() {
-            return tier1 == null || tier2 == null || tier3 == null
-                    || (tier1.days() < tier2.days() && tier2.days() < tier3.days());
+        public DurationConfig {
+            if (tier1 != null && tier2 != null && tier3 != null
+                    && !(tier1.days() < tier2.days() && tier2.days() < tier3.days())) {
+                throw new IllegalArgumentException("pricing.duration tiers must have strictly increasing days");
+            }
         }
     }
 
@@ -126,9 +128,11 @@ public record PricingConfig(
             @Valid @NotNull DemandTier high,
             @Valid @NotNull DemandTier moderate) {
 
-        @AssertTrue(message = "pricing.demand.high.threshold must exceed pricing.demand.moderate.threshold")
-        public boolean isThresholdsOrdered() {
-            return high == null || moderate == null || high.threshold() > moderate.threshold();
+        public DemandConfig {
+            if (high != null && moderate != null && high.threshold() <= moderate.threshold()) {
+                throw new IllegalArgumentException(
+                        "pricing.demand.high.threshold must exceed pricing.demand.moderate.threshold");
+            }
         }
     }
 

@@ -2,7 +2,6 @@ package com.akif.damage.internal.config;
 
 import com.akif.shared.enums.CurrencyType;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -34,41 +33,45 @@ public record DamageConfig(
 
     public DamageConfig {
         currencyLimits = currencyLimits == null ? Map.of() : Map.copyOf(currencyLimits);
+        requireIncreasing("damage thresholds", minorThreshold, moderateThreshold, majorThreshold);
+        for (Map.Entry<CurrencyType, CurrencyLimits> entry : currencyLimits.entrySet()) {
+            CurrencyLimits limits = entry.getValue();
+            requireIncreasing("damage.currency-limits." + entry.getKey() + " thresholds",
+                    pick(limits == null ? null : limits.minorThreshold(), minorThreshold),
+                    pick(limits == null ? null : limits.moderateThreshold(), moderateThreshold),
+                    pick(limits == null ? null : limits.majorThreshold(), majorThreshold));
+        }
+    }
+
+    private static BigDecimal pick(BigDecimal specific, BigDecimal fallback) {
+        return specific != null ? specific : fallback;
+    }
+
+    private static void requireIncreasing(String what, BigDecimal minor, BigDecimal moderate, BigDecimal major) {
+        if (minor != null && moderate != null && major != null
+                && !(minor.compareTo(moderate) < 0 && moderate.compareTo(major) < 0)) {
+            throw new IllegalArgumentException(what + " must be strictly increasing: minor < moderate < major");
+        }
     }
 
     public BigDecimal minorThresholdFor(CurrencyType currency) {
         CurrencyLimits limits = currencyLimits.get(currency);
-        return limits != null && limits.minorThreshold() != null ? limits.minorThreshold() : minorThreshold;
+        return pick(limits == null ? null : limits.minorThreshold(), minorThreshold);
     }
 
     public BigDecimal moderateThresholdFor(CurrencyType currency) {
         CurrencyLimits limits = currencyLimits.get(currency);
-        return limits != null && limits.moderateThreshold() != null ? limits.moderateThreshold() : moderateThreshold;
+        return pick(limits == null ? null : limits.moderateThreshold(), moderateThreshold);
     }
 
     public BigDecimal majorThresholdFor(CurrencyType currency) {
         CurrencyLimits limits = currencyLimits.get(currency);
-        return limits != null && limits.majorThreshold() != null ? limits.majorThreshold() : majorThreshold;
+        return pick(limits == null ? null : limits.majorThreshold(), majorThreshold);
     }
 
     public BigDecimal insuranceDeductibleFor(CurrencyType currency) {
         CurrencyLimits limits = currencyLimits.get(currency);
-        return limits != null && limits.insuranceDeductible() != null
-                ? limits.insuranceDeductible() : defaultInsuranceDeductible;
-    }
-
-    @AssertTrue(message = "damage thresholds must be strictly increasing: minor < moderate < major")
-    public boolean isThresholdsOrdered() {
-        return minorThreshold == null || moderateThreshold == null || majorThreshold == null
-                || (minorThreshold.compareTo(moderateThreshold) < 0
-                        && moderateThreshold.compareTo(majorThreshold) < 0);
-    }
-
-    @AssertTrue(message = "damage.currency-limits thresholds must be strictly increasing per currency")
-    public boolean isCurrencyThresholdsOrdered() {
-        return currencyLimits.keySet().stream().allMatch(currency ->
-                minorThresholdFor(currency).compareTo(moderateThresholdFor(currency)) < 0
-                        && moderateThresholdFor(currency).compareTo(majorThresholdFor(currency)) < 0);
+        return pick(limits == null ? null : limits.insuranceDeductible(), defaultInsuranceDeductible);
     }
 
     public record CurrencyLimits(
