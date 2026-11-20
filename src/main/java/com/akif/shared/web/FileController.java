@@ -1,8 +1,10 @@
 package com.akif.shared.web;
 
+import com.akif.shared.exception.InvalidParameterException;
 import com.akif.shared.exception.StoredFileNotFoundException;
 import com.akif.shared.infrastructure.FileAccessPolicy;
 import com.akif.shared.security.AuthenticatedUser;
+import com.akif.shared.security.OwnerOrAdmin;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -25,8 +27,6 @@ import java.util.List;
 @Profile({"dev", "test"})
 @Slf4j
 public class FileController {
-
-    private static final String ADMIN_AUTHORITY = "ROLE_ADMIN";
 
     private final String baseUploadDir;
     private final List<FileAccessPolicy> accessPolicies;
@@ -57,7 +57,7 @@ public class FileController {
             Path root = Paths.get(baseUploadDir, directory).toAbsolutePath().normalize();
             Path filePath = root.resolve(filename).normalize();
             if (!filePath.startsWith(root)) {
-                return ResponseEntity.badRequest().build();
+                throw new InvalidParameterException("Invalid file path");
             }
             Resource resource = new UrlResource(filePath.toUri());
 
@@ -78,7 +78,7 @@ public class FileController {
             }
         } catch (MalformedURLException e) {
             log.error("Error loading file: {}", filename, e);
-            return ResponseEntity.badRequest().build();
+            throw new InvalidParameterException("Invalid file path");
         } catch (IOException e) {
             log.warn("File could not be read: {}", filename);
             throw new StoredFileNotFoundException();
@@ -89,7 +89,7 @@ public class FileController {
         if (caller == null) {
             return false;
         }
-        if (caller.getAuthorities().stream().anyMatch(a -> ADMIN_AUTHORITY.equals(a.getAuthority()))) {
+        if (OwnerOrAdmin.isAdmin(caller)) {
             return true;
         }
         return accessPolicies.stream()

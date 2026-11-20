@@ -1,6 +1,7 @@
 package com.akif.rental.internal.service;
 
 import com.akif.shared.web.Pageables;
+import com.akif.shared.security.OwnerOrAdmin;
 import java.time.Clock;
 import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalSummaryDto;
@@ -71,7 +72,7 @@ public class RentalQueryService {
         Rental rental = lookups.findRentalById(id);
         UserDto user = lookups.findUserById(userId);
 
-        if (!user.isAdmin() && !rental.getUserId().equals(user.id())) {
+        if (!OwnerOrAdmin.permits(user.isAdmin(), rental.getUserId(), user.id())) {
             throw new RentalNotFoundException(id);
         }
 
@@ -105,7 +106,7 @@ public class RentalQueryService {
         Rental rental = lookups.findRentalById(rentalId);
         UserDto user = lookups.findUserById(userId);
 
-        if (!user.isAdmin() && !rental.getUserId().equals(user.id())) {
+        if (!OwnerOrAdmin.permits(user.isAdmin(), rental.getUserId(), user.id())) {
             throw new RentalNotFoundException(rentalId);
         }
 

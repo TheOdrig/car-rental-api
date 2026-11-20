@@ -1,6 +1,7 @@
 package com.akif.rental.internal.service;
 
 import com.akif.shared.time.UtcDates;
+import com.akif.shared.security.OwnerOrAdmin;
 import java.time.Clock;
 import com.akif.car.api.CarDatesUnavailableException;
 import com.akif.payment.api.PaymentFailedException;
@@ -210,7 +211,7 @@ public class RentalLifecycleService {
         Rental rental = lookups.findRentalForUpdate(rentalId);
         UserDto currentUser = lookups.findUserById(userId);
 
-        if (!currentUser.isAdmin() && !rental.getUserId().equals(currentUser.id())) {
+        if (!OwnerOrAdmin.permits(currentUser.isAdmin(), rental.getUserId(), currentUser.id())) {
             throw new RentalNotFoundException(rentalId);
         }
 

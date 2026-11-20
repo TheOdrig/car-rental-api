@@ -3,6 +3,7 @@ package com.akif.damage.internal.service.damage.impl;
 import java.time.Clock;
 
 import com.akif.auth.api.UserLookup;
+import com.akif.shared.security.OwnerOrAdmin;
 import com.akif.auth.api.UserDto;
 import com.akif.car.api.CarCatalog;
 import com.akif.car.api.CarFleetOperations;
@@ -191,7 +192,7 @@ public class DamageReportServiceImpl implements DamageReportService {
                 .orElseThrow(() -> DamageReportException.photoNotFound(photoId));
 
         UserDto requester = userLookup.getUserById(userId);
-        if (!requester.isAdmin() && !requester.id().equals(photo.getDamageReport().getCustomerUserId())) {
+        if (!OwnerOrAdmin.permits(requester.isAdmin(), photo.getDamageReport().getCustomerUserId(), requester.id())) {
             log.warn("User {} requested a damage photo of another customer (photoId={})", requester.id(), photoId);
             throw DamageReportException.photoNotFound(photoId);
         }
