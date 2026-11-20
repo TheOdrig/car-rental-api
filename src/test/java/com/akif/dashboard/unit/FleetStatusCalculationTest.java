@@ -6,6 +6,7 @@ import com.akif.damage.api.DamageService;
 import com.akif.dashboard.api.dto.FleetStatusDto;
 import com.akif.dashboard.internal.service.DashboardQueryService;
 import com.akif.payment.api.PaymentService;
+import com.akif.rental.api.LateHoursPolicy;
 import com.akif.rental.api.RentalService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ class FleetStatusCalculationTest {
     private final CarCatalog carCatalog = mock(CarCatalog.class);
     private final RentalService rentalService = mock(RentalService.class);
     private final DashboardQueryService service = new DashboardQueryService(
-            Clock.fixed(Instant.parse("2026-11-18T12:00:00Z"), ZoneOffset.UTC),
+            Clock.fixed(Instant.parse("2026-11-18T12:00:00Z"), ZoneOffset.UTC), mock(LateHoursPolicy.class),
             rentalService, carCatalog, mock(PaymentService.class), mock(DamageService.class));
 
     private FleetStatusDto fleet(Map<Long, CarStatusType> statuses, Set<Long> inUse, Set<Long> reserved) {

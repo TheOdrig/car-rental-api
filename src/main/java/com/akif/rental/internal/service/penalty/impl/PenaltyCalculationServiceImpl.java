@@ -1,6 +1,6 @@
 package com.akif.rental.internal.service.penalty.impl;
 
-import com.akif.shared.time.UtcDates;
+import com.akif.shared.time.LateHours;
 import com.akif.rental.internal.config.PenaltyConfig;
 import com.akif.rental.internal.dto.penalty.PenaltyResult;
 import com.akif.rental.domain.enums.LateReturnStatus;
@@ -14,7 +14,6 @@ import com.akif.shared.enums.CurrencyType;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Duration;
 import java.time.Instant;
 
 @Service
@@ -29,15 +28,10 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
         log.debug("Calculating penalty for rental: {}, return time: {}", rental.getId(), returnTime);
 
         BigDecimal dailyRate = rental.getDailyPrice();
-        Instant endDateTime = UtcDates.endOfDayWholeSecond(rental.getEndDate());
-
-        Duration lateDuration = Duration.between(endDateTime, returnTime);
-        long totalMinutesLate = lateDuration.toMinutes();
-
         long gracePeriodMinutes = penaltyConfig.getGracePeriodMinutes();
-        long minutesAfterGrace = totalMinutesLate - gracePeriodMinutes;
+        int lateHours = (int) LateHours.between(rental.getEndDate(), returnTime, gracePeriodMinutes);
 
-        if (minutesAfterGrace <= 0) {
+        if (lateHours <= 0) {
             log.debug("Rental {} is within grace period. No penalty applied.", rental.getId());
             return new PenaltyResult(
                 BigDecimal.ZERO,
@@ -50,7 +44,6 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
             );
         }
 
-        int lateHours = (int) Math.ceil(minutesAfterGrace / 60.0);
         int lateDays = (lateHours + 23) / 24;
 
         LateReturnStatus status;

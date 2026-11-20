@@ -14,6 +14,7 @@ import com.akif.payment.api.DailyRevenue;
 import com.akif.payment.api.MonthlyRevenue;
 import com.akif.payment.api.PaymentCategory;
 import com.akif.payment.api.PaymentService;
+import com.akif.rental.api.LateHoursPolicy;
 import com.akif.rental.api.RentalService;
 import com.akif.shared.enums.CurrencyType;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -59,7 +61,7 @@ class DashboardQueryServiceRevenueTest {
 
     @BeforeEach
     void setUp() {
-        service = new DashboardQueryService(CLOCK, rentalService, carCatalog, paymentService, damageService);
+        service = new DashboardQueryService(CLOCK, mock(LateHoursPolicy.class), rentalService, carCatalog, paymentService, damageService);
         lenient().when(damageService.sumRepairCostsByCurrency(any(), any())).thenReturn(List.of());
         lenient().when(rentalService.getAverageRentalDurationDays(any(), any())).thenReturn(BigDecimal.ZERO);
     }

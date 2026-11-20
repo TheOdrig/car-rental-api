@@ -11,6 +11,7 @@ import com.akif.dashboard.api.AlertType;
 import com.akif.dashboard.domain.model.Alert;
 import com.akif.dashboard.internal.mapper.DashboardMapper;
 import com.akif.dashboard.internal.repository.AlertRepository;
+import com.akif.rental.api.LateHoursPolicy;
 import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalService;
 import com.akif.payment.api.PaymentService;
@@ -27,7 +28,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -37,6 +37,7 @@ import java.util.List;
 public class AlertServiceImpl implements AlertService {
 
     private final Clock clock;
+    private final LateHoursPolicy lateHoursPolicy;
 
     private static final BigDecimal LOW_AVAILABILITY_THRESHOLD = new BigDecimal("20.00");
     private static final int DISPUTE_DAYS_THRESHOLD = 7;
@@ -259,11 +260,6 @@ public class AlertServiceImpl implements AlertService {
         if (endDate == null) {
             return 0;
         }
-        LocalDate today = LocalDate.now(clock);
-        if (!today.isAfter(endDate)) {
-            return 0;
-        }
-        long daysLate = ChronoUnit.DAYS.between(endDate, today);
-        return daysLate * 24;
+        return lateHoursPolicy.lateHours(endDate, Instant.now(clock));
     }
 }

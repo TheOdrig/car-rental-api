@@ -19,6 +19,7 @@ import com.akif.payment.api.CollectedRevenue;
 import com.akif.payment.api.MonthlyRevenue;
 import com.akif.payment.api.PaymentCategory;
 import com.akif.payment.api.PaymentService;
+import com.akif.rental.api.LateHoursPolicy;
 import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalService;
 import com.akif.rental.api.RentalStatus;
@@ -49,6 +50,7 @@ import java.util.Set;
 public class DashboardQueryService {
 
     private final Clock clock;
+    private final LateHoursPolicy lateHoursPolicy;
 
     private final RentalService rentalService;
     private final CarCatalog carCatalog;
@@ -292,8 +294,6 @@ public class DashboardQueryService {
         if (endDate == null || !endDate.isBefore(LocalDate.now(clock))) {
             return null;
         }
-        return java.time.temporal.ChronoUnit.HOURS.between(
-                UtcDates.startOfDay(endDate),
-                Instant.now(clock));
+        return lateHoursPolicy.lateHours(endDate, Instant.now(clock));
     }
 }

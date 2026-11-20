@@ -1,5 +1,6 @@
 package com.akif.rental.internal.service.detection.impl;
 
+import com.akif.shared.time.LateHours;
 import com.akif.shared.time.UtcDates;
 import java.time.Clock;
 
@@ -105,7 +106,7 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
             throw new IllegalArgumentException("Rental and end date cannot be null");
         }
 
-        Instant rentalEndDateTime = UtcDates.endOfDay(rental.getEndDate());
+        Instant rentalEndDateTime = UtcDates.endOfDayWholeSecond(rental.getEndDate());
 
         if (!currentTime.isAfter(rentalEndDateTime)) {
             return LateReturnStatus.ON_TIME;
@@ -132,21 +133,7 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
             return 0;
         }
 
-        Instant rentalEndDateTime = UtcDates.endOfDay(rental.getEndDate());
-
-        if (!currentTime.isAfter(rentalEndDateTime)) {
-            return 0;
-        }
-
-        long minutesLate = Duration.between(rentalEndDateTime, currentTime).toMinutes();
-
-        long minutesAfterGrace = minutesLate - penaltyConfig.getGracePeriodMinutes();
-
-        if (minutesAfterGrace <= 0) {
-            return 0;
-        }
-
-        return (long) Math.ceil(minutesAfterGrace / 60.0);
+        return LateHours.between(rental.getEndDate(), currentTime, penaltyConfig.getGracePeriodMinutes());
     }
 
     @Override
@@ -161,7 +148,7 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
             String carBrand = rental.getCarBrand();
             String carModel = rental.getCarModel();
             String licensePlate = rental.getCarLicensePlate();
-            Instant scheduledReturnTime = UtcDates.endOfDay(rental.getEndDate());
+            Instant scheduledReturnTime = UtcDates.endOfDayWholeSecond(rental.getEndDate());
             
             switch (newStatus) {
                 case GRACE_PERIOD:

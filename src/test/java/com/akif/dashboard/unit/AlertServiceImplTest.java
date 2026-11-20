@@ -15,6 +15,7 @@ import com.akif.dashboard.internal.mapper.DashboardMapper;
 import com.akif.dashboard.internal.repository.AlertRepository;
 import com.akif.dashboard.internal.service.AlertServiceImpl;
 import com.akif.payment.api.PaymentService;
+import com.akif.rental.api.LateHoursPolicy;
 import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalService;
 import com.akif.rental.api.UserSummaryResponse;
@@ -69,6 +70,9 @@ class AlertServiceImplTest {
     @Mock
     private PaymentService paymentService;
 
+    @Mock
+    private LateHoursPolicy lateHoursPolicy;
+
     @Spy
     private Clock clock = Clock.systemDefaultZone();
 
@@ -121,6 +125,7 @@ class AlertServiceImplTest {
             LocalDate overdueEndDate = LocalDate.now().minusDays(2);
             RentalResponse overdueRental = createOverdueRental(1L, overdueEndDate);
             Page<RentalResponse> overdueRentalsPage = new PageImpl<>(List.of(overdueRental));
+            when(lateHoursPolicy.lateHours(any(), any())).thenReturn(48L);
 
             when(rentalService.findOverdueRentals(any(Pageable.class))).thenReturn(overdueRentalsPage);
             when(alertRepository.existsByTypeAndReferenceIdAndAcknowledgedFalse(
@@ -147,6 +152,7 @@ class AlertServiceImplTest {
             LocalDate overdueEndDate = LocalDate.now().minusDays(2);
             RentalResponse overdueRental = createOverdueRental(1L, overdueEndDate);
             Page<RentalResponse> overdueRentalsPage = new PageImpl<>(List.of(overdueRental));
+            when(lateHoursPolicy.lateHours(any(), any())).thenReturn(48L);
 
             when(rentalService.findOverdueRentals(any(Pageable.class))).thenReturn(overdueRentalsPage);
             when(alertRepository.existsByTypeAndReferenceIdAndAcknowledgedFalse(
