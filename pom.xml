@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.akif</groupId>
     <artifactId>car-rental-api</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>3.0.0</version>
     <name>Car Rental API</name>
     <description>REST API for a car rental platform: fleet, rentals, payments, damages and admin tooling.</description>
     <url>https://github.com/TheOdrig/car-rental-api</url>

@@ -5,9 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [3.0.0] - 2026-11-20
 
-[Compare v2.1.0 with main](https://github.com/TheOdrig/car-rental-api/compare/v2.1.0...main)
+[Compare v2.1.0 with v3.0.0](https://github.com/TheOdrig/car-rental-api/compare/v2.1.0...v3.0.0)
 
 This change set rebaselines the database into `V1__baseline.sql` and renames the schema to `car_rental`. Start with a fresh database when moving from an earlier schema.
 
@@ -122,6 +122,7 @@ This change set rebaselines the database into `V1__baseline.sql` and renames the
 ---
 
 
+[3.0.0]: https://github.com/TheOdrig/car-rental-api/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/TheOdrig/car-rental-api/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/TheOdrig/car-rental-api/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/TheOdrig/car-rental-api/releases/tag/v1.0.0
