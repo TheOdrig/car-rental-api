@@ -1,6 +1,6 @@
 package com.akif.auth.domain.enums;
 
-import com.akif.auth.internal.exception.OAuth2AuthenticationException;
+import com.akif.auth.domain.exception.OAuth2AuthenticationException;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 

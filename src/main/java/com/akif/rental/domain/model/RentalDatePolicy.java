@@ -1,6 +1,6 @@
 package com.akif.rental.domain.model;
 
-import com.akif.rental.internal.exception.RentalValidationException;
+import com.akif.rental.domain.exception.RentalValidationException;
 
 import java.time.LocalDate;
 import com.akif.shared.time.RentalDays;

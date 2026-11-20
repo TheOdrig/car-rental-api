@@ -1,7 +1,7 @@
 package com.akif.auth.unit;
 
 import com.akif.auth.domain.enums.OAuth2ErrorType;
-import com.akif.auth.internal.exception.OAuth2AuthenticationException;
+import com.akif.auth.domain.exception.OAuth2AuthenticationException;
 import com.akif.auth.internal.exception.OAuth2ProviderException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

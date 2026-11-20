@@ -64,7 +64,7 @@ class SimilarCarServiceImplTest {
         @BeforeEach
         void setUp() {
                 similarCarService = new SimilarCarServiceImpl(carRepository, bookingCalendar, batchPricing,
-                                new SimilarCarProperties(new BigDecimal("0.20"), 3, 50, 30, 20),
+                                new SimilarCarProperties(new BigDecimal("0.20"), 3, 5, 30, 50, 30, 20),
                                 java.time.Clock.systemDefaultZone());
                 when(batchPricing.priceCars(any(), any(), any(), any())).thenAnswer(inv -> {
                         java.util.Map<Long, PricingResult> map = new java.util.HashMap<>();

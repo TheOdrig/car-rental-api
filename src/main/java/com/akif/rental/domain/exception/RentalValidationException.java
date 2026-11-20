@@ -1,4 +1,4 @@
-package com.akif.rental.internal.exception;
+package com.akif.rental.domain.exception;
 
 import com.akif.shared.exception.ErrorCode;
 import com.akif.shared.exception.BaseException;

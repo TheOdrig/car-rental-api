@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface SimilarCarService {
 
-    List<SimilarCarDto> findSimilarAvailableCars(Long carId, LocalDate startDate, LocalDate endDate, int limit);
+    List<SimilarCarDto> findSimilarAvailableCars(Long carId, LocalDate startDate, LocalDate endDate, Integer limit);
 }

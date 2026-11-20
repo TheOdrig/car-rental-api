@@ -17,6 +17,7 @@ import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.api.RentalRequest;
 import com.akif.rental.internal.exception.*;
+import com.akif.rental.domain.exception.RentalValidationException;
 import com.akif.rental.internal.mapper.RentalMapper;
 import com.akif.rental.internal.service.RentalAssembler;
 import com.akif.rental.internal.service.PaymentWindow;
@@ -564,7 +565,7 @@ class RentalServiceTest {
             when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
 
             assertThatThrownBy(() -> rentalService.pickupRental(1L, null))
-                    .isInstanceOf(com.akif.rental.internal.exception.RentalValidationException.class)
+                    .isInstanceOf(com.akif.rental.domain.exception.RentalValidationException.class)
                     .hasMessageContaining("no-show");
 
             verify(paymentService, never()).capturePayment(anyLong());
@@ -595,8 +596,8 @@ class RentalServiceTest {
             when(rentalRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(testRental));
 
             assertThatThrownBy(() -> rentalService.pickupRental(1L, null))
-                    .isInstanceOf(com.akif.rental.internal.exception.RentalValidationException.class)
-                    .satisfies(error -> assertThat(((com.akif.rental.internal.exception.RentalValidationException) error)
+                    .isInstanceOf(com.akif.rental.domain.exception.RentalValidationException.class)
+                    .satisfies(error -> assertThat(((com.akif.rental.domain.exception.RentalValidationException) error)
                             .getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST));
 
             verify(paymentService, never()).capturePayment(anyLong());

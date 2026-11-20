@@ -4,7 +4,7 @@ import com.akif.auth.domain.enums.OAuth2ErrorType;
 import com.akif.auth.internal.config.OAuth2Properties;
 import com.akif.auth.internal.dto.oauth2.OAuth2TokenResponse;
 import com.akif.auth.internal.dto.oauth2.OAuth2UserInfo;
-import com.akif.auth.internal.exception.OAuth2AuthenticationException;
+import com.akif.auth.domain.exception.OAuth2AuthenticationException;
 import com.akif.auth.internal.service.oauth2.impl.GitHubOAuth2ProviderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

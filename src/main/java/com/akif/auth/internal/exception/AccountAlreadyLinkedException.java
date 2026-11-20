@@ -1,5 +1,6 @@
 package com.akif.auth.internal.exception;
 
+import com.akif.auth.domain.exception.OAuth2AuthenticationException;
 import com.akif.auth.domain.enums.OAuth2ErrorType;
 
 

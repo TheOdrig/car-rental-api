@@ -17,7 +17,7 @@ import com.akif.rental.internal.exception.InvalidRentalStateException;
 import com.akif.rental.internal.exception.RentalCancelNotAllowedException;
 import com.akif.rental.internal.exception.PaymentNotAuthorizedException;
 import com.akif.rental.internal.exception.RentalNotFoundException;
-import com.akif.rental.internal.exception.RentalValidationException;
+import com.akif.rental.domain.exception.RentalValidationException;
 import com.akif.rental.api.RentalCancelledEvent;
 import com.akif.rental.api.RentalConfirmedEvent;
 

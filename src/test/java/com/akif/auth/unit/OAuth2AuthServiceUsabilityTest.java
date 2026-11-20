@@ -9,7 +9,7 @@ import com.akif.auth.domain.enums.OAuth2Provider;
 import com.akif.auth.internal.config.OAuth2Properties;
 import com.akif.auth.internal.dto.oauth2.OAuth2TokenResponse;
 import com.akif.auth.internal.dto.oauth2.OAuth2UserInfo;
-import com.akif.auth.internal.exception.OAuth2AuthenticationException;
+import com.akif.auth.domain.exception.OAuth2AuthenticationException;
 import com.akif.auth.internal.repository.LinkedAccountRepository;
 import com.akif.auth.internal.repository.UserRepository;
 import com.akif.auth.internal.service.RefreshTokenService;

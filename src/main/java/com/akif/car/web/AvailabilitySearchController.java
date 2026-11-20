@@ -107,20 +107,14 @@ public class AvailabilitySearchController {
             @RequestParam(required = false) String startDate,
             @Parameter(description = "Rental end date (default: today + 30 days)", example = "2025-01-20")
             @RequestParam(required = false) String endDate,
-            @Parameter(description = "Maximum number of similar cars to return (default: 5, max: 10)")
-            @RequestParam(defaultValue = "5") @Min(1) @Max(10) int limit) {
-        
-        LocalDate start = startDate != null 
-            ? LocalDate.parse(startDate) 
-            : LocalDate.now(clock);
-        LocalDate end = endDate != null 
-            ? LocalDate.parse(endDate) 
-            : LocalDate.now(clock).plusDays(30);
+            @Parameter(description = "Maximum number of similar cars to return (default: 5, max: 10)",
+                    schema = @Schema(type = "integer", format = "int32", defaultValue = "5"))
+            @RequestParam(required = false) @Min(1) @Max(10) Integer limit) {
 
-        int effectiveLimit = Math.min(limit, 10);
-        
-        
-        List<SimilarCarDto> similarCars = similarCarService.findSimilarAvailableCars(id, start, end, effectiveLimit);
+        LocalDate start = startDate != null ? LocalDate.parse(startDate) : null;
+        LocalDate end = endDate != null ? LocalDate.parse(endDate) : null;
+
+        List<SimilarCarDto> similarCars = similarCarService.findSimilarAvailableCars(id, start, end, limit);
         
         
         return ResponseEntity.ok(similarCars);

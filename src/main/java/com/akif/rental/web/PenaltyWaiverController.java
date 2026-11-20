@@ -1,6 +1,7 @@
 package com.akif.rental.web;
 
 import com.akif.shared.security.AuthenticatedUser;
+import com.akif.rental.internal.mapper.PenaltyWaiverMapper;
 import com.akif.rental.internal.dto.penalty.PenaltyWaiverRequest;
 import com.akif.rental.internal.dto.penalty.PenaltyWaiverResponse;
 import com.akif.rental.domain.model.PenaltyWaiver;
@@ -19,7 +20,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/admin/rentals")
@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 public class PenaltyWaiverController {
 
     private final PenaltyWaiverService penaltyWaiverService;
+    private final PenaltyWaiverMapper penaltyWaiverMapper;
 
     @PostMapping("/{id}/penalty/waive")
     @Operation(summary = "Waive penalty",
@@ -55,7 +56,7 @@ public class PenaltyWaiverController {
                     request.reason(), caller.id());
         }
 
-        PenaltyWaiverResponse response = mapToDto(waiver);
+        PenaltyWaiverResponse response = penaltyWaiverMapper.toResponse(waiver);
         return ResponseEntity.ok(response);
     }
 
@@ -73,25 +74,8 @@ public class PenaltyWaiverController {
 
 
         List<PenaltyWaiver> history = penaltyWaiverService.getPenaltyHistory(id);
-        List<PenaltyWaiverResponse> response = history.stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
+        List<PenaltyWaiverResponse> response = penaltyWaiverMapper.toResponses(history);
 
         return ResponseEntity.ok(response);
-    }
-
-    private PenaltyWaiverResponse mapToDto(PenaltyWaiver waiver) {
-        return new PenaltyWaiverResponse(
-                waiver.getId(),
-                waiver.getRental().getId(),
-                waiver.getOriginalPenalty(),
-                waiver.getWaivedAmount(),
-                waiver.getRemainingPenalty(),
-                waiver.getReason(),
-                waiver.getAdminId(),
-                waiver.getWaivedAt(),
-                waiver.getRefundInitiated(),
-                waiver.getRefundTransactionId()
-        );
     }
 }

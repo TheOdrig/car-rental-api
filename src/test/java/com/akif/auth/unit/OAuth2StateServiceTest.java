@@ -2,7 +2,7 @@ package com.akif.auth.unit;
 
 import com.akif.auth.domain.enums.OAuth2ErrorType;
 import com.akif.auth.internal.config.OAuth2Properties;
-import com.akif.auth.internal.exception.OAuth2AuthenticationException;
+import com.akif.auth.domain.exception.OAuth2AuthenticationException;
 import com.akif.auth.internal.service.oauth2.impl.OAuth2StateService;
 import com.akif.testsupport.MutableClock;
 import org.junit.jupiter.api.BeforeEach;

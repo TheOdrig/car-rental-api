@@ -9,7 +9,7 @@ import com.akif.auth.domain.enums.AuthProvider;
 import com.akif.auth.domain.enums.OAuth2Provider;
 import com.akif.shared.enums.Role;
 import com.akif.auth.internal.exception.AccountAlreadyLinkedException;
-import com.akif.auth.internal.exception.OAuth2AuthenticationException;
+import com.akif.auth.domain.exception.OAuth2AuthenticationException;
 import com.akif.auth.domain.enums.OAuth2ErrorType;
 import com.akif.auth.domain.LinkedAccount;
 import com.akif.auth.domain.User;

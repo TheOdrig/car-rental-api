@@ -40,7 +40,13 @@ public class SimilarCarServiceImpl implements SimilarCarService {
     private final Clock clock;
 
     @Override
-    public List<SimilarCarDto> findSimilarAvailableCars(Long carId, LocalDate startDate, LocalDate endDate, int limit) {
+    public List<SimilarCarDto> findSimilarAvailableCars(Long carId, LocalDate requestedStart, LocalDate requestedEnd,
+                                                        Integer requestedLimit) {
+        LocalDate startDate = requestedStart != null ? requestedStart : LocalDate.now(clock);
+        LocalDate endDate = requestedEnd != null
+                ? requestedEnd
+                : LocalDate.now(clock).plusDays(properties.defaultWindowDays());
+        int limit = requestedLimit != null ? requestedLimit : properties.defaultLimit();
         log.debug("Finding similar available cars for car: {} from {} to {}, limit: {}",
                 carId, startDate, endDate, limit);
 

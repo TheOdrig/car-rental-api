@@ -1,7 +1,7 @@
 package com.akif.rental.domain;
 
 import com.akif.rental.domain.model.RentalDatePolicy;
-import com.akif.rental.internal.exception.RentalValidationException;
+import com.akif.rental.domain.exception.RentalValidationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
