@@ -68,6 +68,9 @@ class CustomerNameIntegrationTest {
     private CarRepository carRepository;
 
     @Autowired
+    private com.akif.rental.internal.repository.RentalRepository rentalRepository;
+
+    @Autowired
     private DamageReportRepository damageReportRepository;
 
     @Autowired
@@ -167,6 +170,39 @@ class CustomerNameIntegrationTest {
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT customer_full_name FROM car_rental.damage_reports WHERE id = ?",
                 String.class, damage.getId())).isEqualTo("Ada Lovelace");
+    }
+
+    @Test
+    @DisplayName("the repair migration leaves names that only contain the letters null inside a word")
+    void repairMigrationKeepsWordsContainingNull() throws Exception {
+        long rentalId = book();
+        jdbcTemplate.update("UPDATE car_rental.rentals SET user_full_name = ? WHERE id = ?", "Nullman Annull", rentalId);
+
+        String script = new String(new org.springframework.core.io.ClassPathResource(
+                "db/migration/V25__repair_null_customer_names.sql").getInputStream().readAllBytes(),
+                java.nio.charset.StandardCharsets.UTF_8);
+        jdbcTemplate.execute(script);
+
+        assertThat(storedRentalName(rentalId)).isEqualTo("Nullman Annull");
+    }
+
+    @Test
+    @DisplayName("the bulk name refresh bumps the version and update time so stale writers are rejected")
+    void bulkRefreshBumpsVersionAndUpdateTime() throws Exception {
+        long rentalId = book();
+        Long versionBefore = jdbcTemplate.queryForObject(
+                "SELECT version FROM car_rental.rentals WHERE id = ?", Long.class, rentalId);
+        java.sql.Timestamp updatedBefore = jdbcTemplate.queryForObject(
+                "SELECT update_time FROM car_rental.rentals WHERE id = ?", java.sql.Timestamp.class, rentalId);
+
+        rentalRepository.refreshCustomerName(customer.getId(), "Grace Hopper", java.time.Instant.now().plusSeconds(60));
+
+        assertThat(storedRentalName(rentalId)).isEqualTo("Grace Hopper");
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT version FROM car_rental.rentals WHERE id = ?", Long.class, rentalId)).isEqualTo(versionBefore + 1);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT update_time FROM car_rental.rentals WHERE id = ?", java.sql.Timestamp.class, rentalId))
+                .isAfterOrEqualTo(updatedBefore);
     }
 
     @Test

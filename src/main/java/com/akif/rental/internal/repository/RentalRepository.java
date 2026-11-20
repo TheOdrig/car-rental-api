@@ -21,8 +21,8 @@ import java.util.Optional;
 public interface RentalRepository extends JpaRepository<Rental, Long> {
 
         @org.springframework.data.jpa.repository.Modifying(flushAutomatically = true)
-        @Query("UPDATE Rental r SET r.userFullName = :name WHERE r.userId = :userId")
-        int refreshCustomerName(@Param("userId") Long userId, @Param("name") String name);
+        @Query("UPDATE VERSIONED Rental r SET r.userFullName = :name, r.updateTime = :now WHERE r.userId = :userId")
+        int refreshCustomerName(@Param("userId") Long userId, @Param("name") String name, @Param("now") java.time.Instant now);
 
         Page<Rental> findByUserIdAndIsDeletedFalse(Long userId, Pageable pageable);
 

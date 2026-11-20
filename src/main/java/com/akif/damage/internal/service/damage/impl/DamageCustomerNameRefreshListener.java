@@ -11,9 +11,10 @@ import org.springframework.stereotype.Component;
 class DamageCustomerNameRefreshListener {
 
     private final DamageReportRepository damageReportRepository;
+    private final java.time.Clock clock;
 
     @EventListener
     public void onProfileUpdated(UserProfileUpdatedEvent event) {
-        damageReportRepository.refreshCustomerName(event.userId(), event.displayName());
+        damageReportRepository.refreshCustomerName(event.userId(), event.displayName(), java.time.Instant.now(clock));
     }
 }
