@@ -15,7 +15,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
@@ -27,6 +26,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,6 +45,7 @@ class ReminderEventContentTest {
 
     private Rental rental(CurrencyType currency, String dailyPrice) {
         return Rental.builder()
+                .id(1L)
                 .userEmail("customer@example.com")
                 .carBrand("Toyota")
                 .carModel("Corolla")
@@ -57,7 +58,8 @@ class ReminderEventContentTest {
     }
 
     private ReminderScheduler scheduler(PenaltyConfig config) {
-        return new ReminderScheduler(CLOCK, rentalRepository, config, eventPublisher);
+        return new ReminderScheduler(CLOCK, rentalRepository, config, eventPublisher,
+                new com.akif.rental.internal.config.ReminderProperties(50, 200));
     }
 
     @Test
@@ -68,7 +70,7 @@ class ReminderEventContentTest {
         config.setDailyPenaltyRate(new BigDecimal("2.00"));
         config.setGracePeriodMinutes(30);
         when(rentalRepository.findRentalsForReturnReminder(eq(LocalDate.of(2026, 3, 10)), eq(RentalStatus.IN_USE),
-                any(Pageable.class))).thenReturn(new PageImpl<>(List.of(rental(CurrencyType.JPY, "5000"))));
+                anyLong(), any(Pageable.class))).thenReturn(List.of(rental(CurrencyType.JPY, "5000")));
 
         scheduler(config).sendReturnReminders();
 
@@ -85,7 +87,7 @@ class ReminderEventContentTest {
     @DisplayName("the pickup reminder names the car and the date and invents no location")
     void pickupReminderHasNoPlaceholderLocation() {
         when(rentalRepository.findRentalsForPickupReminder(eq(LocalDate.of(2026, 3, 11)), eq(RentalStatus.CONFIRMED),
-                any(Pageable.class))).thenReturn(new PageImpl<>(List.of(rental(CurrencyType.TRY, "100"))));
+                anyLong(), any(Pageable.class))).thenReturn(List.of(rental(CurrencyType.TRY, "100")));
 
         scheduler(new PenaltyConfig()).sendPickupReminders();
 

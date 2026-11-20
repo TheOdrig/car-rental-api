@@ -67,18 +67,24 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
                         "WHERE r.startDate = :tomorrow " +
                         "AND r.status = :status " +
                         "AND r.pickupReminderSent = false " +
-                        "AND r.isDeleted = false")
-        Page<Rental> findRentalsForPickupReminder(@Param("tomorrow") LocalDate tomorrow,
+                        "AND r.isDeleted = false " +
+                        "AND r.id > :afterId " +
+                        "ORDER BY r.id ASC")
+        List<Rental> findRentalsForPickupReminder(@Param("tomorrow") LocalDate tomorrow,
                         @Param("status") RentalStatus status,
+                        @Param("afterId") Long afterId,
                         Pageable pageable);
 
         @Query("SELECT r FROM Rental r " +
                         "WHERE r.endDate = :today " +
                         "AND r.status = :status " +
                         "AND r.returnReminderSent = false " +
-                        "AND r.isDeleted = false")
-        Page<Rental> findRentalsForReturnReminder(@Param("today") LocalDate today,
+                        "AND r.isDeleted = false " +
+                        "AND r.id > :afterId " +
+                        "ORDER BY r.id ASC")
+        List<Rental> findRentalsForReturnReminder(@Param("today") LocalDate today,
                         @Param("status") RentalStatus status,
+                        @Param("afterId") Long afterId,
                         Pageable pageable);
 
         @Query("SELECT r FROM Rental r WHERE " +
