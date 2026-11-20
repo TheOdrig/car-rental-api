@@ -25,6 +25,9 @@ class AvatarStorageServiceImplTest {
     @Mock
     private FileUploadService fileUploadService;
 
+    @Mock
+    private com.akif.auth.internal.config.AvatarProperties avatarProperties;
+
     @InjectMocks
     private AvatarStorageServiceImpl avatarStorageService;
 
@@ -34,6 +37,10 @@ class AvatarStorageServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        org.mockito.Mockito.lenient().when(avatarProperties.maxFileSizeBytes()).thenReturn(5L * 1024 * 1024);
+        org.mockito.Mockito.lenient().when(avatarProperties.allowedTypes())
+                .thenReturn(java.util.List.of("image/jpeg", "image/png", "image/gif", "image/webp"));
+        org.mockito.Mockito.lenient().when(avatarProperties.defaultUrlExpirationMinutes()).thenReturn(60);
         validImage = new MockMultipartFile("avatar", "avatar.jpg", "image/jpeg", new byte[1024]);
         invalidImage = new MockMultipartFile("avatar", "document.pdf", "application/pdf", new byte[1024]);
         largeImage = new MockMultipartFile("avatar", "large.jpg", "image/jpeg", new byte[10 * 1024 * 1024]);

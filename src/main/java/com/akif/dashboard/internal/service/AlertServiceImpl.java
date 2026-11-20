@@ -9,6 +9,7 @@ import com.akif.dashboard.api.dto.FleetStatusDto;
 import com.akif.dashboard.api.AlertSeverity;
 import com.akif.dashboard.api.AlertType;
 import com.akif.dashboard.domain.model.Alert;
+import com.akif.dashboard.internal.config.AlertProperties;
 import com.akif.dashboard.internal.mapper.DashboardMapper;
 import com.akif.dashboard.internal.repository.AlertRepository;
 import com.akif.rental.api.LateHoursPolicy;
@@ -18,6 +19,7 @@ import com.akif.payment.api.PaymentService;
 import com.akif.dashboard.internal.exception.AlertNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -38,9 +40,8 @@ public class AlertServiceImpl implements AlertService {
 
     private final Clock clock;
     private final LateHoursPolicy lateHoursPolicy;
+    private final AlertProperties properties;
 
-    private static final BigDecimal LOW_AVAILABILITY_THRESHOLD = new BigDecimal("20.00");
-    private static final int DISPUTE_DAYS_THRESHOLD = 7;
 
     private final AlertRepository alertRepository;
     private final DashboardMapper dashboardMapper;
@@ -51,7 +52,7 @@ public class AlertServiceImpl implements AlertService {
 
     @Override
     @Transactional
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(fixedRateString = "${dashboard.alerts.interval-ms:300000}")
     public void generateAlerts() {
         log.info("Starting scheduled alert generation");
 
@@ -100,25 +101,31 @@ public class AlertServiceImpl implements AlertService {
     private void generateLateReturnAlerts() {
         log.debug("Checking for severely late return alerts");
 
-        Pageable pageable = PageRequest.of(0, 100);
-        List<RentalResponse> overdueRentals = rentalService.findOverdueRentals(pageable).getContent();
-
-        for (RentalResponse rental : overdueRentals) {
-            long hoursLate = calculateHoursLate(rental.endDate());
-
-            if (hoursLate >= lateHoursPolicy.severelyLateThresholdHours()) {
-                boolean alertExists = alertRepository.existsByTypeAndReferenceIdAndAcknowledgedFalse(
-                        AlertType.LATE_RETURN, rental.id());
-
-                if (!alertExists) {
-                    createLateReturnAlert(rental, hoursLate);
-                }
+        Pageable pageable = PageRequest.of(0, properties.overduePageSize());
+        Page<RentalResponse> page;
+        do {
+            page = rentalService.findOverdueRentals(pageable);
+            for (RentalResponse rental : page.getContent()) {
+                flagIfSeverelyLate(rental);
             }
+            pageable = page.nextPageable();
+        } while (page.hasNext());
+    }
+
+    private void flagIfSeverelyLate(RentalResponse rental) {
+        long hoursLate = calculateHoursLate(rental.endDate());
+        if (hoursLate < lateHoursPolicy.severelyLateThresholdHours()) {
+            return;
+        }
+        boolean alertExists = alertRepository.existsByTypeAndReferenceIdAndAcknowledgedFalse(
+                AlertType.LATE_RETURN, rental.id());
+        if (!alertExists) {
+            createLateReturnAlert(rental, hoursLate);
         }
     }
 
     private void generateLowAvailabilityAlert() {
-        log.debug("Checking for low availability alert (<20%)");
+        log.debug("Checking for low availability alert");
 
         FleetStatusDto fleet = dashboardQueryService.fetchFleetStatus();
         int totalCars = fleet.totalCars();
@@ -133,7 +140,7 @@ public class AlertServiceImpl implements AlertService {
                 .multiply(BigDecimal.valueOf(100))
                 .divide(BigDecimal.valueOf(totalCars), 2, RoundingMode.HALF_UP);
 
-        if (availabilityRate.compareTo(LOW_AVAILABILITY_THRESHOLD) < 0) {
+        if (availabilityRate.compareTo(properties.lowAvailabilityPercent()) < 0) {
             boolean alertExists = alertRepository.existsByTypeAndReferenceIdAndAcknowledgedFalse(
                     AlertType.LOW_AVAILABILITY, 0L);
 
@@ -144,9 +151,9 @@ public class AlertServiceImpl implements AlertService {
     }
 
     private void generateUnresolvedDisputeAlerts() {
-        log.debug("Checking for unresolved dispute alerts (>7 days)");
+        log.debug("Checking for unresolved dispute alerts");
 
-        int unresolvedCount = damageService.countUnresolvedDisputesOlderThan(DISPUTE_DAYS_THRESHOLD);
+        int unresolvedCount = damageService.countUnresolvedDisputesOlderThan(properties.disputeDaysThreshold());
 
         if (unresolvedCount > 0) {
             boolean alertExists = alertRepository.existsByTypeAndReferenceIdAndAcknowledgedFalse(
@@ -227,7 +234,7 @@ public class AlertServiceImpl implements AlertService {
                 .title("Unresolved Damage Disputes")
                 .message(String.format(
                         "%d damage dispute(s) have been unresolved for more than %d days. Please review and take action.",
-                        count, DISPUTE_DAYS_THRESHOLD))
+                        count, properties.disputeDaysThreshold()))
                 .actionUrl("/admin/damages")
                 .referenceId(0L)
                 .acknowledged(false)

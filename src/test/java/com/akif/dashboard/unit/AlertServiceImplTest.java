@@ -76,6 +76,9 @@ class AlertServiceImplTest {
     @Spy
     private Clock clock = Clock.systemDefaultZone();
 
+    @Mock
+    private com.akif.dashboard.internal.config.AlertProperties alertProperties;
+
     @InjectMocks
     private AlertServiceImpl alertService;
 
@@ -91,6 +94,9 @@ class AlertServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        org.mockito.Mockito.lenient().when(alertProperties.lowAvailabilityPercent()).thenReturn(new BigDecimal("20.00"));
+        org.mockito.Mockito.lenient().when(alertProperties.disputeDaysThreshold()).thenReturn(7);
+        org.mockito.Mockito.lenient().when(alertProperties.overduePageSize()).thenReturn(100);
         org.mockito.Mockito.lenient().when(lateHoursPolicy.severelyLateThresholdHours()).thenReturn(24L);
         testAlert = Alert.builder()
                 .id(1L)
@@ -119,6 +125,29 @@ class AlertServiceImplTest {
     @Nested
     @DisplayName("Generate Alerts Operations")
     class GenerateAlertsOperations {
+
+        @Test
+        @DisplayName("Should page through every overdue rental")
+        void shouldPageThroughAllOverdueRentals() {
+            org.mockito.Mockito.lenient().when(alertProperties.overduePageSize()).thenReturn(1);
+            RentalResponse first = createOverdueRental(1L, LocalDate.now().minusDays(3));
+            RentalResponse second = createOverdueRental(2L, LocalDate.now().minusDays(3));
+            when(lateHoursPolicy.lateHours(any(), any())).thenReturn(48L);
+            when(rentalService.findOverdueRentals(org.mockito.ArgumentMatchers.argThat(p -> p != null && p.getPageNumber() == 0)))
+                    .thenReturn(new PageImpl<>(List.of(first), org.springframework.data.domain.PageRequest.of(0, 1), 2));
+            when(rentalService.findOverdueRentals(org.mockito.ArgumentMatchers.argThat(p -> p != null && p.getPageNumber() == 1)))
+                    .thenReturn(new PageImpl<>(List.of(second), org.springframework.data.domain.PageRequest.of(1, 1), 2));
+            when(alertRepository.existsByTypeAndReferenceIdAndAcknowledgedFalse(any(), any())).thenReturn(false);
+            when(alertRepository.save(any(Alert.class))).thenReturn(testAlert);
+            when(dashboardQueryService.fetchFleetStatus()).thenReturn(fleet(50));
+            when(damageService.countUnresolvedDisputesOlderThan(7)).thenReturn(0);
+            when(paymentService.countFailedPayments()).thenReturn(0);
+
+            alertService.generateAlerts();
+
+            verify(alertRepository).existsByTypeAndReferenceIdAndAcknowledgedFalse(AlertType.LATE_RETURN, 1L);
+            verify(alertRepository).existsByTypeAndReferenceIdAndAcknowledgedFalse(AlertType.LATE_RETURN, 2L);
+        }
 
         @Test
         @DisplayName("Should generate CRITICAL alert for late return >24 hours")

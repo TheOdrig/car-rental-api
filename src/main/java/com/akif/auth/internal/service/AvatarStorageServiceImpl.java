@@ -1,6 +1,7 @@
 package com.akif.auth.internal.service;
 
 import com.akif.auth.api.AvatarStorageService;
+import com.akif.auth.internal.config.AvatarProperties;
 import com.akif.shared.exception.FileUploadException;
 import com.akif.shared.infrastructure.FileUploadService;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -16,15 +16,9 @@ import java.util.List;
 public class AvatarStorageServiceImpl implements AvatarStorageService {
 
     private static final String AVATARS_DIRECTORY = "avatars";
-    private static final List<String> ALLOWED_TYPES = List.of(
-            "image/jpeg",
-            "image/png",
-            "image/gif",
-            "image/webp");
-    private static final long MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
-    private static final int DEFAULT_URL_EXPIRATION_MINUTES = 60;
 
     private final FileUploadService fileUploadService;
+    private final AvatarProperties properties;
 
     @Override
     public String storeAvatar(Long userId, MultipartFile file) {
@@ -64,7 +58,7 @@ public class AvatarStorageServiceImpl implements AvatarStorageService {
             return avatarKey;
         }
 
-        int expiration = expirationMinutes > 0 ? expirationMinutes : DEFAULT_URL_EXPIRATION_MINUTES;
+        int expiration = expirationMinutes > 0 ? expirationMinutes : properties.defaultUrlExpirationMinutes();
         return fileUploadService.generateSecureUrl(avatarKey, expiration);
     }
 
@@ -77,11 +71,11 @@ public class AvatarStorageServiceImpl implements AvatarStorageService {
             throw new FileUploadException("Avatar file is required");
         }
 
-        if (!fileUploadService.validateFileType(file, ALLOWED_TYPES)) {
+        if (!fileUploadService.validateFileType(file, properties.allowedTypes())) {
             throw new FileUploadException("Invalid file type. Allowed types: JPEG, PNG, GIF, WebP");
         }
 
-        if (!fileUploadService.validateFileSize(file, MAX_FILE_SIZE_BYTES)) {
+        if (!fileUploadService.validateFileSize(file, properties.maxFileSizeBytes())) {
             throw new FileUploadException("File size exceeds maximum limit of 5MB");
         }
     }

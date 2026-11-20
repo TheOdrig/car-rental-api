@@ -13,7 +13,7 @@ public class LateReturnScheduler {
 
     private final LateReturnDetectionService lateReturnDetectionService;
 
-    @Scheduled(fixedRate = 900000)
+    @Scheduled(fixedRateString = "${rental.late-return.detection-interval-ms:900000}")
     public void detectLateReturns() {
         log.info("Starting scheduled late return detection job");
         

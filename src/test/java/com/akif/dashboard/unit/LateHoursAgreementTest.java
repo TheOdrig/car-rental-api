@@ -82,7 +82,7 @@ class LateHoursAgreementTest {
         when(alertDashboard.fetchFleetStatus())
                 .thenReturn(new FleetStatusDto(100, 50, 0, 0, 0, 0, 0, BigDecimal.ZERO, Instant.now()));
         AlertServiceImpl alerts = new AlertServiceImpl(
-                clock, policy, alertRepository, mock(DashboardMapper.class), rentalService,
+                clock, policy, new com.akif.dashboard.internal.config.AlertProperties(new BigDecimal("20.00"), 7, 100), alertRepository, mock(DashboardMapper.class), rentalService,
                 alertDashboard, mock(DamageService.class), mock(PaymentService.class));
         when(alertRepository.save(any(Alert.class))).thenAnswer(call -> call.getArgument(0));
         alerts.generateAlerts();

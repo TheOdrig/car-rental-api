@@ -21,7 +21,12 @@ class ConfigurationFailFastTest {
 
     @Configuration
     @EnableConfigurationProperties({PricingConfig.class, PenaltyConfig.class, RentalProperties.class,
-            DamageConfig.class, FallbackRatesConfig.class, RateLimitProperties.class, SimilarCarProperties.class})
+            DamageConfig.class, FallbackRatesConfig.class, RateLimitProperties.class, SimilarCarProperties.class,
+            com.akif.dashboard.internal.config.AlertProperties.class,
+            com.akif.auth.internal.config.AvatarProperties.class,
+            com.akif.auth.internal.config.RefreshTokenProperties.class,
+            com.akif.rental.internal.config.ReminderProperties.class,
+            com.akif.car.internal.config.AvailabilityProperties.class})
     static class Config {
     }
 
@@ -108,6 +113,20 @@ class ConfigurationFailFastTest {
     @DisplayName("rejects damage currency thresholds that are not increasing")
     void rejectsUnorderedCurrencyDamageThresholds() {
         runner().withPropertyValues("damage.currency-limits.jpy.minor-threshold=50000")
+                .run(context -> assertThat(context).hasFailed());
+    }
+
+    @Test
+    @DisplayName("rejects an alert availability threshold above 100 percent")
+    void rejectsInvalidAlertThreshold() {
+        runner().withPropertyValues("dashboard.alerts.low-availability-percent=150")
+                .run(context -> assertThat(context).hasFailed());
+    }
+
+    @Test
+    @DisplayName("rejects a zero reminder batch size")
+    void rejectsInvalidReminderBatch() {
+        runner().withPropertyValues("rental.reminder.batch-size=0")
                 .run(context -> assertThat(context).hasFailed());
     }
 

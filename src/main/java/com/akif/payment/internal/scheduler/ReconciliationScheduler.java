@@ -23,7 +23,7 @@ public class ReconciliationScheduler {
 
     private final PaymentReconciliationService reconciliationService;
 
-    @Scheduled(cron = "0 0 2 * * *")
+    @Scheduled(cron = "${payment.reconciliation.cron:0 0 2 * * *}")
     public void runDailyReconciliation() {
         LocalDate previousDay = LocalDate.now(clock).minusDays(1);
         log.info("Starting scheduled reconciliation for date: {}", previousDay);

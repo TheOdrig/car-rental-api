@@ -31,8 +31,6 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     private final Clock clock;
 
-    private static final int TOKEN_EXPIRY_HOURS = 1;
-
     private final PasswordResetTokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final PasswordService passwordService;
@@ -41,6 +39,9 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     @Value("${app.password-reset.base-url:http://localhost:3000}")
     private String baseUrl;
+
+    @Value("${app.password-reset.token-expiry-hours:1}")
+    private int tokenExpiryHours;
 
     @Override
     @Transactional
@@ -58,7 +59,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         PasswordResetToken resetToken = PasswordResetToken.builder()
                 .token(TokenHashing.sha256Hex(token))
                 .email(email)
-                .expiryDate(Instant.now(clock).plus(Duration.ofHours(TOKEN_EXPIRY_HOURS)))
+                .expiryDate(Instant.now(clock).plus(Duration.ofHours(tokenExpiryHours)))
                 .used(false)
                 .createdAt(Instant.now(clock))
                 .build();

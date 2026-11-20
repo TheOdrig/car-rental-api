@@ -69,6 +69,7 @@ class PasswordResetServiceImplTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(passwordResetService, "baseUrl", "http://localhost:3000");
+        ReflectionTestUtils.setField(passwordResetService, "tokenExpiryHours", 1);
 
         testUser = User.builder()
                 .id(1L)
