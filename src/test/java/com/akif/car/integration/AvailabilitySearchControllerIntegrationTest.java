@@ -380,7 +380,8 @@ class AvailabilitySearchControllerIntegrationTest {
         void shouldRejectInvalidMonthFormat() throws Exception {
             mockMvc.perform(get("/api/v1/cars/{id}/availability/calendar", availableCar.getId())
                             .param("month", "invalid-month"))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("yyyy-MM")));
         }
     }
 

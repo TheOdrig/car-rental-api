@@ -192,6 +192,23 @@ class FileAccessControlIntegrationTest {
             mockMvc.perform(as(owner, "/api/v1/files/damage-photos/" + UUID.randomUUID() + ".jpg"))
                     .andExpect(status().isNotFound());
         }
+
+        @Test
+        @DisplayName("an admin asking for a missing file gets 404 problem+json")
+        void missingFileForAdminIsProblemJson() throws Exception {
+            mockMvc.perform(as(admin, "/api/v1/files/damage-photos/" + UUID.randomUUID() + ".jpg")
+                            .accept("image/avif,image/webp,image/png,image/*;q=0.8,*/*;q=0.5"))
+                    .andExpect(status().isNotFound())
+                    .andExpect(content().contentTypeCompatibleWith("application/problem+json"));
+        }
+
+        @Test
+        @DisplayName("the photo response states its Content-Length")
+        void photoStatesContentLength() throws Exception {
+            mockMvc.perform(as(owner, url()))
+                    .andExpect(status().isOk())
+                    .andExpect(header().longValue("Content-Length", ImageFixtures.jpeg().length));
+        }
     }
 
     @Nested

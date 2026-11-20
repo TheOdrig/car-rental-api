@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import com.akif.shared.exception.InvalidParameterException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @RestController
@@ -71,15 +73,21 @@ public class AvailabilitySearchController {
             @Parameter(description = "Month in yyyy-MM format (default: current month)", example = "2025-01")
             @RequestParam(required = false) String month) {
         
-        YearMonth targetMonth = month != null 
-            ? YearMonth.parse(month, DateTimeFormatter.ofPattern("yyyy-MM"))
-            : YearMonth.now(clock);
+        YearMonth targetMonth = month != null ? parseMonth(month) : YearMonth.now(clock);
         
         
         CarAvailabilityCalendarDto calendar = carAvailabilityService.getCarAvailabilityCalendar(id, targetMonth);
         
         
         return ResponseEntity.ok(calendar);
+    }
+
+    private static YearMonth parseMonth(String month) {
+        try {
+            return YearMonth.parse(month, DateTimeFormatter.ofPattern("yyyy-MM"));
+        } catch (DateTimeParseException e) {
+            throw new InvalidParameterException("Invalid month. Expected format: yyyy-MM");
+        }
     }
 
     @GetMapping("/{id}/similar")

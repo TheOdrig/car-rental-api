@@ -1,5 +1,6 @@
 package com.akif.shared.web;
 
+import com.akif.shared.exception.StoredFileNotFoundException;
 import com.akif.shared.infrastructure.FileAccessPolicy;
 import com.akif.shared.security.AuthenticatedUser;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,7 +51,7 @@ public class FileController {
 
     private ResponseEntity<Resource> getFile(String directory, String filename, AuthenticatedUser caller) {
         if (!mayRead(directory, filename, caller)) {
-            return ResponseEntity.notFound().build();
+            throw new StoredFileNotFoundException();
         }
         try {
             Path root = Paths.get(baseUploadDir, directory).toAbsolutePath().normalize();
@@ -61,20 +63,25 @@ public class FileController {
 
             if (resource.exists() && resource.isReadable()) {
                 String contentType = determineContentType(filename);
+                long contentLength = resource.contentLength();
 
                 return ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(contentType))
+                        .contentLength(contentLength)
                         .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
                         .header("X-Content-Type-Options", "nosniff")
                         .header(HttpHeaders.CACHE_CONTROL, "private, max-age=300")
                         .body(resource);
             } else {
                 log.warn("File not found or not readable: {}", filePath);
-                return ResponseEntity.notFound().build();
+                throw new StoredFileNotFoundException();
             }
         } catch (MalformedURLException e) {
             log.error("Error loading file: {}", filename, e);
             return ResponseEntity.badRequest().build();
+        } catch (IOException e) {
+            log.warn("File could not be read: {}", filename);
+            throw new StoredFileNotFoundException();
         }
     }
 
