@@ -590,6 +590,24 @@ class PaymentCommittedTransactionsIntegrationTest {
     }
 
     @Test
+    @DisplayName("a rental whose authorization webhook is late is synced from the gateway and not cancelled")
+    void lateWebhookDoesNotCancelAPaidRental() {
+        Rental rental = rental(LocalDate.now(), LocalDate.now().plusDays(3), RentalStatus.CONFIRMED);
+        Payment payment = rentalPayment(rental, PaymentStatus.PENDING);
+        PaymentIntentResult intent = paymentService.createOrGetIntentForRental(rental.getId());
+        jdbcTemplate.update("UPDATE car_rental.payments SET status = 'PENDING', last_synced_at = NULL WHERE rental_id = ?", rental.getId());
+        doReturn(new GatewayIntent(intent.paymentIntentId(), null, GatewayIntentStatus.REQUIRES_CAPTURE,
+                "pm_late", "cus_late", 100L, "try")).when(paymentGateway).retrieveIntent(intent.paymentIntentId());
+
+        int expired = expiryScheduler.expireUnpaidRentals();
+
+        assertThat(expired).isZero();
+        assertThat(rentalRepository.findById(rental.getId()).orElseThrow().getStatus()).isEqualTo(RentalStatus.CONFIRMED);
+        assertThat(paymentRepository.findById(payment.getId()).orElseThrow().getStatus()).isEqualTo(PaymentStatus.AUTHORIZED);
+        verify(paymentGateway, times(0)).cancel(anyString(), anyString());
+    }
+
+    @Test
     @DisplayName("a same-day rental approved moments ago keeps its grace period")
     void sameDayRentalKeepsTheGracePeriod() {
         Rental rental = rental(LocalDate.now(), LocalDate.now().plusDays(3), RentalStatus.CONFIRMED);
@@ -627,6 +645,8 @@ class PaymentCommittedTransactionsIntegrationTest {
         rentalPayment(rental, PaymentStatus.PENDING);
         PaymentIntentResult intent = paymentService.createOrGetIntentForRental(rental.getId());
         jdbcTemplate.update("UPDATE car_rental.payments SET status = 'PENDING' WHERE rental_id = ?", rental.getId());
+        doReturn(new GatewayIntent(intent.paymentIntentId(), null, GatewayIntentStatus.REQUIRES_PAYMENT_METHOD,
+                null, "cus_open", 100L, "try")).when(paymentGateway).retrieveIntent(intent.paymentIntentId());
 
         expiryScheduler.expireUnpaidRentals();
 

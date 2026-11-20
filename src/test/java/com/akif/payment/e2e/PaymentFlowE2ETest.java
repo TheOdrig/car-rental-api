@@ -596,6 +596,21 @@ class PaymentFlowE2ETest extends E2ETestBase {
         }
 
         @Test
+        @DisplayName("payment-intent after the payment deadline answers 409 PAYMENT_DEADLINE_PASSED")
+        void deadlinePassed() throws Exception {
+            LocalDate start = LocalDate.now().plusDays(3);
+            Long rentalId = confirmedRentalId(start, start.plusDays(3));
+            clock.advance(java.time.Duration.ofDays(4));
+
+            mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
+                            .header("Authorization", "Bearer " + generateUserToken(customer)))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.code").value("PAYMENT_DEADLINE_PASSED"))
+                    .andExpect(jsonPath("$.details.paymentDueBy").isNotEmpty());
+            verify(paymentGateway, times(0)).createIntent(any(), anyString());
+        }
+
+        @Test
         @DisplayName("payment-intent is allowed once the clock reaches the opening date of the real window")
         void windowOpensWhenTheClockReachesIt() throws Exception {
             LocalDate start = LocalDate.now().plusDays(10);

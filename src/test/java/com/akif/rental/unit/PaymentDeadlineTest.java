@@ -69,4 +69,13 @@ class PaymentDeadlineTest {
 
         assertThat(properties.getPaymentGraceHours()).isEqualTo(1);
     }
+
+    @Test
+    @DisplayName("a grace period above 72 hours is lowered to 72 hours")
+    void graceHoursHaveAnUpperBound() {
+        properties.setPaymentGraceHours(500);
+        properties.validate();
+
+        assertThat(properties.getPaymentGraceHours()).isEqualTo(72);
+    }
 }

@@ -93,6 +93,7 @@ public class RentalQueryService {
         }
 
         paymentWindow.requireOpen(rental.getStartDate());
+        paymentWindow.requireNotOverdue(rental.getStartDate(), rental.getConfirmedAt());
 
         PaymentIntentResult result = paymentService.createOrGetIntentForRental(rentalId);
         log.info("Payment intent ready for rental: {}, status: {}", rentalId, result.status());

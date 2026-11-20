@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 public class RentalProperties {
 
     private static final int STRIPE_HOLD_DAYS = 7;
+    private static final int MAX_PAYMENT_GRACE_HOURS = 72;
 
     private int maxRentalDays = 30;
     private int maxLeadDays = 180;
@@ -26,9 +27,11 @@ public class RentalProperties {
 
     @PostConstruct
     public void validate() {
-        if (paymentGraceHours < 1) {
-            log.warn("Invalid rental.payment-grace-hours: {}. It must be at least 1. Using 1", paymentGraceHours);
-            paymentGraceHours = 1;
+        if (paymentGraceHours < 1 || paymentGraceHours > MAX_PAYMENT_GRACE_HOURS) {
+            int boundedHours = Math.min(Math.max(paymentGraceHours, 1), MAX_PAYMENT_GRACE_HOURS);
+            log.warn("Invalid rental.payment-grace-hours: {}. It must be between 1 and {}. Using {}",
+                    paymentGraceHours, MAX_PAYMENT_GRACE_HOURS, boundedHours);
+            paymentGraceHours = boundedHours;
         }
         int latestSafeDay = Math.max(1, STRIPE_HOLD_DAYS - 1 - paymentWindowDays);
         if (noShowDays < 1 || noShowDays > latestSafeDay) {

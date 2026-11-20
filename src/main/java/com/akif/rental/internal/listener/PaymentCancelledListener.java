@@ -13,7 +13,6 @@ import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
 import java.time.Clock;
-import java.time.LocalDate;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -34,8 +33,8 @@ public class PaymentCancelledListener {
             return;
         }
         Rental rental = found.get();
-        LocalDate today = LocalDate.now(clock);
-        boolean windowOpen = paymentWindow.hasOpened(rental.getStartDate()) && today.isBefore(rental.getStartDate());
+        boolean windowOpen = paymentWindow.hasOpened(rental.getStartDate())
+                && !paymentWindow.isOverdue(rental.getStartDate(), rental.getConfirmedAt());
         if (rental.getStatus() != RentalStatus.CONFIRMED || !windowOpen) {
             log.info("Payment cancelled for rental {} but no retry is requested (status={}, windowOpen={})",
                     rental.getId(), rental.getStatus(), windowOpen);

@@ -59,6 +59,10 @@ public class UnpaidRentalExpiryScheduler {
         int expired = 0;
         for (Long rentalId : candidates) {
             try {
+                if (!isExpiryCandidate(rentalId, today)) {
+                    continue;
+                }
+                paymentService.syncAndGetSummaryForRental(rentalId);
                 Boolean done = transactionTemplate.execute(status -> expireIfUnpaid(rentalId, today));
                 if (Boolean.TRUE.equals(done)) {
                     expired++;
@@ -71,6 +75,15 @@ public class UnpaidRentalExpiryScheduler {
             log.info("Cancelled {} unpaid rental(s) whose start date has arrived", expired);
         }
         return expired;
+    }
+
+    private boolean isExpiryCandidate(Long rentalId, LocalDate today) {
+        return Boolean.TRUE.equals(transactionTemplate.execute(status -> rentalRepository
+                .findByIdAndIsDeletedFalse(rentalId)
+                .map(rental -> rental.getStatus() == RentalStatus.CONFIRMED
+                        && !rental.getStartDate().isAfter(today)
+                        && paymentWindow.isOverdue(rental.getStartDate(), rental.getConfirmedAt()))
+                .orElse(false)));
     }
 
     private boolean expireIfUnpaid(Long rentalId, LocalDate today) {

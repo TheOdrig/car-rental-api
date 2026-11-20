@@ -1,6 +1,7 @@
 package com.akif.rental.internal.service;
 
 import com.akif.rental.internal.config.RentalProperties;
+import com.akif.rental.internal.exception.PaymentDeadlinePassedException;
 import com.akif.rental.internal.exception.PaymentWindowNotOpenException;
 import lombok.RequiredArgsConstructor;
 import org.mapstruct.Named;
@@ -42,6 +43,12 @@ public class PaymentWindow {
 
     public boolean hasOpened(LocalDate startDate) {
         return !LocalDate.now(clock).isBefore(opensOn(startDate));
+    }
+
+    public void requireNotOverdue(LocalDate startDate, Instant confirmedAt) {
+        if (isOverdue(startDate, confirmedAt)) {
+            throw new PaymentDeadlinePassedException(dueBy(startDate, confirmedAt));
+        }
     }
 
     public void requireOpen(LocalDate startDate) {
