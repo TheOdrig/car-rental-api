@@ -1246,6 +1246,16 @@
           "description" : {
             "type" : "string"
           },
+          "disputeComments" : {
+            "type" : "string"
+          },
+          "disputeReason" : {
+            "type" : "string"
+          },
+          "disputedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
           "id" : {
             "format" : "int64",
             "type" : "integer"
@@ -1254,6 +1264,9 @@
             "type" : "boolean"
           },
           "insuranceDeductible" : {
+            "type" : "number"
+          },
+          "originalLiability" : {
             "type" : "number"
           },
           "pending" : {
@@ -1265,6 +1278,9 @@
             },
             "type" : "array"
           },
+          "refundAmount" : {
+            "type" : "number"
+          },
           "rentalId" : {
             "format" : "int64",
             "type" : "integer"
@@ -1273,6 +1289,13 @@
             "type" : "number"
           },
           "reportedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "resolutionNotes" : {
+            "type" : "string"
+          },
+          "resolvedAt" : {
             "format" : "date-time",
             "type" : "string"
           },

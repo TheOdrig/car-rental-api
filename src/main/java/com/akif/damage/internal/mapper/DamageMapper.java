@@ -21,6 +21,7 @@ public interface DamageMapper {
     @Mapping(target = "carSummary.licensePlate", source = "carLicensePlate")
     @Mapping(target = "carSummary.thumbnailUrl", ignore = true)
     @Mapping(target = "photos", ignore = true)
+    @Mapping(target = "refundAmount", source = "disputeRefundAmount")
     DamageReportDto toPublicDto(DamageReport damageReport);
 
     List<DamageReportDto> toPublicDtoList(List<DamageReport> damageReports);

@@ -30,7 +30,14 @@ public record DamageReportDto(
     CarSummaryResponse carSummary,
     String assessmentNotes,
     BigDecimal insuranceDeductible,
-    List<DamagePhotoDto> photos
+    List<DamagePhotoDto> photos,
+    String disputeReason,
+    String disputeComments,
+    Instant disputedAt,
+    BigDecimal originalLiability,
+    BigDecimal refundAmount,
+    String resolutionNotes,
+    Instant resolvedAt
 ) {
 
     public DamageReportDto(
@@ -50,13 +57,15 @@ public record DamageReportDto(
             Instant reportedAt,
             Instant assessedAt) {
         this(id, rentalId, carId, carLicensePlate, customerName, description, damageLocation, severity, category,
-                status, repairCostEstimate, customerLiability, insuranceCoverage, reportedAt, assessedAt, null, null, null, null, null);
+                status, repairCostEstimate, customerLiability, insuranceCoverage, reportedAt, assessedAt, null, null, null, null, null,
+                null, null, null, null, null, null, null);
     }
 
     public DamageReportDto withPhotos(List<DamagePhotoDto> photos) {
         return new DamageReportDto(id, rentalId, carId, carLicensePlate, customerName, description, damageLocation,
                 severity, category, status, repairCostEstimate, customerLiability, insuranceCoverage, reportedAt,
-                assessedAt, currency, carSummary, assessmentNotes, insuranceDeductible, photos);
+                assessedAt, currency, carSummary, assessmentNotes, insuranceDeductible, photos, disputeReason, disputeComments,
+                disputedAt, originalLiability, refundAmount, resolutionNotes, resolvedAt);
     }
 
     public boolean isPending() {

@@ -311,6 +311,42 @@ class DamageDisputeControllerIntegrationTest {
         }
 
         @Test
+        @DisplayName("Should show the dispute outcome to the customer who owns the report")
+        void shouldExposeDisputeOutcomeToCustomer() throws Exception {
+            Long damageId = createAndAssessDamageReport();
+            chargeDamageReport(damageId);
+
+            mockMvc.perform(post("/api/v1/damages/{id}/dispute", damageId)
+                            .header("Authorization", userToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new DamageDisputeRequest("Amount is too high", "I want reconsideration"))))
+                    .andExpect(status().isCreated());
+
+            mockMvc.perform(post("/api/v1/admin/damages/{id}/resolve", damageId)
+                            .header("Authorization", adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new DamageDisputeResolutionDto(
+                                    new BigDecimal("1500.00"), new BigDecimal("1000.00"), "Reviewed with photos"))))
+                    .andExpect(status().isOk());
+
+            mockMvc.perform(get("/api/v1/damages/{id}", damageId).header("Authorization", userToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.disputeReason").value("Amount is too high"))
+                    .andExpect(jsonPath("$.disputeComments").value("I want reconsideration"))
+                    .andExpect(jsonPath("$.originalLiability").isNumber())
+                    .andExpect(jsonPath("$.customerLiability").value(1000.00))
+                    .andExpect(jsonPath("$.refundAmount").isNumber())
+                    .andExpect(jsonPath("$.resolutionNotes").value("Reviewed with photos"))
+                    .andExpect(jsonPath("$.resolvedAt").exists());
+
+            mockMvc.perform(get("/api/v1/damages/me").header("Authorization", userToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content[0].resolutionNotes").value("Reviewed with photos"))
+                    .andExpect(jsonPath("$.content[0].refundAmount").isNumber());
+        }
+
+        @Test
         @DisplayName("Should reject dispute as admin")
         void shouldRejectDisputeAsAdmin() throws Exception {
             Long damageId = createAndAssessDamageReport();
