@@ -105,6 +105,13 @@ class ConfigurationFailFastTest {
     }
 
     @Test
+    @DisplayName("rejects damage currency thresholds that are not increasing")
+    void rejectsUnorderedCurrencyDamageThresholds() {
+        runner().withPropertyValues("damage.currency-limits.jpy.minor-threshold=50000")
+                .run(context -> assertThat(context).hasFailed());
+    }
+
+    @Test
     @DisplayName("rejects a non-positive fallback exchange rate")
     void rejectsInvalidFallbackRate() {
         runner().withPropertyValues("currency.fallback.eur=0")

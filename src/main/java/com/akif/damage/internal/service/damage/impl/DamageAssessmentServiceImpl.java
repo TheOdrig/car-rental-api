@@ -55,16 +55,15 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
             throw DamageAssessmentException.invalidStatus(damageReport.getStatus().name());
         }
 
+        CurrencyType currency = resolveCurrency(damageReport, request);
         DamageSeverity severity = request.severity() != null
                 ? request.severity()
-                : determineSeverity(request.repairCostEstimate());
-
-        CurrencyType currency = resolveCurrency(damageReport, request);
+                : determineSeverity(request.repairCostEstimate(), currency);
         int places = currency.getDecimalPlaces();
         boolean hasInsurance = Boolean.TRUE.equals(request.insuranceCoverage());
         BigDecimal deductible = round(request.insuranceDeductible() != null
                 ? request.insuranceDeductible()
-                : damageConfig.defaultInsuranceDeductible(), places);
+                : damageConfig.insuranceDeductibleFor(currency), places);
         BigDecimal repairCost = round(request.repairCostEstimate(), places);
 
         BigDecimal customerLiability = round(calculateCustomerLiability(repairCost, hasInsurance, deductible), places);
@@ -106,16 +105,15 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
 
         UserDto user = userLookup.getUserById(userId);
 
+        CurrencyType currency = resolveCurrency(damageReport, request);
         DamageSeverity severity = request.severity() != null
                 ? request.severity()
-                : determineSeverity(request.repairCostEstimate());
-
-        CurrencyType currency = resolveCurrency(damageReport, request);
+                : determineSeverity(request.repairCostEstimate(), currency);
         int places = currency.getDecimalPlaces();
         boolean hasInsurance = Boolean.TRUE.equals(request.insuranceCoverage());
         BigDecimal deductible = round(request.insuranceDeductible() != null
                 ? request.insuranceDeductible()
-                : damageConfig.defaultInsuranceDeductible(), places);
+                : damageConfig.insuranceDeductibleFor(currency), places);
         BigDecimal repairCost = round(request.repairCostEstimate(), places);
 
         BigDecimal customerLiability = round(calculateCustomerLiability(repairCost, hasInsurance, deductible), places);
@@ -161,18 +159,18 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
     }
 
     @Override
-    public DamageSeverity determineSeverity(BigDecimal repairCost) {
+    public DamageSeverity determineSeverity(BigDecimal repairCost, CurrencyType currency) {
         if (repairCost == null) {
             return DamageSeverity.MINOR;
         }
 
-        if (repairCost.compareTo(damageConfig.minorThreshold()) < 0) {
+        if (repairCost.compareTo(damageConfig.minorThresholdFor(currency)) < 0) {
             return DamageSeverity.MINOR;
         }
-        if (repairCost.compareTo(damageConfig.moderateThreshold()) < 0) {
+        if (repairCost.compareTo(damageConfig.moderateThresholdFor(currency)) < 0) {
             return DamageSeverity.MODERATE;
         }
-        if (repairCost.compareTo(damageConfig.majorThreshold()) < 0) {
+        if (repairCost.compareTo(damageConfig.majorThresholdFor(currency)) < 0) {
             return DamageSeverity.MAJOR;
         }
         return DamageSeverity.TOTAL_LOSS;

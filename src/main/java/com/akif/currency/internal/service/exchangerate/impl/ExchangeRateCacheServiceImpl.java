@@ -61,7 +61,7 @@ public class ExchangeRateCacheServiceImpl implements ExchangeRateCacheService {
     private ExchangeRateResponse createFallbackResponse(CurrencyType baseCurrency) {
         log.warn("Using fallback rates for base: {}", baseCurrency);
 
-        Map<CurrencyType, BigDecimal> configRates = fallbackRatesConfig.getRates();
+        Map<CurrencyType, BigDecimal> configRates = fallbackRatesConfig.rates();
         Map<CurrencyType, BigDecimal> rates = new EnumMap<>(CurrencyType.class);
 
         if (baseCurrency == BASE_CURRENCY) {
