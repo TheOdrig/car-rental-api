@@ -216,9 +216,24 @@ class ProfileControllerIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should return 400 with invalid data")
+        @DisplayName("Should save a phone for a user without names and store blank names as null")
+        void shouldAllowBlankNames() throws Exception {
+            ProfileUpdateRequest request = new ProfileUpdateRequest("  ", "", "+905551112233");
+
+            mockMvc.perform(put("/api/v1/users/me/profile")
+                    .header("Authorization", userToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.firstName").doesNotExist())
+                    .andExpect(jsonPath("$.lastName").doesNotExist())
+                    .andExpect(jsonPath("$.phone").value("+905551112233"));
+        }
+
+        @Test
+        @DisplayName("Should return 400 when a name is too long")
         void shouldReturn400WithInvalidData() throws Exception {
-            ProfileUpdateRequest request = new ProfileUpdateRequest("", "", null);
+            ProfileUpdateRequest request = new ProfileUpdateRequest("x".repeat(51), "Doe", null);
 
             mockMvc.perform(put("/api/v1/users/me/profile")
                     .header("Authorization", userToken)

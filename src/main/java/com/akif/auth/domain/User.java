@@ -114,9 +114,13 @@ public class User extends BaseEntity {
     }
 
     public void updateProfile(String newFirstName, String newLastName, String newPhone) {
-        this.firstName = newFirstName;
-        this.lastName = newLastName;
+        this.firstName = blankToNull(newFirstName);
+        this.lastName = blankToNull(newLastName);
         this.phone = newPhone != null && !newPhone.isBlank() ? newPhone : null;
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.strip();
     }
 
     public void changeAvatar(String avatarKey) {

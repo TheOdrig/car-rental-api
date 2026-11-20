@@ -2337,12 +2337,12 @@
         "properties" : {
           "firstName" : {
             "maxLength" : 50,
-            "minLength" : 1,
+            "minLength" : 0,
             "type" : "string"
           },
           "lastName" : {
             "maxLength" : 50,
-            "minLength" : 1,
+            "minLength" : 0,
             "type" : "string"
           },
           "phone" : {
@@ -2350,7 +2350,6 @@
             "type" : "string"
           }
         },
-        "required" : [ "firstName", "lastName" ],
         "type" : "object"
       },
       "PublicCarResponse" : {
