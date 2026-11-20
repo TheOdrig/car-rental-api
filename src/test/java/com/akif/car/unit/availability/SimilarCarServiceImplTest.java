@@ -9,7 +9,8 @@ import com.akif.car.internal.exception.CarNotFoundException;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.car.api.CarBookingCalendar;
 import com.akif.car.internal.service.availability.impl.SimilarCarServiceImpl;
-import com.akif.car.api.DynamicPricingService;
+import com.akif.car.internal.config.SimilarCarProperties;
+import com.akif.car.internal.service.pricing.BatchPricing;
 import com.akif.shared.enums.CurrencyType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -48,9 +49,8 @@ class SimilarCarServiceImplTest {
         private CarBookingCalendar bookingCalendar;
 
         @Mock
-        private DynamicPricingService dynamicPricingService;
+        private BatchPricing batchPricing;
 
-        @InjectMocks
         private SimilarCarServiceImpl similarCarService;
 
         private Car referenceCar;
@@ -63,6 +63,16 @@ class SimilarCarServiceImplTest {
 
         @BeforeEach
         void setUp() {
+                similarCarService = new SimilarCarServiceImpl(carRepository, bookingCalendar, batchPricing,
+                                new SimilarCarProperties(new BigDecimal("0.20"), 3, 50, 30, 20),
+                                java.time.Clock.systemDefaultZone());
+                when(batchPricing.priceCars(any(), any(), any(), any())).thenAnswer(inv -> {
+                        java.util.Map<Long, PricingResult> map = new java.util.HashMap<>();
+                        for (Car c : (java.util.Collection<Car>) inv.getArgument(0)) {
+                                map.put(c.getId(), pricingResult);
+                        }
+                        return map;
+                });
                 startDate = LocalDate.now().plusDays(1);
                 endDate = LocalDate.now().plusDays(5);
 
@@ -162,9 +172,6 @@ class SimilarCarServiceImplTest {
                                         anyString(), any(BigDecimal.class), any(BigDecimal.class),
                                         anyLong(), anyList(), any(Pageable.class)))
                                         .thenReturn(carPage);
-                        when(dynamicPricingService.calculatePrice(anyLong(), any(LocalDate.class),
-                                        any(LocalDate.class), any(LocalDate.class)))
-                                        .thenReturn(pricingResult);
 
                         List<SimilarCarDto> result = similarCarService.findSimilarAvailableCars(1L, startDate, endDate,
                                         5);
@@ -186,9 +193,6 @@ class SimilarCarServiceImplTest {
                                         eq("Sedan"), any(BigDecimal.class), any(BigDecimal.class),
                                         eq(1L), anyList(), any(Pageable.class)))
                                         .thenReturn(carPage);
-                        when(dynamicPricingService.calculatePrice(anyLong(), any(LocalDate.class),
-                                        any(LocalDate.class), any(LocalDate.class)))
-                                        .thenReturn(pricingResult);
 
                         List<SimilarCarDto> result = similarCarService.findSimilarAvailableCars(1L, startDate, endDate,
                                         5);
@@ -210,9 +214,6 @@ class SimilarCarServiceImplTest {
                                         anyString(), any(BigDecimal.class), any(BigDecimal.class),
                                         anyLong(), anyList(), any(Pageable.class)))
                                         .thenReturn(carPage);
-                        when(dynamicPricingService.calculatePrice(anyLong(), any(LocalDate.class),
-                                        any(LocalDate.class), any(LocalDate.class)))
-                                        .thenReturn(pricingResult);
 
                         List<SimilarCarDto> result = similarCarService.findSimilarAvailableCars(1L, startDate, endDate,
                                         5);
@@ -252,9 +253,6 @@ class SimilarCarServiceImplTest {
                                         anyString(), any(BigDecimal.class), any(BigDecimal.class),
                                         anyLong(), anyList(), any(Pageable.class)))
                                         .thenReturn(carPage);
-                        when(dynamicPricingService.calculatePrice(anyLong(), any(LocalDate.class),
-                                        any(LocalDate.class), any(LocalDate.class)))
-                                        .thenReturn(pricingResult);
 
                         List<SimilarCarDto> result = similarCarService.findSimilarAvailableCars(1L, startDate, endDate,
                                         5);
@@ -300,10 +298,6 @@ class SimilarCarServiceImplTest {
                         when(bookingCalendar.findBookedCarIds(any(LocalDate.class), any(LocalDate.class)))
                                         .thenReturn(java.util.Set.of(3L, 4L));
 
-                        when(dynamicPricingService.calculatePrice(anyLong(), any(LocalDate.class),
-                                        any(LocalDate.class), any(LocalDate.class)))
-                                        .thenReturn(pricingResult);
-
                         List<SimilarCarDto> result = similarCarService.findSimilarAvailableCars(1L, startDate, endDate,
                                         5);
 
@@ -322,9 +316,6 @@ class SimilarCarServiceImplTest {
                                         anyString(), any(BigDecimal.class), any(BigDecimal.class),
                                         anyLong(), anyList(), any(Pageable.class)))
                                         .thenReturn(carPage);
-                        when(dynamicPricingService.calculatePrice(anyLong(), any(LocalDate.class),
-                                        any(LocalDate.class), any(LocalDate.class)))
-                                        .thenReturn(pricingResult);
 
                         List<SimilarCarDto> result = similarCarService.findSimilarAvailableCars(1L, startDate, endDate,
                                         5);
@@ -349,15 +340,28 @@ class SimilarCarServiceImplTest {
                                         eq("Sedan"), any(BigDecimal.class), any(BigDecimal.class),
                                         eq(1L), anyList(), any(Pageable.class)))
                                         .thenReturn(carPage);
-                        when(dynamicPricingService.calculatePrice(anyLong(), any(LocalDate.class),
-                                        any(LocalDate.class), any(LocalDate.class)))
-                                        .thenReturn(pricingResult);
 
                         similarCarService.findSimilarAvailableCars(1L, startDate, endDate, 5);
 
                         verify(carRepository).findSimilarCars(
                                         eq("Sedan"), any(BigDecimal.class), any(BigDecimal.class),
                                         eq(1L), anyList(), any(Pageable.class));
+                }
+
+                @Test
+                @DisplayName("Should use pricing engine total and daily rate")
+                void shouldUsePricingEngineTotal() {
+                        when(carRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(referenceCar));
+                        when(carRepository.findSimilarCars(anyString(), any(BigDecimal.class), any(BigDecimal.class),
+                                        anyLong(), anyList(), any(Pageable.class)))
+                                        .thenReturn(new PageImpl<>(List.of(similarCar1)));
+
+                        List<SimilarCarDto> result = similarCarService.findSimilarAvailableCars(1L, startDate, endDate,
+                                        5);
+
+                        assertThat(result.get(0).totalPrice()).isEqualByComparingTo(pricingResult.finalPrice());
+                        assertThat(result.get(0).dailyRate()).isEqualByComparingTo(pricingResult.effectiveDailyPrice());
+                        verify(batchPricing).priceCars(eq(List.of(similarCar1)), eq(startDate), eq(endDate), any());
                 }
 
                 @Test

@@ -16,6 +16,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import com.akif.shared.exception.InvalidParameterException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -106,7 +108,7 @@ public class AvailabilitySearchController {
             @Parameter(description = "Rental end date (default: today + 30 days)", example = "2025-01-20")
             @RequestParam(required = false) String endDate,
             @Parameter(description = "Maximum number of similar cars to return (default: 5, max: 10)")
-            @RequestParam(defaultValue = "5") int limit) {
+            @RequestParam(defaultValue = "5") @Min(1) @Max(10) int limit) {
         
         LocalDate start = startDate != null 
             ? LocalDate.parse(startDate) 

@@ -500,5 +500,66 @@ class AvailabilitySearchControllerIntegrationTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").isArray());
         }
+
+        @Test
+        @DisplayName("Should price similar cars exactly like the availability search")
+        void shouldMatchAvailabilitySearchTotals() throws Exception {
+            Car similarCar = Car.builder()
+                    .licensePlate("34SIM333")
+                    .vinNumber("6HGBH41JXMN109191")
+                    .brand("Toyota")
+                    .model("Auris")
+                    .productionYear(2021)
+                    .price(new BigDecimal("480.00"))
+                    .currencyType(CurrencyType.TRY)
+                    .carStatusType(CarStatusType.AVAILABLE)
+                    .engineType("Gasoline")
+                    .fuelType("Gasoline")
+                    .transmissionType("Automatic")
+                    .bodyType("Sedan")
+                    .color("Blue")
+                    .kilometer(8000L)
+                    .doors(4)
+                    .seats(5)
+                    .isDeleted(false)
+                    .build();
+            similarCar = carRepository.save(similarCar);
+
+            LocalDate start = LocalDate.now().plusDays(10);
+            LocalDate end = LocalDate.now().plusDays(13);
+
+            String similarBody = mockMvc.perform(get("/api/v1/cars/{id}/similar", availableCar.getId())
+                            .param("startDate", start.toString())
+                            .param("endDate", end.toString()))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            AvailabilitySearchRequest request = AvailabilitySearchRequest.builder()
+                    .startDate(start)
+                    .endDate(end)
+                    .build();
+            String searchBody = mockMvc.perform(post("/api/v1/cars/availability/search")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            Long id = similarCar.getId();
+            BigDecimal similarTotal = new BigDecimal(com.jayway.jsonpath.JsonPath
+                    .<java.util.List<Object>>read(similarBody, "$[?(@.id==" + id + ")].totalPrice").get(0).toString());
+            BigDecimal searchTotal = new BigDecimal(com.jayway.jsonpath.JsonPath
+                    .<java.util.List<Object>>read(searchBody, "$.cars[?(@.id==" + id + ")].totalPrice").get(0).toString());
+            org.assertj.core.api.Assertions.assertThat(similarTotal).isEqualByComparingTo(searchTotal);
+        }
+
+        @Test
+        @DisplayName("Should reject a non-positive or oversized limit")
+        void shouldRejectOutOfRangeLimit() throws Exception {
+            for (String limit : new String[] { "0", "-1", "11" }) {
+                mockMvc.perform(get("/api/v1/cars/{id}/similar", availableCar.getId())
+                                .param("limit", limit))
+                        .andExpect(status().isBadRequest());
+            }
+        }
     }
 }
