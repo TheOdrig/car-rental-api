@@ -78,7 +78,7 @@ public class ReminderScheduler {
     private int remindInBatches(Function<Long, List<Rental>> nextBatch, Consumer<Rental> remind) {
         long lastId = 0L;
         int sent = 0;
-        for (int batch = 0; batch < properties.maxBatches(); batch++) {
+        while (true) {
             List<Rental> rentals = nextBatch.apply(lastId);
             if (rentals.isEmpty()) {
                 return sent;
@@ -99,8 +99,6 @@ public class ReminderScheduler {
                 return sent;
             }
         }
-        log.warn("Reminder job stopped after {} batches", properties.maxBatches());
-        return sent;
     }
 
     private void publishPickupReminderEvent(Rental rental) {

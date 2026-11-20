@@ -60,7 +60,7 @@ class ReminderEventContentTest {
 
     private ReminderScheduler scheduler(PenaltyConfig config) {
         return new ReminderScheduler(CLOCK, rentalRepository, config, eventPublisher,
-                new com.akif.rental.internal.config.ReminderProperties(50, 200));
+                new com.akif.rental.internal.config.ReminderProperties(50));
     }
 
     @Test

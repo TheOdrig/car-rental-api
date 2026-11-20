@@ -9,6 +9,5 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "rental.reminder")
 public record ReminderProperties(
-        @DefaultValue("50") @Min(1) @Max(1000) int batchSize,
-        @DefaultValue("200") @Min(1) @Max(10000) int maxBatches) {
+        @DefaultValue("50") @Min(1) @Max(1000) int batchSize) {
 }
