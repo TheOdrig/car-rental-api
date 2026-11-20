@@ -66,9 +66,13 @@ Java 21, Spring Boot, Spring Modulith, PostgreSQL with Flyway, Spring Security (
 bash scripts/verify.sh
 ```
 
-On Windows use `scripts/verify.ps1`. It checks that no AI or planning files are tracked, then runs the full test suite against a real PostgreSQL started by Testcontainers (Docker must be running) with JaCoCo coverage gates. It takes several minutes. There is no hosted CI; this local gate is the check.
+On Windows use `scripts/verify.ps1`. It checks that no local-only or planning files are tracked, then runs the full test suite against a real PostgreSQL started by Testcontainers (Docker must be running) with JaCoCo coverage gates. It takes several minutes. There is no hosted CI; this local gate is the check.
 
 Configuration variables are listed in [`.env.example`](.env.example). `prod` has no defaults for its secrets and accepts only Stripe test-mode keys.
+
+## Documentation
+
+See the [documentation index](docs/README.md) and [security reporting policy](SECURITY.md).
 
 ## License
 
