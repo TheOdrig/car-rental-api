@@ -25,15 +25,15 @@ public class SeasonPricingStrategy implements PricingStrategy {
         int peakDays = countDaysInSeason(
             context.startDate(), 
             context.endDate(),
-            config.getSeason().getPeak().getStart(),
-            config.getSeason().getPeak().getEnd()
+            config.season().peak().start(),
+            config.season().peak().end()
         );
 
         int offpeakDays = countDaysInSeason(
             context.startDate(),
             context.endDate(),
-            config.getSeason().getOffpeak().getStart(),
-            config.getSeason().getOffpeak().getEnd()
+            config.season().offpeak().start(),
+            config.season().offpeak().end()
         );
 
         int totalDays = context.rentalDays();
@@ -43,8 +43,8 @@ public class SeasonPricingStrategy implements PricingStrategy {
             return PriceModifier.neutral(getStrategyName(), "Regular season");
         }
 
-        BigDecimal peakMultiplier = config.getSeason().getPeak().getMultiplier();
-        BigDecimal offpeakMultiplier = config.getSeason().getOffpeak().getMultiplier();
+        BigDecimal peakMultiplier = config.season().peak().multiplier();
+        BigDecimal offpeakMultiplier = config.season().offpeak().multiplier();
         BigDecimal regularMultiplier = BigDecimal.ONE;
 
         BigDecimal peakPortion = peakMultiplier.multiply(BigDecimal.valueOf(peakDays));
@@ -108,7 +108,7 @@ public class SeasonPricingStrategy implements PricingStrategy {
 
     @Override
     public boolean isEnabled() {
-        return config.getStrategy().isSeasonEnabled();
+        return config.strategy().seasonEnabled();
     }
 
     @Override

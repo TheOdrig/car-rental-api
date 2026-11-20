@@ -1,157 +1,147 @@
 package com.akif.car.internal.config;
 
-import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import com.akif.shared.enums.CurrencyType;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.bind.DefaultValue;
+import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.MonthDay;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-@Getter
-@Setter
-@Slf4j
-@Configuration
+@Validated
 @ConfigurationProperties(prefix = "pricing")
-public class PricingConfig {
+public record PricingConfig(
+        @DefaultValue("100") @NotNull @DecimalMin("0.01") BigDecimal minDailyPrice,
+        @DefaultValue("10000") @NotNull @DecimalMin("0.01") BigDecimal maxDailyPrice,
+        Map<CurrencyType, @Valid @NotNull DailyLimits> dailyLimits,
+        @Valid @NotNull SeasonConfig season,
+        @Valid @NotNull EarlyBookingConfig earlyBooking,
+        @Valid @NotNull DurationConfig duration,
+        @Valid @NotNull WeekendConfig weekend,
+        @Valid @NotNull DemandConfig demand,
+        @DefaultValue @Valid @NotNull StrategyConfig strategy) {
 
-    private BigDecimal minDailyPrice = new BigDecimal("100");
-    private BigDecimal maxDailyPrice = new BigDecimal("10000");
-    private Map<CurrencyType, DailyLimits> dailyLimits = new EnumMap<>(CurrencyType.class);
-    private SeasonConfig season = new SeasonConfig();
-    private EarlyBookingConfig earlyBooking = new EarlyBookingConfig();
-    private DurationConfig duration = new DurationConfig();
-    private WeekendConfig weekend = new WeekendConfig();
-    private DemandConfig demand = new DemandConfig();
-    private StrategyConfig strategy = new StrategyConfig();
+    private static final String DISCOUNT_MIN = "0.50";
+    private static final String DISCOUNT_MAX = "1.00";
+    private static final String SURCHARGE_MIN = "1.00";
+    private static final String SURCHARGE_MAX = "2.00";
+
+    public PricingConfig {
+        dailyLimits = dailyLimits == null ? Map.of() : Map.copyOf(dailyLimits);
+    }
 
     public BigDecimal minDailyPriceFor(CurrencyType currency) {
         DailyLimits limits = dailyLimits.get(currency);
-        return limits != null && limits.getMin() != null ? limits.getMin() : minDailyPrice;
+        return limits != null && limits.min() != null ? limits.min() : minDailyPrice;
     }
 
     public BigDecimal maxDailyPriceFor(CurrencyType currency) {
         DailyLimits limits = dailyLimits.get(currency);
-        return limits != null && limits.getMax() != null ? limits.getMax() : maxDailyPrice;
+        return limits != null && limits.max() != null ? limits.max() : maxDailyPrice;
     }
 
-    @PostConstruct
-    public void validate() {
-        validateMultiplier("season.peak.multiplier", season.getPeak().getMultiplier(), false);
-        validateMultiplier("season.offpeak.multiplier", season.getOffpeak().getMultiplier(), true);
-        validateMultiplier("earlyBooking.tier1.multiplier", earlyBooking.getTier1().getMultiplier(), true);
-        validateMultiplier("earlyBooking.tier2.multiplier", earlyBooking.getTier2().getMultiplier(), true);
-        validateMultiplier("earlyBooking.tier3.multiplier", earlyBooking.getTier3().getMultiplier(), true);
-        validateMultiplier("duration.tier1.multiplier", duration.getTier1().getMultiplier(), true);
-        validateMultiplier("duration.tier2.multiplier", duration.getTier2().getMultiplier(), true);
-        validateMultiplier("duration.tier3.multiplier", duration.getTier3().getMultiplier(), true);
-        validateMultiplier("weekend.multiplier", weekend.getMultiplier(), false);
-        validateMultiplier("demand.high.multiplier", demand.getHigh().getMultiplier(), false);
-        validateMultiplier("demand.moderate.multiplier", demand.getModerate().getMultiplier(), false);
+    @AssertTrue(message = "pricing.min-daily-price must not exceed pricing.max-daily-price")
+    public boolean isDefaultLimitsOrdered() {
+        return minDailyPrice == null || maxDailyPrice == null || minDailyPrice.compareTo(maxDailyPrice) <= 0;
     }
 
-    private void validateMultiplier(String name, BigDecimal value, boolean isDiscount) {
-        if (isDiscount) {
+    @AssertTrue(message = "every pricing.daily-limits entry must have min not above max")
+    public boolean isCurrencyLimitsOrdered() {
+        return dailyLimits.keySet().stream().allMatch(currency -> {
+            BigDecimal low = minDailyPriceFor(currency);
+            BigDecimal high = maxDailyPriceFor(currency);
+            return low == null || high == null || low.compareTo(high) <= 0;
+        });
+    }
 
-            if (value.compareTo(new BigDecimal("0.50")) < 0 || value.compareTo(BigDecimal.ONE) > 0) {
-                log.warn("Invalid discount multiplier for {}: {}. Using default.", name, value);
-            }
-        } else {
+    public record DailyLimits(
+            @DecimalMin("0.01") BigDecimal min,
+            @DecimalMin("0.01") BigDecimal max) {
+    }
 
-            if (value.compareTo(BigDecimal.ONE) < 0 || value.compareTo(new BigDecimal("2.00")) > 0) {
-                log.warn("Invalid surcharge multiplier for {}: {}. Using default.", name, value);
-            }
+    public record SeasonConfig(
+            @Valid @NotNull SeasonPeriod peak,
+            @Valid @NotNull SeasonPeriod offpeak) {
+
+        @AssertTrue(message = "pricing.season.peak.multiplier must be a surcharge and pricing.season.offpeak.multiplier a discount")
+        public boolean isMultipliersDirected() {
+            return peak == null || offpeak == null || peak.multiplier() == null || offpeak.multiplier() == null
+                    || (peak.multiplier().compareTo(BigDecimal.ONE) >= 0
+                            && offpeak.multiplier().compareTo(BigDecimal.ONE) <= 0);
         }
     }
 
-    @Getter
-    @Setter
-    public static class DailyLimits {
-        private BigDecimal min;
-        private BigDecimal max;
+    public record SeasonPeriod(
+            @NotNull MonthDay start,
+            @NotNull MonthDay end,
+            @NotNull @DecimalMin(DISCOUNT_MIN) @DecimalMax(SURCHARGE_MAX) BigDecimal multiplier) {
     }
 
-    @Getter
-    @Setter
-    public static class SeasonConfig {
-        private SeasonPeriod peak = new SeasonPeriod(MonthDay.of(6, 1), MonthDay.of(8, 31), new BigDecimal("1.25"));
-        private SeasonPeriod offpeak = new SeasonPeriod(MonthDay.of(11, 1), MonthDay.of(2, 28), new BigDecimal("0.90"));
+    public record EarlyBookingConfig(
+            @Valid @NotNull Tier tier1,
+            @Valid @NotNull Tier tier2,
+            @Valid @NotNull Tier tier3) {
+
+        @AssertTrue(message = "pricing.early-booking tiers must have strictly decreasing days")
+        public boolean isTiersOrdered() {
+            return tier1 == null || tier2 == null || tier3 == null
+                    || (tier1.days() > tier2.days() && tier2.days() > tier3.days());
+        }
     }
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class SeasonPeriod {
-        private MonthDay start;
-        private MonthDay end;
-        private BigDecimal multiplier;
+    public record DurationConfig(
+            @Valid @NotNull Tier tier1,
+            @Valid @NotNull Tier tier2,
+            @Valid @NotNull Tier tier3) {
+
+        @AssertTrue(message = "pricing.duration tiers must have strictly increasing days")
+        public boolean isTiersOrdered() {
+            return tier1 == null || tier2 == null || tier3 == null
+                    || (tier1.days() < tier2.days() && tier2.days() < tier3.days());
+        }
     }
 
-    @Getter
-    @Setter
-    public static class EarlyBookingConfig {
-        private Tier tier1 = new Tier(30, new BigDecimal("0.85"));
-        private Tier tier2 = new Tier(14, new BigDecimal("0.90"));
-        private Tier tier3 = new Tier(7, new BigDecimal("0.95"));
+    public record Tier(
+            @Min(1) int days,
+            @NotNull @DecimalMin(DISCOUNT_MIN) @DecimalMax(DISCOUNT_MAX) BigDecimal multiplier) {
     }
 
-    @Getter
-    @Setter
-    public static class DurationConfig {
-        private Tier tier1 = new Tier(7, new BigDecimal("0.90"));
-        private Tier tier2 = new Tier(14, new BigDecimal("0.85"));
-        private Tier tier3 = new Tier(30, new BigDecimal("0.80"));
+    public record WeekendConfig(
+            @NotNull @DecimalMin(SURCHARGE_MIN) @DecimalMax(SURCHARGE_MAX) BigDecimal multiplier,
+            @NotEmpty List<DayOfWeek> days) {
     }
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Tier {
-        private int days;
-        private BigDecimal multiplier;
+    public record DemandConfig(
+            @Valid @NotNull DemandTier high,
+            @Valid @NotNull DemandTier moderate) {
+
+        @AssertTrue(message = "pricing.demand.high.threshold must exceed pricing.demand.moderate.threshold")
+        public boolean isThresholdsOrdered() {
+            return high == null || moderate == null || high.threshold() > moderate.threshold();
+        }
     }
 
-    @Getter
-    @Setter
-    public static class WeekendConfig {
-        private BigDecimal multiplier = new BigDecimal("1.15");
-        private List<DayOfWeek> days = List.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
+    public record DemandTier(
+            @Min(0) @Max(100) int threshold,
+            @NotNull @DecimalMin(SURCHARGE_MIN) @DecimalMax(SURCHARGE_MAX) BigDecimal multiplier) {
     }
 
-    @Getter
-    @Setter
-    public static class DemandConfig {
-        private DemandTier high = new DemandTier(80, new BigDecimal("1.20"));
-        private DemandTier moderate = new DemandTier(50, new BigDecimal("1.10"));
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class DemandTier {
-        private int threshold;
-        private BigDecimal multiplier;
-    }
-
-    @Getter
-    @Setter
-    public static class StrategyConfig {
-        private boolean seasonEnabled = true;
-        private boolean earlyBookingEnabled = true;
-        private boolean durationEnabled = true;
-        private boolean weekendEnabled = true;
-        private boolean demandEnabled = true;
+    public record StrategyConfig(
+            @DefaultValue("true") boolean seasonEnabled,
+            @DefaultValue("true") boolean earlyBookingEnabled,
+            @DefaultValue("true") boolean durationEnabled,
+            @DefaultValue("true") boolean weekendEnabled,
+            @DefaultValue("true") boolean demandEnabled) {
     }
 }

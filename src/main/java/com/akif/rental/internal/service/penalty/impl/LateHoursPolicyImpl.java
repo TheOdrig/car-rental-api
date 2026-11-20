@@ -17,6 +17,6 @@ public class LateHoursPolicyImpl implements LateHoursPolicy {
 
     @Override
     public long lateHours(LocalDate endDate, Instant now) {
-        return LateHours.between(endDate, now, penaltyConfig.getGracePeriodMinutes());
+        return LateHours.between(endDate, now, penaltyConfig.gracePeriodMinutes());
     }
 }

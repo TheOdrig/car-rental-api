@@ -1,26 +1,24 @@
 package com.akif.currency.internal.config;
 
 import com.akif.shared.enums.CurrencyType;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.bind.DefaultValue;
+import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.Map;
 
-@Configuration
+@Validated
 @ConfigurationProperties(prefix = "currency.fallback")
-@Getter
-@Setter
-public class FallbackRatesConfig {
-
-    private BigDecimal usd = BigDecimal.ONE;
-    private BigDecimal tryRate = new BigDecimal("42.49");
-    private BigDecimal eur = new BigDecimal("0.87");
-    private BigDecimal gbp = new BigDecimal("0.76");
-    private BigDecimal jpy = new BigDecimal("156.00");
+public record FallbackRatesConfig(
+        @DefaultValue("1") @NotNull @DecimalMin(value = "0", inclusive = false) BigDecimal usd,
+        @DefaultValue("42.49") @NotNull @DecimalMin(value = "0", inclusive = false) BigDecimal tryRate,
+        @DefaultValue("0.87") @NotNull @DecimalMin(value = "0", inclusive = false) BigDecimal eur,
+        @DefaultValue("0.76") @NotNull @DecimalMin(value = "0", inclusive = false) BigDecimal gbp,
+        @DefaultValue("156.00") @NotNull @DecimalMin(value = "0", inclusive = false) BigDecimal jpy) {
 
     public Map<CurrencyType, BigDecimal> getRates() {
         Map<CurrencyType, BigDecimal> rates = new EnumMap<>(CurrencyType.class);

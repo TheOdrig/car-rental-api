@@ -110,15 +110,15 @@ public class RentalBookingService {
     }
 
     private void validateRentalDates(LocalDate startDate, LocalDate endDate) {
-        new RentalDatePolicy(rentalProperties.getMaxLeadDays(), rentalProperties.getMaxRentalDays())
+        new RentalDatePolicy(rentalProperties.maxLeadDays(), rentalProperties.maxRentalDays())
                 .validate(startDate, endDate, LocalDate.now(clock));
     }
 
     private void checkOpenRequestLimit(Long userId) {
         rentalRepository.acquireAdvisoryTransactionLock("rental-open-requests:" + userId);
         long open = rentalRepository.countByUserIdAndStatusAndIsDeletedFalse(userId, RentalStatus.REQUESTED);
-        if (open >= rentalProperties.getMaxOpenRequestsPerUser()) {
-            throw new OpenRentalRequestLimitException(rentalProperties.getMaxOpenRequestsPerUser());
+        if (open >= rentalProperties.maxOpenRequestsPerUser()) {
+            throw new OpenRentalRequestLimitException(rentalProperties.maxOpenRequestsPerUser());
         }
     }
 

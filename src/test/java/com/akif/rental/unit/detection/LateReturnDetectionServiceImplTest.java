@@ -82,8 +82,8 @@ class LateReturnDetectionServiceImplTest {
     @BeforeEach
     void setUp() {
         when(transactionManager.getTransaction(any())).thenReturn(mock(TransactionStatus.class));
-        when(penaltyConfig.getGracePeriodMinutes()).thenReturn(60);
-        when(penaltyConfig.getSeverelyLateThresholdHours()).thenReturn(24);
+        when(penaltyConfig.gracePeriodMinutes()).thenReturn(60);
+        when(penaltyConfig.severelyLateThresholdHours()).thenReturn(24);
 
         testUser = User.builder()
                 .id(1L)

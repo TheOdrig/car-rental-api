@@ -135,11 +135,9 @@ class PaymentCommittedTransactionsIntegrationTest {
 
     private User customer;
     private Car car;
-    private int originalWindow;
 
     @BeforeEach
     void setUp() {
-        originalWindow = rentalProperties.getPaymentWindowDays();
         customer = userRepository.save(TestDataBuilder.createTestUser());
         car = carRepository.save(TestDataBuilder.createAvailableCar());
         eventCaptor.clear();
@@ -149,7 +147,6 @@ class PaymentCommittedTransactionsIntegrationTest {
     void cleanUp() {
         org.awaitility.Awaitility.await().atMost(java.time.Duration.ofSeconds(10)).untilAsserted(() -> assertThat(jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM car_rental.event_publication WHERE completion_date IS NULL", Long.class)).isZero());
-        rentalProperties.setPaymentWindowDays(originalWindow);
         jdbcTemplate.update("DELETE FROM car_rental.payment_refunds");
         paymentRepository.deleteAll();
         rentalRepository.deleteAll();
@@ -625,7 +622,7 @@ class PaymentCommittedTransactionsIntegrationTest {
     void sameDayRentalExpiresAfterTheGracePeriod() {
         Rental rental = rental(LocalDate.now(), LocalDate.now().plusDays(3), RentalStatus.CONFIRMED);
         rentalPayment(rental, PaymentStatus.PENDING);
-        confirmedHoursAgo(rental, rentalProperties.getPaymentGraceHours() + 1);
+        confirmedHoursAgo(rental, rentalProperties.paymentGraceHours() + 1);
 
         int expired = expiryScheduler.expireUnpaidRentals();
 
@@ -674,7 +671,6 @@ class PaymentCommittedTransactionsIntegrationTest {
     @Test
     @DisplayName("a cancelled payment inside the window asks the customer to pay again")
     void repayEventInsideWindow() {
-        rentalProperties.setPaymentWindowDays(5);
         Rental rental = rental(LocalDate.now().plusDays(3), LocalDate.now().plusDays(6), RentalStatus.CONFIRMED);
 
         paymentCancelledListener.onPaymentCancelled(new PaymentCancelledEvent(
@@ -691,7 +687,6 @@ class PaymentCommittedTransactionsIntegrationTest {
     @Test
     @DisplayName("no pay-again event is sent before the window opens or once the rental is no longer CONFIRMED")
     void noRepayEventOutsideWindow() {
-        rentalProperties.setPaymentWindowDays(5);
         Rental early = rental(LocalDate.now().plusDays(20), LocalDate.now().plusDays(22), RentalStatus.CONFIRMED);
         Car other = carRepository.save(TestDataBuilder.createAvailableCar("34YY8888", new BigDecimal("100.00")));
         Rental cancelled = rentalRepository.save(TestDataBuilder.createRental(

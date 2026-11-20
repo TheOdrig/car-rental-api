@@ -124,7 +124,7 @@ class OpenRequestCapConcurrencyTest {
     @Test
     @DisplayName("lets exactly the configured number of simultaneous requests through for one user")
     void parallelRequestsRespectTheCap() throws Exception {
-        int cap = properties.getMaxOpenRequestsPerUser();
+        int cap = properties.maxOpenRequestsPerUser();
         List<Callable<Object>> tasks = new ArrayList<>();
         for (int i = 0; i < PARALLEL_REQUESTS; i++) {
             Car car = cars.get(i);
@@ -145,7 +145,7 @@ class OpenRequestCapConcurrencyTest {
     @Test
     @DisplayName("does not make different users wait on or count against each other")
     void usersAreIndependent() throws Exception {
-        int cap = properties.getMaxOpenRequestsPerUser();
+        int cap = properties.maxOpenRequestsPerUser();
         List<Callable<Object>> tasks = new ArrayList<>();
         for (int i = 0; i < PARALLEL_REQUESTS; i++) {
             Car car = cars.get(i);
@@ -167,7 +167,7 @@ class OpenRequestCapConcurrencyTest {
     @Test
     @DisplayName("a cancelled request frees a slot for the next request")
     void cancelledRequestFreesSlot() throws Exception {
-        int cap = properties.getMaxOpenRequestsPerUser();
+        int cap = properties.maxOpenRequestsPerUser();
         List<Long> ids = new ArrayList<>();
         for (int i = 0; i < cap; i++) {
             ids.add(rentalService.requestRental(request(cars.get(i)), first.getId()).id());

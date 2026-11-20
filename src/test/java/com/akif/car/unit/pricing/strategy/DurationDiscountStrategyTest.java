@@ -4,6 +4,7 @@ import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.service.pricing.strategy.DurationDiscountStrategy;
 import com.akif.car.internal.config.PricingConfig;
+import com.akif.testsupport.ConfigFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,11 +31,8 @@ class DurationDiscountStrategyTest {
 
     @BeforeEach
     void setUp() {
-        PricingConfig.DurationConfig durationConfig = new PricingConfig.DurationConfig();
-        PricingConfig.StrategyConfig strategyConfig = new PricingConfig.StrategyConfig();
-        
-        lenient().when(config.getDuration()).thenReturn(durationConfig);
-        lenient().when(config.getStrategy()).thenReturn(strategyConfig);
+        lenient().when(config.duration()).thenReturn(ConfigFixtures.duration());
+        lenient().when(config.strategy()).thenReturn(ConfigFixtures.strategies(true));
     }
 
     @Test

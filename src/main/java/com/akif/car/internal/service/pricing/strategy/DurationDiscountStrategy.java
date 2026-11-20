@@ -19,32 +19,32 @@ public class DurationDiscountStrategy implements PricingStrategy {
     public PriceModifier calculate(PricingContext context) {
         int rentalDays = context.rentalDays();
 
-        if (rentalDays >= config.getDuration().getTier3().getDays()) {
+        if (rentalDays >= config.duration().tier3().days()) {
             return PriceModifier.discount(
                 getStrategyName(),
-                config.getDuration().getTier3().getMultiplier(),
+                config.duration().tier3().multiplier(),
                 String.format("Long-term rental discount (%d+ days)", 
-                    config.getDuration().getTier3().getDays())
+                    config.duration().tier3().days())
             );
         }
 
-        if (rentalDays >= config.getDuration().getTier2().getDays()) {
+        if (rentalDays >= config.duration().tier2().days()) {
             return PriceModifier.discount(
                 getStrategyName(),
-                config.getDuration().getTier2().getMultiplier(),
+                config.duration().tier2().multiplier(),
                 String.format("Extended rental discount (%d-%d days)",
-                    config.getDuration().getTier2().getDays(),
-                    config.getDuration().getTier3().getDays() - 1)
+                    config.duration().tier2().days(),
+                    config.duration().tier3().days() - 1)
             );
         }
 
-        if (rentalDays >= config.getDuration().getTier1().getDays()) {
+        if (rentalDays >= config.duration().tier1().days()) {
             return PriceModifier.discount(
                 getStrategyName(),
-                config.getDuration().getTier1().getMultiplier(),
+                config.duration().tier1().multiplier(),
                 String.format("Weekly rental discount (%d-%d days)",
-                    config.getDuration().getTier1().getDays(),
-                    config.getDuration().getTier2().getDays() - 1)
+                    config.duration().tier1().days(),
+                    config.duration().tier2().days() - 1)
             );
         }
 
@@ -58,7 +58,7 @@ public class DurationDiscountStrategy implements PricingStrategy {
 
     @Override
     public boolean isEnabled() {
-        return config.getStrategy().isDurationEnabled();
+        return config.strategy().durationEnabled();
     }
 
     @Override

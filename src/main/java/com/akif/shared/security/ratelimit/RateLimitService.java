@@ -26,7 +26,7 @@ public class RateLimitService {
         this.properties = properties;
         this.timeMeter = new ClockTimeMeter(clock);
         this.buckets = Caffeine.newBuilder()
-                .maximumSize(properties.getMaxTrackedClients())
+                .maximumSize(properties.maxTrackedClients())
                 .expireAfterAccess(Duration.ofHours(1))
                 .build();
     }
@@ -42,7 +42,7 @@ public class RateLimitService {
     }
 
     public void enforce(RateLimitCategory category, String identity) {
-        if (!properties.isEnabled() || identity == null || identity.isBlank()) {
+        if (!properties.enabled() || identity == null || identity.isBlank()) {
             return;
         }
         Decision decision = tryConsume(category, identity.trim().toLowerCase(Locale.ROOT));
@@ -52,7 +52,7 @@ public class RateLimitService {
     }
 
     public void reserve(RateLimitCategory category, String identity) {
-        if (!properties.isEnabled() || identity == null || identity.isBlank()) {
+        if (!properties.enabled() || identity == null || identity.isBlank()) {
             return;
         }
         Decision decision = tryConsume(category, normalize(identity));
@@ -62,7 +62,7 @@ public class RateLimitService {
     }
 
     public void refund(RateLimitCategory category, String identity) {
-        if (!properties.isEnabled() || identity == null || identity.isBlank()) {
+        if (!properties.enabled() || identity == null || identity.isBlank()) {
             return;
         }
         Bucket bucket = buckets.getIfPresent(category.name() + ":" + normalize(identity));
@@ -87,8 +87,8 @@ public class RateLimitService {
         RateLimitProperties.Limit limit = properties.limitFor(category);
         return Bucket.builder()
                 .withCustomTimePrecision(timeMeter)
-                .addLimit(bandwidth -> bandwidth.capacity(limit.getCapacity())
-                        .refillGreedy(limit.getCapacity(), Duration.ofSeconds(limit.getPeriodSeconds())))
+                .addLimit(bandwidth -> bandwidth.capacity(limit.capacity())
+                        .refillGreedy(limit.capacity(), Duration.ofSeconds(limit.periodSeconds())))
                 .build();
     }
 

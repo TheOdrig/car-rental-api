@@ -129,7 +129,7 @@ public class DamageReportServiceImpl implements DamageReportService {
         UserDto user = userLookup.getUserById(userId);
 
         int currentPhotoCount = damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(damageId);
-        int maxPhotos = damageConfig.getMaxPhotosPerReport();
+        int maxPhotos = damageConfig.maxPhotosPerReport();
 
         if (currentPhotoCount + photos.size() > maxPhotos) {
             throw new DamageReportException(
@@ -144,7 +144,7 @@ public class DamageReportServiceImpl implements DamageReportService {
         for (MultipartFile photo : photos) {
             validatePhoto(photo);
 
-            String filePath = fileUploadService.uploadFile(photo, damageConfig.getPhotoStorageDirectory());
+            String filePath = fileUploadService.uploadFile(photo, damageConfig.photoStorageDirectory());
 
             DamagePhoto damagePhoto = DamagePhoto.builder()
                     .damageReport(damageReport)
@@ -198,21 +198,21 @@ public class DamageReportServiceImpl implements DamageReportService {
 
         return fileUploadService.generateSecureUrl(
                 photo.getFilePath(),
-                damageConfig.getPhotoUrlExpirationMinutes()
+                damageConfig.photoUrlExpirationMinutes()
         );
     }
 
     private void validatePhoto(MultipartFile photo) {
-        if (!fileUploadService.validateFileType(photo, damageConfig.getAllowedPhotoTypes())) {
+        if (!fileUploadService.validateFileType(photo, damageConfig.allowedPhotoTypes())) {
             throw new FileUploadException(
                     "Invalid file type: " + photo.getContentType() +
-                            ". Allowed types: " + damageConfig.getAllowedPhotoTypes()
+                            ". Allowed types: " + damageConfig.allowedPhotoTypes()
             );
         }
 
-        if (!fileUploadService.validateFileSize(photo, damageConfig.getMaxPhotoSizeBytes())) {
+        if (!fileUploadService.validateFileSize(photo, damageConfig.maxPhotoSizeBytes())) {
             throw new FileUploadException(
-                    "File size exceeds maximum allowed: " + damageConfig.getMaxPhotoSizeBytes() + " bytes"
+                    "File size exceeds maximum allowed: " + damageConfig.maxPhotoSizeBytes() + " bytes"
             );
         }
     }
@@ -221,7 +221,7 @@ public class DamageReportServiceImpl implements DamageReportService {
         if (rental.status() == RentalStatus.IN_USE) {
             return;
         }
-        int windowDays = damageConfig.getReportWindowDaysAfterReturn();
+        int windowDays = damageConfig.reportWindowDaysAfterReturn();
         if (rental.status() == RentalStatus.RETURNED) {
             Instant returnedAt = rental.actualReturnTime();
             if (returnedAt == null || !Instant.now(clock).isAfter(returnedAt.plus(Duration.ofDays(windowDays)))) {
@@ -277,7 +277,7 @@ public class DamageReportServiceImpl implements DamageReportService {
     private DamagePhotoDto mapToPhotoDto(DamagePhoto photo) {
         String secureUrl = fileUploadService.generateSecureUrl(
                 photo.getFilePath(),
-                damageConfig.getPhotoUrlExpirationMinutes()
+                damageConfig.photoUrlExpirationMinutes()
         );
 
         return new DamagePhotoDto(

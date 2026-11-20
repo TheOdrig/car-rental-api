@@ -123,11 +123,11 @@ public class ReminderScheduler {
                 Instant.now(clock),
                 rental.getEndDate(),
                 currency,
-                rental.getDailyPrice().multiply(penaltyConfig.getHourlyPenaltyRate())
+                rental.getDailyPrice().multiply(penaltyConfig.hourlyPenaltyRate())
                         .setScale(currency.getDecimalPlaces(), RoundingMode.HALF_UP),
-                rental.getDailyPrice().multiply(penaltyConfig.getDailyPenaltyRate())
+                rental.getDailyPrice().multiply(penaltyConfig.dailyPenaltyRate())
                         .setScale(currency.getDecimalPlaces(), RoundingMode.HALF_UP),
-                penaltyConfig.getGracePeriodMinutes());
+                penaltyConfig.gracePeriodMinutes());
         eventPublisher.publishEvent(event);
     }
 }

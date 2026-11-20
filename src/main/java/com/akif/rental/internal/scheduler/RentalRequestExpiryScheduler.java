@@ -35,7 +35,7 @@ public class RentalRequestExpiryScheduler {
     @Transactional
     public int expireStaleRequests() {
         Instant now = Instant.now(clock);
-        Instant cutoff = now.minus(Duration.ofHours(properties.getRequestExpiryHours()));
+        Instant cutoff = now.minus(Duration.ofHours(properties.requestExpiryHours()));
         List<Rental> stale = rentalRepository.findStaleRequests(RentalStatus.REQUESTED, cutoff);
         for (Rental rental : stale) {
             rental.cancel(EXPIRY_REASON, CancelledBy.SYSTEM);

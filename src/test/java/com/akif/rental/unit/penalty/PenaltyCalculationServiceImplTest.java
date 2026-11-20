@@ -47,11 +47,11 @@ class PenaltyCalculationServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        when(penaltyConfig.getGracePeriodMinutes()).thenReturn(60);
-        when(penaltyConfig.getHourlyPenaltyRate()).thenReturn(new BigDecimal("0.10"));
-        when(penaltyConfig.getDailyPenaltyRate()).thenReturn(new BigDecimal("1.50"));
-        when(penaltyConfig.getPenaltyCapMultiplier()).thenReturn(new BigDecimal("5.0"));
-        when(penaltyConfig.getSeverelyLateThresholdHours()).thenReturn(24);
+        when(penaltyConfig.gracePeriodMinutes()).thenReturn(60);
+        when(penaltyConfig.hourlyPenaltyRate()).thenReturn(new BigDecimal("0.10"));
+        when(penaltyConfig.dailyPenaltyRate()).thenReturn(new BigDecimal("1.50"));
+        when(penaltyConfig.penaltyCapMultiplier()).thenReturn(new BigDecimal("5.0"));
+        when(penaltyConfig.severelyLateThresholdHours()).thenReturn(24);
 
         testCar = Car.builder()
                 .id(1L)

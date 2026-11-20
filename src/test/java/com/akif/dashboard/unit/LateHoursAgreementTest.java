@@ -15,6 +15,7 @@ import com.akif.rental.api.RentalResponse;
 import com.akif.rental.api.RentalService;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.config.PenaltyConfig;
+import com.akif.testsupport.ConfigFixtures;
 import com.akif.rental.internal.service.penalty.impl.LateHoursPolicyImpl;
 import com.akif.rental.internal.service.penalty.impl.PenaltyCalculationServiceImpl;
 import com.akif.shared.enums.CurrencyType;
@@ -56,7 +57,7 @@ class LateHoursAgreementTest {
     })
     void allThreeMeasureTheSameLateHours(String instant, long expectedHours) {
         Clock clock = Clock.fixed(Instant.parse(instant), ZoneOffset.UTC);
-        PenaltyConfig config = new PenaltyConfig();
+        PenaltyConfig config = ConfigFixtures.penaltyConfig();
         LateHoursPolicy policy = new LateHoursPolicyImpl(config);
 
         Rental rental = Rental.builder()

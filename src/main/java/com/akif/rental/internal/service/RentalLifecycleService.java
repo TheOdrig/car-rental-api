@@ -114,7 +114,7 @@ public class RentalLifecycleService {
             throw new RentalValidationException("Pickup is not allowed before the start date " + rental.getStartDate());
         }
 
-        LocalDate lastPickupDay = rental.getStartDate().plusDays(rentalProperties.getNoShowDays() - 1L);
+        LocalDate lastPickupDay = rental.getStartDate().plusDays(rentalProperties.noShowDays() - 1L);
         if (LocalDate.now(clock).isAfter(lastPickupDay)) {
             throw new RentalValidationException("Pickup is not allowed after " + lastPickupDay
                     + ", the booking is released as a no-show");

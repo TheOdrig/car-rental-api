@@ -28,7 +28,7 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
         log.debug("Calculating penalty for rental: {}, return time: {}", rental.getId(), returnTime);
 
         BigDecimal dailyRate = rental.getDailyPrice();
-        long gracePeriodMinutes = penaltyConfig.getGracePeriodMinutes();
+        long gracePeriodMinutes = penaltyConfig.gracePeriodMinutes();
         int lateHours = (int) LateHours.between(rental.getEndDate(), returnTime, gracePeriodMinutes);
 
         if (lateHours <= 0) {
@@ -47,7 +47,7 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
         int lateDays = (lateHours + 23) / 24;
 
         LateReturnStatus status;
-        if (lateHours >= penaltyConfig.getSeverelyLateThresholdHours()) {
+        if (lateHours >= penaltyConfig.severelyLateThresholdHours()) {
             status = LateReturnStatus.SEVERELY_LATE;
         } else {
             status = LateReturnStatus.LATE;
@@ -60,20 +60,20 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
             penalty = calculateHourlyPenalty(dailyRate, lateHours, rental.getCurrency());
             breakdown = String.format("Hourly penalty: %d hours × %.0f%% × %s = %s",
                 lateHours,
-                penaltyConfig.getHourlyPenaltyRate().multiply(new BigDecimal("100")),
+                penaltyConfig.hourlyPenaltyRate().multiply(new BigDecimal("100")),
                 dailyRate,
                 penalty);
         } else if (lateHours <= 24) {
             penalty = calculateDailyPenalty(dailyRate, 1, rental.getCurrency());
             breakdown = String.format("Daily penalty: 1 day × %.0f%% × %s = %s",
-                penaltyConfig.getDailyPenaltyRate().multiply(new BigDecimal("100")),
+                penaltyConfig.dailyPenaltyRate().multiply(new BigDecimal("100")),
                 dailyRate,
                 penalty);
         } else {
             penalty = calculateDailyPenalty(dailyRate, lateDays, rental.getCurrency());
             breakdown = String.format("Daily penalty: %d days × %.0f%% × %s = %s",
                 lateDays,
-                penaltyConfig.getDailyPenaltyRate().multiply(new BigDecimal("100")),
+                penaltyConfig.dailyPenaltyRate().multiply(new BigDecimal("100")),
                 dailyRate,
                 penalty);
         }
@@ -84,7 +84,7 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
         
         if (cappedAtMax) {
             breakdown += String.format(" (capped at %.0fx daily rate: %s)",
-                penaltyConfig.getPenaltyCapMultiplier(),
+                penaltyConfig.penaltyCapMultiplier(),
                 penalty);
         }
         
@@ -109,12 +109,12 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
         }
 
         BigDecimal penalty = dailyRate
-            .multiply(penaltyConfig.getHourlyPenaltyRate())
+            .multiply(penaltyConfig.hourlyPenaltyRate())
             .multiply(new BigDecimal(lateHours))
             .setScale(currency.getDecimalPlaces(), RoundingMode.HALF_UP);
         
         log.debug("Hourly penalty calculated: {} hours × {}% × {} = {}",
-            lateHours, penaltyConfig.getHourlyPenaltyRate(), dailyRate, penalty);
+            lateHours, penaltyConfig.hourlyPenaltyRate(), dailyRate, penalty);
         
         return penalty;
     }
@@ -126,12 +126,12 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
         }
 
         BigDecimal penalty = dailyRate
-            .multiply(penaltyConfig.getDailyPenaltyRate())
+            .multiply(penaltyConfig.dailyPenaltyRate())
             .multiply(new BigDecimal(lateDays))
             .setScale(currency.getDecimalPlaces(), RoundingMode.HALF_UP);
         
         log.debug("Daily penalty calculated: {} days × {}% × {} = {}",
-            lateDays, penaltyConfig.getDailyPenaltyRate(), dailyRate, penalty);
+            lateDays, penaltyConfig.dailyPenaltyRate(), dailyRate, penalty);
         
         return penalty;
     }
@@ -139,7 +139,7 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
     @Override
     public BigDecimal applyPenaltyCap(BigDecimal penalty, BigDecimal dailyRate, CurrencyType currency) {
         BigDecimal maxPenalty = dailyRate
-            .multiply(penaltyConfig.getPenaltyCapMultiplier())
+            .multiply(penaltyConfig.penaltyCapMultiplier())
             .setScale(currency.getDecimalPlaces(), RoundingMode.HALF_UP);
         
         if (penalty.compareTo(maxPenalty) > 0) {

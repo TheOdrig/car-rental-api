@@ -25,7 +25,7 @@ public class PaymentWindow {
 
     @Named(OPENS_ON)
     public LocalDate opensOn(LocalDate startDate) {
-        return startDate == null ? null : startDate.minusDays(properties.getPaymentWindowDays());
+        return startDate == null ? null : startDate.minusDays(properties.paymentWindowDays());
     }
 
     public Instant dueBy(LocalDate startDate, Instant confirmedAt) {
@@ -33,7 +33,7 @@ public class PaymentWindow {
         if (confirmedAt == null) {
             return startOfStartDay;
         }
-        Instant graceEnds = confirmedAt.plus(Duration.ofHours(properties.getPaymentGraceHours()));
+        Instant graceEnds = confirmedAt.plus(Duration.ofHours(properties.paymentGraceHours()));
         return graceEnds.isAfter(startOfStartDay) ? graceEnds : startOfStartDay;
     }
 

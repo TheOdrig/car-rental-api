@@ -35,18 +35,18 @@ public class DemandPricingStrategy implements PricingStrategy {
             ? context.fleetOccupancyPercent()
             : fleetOccupancyPercent(context);
 
-        if (occupancyPercent > config.getDemand().getHigh().getThreshold()) {
+        if (occupancyPercent > config.demand().high().threshold()) {
             return PriceModifier.surcharge(
                 getStrategyName(),
-                config.getDemand().getHigh().getMultiplier(),
+                config.demand().high().multiplier(),
                 String.format("High demand (%d%% occupancy)", occupancyPercent)
             );
         }
 
-        if (occupancyPercent >= config.getDemand().getModerate().getThreshold()) {
+        if (occupancyPercent >= config.demand().moderate().threshold()) {
             return PriceModifier.surcharge(
                 getStrategyName(),
-                config.getDemand().getModerate().getMultiplier(),
+                config.demand().moderate().multiplier(),
                 String.format("Moderate demand (%d%% occupancy)", occupancyPercent)
             );
         }
@@ -99,7 +99,7 @@ public class DemandPricingStrategy implements PricingStrategy {
 
     @Override
     public boolean isEnabled() {
-        return config.getStrategy().isDemandEnabled();
+        return config.strategy().demandEnabled();
     }
 
     @Override

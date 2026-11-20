@@ -4,6 +4,7 @@ import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.service.pricing.strategy.EarlyBookingStrategy;
 import com.akif.car.internal.config.PricingConfig;
+import com.akif.testsupport.ConfigFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("EarlyBookingStrategy Unit Tests")
@@ -29,16 +31,11 @@ class EarlyBookingStrategyTest {
     @InjectMocks
     private EarlyBookingStrategy strategy;
 
-    private PricingConfig.EarlyBookingConfig earlyBookingConfig;
-    private PricingConfig.StrategyConfig strategyConfig;
 
     @BeforeEach
     void setUp() {
-        earlyBookingConfig = new PricingConfig.EarlyBookingConfig();
-        strategyConfig = new PricingConfig.StrategyConfig();
-        
-        lenient().when(config.getEarlyBooking()).thenReturn(earlyBookingConfig);
-        lenient().when(config.getStrategy()).thenReturn(strategyConfig);
+        lenient().when(config.earlyBooking()).thenReturn(ConfigFixtures.earlyBooking());
+        lenient().when(config.strategy()).thenReturn(ConfigFixtures.strategies(true));
     }
 
     @Nested
@@ -212,14 +209,14 @@ class EarlyBookingStrategyTest {
         @Test
         @DisplayName("Should be enabled when config says enabled")
         void shouldBeEnabledWhenConfigSaysEnabled() {
-            strategyConfig.setEarlyBookingEnabled(true);
+            when(config.strategy()).thenReturn(ConfigFixtures.strategies(true));
             assertThat(strategy.isEnabled()).isTrue();
         }
 
         @Test
         @DisplayName("Should be disabled when config says disabled")
         void shouldBeDisabledWhenConfigSaysDisabled() {
-            strategyConfig.setEarlyBookingEnabled(false);
+            when(config.strategy()).thenReturn(ConfigFixtures.strategies(false));
             assertThat(strategy.isEnabled()).isFalse();
         }
     }

@@ -21,9 +21,9 @@ class RateLimitServiceTest {
     @BeforeEach
     void setUp() {
         clock = new MutableClock(Instant.parse("2026-03-01T10:00:00Z"));
-        RateLimitProperties properties = new RateLimitProperties();
-        properties.getLimits().put(RateLimitCategory.LOGIN, new RateLimitProperties.Limit(3, 60));
-        properties.getLimits().put(RateLimitCategory.REGISTER, new RateLimitProperties.Limit(1, 600));
+        RateLimitProperties properties = new RateLimitProperties(true, false, 1, "", null, 100_000, java.util.Map.of(
+                RateLimitCategory.LOGIN, new RateLimitProperties.Limit(3, 60),
+                RateLimitCategory.REGISTER, new RateLimitProperties.Limit(1, 600)));
         service = new RateLimitService(properties, clock);
     }
 

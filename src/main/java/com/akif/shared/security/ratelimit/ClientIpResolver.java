@@ -25,7 +25,7 @@ public class ClientIpResolver {
 
     public ClientIpResolver(RateLimitProperties properties) {
         this.properties = properties;
-        this.trustedProxies = properties.getTrustedProxyCidrs().stream()
+        this.trustedProxies = properties.trustedProxyCidrs().stream()
                 .map(String::trim)
                 .filter(cidr -> !cidr.isEmpty())
                 .map(IpAddressMatcher::new)
@@ -38,7 +38,7 @@ public class ClientIpResolver {
             return remoteAddress;
         }
 
-        String trustedHeader = properties.getTrustedClientIpHeader();
+        String trustedHeader = properties.trustedClientIpHeader();
         if (trustedHeader != null && !trustedHeader.isBlank()) {
             String value = request.getHeader(trustedHeader.trim());
             if (value != null && isIpLiteral(value.trim())) {
@@ -46,12 +46,12 @@ public class ClientIpResolver {
             }
         }
 
-        if (!properties.isTrustForwardedHeaders()) {
+        if (!properties.trustForwardedHeaders()) {
             return remoteAddress;
         }
 
         List<String> entries = forwardedEntries(request);
-        int index = entries.size() - Math.max(1, properties.getTrustedProxyHops());
+        int index = entries.size() - Math.max(1, properties.trustedProxyHops());
         if (index < 0) {
             return remoteAddress;
         }

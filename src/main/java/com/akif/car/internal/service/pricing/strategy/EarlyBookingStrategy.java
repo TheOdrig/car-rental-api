@@ -19,32 +19,32 @@ public class EarlyBookingStrategy implements PricingStrategy {
     public PriceModifier calculate(PricingContext context) {
         int leadTimeDays = context.leadTimeDays();
 
-        if (leadTimeDays >= config.getEarlyBooking().getTier1().getDays()) {
+        if (leadTimeDays >= config.earlyBooking().tier1().days()) {
             return PriceModifier.discount(
                 getStrategyName(),
-                config.getEarlyBooking().getTier1().getMultiplier(),
+                config.earlyBooking().tier1().multiplier(),
                 String.format("Early booking discount (%d+ days advance)", 
-                    config.getEarlyBooking().getTier1().getDays())
+                    config.earlyBooking().tier1().days())
             );
         }
 
-        if (leadTimeDays >= config.getEarlyBooking().getTier2().getDays()) {
+        if (leadTimeDays >= config.earlyBooking().tier2().days()) {
             return PriceModifier.discount(
                 getStrategyName(),
-                config.getEarlyBooking().getTier2().getMultiplier(),
+                config.earlyBooking().tier2().multiplier(),
                 String.format("Early booking discount (%d-%d days advance)",
-                    config.getEarlyBooking().getTier2().getDays(),
-                    config.getEarlyBooking().getTier1().getDays() - 1)
+                    config.earlyBooking().tier2().days(),
+                    config.earlyBooking().tier1().days() - 1)
             );
         }
 
-        if (leadTimeDays >= config.getEarlyBooking().getTier3().getDays()) {
+        if (leadTimeDays >= config.earlyBooking().tier3().days()) {
             return PriceModifier.discount(
                 getStrategyName(),
-                config.getEarlyBooking().getTier3().getMultiplier(),
+                config.earlyBooking().tier3().multiplier(),
                 String.format("Early booking discount (%d-%d days advance)",
-                    config.getEarlyBooking().getTier3().getDays(),
-                    config.getEarlyBooking().getTier2().getDays() - 1)
+                    config.earlyBooking().tier3().days(),
+                    config.earlyBooking().tier2().days() - 1)
             );
         }
 
@@ -58,7 +58,7 @@ public class EarlyBookingStrategy implements PricingStrategy {
 
     @Override
     public boolean isEnabled() {
-        return config.getStrategy().isEarlyBookingEnabled();
+        return config.strategy().earlyBookingEnabled();
     }
 
     @Override

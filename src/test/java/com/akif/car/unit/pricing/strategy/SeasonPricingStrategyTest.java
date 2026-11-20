@@ -4,6 +4,7 @@ import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.service.pricing.strategy.SeasonPricingStrategy;
 import com.akif.car.internal.config.PricingConfig;
+import com.akif.testsupport.ConfigFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,6 +20,7 @@ import java.time.MonthDay;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("SeasonPricingStrategy Unit Tests")
@@ -30,29 +32,11 @@ class SeasonPricingStrategyTest {
     @InjectMocks
     private SeasonPricingStrategy strategy;
 
-    private PricingConfig.SeasonConfig seasonConfig;
-    private PricingConfig.StrategyConfig strategyConfig;
 
     @BeforeEach
     void setUp() {
-        seasonConfig = new PricingConfig.SeasonConfig();
-        strategyConfig = new PricingConfig.StrategyConfig();
-
-        PricingConfig.SeasonPeriod peakPeriod = new PricingConfig.SeasonPeriod();
-        peakPeriod.setStart(MonthDay.of(6, 1));
-        peakPeriod.setEnd(MonthDay.of(8, 31));
-        peakPeriod.setMultiplier(new BigDecimal("1.25"));
-
-        PricingConfig.SeasonPeriod offpeakPeriod = new PricingConfig.SeasonPeriod();
-        offpeakPeriod.setStart(MonthDay.of(11, 1));
-        offpeakPeriod.setEnd(MonthDay.of(2, 28));
-        offpeakPeriod.setMultiplier(new BigDecimal("0.90"));
-        
-        seasonConfig.setPeak(peakPeriod);
-        seasonConfig.setOffpeak(offpeakPeriod);
-        
-        lenient().when(config.getSeason()).thenReturn(seasonConfig);
-        lenient().when(config.getStrategy()).thenReturn(strategyConfig);
+        lenient().when(config.season()).thenReturn(ConfigFixtures.season());
+        lenient().when(config.strategy()).thenReturn(ConfigFixtures.strategies(true));
     }
 
     @Nested
@@ -271,14 +255,14 @@ class SeasonPricingStrategyTest {
         @Test
         @DisplayName("Should be enabled when config says enabled")
         void shouldBeEnabledWhenConfigSaysEnabled() {
-            strategyConfig.setSeasonEnabled(true);
+            when(config.strategy()).thenReturn(ConfigFixtures.strategies(true));
             assertThat(strategy.isEnabled()).isTrue();
         }
 
         @Test
         @DisplayName("Should be disabled when config says disabled")
         void shouldBeDisabledWhenConfigSaysDisabled() {
-            strategyConfig.setSeasonEnabled(false);
+            when(config.strategy()).thenReturn(ConfigFixtures.strategies(false));
             assertThat(strategy.isEnabled()).isFalse();
         }
     }

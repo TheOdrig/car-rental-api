@@ -139,7 +139,7 @@ class DamageAssessmentServiceTest {
         void shouldAssessDamageSuccessfully() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserById(2L)).thenReturn(testUser);
-            when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
+            when(damageConfig.defaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
             DamageAssessmentResponse result = damageAssessmentService.assessDamage(1L, testAssessmentRequest, 2L);
@@ -155,7 +155,7 @@ class DamageAssessmentServiceTest {
         void shouldDefaultCurrencyToRentalCurrency() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserById(2L)).thenReturn(testUser);
-            when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
+            when(damageConfig.defaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
             damageAssessmentService.assessDamage(1L, testAssessmentRequest, 2L);
@@ -175,7 +175,7 @@ class DamageAssessmentServiceTest {
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
             DamageAssessmentRequest request = new DamageAssessmentRequest(DamageSeverity.MINOR, DamageCategory.SCRATCH,
                     new BigDecimal("12345.67"), false, null, "n", com.akif.shared.enums.CurrencyType.JPY);
-            when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
+            when(damageConfig.defaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
 
             damageAssessmentService.assessDamage(1L, request, 2L);
 
@@ -194,7 +194,7 @@ class DamageAssessmentServiceTest {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserById(2L)).thenReturn(testUser);
-            when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
+            when(damageConfig.defaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
             DamageAssessmentRequest request = new DamageAssessmentRequest(DamageSeverity.MINOR, DamageCategory.SCRATCH,
                     new BigDecimal("500.00"), true, new BigDecimal("100.00"), "n", com.akif.shared.enums.CurrencyType.EUR);
@@ -223,7 +223,7 @@ class DamageAssessmentServiceTest {
         void shouldSetCustomerLiabilityCorrectlyWithInsurance() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserById(2L)).thenReturn(testUser);
-            when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
+            when(damageConfig.defaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
             damageAssessmentService.assessDamage(1L, testAssessmentRequest, 2L);
@@ -248,7 +248,7 @@ class DamageAssessmentServiceTest {
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserById(2L)).thenReturn(testUser);
-            when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
+            when(damageConfig.defaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
             damageAssessmentService.assessDamage(1L, requestWithoutInsurance, 2L);
@@ -296,7 +296,7 @@ class DamageAssessmentServiceTest {
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserById(2L)).thenReturn(testUser);
-            when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("500.00"));
+            when(damageConfig.defaultInsuranceDeductible()).thenReturn(new BigDecimal("500.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
             DamageAssessmentResponse result = damageAssessmentService.assessDamage(1L, majorDamageRequest, 2L);
@@ -310,7 +310,7 @@ class DamageAssessmentServiceTest {
         void shouldPublishDamageAssessedEventWhenAssessmentCompleted() {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserById(2L)).thenReturn(testUser);
-            when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
+            when(damageConfig.defaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
             damageAssessmentService.assessDamage(1L, testAssessmentRequest, 2L);
@@ -334,7 +334,7 @@ class DamageAssessmentServiceTest {
 
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserById(2L)).thenReturn(testUser);
-            when(damageConfig.getDefaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
+            when(damageConfig.defaultInsuranceDeductible()).thenReturn(new BigDecimal("100.00"));
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
 
             DamageAssessmentResponse result = damageAssessmentService.assessDamage(1L, testAssessmentRequest, 2L);
@@ -416,9 +416,9 @@ class DamageAssessmentServiceTest {
 
         @BeforeEach
         void setUpThresholds() {
-            when(damageConfig.getMinorThreshold()).thenReturn(new BigDecimal("500"));
-            when(damageConfig.getModerateThreshold()).thenReturn(new BigDecimal("2000"));
-            when(damageConfig.getMajorThreshold()).thenReturn(new BigDecimal("10000"));
+            when(damageConfig.minorThreshold()).thenReturn(new BigDecimal("500"));
+            when(damageConfig.moderateThreshold()).thenReturn(new BigDecimal("2000"));
+            when(damageConfig.majorThreshold()).thenReturn(new BigDecimal("10000"));
         }
 
         @Test

@@ -53,7 +53,7 @@ public class NoShowRentalScheduler {
 
     @Scheduled(cron = "${rental.no-show-cron:0 */30 * * * *}")
     public int releaseNoShows() {
-        LocalDate cutoff = LocalDate.now(clock).minusDays(rentalProperties.getNoShowDays());
+        LocalDate cutoff = LocalDate.now(clock).minusDays(rentalProperties.noShowDays());
         List<Long> candidates = rentalRepository.findConfirmedIdsStartingOnOrBefore(cutoff);
         int released = 0;
         for (Long rentalId : candidates) {

@@ -1,26 +1,31 @@
 package com.akif.shared.security.ratelimit;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
+import org.springframework.validation.annotation.Validated;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-@Getter
-@Setter
+@Validated
 @ConfigurationProperties(prefix = "security.rate-limit")
-public class RateLimitProperties {
+public record RateLimitProperties(
+        @DefaultValue("true") boolean enabled,
+        @DefaultValue("false") boolean trustForwardedHeaders,
+        @DefaultValue("1") @Min(1) int trustedProxyHops,
+        @DefaultValue("") String trustedClientIpHeader,
+        List<String> trustedProxyCidrs,
+        @DefaultValue("100000") @Min(1) int maxTrackedClients,
+        Map<RateLimitCategory, @Valid @NotNull Limit> limits) {
 
-    private boolean enabled = true;
-    private boolean trustForwardedHeaders = false;
-    private int trustedProxyHops = 1;
-    private String trustedClientIpHeader = "";
-    private List<String> trustedProxyCidrs = new ArrayList<>();
-    private int maxTrackedClients = 100_000;
-    private Map<RateLimitCategory, Limit> limits = new EnumMap<>(RateLimitCategory.class);
+    public RateLimitProperties {
+        trustedClientIpHeader = trustedClientIpHeader == null ? "" : trustedClientIpHeader;
+        trustedProxyCidrs = trustedProxyCidrs == null ? List.of() : List.copyOf(trustedProxyCidrs);
+        limits = limits == null ? Map.of() : Map.copyOf(limits);
+    }
 
     public Limit limitFor(RateLimitCategory category) {
         Limit configured = limits.get(category);
@@ -44,19 +49,6 @@ public class RateLimitProperties {
         };
     }
 
-    @Getter
-    @Setter
-    public static class Limit {
-
-        private int capacity;
-        private int periodSeconds;
-
-        public Limit() {
-        }
-
-        public Limit(int capacity, int periodSeconds) {
-            this.capacity = capacity;
-            this.periodSeconds = periodSeconds;
-        }
+    public record Limit(@Min(1) int capacity, @Min(1) int periodSeconds) {
     }
 }

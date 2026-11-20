@@ -1,6 +1,7 @@
 package com.akif.rental.unit;
 
 import com.akif.rental.internal.config.RentalProperties;
+import com.akif.testsupport.ConfigFixtures;
 import com.akif.rental.internal.service.PaymentWindow;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,7 @@ class PaymentDeadlineTest {
 
     private static final Instant NOW = Instant.parse("2026-11-19T10:00:00Z");
 
-    private final RentalProperties properties = new RentalProperties();
+    private final RentalProperties properties = ConfigFixtures.rentalProperties();
     private final PaymentWindow window = new PaymentWindow(Clock.fixed(NOW, ZoneOffset.UTC), properties);
 
     @Test
@@ -59,23 +60,5 @@ class PaymentDeadlineTest {
     void withoutApprovalTime() {
         assertThat(window.dueBy(LocalDate.parse("2026-11-19"), null)).isEqualTo(Instant.parse("2026-11-19T00:00:00Z"));
         assertThat(window.isOverdue(LocalDate.parse("2026-11-19"), null)).isTrue();
-    }
-
-    @Test
-    @DisplayName("a grace period shorter than one hour is raised to one hour")
-    void graceHoursAreBounded() {
-        properties.setPaymentGraceHours(0);
-        properties.validate();
-
-        assertThat(properties.getPaymentGraceHours()).isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("a grace period above 72 hours is lowered to 72 hours")
-    void graceHoursHaveAnUpperBound() {
-        properties.setPaymentGraceHours(500);
-        properties.validate();
-
-        assertThat(properties.getPaymentGraceHours()).isEqualTo(72);
     }
 }

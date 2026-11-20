@@ -29,7 +29,7 @@ public class WeekendPricingStrategy implements PricingStrategy {
             return PriceModifier.neutral(getStrategyName(), "No weekend days");
         }
 
-        BigDecimal weekendMultiplier = config.getWeekend().getMultiplier();
+        BigDecimal weekendMultiplier = config.weekend().multiplier();
         BigDecimal weekdayMultiplier = BigDecimal.ONE;
 
         BigDecimal weekendPortion = weekendMultiplier.multiply(BigDecimal.valueOf(weekendDays));
@@ -52,7 +52,7 @@ public class WeekendPricingStrategy implements PricingStrategy {
 
         while (!current.isAfter(endDate)) {
             DayOfWeek dayOfWeek = current.getDayOfWeek();
-            if (config.getWeekend().getDays().contains(dayOfWeek)) {
+            if (config.weekend().days().contains(dayOfWeek)) {
                 count++;
             }
             current = current.plusDays(1);
@@ -68,7 +68,7 @@ public class WeekendPricingStrategy implements PricingStrategy {
 
     @Override
     public boolean isEnabled() {
-        return config.getStrategy().isWeekendEnabled();
+        return config.strategy().weekendEnabled();
     }
 
     @Override

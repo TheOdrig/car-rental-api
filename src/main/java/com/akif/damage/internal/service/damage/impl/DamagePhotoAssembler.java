@@ -25,7 +25,7 @@ public class DamagePhotoAssembler {
     public DamagePhotoDto toDto(DamagePhoto photo) {
         String secureUrl = fileUploadService.generateSecureUrl(
                 photo.getFilePath(),
-                damageConfig.getPhotoUrlExpirationMinutes());
+                damageConfig.photoUrlExpirationMinutes());
         return new DamagePhotoDto(
                 photo.getId(),
                 photo.getFileName(),

@@ -98,7 +98,7 @@ public abstract class E2ETestBase {
 
     protected void advanceClockToPaymentWindowOf(Long rentalId) {
         LocalDate start = rentalRepository.findById(rentalId).orElseThrow().getStartDate();
-        LocalDate opens = start.minusDays(rentalProperties.getPaymentWindowDays());
+        LocalDate opens = start.minusDays(rentalProperties.paymentWindowDays());
         long days = ChronoUnit.DAYS.between(LocalDate.now(clock), opens);
         if (days > 0) {
             clock.advance(Duration.ofDays(days));

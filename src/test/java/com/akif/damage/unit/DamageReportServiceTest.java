@@ -234,7 +234,7 @@ class DamageReportServiceTest {
         }
 
         private void stubHappyPath() {
-            when(damageConfig.getReportWindowDaysAfterReturn()).thenReturn(7);
+            when(damageConfig.reportWindowDaysAfterReturn()).thenReturn(7);
             when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(carCatalog.getCarDtoById(testCar.id())).thenReturn(testCar);
             when(damageReportRepository.save(any(DamageReport.class))).thenReturn(testDamageReport);
@@ -244,7 +244,7 @@ class DamageReportServiceTest {
         @Test
         @DisplayName("Should reject a rental that was never picked up")
         void shouldRejectRentalNeverPickedUp() {
-            when(damageConfig.getReportWindowDaysAfterReturn()).thenReturn(7);
+            when(damageConfig.reportWindowDaysAfterReturn()).thenReturn(7);
             for (com.akif.rental.api.RentalStatus status : List.of(
                     com.akif.rental.api.RentalStatus.REQUESTED,
                     com.akif.rental.api.RentalStatus.CONFIRMED,
@@ -275,7 +275,7 @@ class DamageReportServiceTest {
         @Test
         @DisplayName("Should reject a report on a rental returned more than seven days ago")
         void shouldRejectReportAfterTheWindow() {
-            when(damageConfig.getReportWindowDaysAfterReturn()).thenReturn(7);
+            when(damageConfig.reportWindowDaysAfterReturn()).thenReturn(7);
             java.time.Instant returned = java.time.Instant.now(clock).minus(java.time.Duration.ofDays(8));
             when(rentalService.getRentalSummaryById(1L)).thenReturn(rentalWith(
                     com.akif.rental.api.RentalStatus.RETURNED, returned));
@@ -404,11 +404,11 @@ class DamageReportServiceTest {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(1L)).thenReturn(0);
-            when(damageConfig.getMaxPhotosPerReport()).thenReturn(10);
-            when(damageConfig.getPhotoStorageDirectory()).thenReturn("damage-photos");
-            when(damageConfig.getAllowedPhotoTypes()).thenReturn(List.of("image/jpeg", "image/png"));
-            when(damageConfig.getMaxPhotoSizeBytes()).thenReturn(5 * 1024 * 1024L);
-            when(damageConfig.getPhotoUrlExpirationMinutes()).thenReturn(60);
+            when(damageConfig.maxPhotosPerReport()).thenReturn(10);
+            when(damageConfig.photoStorageDirectory()).thenReturn("damage-photos");
+            when(damageConfig.allowedPhotoTypes()).thenReturn(List.of("image/jpeg", "image/png"));
+            when(damageConfig.maxPhotoSizeBytes()).thenReturn(5 * 1024 * 1024L);
+            when(damageConfig.photoUrlExpirationMinutes()).thenReturn(60);
             when(fileUploadService.validateFileType(any(), anyList())).thenReturn(true);
             when(fileUploadService.validateFileSize(any(), anyLong())).thenReturn(true);
             when(fileUploadService.uploadFile(any(), anyString())).thenReturn("uploads/damage-photos/uuid.jpg");
@@ -431,7 +431,7 @@ class DamageReportServiceTest {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(1L)).thenReturn(9);
-            when(damageConfig.getMaxPhotosPerReport()).thenReturn(10);
+            when(damageConfig.maxPhotosPerReport()).thenReturn(10);
 
             assertThatThrownBy(
                     () -> damageReportService.uploadDamagePhotos(1L, List.of(mockFile, mockFile), 1L))
@@ -450,8 +450,8 @@ class DamageReportServiceTest {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(1L)).thenReturn(0);
-            when(damageConfig.getMaxPhotosPerReport()).thenReturn(10);
-            when(damageConfig.getAllowedPhotoTypes()).thenReturn(List.of("image/jpeg", "image/png"));
+            when(damageConfig.maxPhotosPerReport()).thenReturn(10);
+            when(damageConfig.allowedPhotoTypes()).thenReturn(List.of("image/jpeg", "image/png"));
             when(fileUploadService.validateFileType(any(), anyList())).thenReturn(false);
 
             assertThatThrownBy(() -> damageReportService.uploadDamagePhotos(1L, List.of(mockFile), 1L))
@@ -468,9 +468,9 @@ class DamageReportServiceTest {
             when(damageReportRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamageReport));
             when(userLookup.getUserById(1L)).thenReturn(testUser);
             when(damagePhotoRepository.countByDamageReportIdAndIsDeletedFalse(1L)).thenReturn(0);
-            when(damageConfig.getMaxPhotosPerReport()).thenReturn(10);
-            when(damageConfig.getAllowedPhotoTypes()).thenReturn(List.of("image/jpeg"));
-            when(damageConfig.getMaxPhotoSizeBytes()).thenReturn(5 * 1024 * 1024L);
+            when(damageConfig.maxPhotosPerReport()).thenReturn(10);
+            when(damageConfig.allowedPhotoTypes()).thenReturn(List.of("image/jpeg"));
+            when(damageConfig.maxPhotoSizeBytes()).thenReturn(5 * 1024 * 1024L);
             when(fileUploadService.validateFileType(any(), anyList())).thenReturn(true);
             when(fileUploadService.validateFileSize(any(), anyLong())).thenReturn(false);
 
@@ -535,7 +535,7 @@ class DamageReportServiceTest {
         void shouldGetPhotoUrlForOwner() {
             when(damagePhotoRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamagePhoto));
             when(userLookup.getUserById(1L)).thenReturn(testUser);
-            when(damageConfig.getPhotoUrlExpirationMinutes()).thenReturn(60);
+            when(damageConfig.photoUrlExpirationMinutes()).thenReturn(60);
             when(fileUploadService.generateSecureUrl(anyString(), eq(60))).thenReturn("https://secure.url/photo.jpg");
 
             String result = damageReportService.getPhotoUrl(1L, 1L);
@@ -551,7 +551,7 @@ class DamageReportServiceTest {
                     Set.of(Role.ADMIN), true);
             when(damagePhotoRepository.findByIdAndIsDeletedFalse(1L)).thenReturn(Optional.of(testDamagePhoto));
             when(userLookup.getUserById(2L)).thenReturn(admin);
-            when(damageConfig.getPhotoUrlExpirationMinutes()).thenReturn(60);
+            when(damageConfig.photoUrlExpirationMinutes()).thenReturn(60);
             when(fileUploadService.generateSecureUrl(anyString(), eq(60))).thenReturn("https://secure.url/photo.jpg");
 
             assertThat(damageReportService.getPhotoUrl(1L, 2L)).isEqualTo("https://secure.url/photo.jpg");

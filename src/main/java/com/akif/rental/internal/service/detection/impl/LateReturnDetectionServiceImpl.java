@@ -114,13 +114,13 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
 
         long minutesLate = Duration.between(rentalEndDateTime, currentTime).toMinutes();
 
-        if (minutesLate <= penaltyConfig.getGracePeriodMinutes()) {
+        if (minutesLate <= penaltyConfig.gracePeriodMinutes()) {
             return LateReturnStatus.GRACE_PERIOD;
         }
 
         long hoursLate = calculateLateHours(rental, currentTime);
 
-        if (hoursLate >= penaltyConfig.getSeverelyLateThresholdHours()) {
+        if (hoursLate >= penaltyConfig.severelyLateThresholdHours()) {
             return LateReturnStatus.SEVERELY_LATE;
         }
 
@@ -133,7 +133,7 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
             return 0;
         }
 
-        return LateHours.between(rental.getEndDate(), currentTime, penaltyConfig.getGracePeriodMinutes());
+        return LateHours.between(rental.getEndDate(), currentTime, penaltyConfig.gracePeriodMinutes());
     }
 
     @Override
@@ -175,7 +175,7 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
                                           String carBrand, String carModel, String licensePlate,
                                           Instant scheduledReturnTime) {
         long minutesLate = Duration.between(scheduledReturnTime, currentTime).toMinutes();
-        int remainingGraceMinutes = (int) (penaltyConfig.getGracePeriodMinutes() - minutesLate);
+        int remainingGraceMinutes = (int) (penaltyConfig.gracePeriodMinutes() - minutesLate);
         
         if (remainingGraceMinutes < 0) {
             remainingGraceMinutes = 0;

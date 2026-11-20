@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import com.akif.rental.api.RentalStatus;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.config.RentalProperties;
+import com.akif.testsupport.ConfigFixtures;
 import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.rental.internal.scheduler.RentalRequestExpiryScheduler;
 import org.junit.jupiter.api.DisplayName;
@@ -27,16 +28,14 @@ class RentalRequestExpirySchedulerUnitTest {
 
     private final Clock clock = Clock.fixed(Instant.parse("2026-11-18T12:00:00Z"), ZoneOffset.UTC);
     private final RentalRepository repository = mock(RentalRepository.class);
-    private final RentalProperties properties = new RentalProperties();
-    private final org.springframework.context.ApplicationEventPublisher publisher =
+        private final org.springframework.context.ApplicationEventPublisher publisher =
             mock(org.springframework.context.ApplicationEventPublisher.class);
     private final RentalRequestExpiryScheduler scheduler =
-            new RentalRequestExpiryScheduler(clock, repository, properties, publisher);
+            new RentalRequestExpiryScheduler(clock, repository, ConfigFixtures.rentalPropertiesWithRequestExpiryHours(10), publisher);
 
     @Test
     @DisplayName("derives the cutoff from the injected clock and the configured hours")
     void cutoffUsesClockAndProperty() {
-        properties.setRequestExpiryHours(10);
         when(repository.findStaleRequests(any(), any())).thenReturn(List.of());
 
         scheduler.expireStaleRequests();

@@ -64,7 +64,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
         boolean hasInsurance = Boolean.TRUE.equals(request.insuranceCoverage());
         BigDecimal deductible = round(request.insuranceDeductible() != null
                 ? request.insuranceDeductible()
-                : damageConfig.getDefaultInsuranceDeductible(), places);
+                : damageConfig.defaultInsuranceDeductible(), places);
         BigDecimal repairCost = round(request.repairCostEstimate(), places);
 
         BigDecimal customerLiability = round(calculateCustomerLiability(repairCost, hasInsurance, deductible), places);
@@ -115,7 +115,7 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
         boolean hasInsurance = Boolean.TRUE.equals(request.insuranceCoverage());
         BigDecimal deductible = round(request.insuranceDeductible() != null
                 ? request.insuranceDeductible()
-                : damageConfig.getDefaultInsuranceDeductible(), places);
+                : damageConfig.defaultInsuranceDeductible(), places);
         BigDecimal repairCost = round(request.repairCostEstimate(), places);
 
         BigDecimal customerLiability = round(calculateCustomerLiability(repairCost, hasInsurance, deductible), places);
@@ -166,13 +166,13 @@ public class DamageAssessmentServiceImpl implements DamageAssessmentService {
             return DamageSeverity.MINOR;
         }
 
-        if (repairCost.compareTo(damageConfig.getMinorThreshold()) < 0) {
+        if (repairCost.compareTo(damageConfig.minorThreshold()) < 0) {
             return DamageSeverity.MINOR;
         }
-        if (repairCost.compareTo(damageConfig.getModerateThreshold()) < 0) {
+        if (repairCost.compareTo(damageConfig.moderateThreshold()) < 0) {
             return DamageSeverity.MODERATE;
         }
-        if (repairCost.compareTo(damageConfig.getMajorThreshold()) < 0) {
+        if (repairCost.compareTo(damageConfig.majorThreshold()) < 0) {
             return DamageSeverity.MAJOR;
         }
         return DamageSeverity.TOTAL_LOSS;

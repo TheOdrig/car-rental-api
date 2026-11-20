@@ -4,6 +4,7 @@ import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.service.pricing.strategy.WeekendPricingStrategy;
 import com.akif.car.internal.config.PricingConfig;
+import com.akif.testsupport.ConfigFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("WeekendPricingStrategy Unit Tests")
@@ -32,14 +34,8 @@ class WeekendPricingStrategyTest {
 
     @BeforeEach
     void setUp() {
-        PricingConfig.WeekendConfig weekendConfig = new PricingConfig.WeekendConfig();
-        weekendConfig.setMultiplier(new BigDecimal("1.15"));
-        weekendConfig.setDays(List.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY));
-        
-        PricingConfig.StrategyConfig strategyConfig = new PricingConfig.StrategyConfig();
-        
-        lenient().when(config.getWeekend()).thenReturn(weekendConfig);
-        lenient().when(config.getStrategy()).thenReturn(strategyConfig);
+        lenient().when(config.weekend()).thenReturn(ConfigFixtures.weekend());
+        lenient().when(config.strategy()).thenReturn(ConfigFixtures.strategies(true));
     }
 
     @Test
@@ -131,9 +127,7 @@ class WeekendPricingStrategyTest {
     @Test
     @DisplayName("Should be enabled when config says enabled")
     void shouldBeEnabledWhenConfigSaysEnabled() {
-        PricingConfig.StrategyConfig strategyConfig = new PricingConfig.StrategyConfig();
-        strategyConfig.setWeekendEnabled(true);
-        lenient().when(config.getStrategy()).thenReturn(strategyConfig);
+        when(config.strategy()).thenReturn(ConfigFixtures.strategies(true));
         
         assertThat(strategy.isEnabled()).isTrue();
     }
@@ -141,9 +135,7 @@ class WeekendPricingStrategyTest {
     @Test
     @DisplayName("Should be disabled when config says disabled")
     void shouldBeDisabledWhenConfigSaysDisabled() {
-        PricingConfig.StrategyConfig strategyConfig = new PricingConfig.StrategyConfig();
-        strategyConfig.setWeekendEnabled(false);
-        lenient().when(config.getStrategy()).thenReturn(strategyConfig);
+        when(config.strategy()).thenReturn(ConfigFixtures.strategies(false));
         
         assertThat(strategy.isEnabled()).isFalse();
     }

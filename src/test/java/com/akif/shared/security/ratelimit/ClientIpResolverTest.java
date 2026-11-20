@@ -21,11 +21,7 @@ class ClientIpResolverTest {
     }
 
     private ClientIpResolver resolver(boolean trust, int hops) {
-        RateLimitProperties properties = new RateLimitProperties();
-        properties.setTrustForwardedHeaders(trust);
-        properties.setTrustedProxyHops(hops);
-        properties.setTrustedProxyCidrs(List.of("10.0.0.0/8"));
-        return new ClientIpResolver(properties);
+        return new ClientIpResolver(new RateLimitProperties(true, trust, hops, "", List.of("10.0.0.0/8"), 100_000, null));
     }
 
     @Test
@@ -105,11 +101,7 @@ class ClientIpResolverTest {
     }
 
     private RateLimitProperties headerProperties(boolean trustForwarded, List<String> cidrs) {
-        RateLimitProperties properties = new RateLimitProperties();
-        properties.setTrustForwardedHeaders(trustForwarded);
-        properties.setTrustedClientIpHeader("X-Client-IP");
-        properties.setTrustedProxyCidrs(cidrs);
-        return properties;
+        return new RateLimitProperties(true, trustForwarded, 1, "X-Client-IP", cidrs, 100_000, null);
     }
 
     @Test
@@ -144,9 +136,7 @@ class ClientIpResolverTest {
     @Test
     @DisplayName("ignores X-Forwarded-For from a remote address outside the trusted CIDRs")
     void ignoresForwardedForFromUntrustedRemote() {
-        RateLimitProperties properties = new RateLimitProperties();
-        properties.setTrustForwardedHeaders(true);
-        properties.setTrustedProxyCidrs(List.of("10.0.0.0/8"));
+        RateLimitProperties properties = new RateLimitProperties(true, true, 1, "", List.of("10.0.0.0/8"), 100_000, null);
 
         assertThat(new ClientIpResolver(properties).resolve(request("203.0.113.50", "9.9.9.9")))
                 .isEqualTo("203.0.113.50");

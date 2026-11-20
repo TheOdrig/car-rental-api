@@ -105,8 +105,8 @@ class RentalServiceTest {
     @Spy
     private Clock clock = Clock.systemDefaultZone();
 
-    @Spy
-    private RentalProperties rentalProperties = new RentalProperties();
+    @Mock
+    private RentalProperties rentalProperties;
 
     private RentalServiceImpl rentalService;
 
@@ -119,6 +119,13 @@ class RentalServiceTest {
 
     @BeforeEach
     void setUp() {
+        org.mockito.Mockito.lenient().when(rentalProperties.maxRentalDays()).thenReturn(30);
+        org.mockito.Mockito.lenient().when(rentalProperties.maxLeadDays()).thenReturn(180);
+        org.mockito.Mockito.lenient().when(rentalProperties.maxOpenRequestsPerUser()).thenReturn(3);
+        org.mockito.Mockito.lenient().when(rentalProperties.requestExpiryHours()).thenReturn(24);
+        org.mockito.Mockito.lenient().when(rentalProperties.paymentWindowDays()).thenReturn(5);
+        org.mockito.Mockito.lenient().when(rentalProperties.paymentGraceHours()).thenReturn(12);
+        org.mockito.Mockito.lenient().when(rentalProperties.noShowDays()).thenReturn(1);
         RentalLookups lookups = new RentalLookups(rentalRepository, carCatalog, userLookup, paymentService);
         RentalRefundService refunds = new RentalRefundService(clock, paymentService, dynamicPricingService, lookups);
         RentalLatePenaltyProcessor penalties = new RentalLatePenaltyProcessor(
@@ -368,7 +375,7 @@ class RentalServiceTest {
         @DisplayName("honours a tighter configured maximum length")
         void honoursConfiguredLength() {
             prepare();
-            rentalProperties.setMaxRentalDays(7);
+            when(rentalProperties.maxRentalDays()).thenReturn(7);
             LocalDate start = LocalDate.now().plusDays(1);
 
             assertThatThrownBy(() -> rentalService.requestRental(
@@ -566,7 +573,7 @@ class RentalServiceTest {
         @Test
         @DisplayName("Should allow pickup on a later day when the no-show window is longer")
         void shouldAllowPickupWithinALongerNoShowWindow() {
-            rentalProperties.setNoShowDays(3);
+            when(rentalProperties.noShowDays()).thenReturn(3);
             testRental.confirm(null, java.time.Instant.now());
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "startDate", LocalDate.now().minusDays(2));
             org.springframework.test.util.ReflectionTestUtils.setField(testRental, "endDate", LocalDate.now().plusDays(3));

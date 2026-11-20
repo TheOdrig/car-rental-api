@@ -584,7 +584,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
         void windowNotOpen() throws Exception {
             LocalDate start = LocalDate.now().plusDays(10);
             Long rentalId = confirmedRentalId(start, start.plusDays(3));
-            LocalDate opensOn = start.minusDays(rentalProperties.getPaymentWindowDays());
+            LocalDate opensOn = start.minusDays(rentalProperties.paymentWindowDays());
 
             mockMvc.perform(post("/api/v1/rentals/{id}/payment-intent", rentalId)
                             .header("Authorization", "Bearer " + customerToken))
@@ -628,7 +628,7 @@ class PaymentFlowE2ETest extends E2ETestBase {
         void paymentOpensOnMatchesEnforcement() throws Exception {
             LocalDate start = LocalDate.now().plusDays(20);
             Long rentalId = confirmedRentalId(start, start.plusDays(3));
-            LocalDate opensOn = start.minusDays(rentalProperties.getPaymentWindowDays());
+            LocalDate opensOn = start.minusDays(rentalProperties.paymentWindowDays());
             String ownerAuth = "Bearer " + customerToken;
 
             mockMvc.perform(get("/api/v1/rentals/{id}", rentalId).header("Authorization", ownerAuth))

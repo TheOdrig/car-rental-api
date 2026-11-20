@@ -5,6 +5,7 @@ import com.akif.rental.api.RentalStatus;
 import com.akif.rental.api.ReturnReminderEvent;
 import com.akif.rental.domain.model.Rental;
 import com.akif.rental.internal.config.PenaltyConfig;
+import com.akif.testsupport.ConfigFixtures;
 import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.rental.internal.scheduler.ReminderScheduler;
 import com.akif.shared.enums.CurrencyType;
@@ -65,10 +66,7 @@ class ReminderEventContentTest {
     @Test
     @DisplayName("the return reminder carries the penalty derived from the penalty configuration and the rental currency")
     void returnReminderUsesPenaltyConfigurationAndCurrency() {
-        PenaltyConfig config = new PenaltyConfig();
-        config.setHourlyPenaltyRate(new BigDecimal("0.20"));
-        config.setDailyPenaltyRate(new BigDecimal("2.00"));
-        config.setGracePeriodMinutes(30);
+        PenaltyConfig config = ConfigFixtures.penaltyConfig(30, "0.20", "2.00", 24);
         when(rentalRepository.findRentalsForReturnReminder(eq(LocalDate.of(2026, 3, 10)), eq(RentalStatus.IN_USE),
                 anyLong(), any(Pageable.class))).thenReturn(List.of(rental(CurrencyType.JPY, "5000")));
 
@@ -89,7 +87,7 @@ class ReminderEventContentTest {
         when(rentalRepository.findRentalsForPickupReminder(eq(LocalDate.of(2026, 3, 11)), eq(RentalStatus.CONFIRMED),
                 anyLong(), any(Pageable.class))).thenReturn(List.of(rental(CurrencyType.TRY, "100")));
 
-        scheduler(new PenaltyConfig()).sendPickupReminders();
+        scheduler(ConfigFixtures.penaltyConfig()).sendPickupReminders();
 
         ArgumentCaptor<PickupReminderEvent> captor = ArgumentCaptor.forClass(PickupReminderEvent.class);
         verify(eventPublisher).publishEvent(captor.capture());

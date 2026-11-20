@@ -4,6 +4,7 @@ import com.akif.car.api.CarBooking;
 import com.akif.car.api.CarBookingCalendar;
 import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.config.PricingConfig;
+import com.akif.testsupport.ConfigFixtures;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.car.internal.service.pricing.strategy.DemandPricingStrategy;
@@ -49,26 +50,11 @@ class DemandPricingStrategyTest {
     @InjectMocks
     private DemandPricingStrategy strategy;
 
-    private PricingConfig.StrategyConfig strategyConfig;
 
     @BeforeEach
     void setUp() {
-        PricingConfig.DemandConfig demandConfig = new PricingConfig.DemandConfig();
-        strategyConfig = new PricingConfig.StrategyConfig();
-
-        PricingConfig.DemandTier highTier = new PricingConfig.DemandTier();
-        highTier.setThreshold(80);
-        highTier.setMultiplier(new BigDecimal("1.20"));
-
-        PricingConfig.DemandTier moderateTier = new PricingConfig.DemandTier();
-        moderateTier.setThreshold(50);
-        moderateTier.setMultiplier(new BigDecimal("1.10"));
-
-        demandConfig.setHigh(highTier);
-        demandConfig.setModerate(moderateTier);
-
-        lenient().when(config.getDemand()).thenReturn(demandConfig);
-        lenient().when(config.getStrategy()).thenReturn(strategyConfig);
+        lenient().when(config.demand()).thenReturn(ConfigFixtures.demand());
+        lenient().when(config.strategy()).thenReturn(ConfigFixtures.strategies(true));
     }
 
     private PricingContext context() {
@@ -251,14 +237,14 @@ class DemandPricingStrategyTest {
         @Test
         @DisplayName("Should be enabled when config says enabled")
         void shouldBeEnabledWhenConfigSaysEnabled() {
-            strategyConfig.setDemandEnabled(true);
+            when(config.strategy()).thenReturn(ConfigFixtures.strategies(true));
             assertThat(strategy.isEnabled()).isTrue();
         }
 
         @Test
         @DisplayName("Should be disabled when config says disabled")
         void shouldBeDisabledWhenConfigSaysDisabled() {
-            strategyConfig.setDemandEnabled(false);
+            when(config.strategy()).thenReturn(ConfigFixtures.strategies(false));
             assertThat(strategy.isEnabled()).isFalse();
         }
     }

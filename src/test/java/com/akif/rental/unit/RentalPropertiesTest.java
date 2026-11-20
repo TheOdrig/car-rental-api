@@ -1,52 +1,50 @@
 package com.akif.rental.unit;
 
 import com.akif.rental.internal.config.RentalProperties;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("RentalProperties no-show days")
+@DisplayName("RentalProperties validation")
 class RentalPropertiesTest {
 
-    @Test
-    @DisplayName("defaults to one day")
-    void defaultsToOneDay() {
-        RentalProperties properties = new RentalProperties();
-        properties.validate();
+    private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-        assertThat(properties.getNoShowDays()).isEqualTo(1);
+    private RentalProperties properties(int paymentWindowDays, int paymentGraceHours, int noShowDays) {
+        return new RentalProperties(30, 180, 3, 24, paymentWindowDays, paymentGraceHours, noShowDays);
     }
 
     @Test
-    @DisplayName("is clamped so the hold is released before the 7-day authorisation expires")
-    void clampedToTheAuthorisationWindow() {
-        RentalProperties properties = new RentalProperties();
-        properties.setPaymentWindowDays(5);
-        properties.setNoShowDays(4);
-        properties.validate();
-
-        assertThat(properties.getNoShowDays()).isEqualTo(1);
+    @DisplayName("accepts the defaults")
+    void acceptsDefaults() {
+        assertThat(validator.validate(properties(5, 12, 1))).isEmpty();
     }
 
     @Test
-    @DisplayName("may be longer when the payment window is shorter")
+    @DisplayName("rejects a no-show window that would outlive the 7-day authorisation")
+    void rejectsNoShowBeyondAuthorisationWindow() {
+        assertThat(validator.validate(properties(5, 12, 4))).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("allows a longer no-show window when the payment window is shorter")
     void longerWithAShorterPaymentWindow() {
-        RentalProperties properties = new RentalProperties();
-        properties.setPaymentWindowDays(3);
-        properties.setNoShowDays(3);
-        properties.validate();
-
-        assertThat(properties.getNoShowDays()).isEqualTo(3);
+        assertThat(validator.validate(properties(3, 12, 3))).isEmpty();
     }
 
     @Test
-    @DisplayName("is never below one day")
-    void neverBelowOne() {
-        RentalProperties properties = new RentalProperties();
-        properties.setNoShowDays(0);
-        properties.validate();
+    @DisplayName("rejects a no-show window below one day")
+    void rejectsZeroNoShowDays() {
+        assertThat(validator.validate(properties(5, 12, 0))).isNotEmpty();
+    }
 
-        assertThat(properties.getNoShowDays()).isEqualTo(1);
+    @Test
+    @DisplayName("rejects a payment grace period outside 1..72 hours")
+    void rejectsGraceOutsideBounds() {
+        assertThat(validator.validate(properties(5, 0, 1))).isNotEmpty();
+        assertThat(validator.validate(properties(5, 500, 1))).isNotEmpty();
     }
 }

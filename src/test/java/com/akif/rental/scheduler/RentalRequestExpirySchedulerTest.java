@@ -48,7 +48,7 @@ class RentalRequestExpirySchedulerTest {
     private CarRepository carRepository;
 
     @Autowired
-    private RentalProperties properties;
+    private org.springframework.context.ApplicationEventPublisher publisher;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -66,7 +66,6 @@ class RentalRequestExpirySchedulerTest {
 
     @AfterEach
     void cleanUp() {
-        properties.setRequestExpiryHours(24);
         rentalRepository.deleteAll();
         jdbcTemplate.update("DELETE FROM car_rental.payments");
         carRepository.deleteAll();
@@ -107,7 +106,8 @@ class RentalRequestExpirySchedulerTest {
     @Test
     @DisplayName("uses the configured expiry window")
     void usesConfiguredWindow() {
-        properties.setRequestExpiryHours(6);
+        RentalRequestExpiryScheduler scheduler = new RentalRequestExpiryScheduler(
+                clock, rentalRepository, com.akif.testsupport.ConfigFixtures.rentalPropertiesWithRequestExpiryHours(6), publisher);
         Instant now = Instant.now(clock);
         Rental twelveHoursOld = rental(RentalStatus.REQUESTED, now.minus(Duration.ofHours(12)), 0);
         Rental oneHourOld = rental(RentalStatus.REQUESTED, now.minus(Duration.ofHours(1)), 1);
