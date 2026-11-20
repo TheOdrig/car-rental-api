@@ -5,4 +5,4 @@ SET price_adjustments = replace(replace(replace(replace(replace(price_adjustment
         '"code":"Duration Discount"', '"code":"DURATION_DISCOUNT"'),
         '"code":"Weekend Pricing"', '"code":"WEEKEND"'),
         '"code":"Demand Pricing"', '"code":"DEMAND"')
-WHERE price_adjustments IS NOT NULL;
+WHERE price_adjustments LIKE '%"code":"% %';
