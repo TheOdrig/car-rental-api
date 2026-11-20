@@ -244,6 +244,7 @@ class SeasonPricingStrategyTest {
         @DisplayName("Should return correct strategy name")
         void shouldReturnCorrectStrategyName() {
             assertThat(strategy.getStrategyName()).isEqualTo("Season Pricing");
+            assertThat(strategy.getCode()).isEqualTo(com.akif.car.api.PricingStrategyCode.SEASON);
         }
 
         @Test

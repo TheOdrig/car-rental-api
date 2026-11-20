@@ -226,6 +226,7 @@ class DemandPricingStrategyTest {
         @DisplayName("Should return correct strategy name")
         void shouldReturnCorrectStrategyName() {
             assertThat(strategy.getStrategyName()).isEqualTo("Demand Pricing");
+            assertThat(strategy.getCode()).isEqualTo(com.akif.car.api.PricingStrategyCode.DEMAND);
         }
 
         @Test

@@ -95,6 +95,7 @@ class DurationDiscountStrategyTest {
     @DisplayName("Should return correct strategy name")
     void shouldReturnCorrectStrategyName() {
         assertThat(strategy.getStrategyName()).isEqualTo("Duration Discount");
+        assertThat(strategy.getCode()).isEqualTo(com.akif.car.api.PricingStrategyCode.DURATION_DISCOUNT);
     }
 
     @Test

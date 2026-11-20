@@ -75,7 +75,7 @@ class DynamicPricingServiceImplTest {
             when(strategy1.isEnabled()).thenReturn(true);
             when(strategy1.getOrder()).thenReturn(1);
             when(strategy1.calculate(any(PricingContext.class)))
-                .thenReturn(PriceModifier.discount("Test", new BigDecimal("0.90"), "10% discount"));
+                .thenReturn(PriceModifier.discount(com.akif.car.api.PricingStrategyCode.SEASON, "Test", new BigDecimal("0.90"), "10% discount"));
 
             service = new DynamicPricingServiceImpl(Clock.systemDefaultZone(), List.of(strategy1), carRepository, config);
 
@@ -102,12 +102,12 @@ class DynamicPricingServiceImplTest {
             when(strategy1.isEnabled()).thenReturn(true);
             when(strategy1.getOrder()).thenReturn(1);
             when(strategy1.calculate(any(PricingContext.class)))
-                .thenReturn(PriceModifier.discount("Strategy1", new BigDecimal("0.90"), "10% discount"));
+                .thenReturn(PriceModifier.discount(com.akif.car.api.PricingStrategyCode.SEASON, "Strategy1", new BigDecimal("0.90"), "10% discount"));
 
             when(strategy2.isEnabled()).thenReturn(true);
             when(strategy2.getOrder()).thenReturn(2);
             when(strategy2.calculate(any(PricingContext.class)))
-                .thenReturn(PriceModifier.surcharge("Strategy2", new BigDecimal("1.20"), "20% surcharge"));
+                .thenReturn(PriceModifier.surcharge(com.akif.car.api.PricingStrategyCode.SEASON, "Strategy2", new BigDecimal("1.20"), "20% surcharge"));
 
             service = new DynamicPricingServiceImpl(Clock.systemDefaultZone(), List.of(strategy1, strategy2), carRepository, config);
 
@@ -132,7 +132,7 @@ class DynamicPricingServiceImplTest {
             when(strategy2.isEnabled()).thenReturn(true);
             when(strategy2.getOrder()).thenReturn(2);
             when(strategy2.calculate(any(PricingContext.class)))
-                .thenReturn(PriceModifier.discount("Strategy2", new BigDecimal("0.85"), "15% discount"));
+                .thenReturn(PriceModifier.discount(com.akif.car.api.PricingStrategyCode.SEASON, "Strategy2", new BigDecimal("0.85"), "15% discount"));
 
             service = new DynamicPricingServiceImpl(Clock.systemDefaultZone(), List.of(strategy1, strategy2), carRepository, config);
 
@@ -175,7 +175,7 @@ class DynamicPricingServiceImplTest {
             when(strategy1.isEnabled()).thenReturn(true);
             when(strategy1.getOrder()).thenReturn(1);
             when(strategy1.calculate(any(PricingContext.class)))
-                .thenReturn(PriceModifier.discount("Test", new BigDecimal("0.10"), "90% discount"));
+                .thenReturn(PriceModifier.discount(com.akif.car.api.PricingStrategyCode.SEASON, "Test", new BigDecimal("0.10"), "90% discount"));
 
             service = new DynamicPricingServiceImpl(Clock.systemDefaultZone(), List.of(strategy1), carRepository, config);
 
@@ -200,7 +200,7 @@ class DynamicPricingServiceImplTest {
             when(strategy1.isEnabled()).thenReturn(true);
             when(strategy1.getOrder()).thenReturn(1);
             when(strategy1.calculate(any(PricingContext.class)))
-                .thenReturn(PriceModifier.surcharge("Test", new BigDecimal("1.15"), "15% surcharge"));
+                .thenReturn(PriceModifier.surcharge(com.akif.car.api.PricingStrategyCode.SEASON, "Test", new BigDecimal("1.15"), "15% surcharge"));
             service = new DynamicPricingServiceImpl(Clock.systemDefaultZone(), List.of(strategy1), carRepository, config);
 
             PricingResult result = service.calculatePrice(
@@ -222,7 +222,7 @@ class DynamicPricingServiceImplTest {
             when(strategy1.isEnabled()).thenReturn(true);
             when(strategy1.getOrder()).thenReturn(1);
             when(strategy1.calculate(any(PricingContext.class)))
-                .thenReturn(PriceModifier.discount("Test", new BigDecimal("1.00"), "none"));
+                .thenReturn(PriceModifier.discount(com.akif.car.api.PricingStrategyCode.SEASON, "Test", new BigDecimal("1.00"), "none"));
             service = new DynamicPricingServiceImpl(Clock.systemDefaultZone(), List.of(strategy1), carRepository, config);
 
             PricingResult result = service.calculatePrice(
@@ -245,7 +245,7 @@ class DynamicPricingServiceImplTest {
             when(strategy1.isEnabled()).thenReturn(true);
             when(strategy1.getOrder()).thenReturn(1);
             when(strategy1.calculate(any(PricingContext.class)))
-                .thenReturn(PriceModifier.neutral("Test", "No discount"));
+                .thenReturn(PriceModifier.neutral(com.akif.car.api.PricingStrategyCode.SEASON, "Test", "No discount"));
 
             service = new DynamicPricingServiceImpl(Clock.systemDefaultZone(), List.of(strategy1), carRepository, config);
 

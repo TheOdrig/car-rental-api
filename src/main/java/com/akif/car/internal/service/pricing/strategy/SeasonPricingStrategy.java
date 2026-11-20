@@ -3,10 +3,10 @@ package com.akif.car.internal.service.pricing.strategy;
 import com.akif.shared.time.RentalDays;
 import com.akif.car.internal.config.PricingConfig;
 import com.akif.car.api.PriceModifier;
+import com.akif.car.api.PricingStrategyCode;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.service.pricing.PricingStrategy;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -15,7 +15,6 @@ import java.time.LocalDate;
 import java.time.MonthDay;
 
 @Component
-@Order(1)
 @RequiredArgsConstructor
 public class SeasonPricingStrategy implements PricingStrategy {
 
@@ -41,7 +40,7 @@ public class SeasonPricingStrategy implements PricingStrategy {
         int regularDays = totalDays - peakDays - offpeakDays;
 
         if (peakDays == 0 && offpeakDays == 0) {
-            return PriceModifier.neutral(getStrategyName(), "Regular season");
+            return PriceModifier.neutral(getCode(), getStrategyName(), "Regular season");
         }
 
         BigDecimal peakMultiplier = config.season().peak().multiplier();
@@ -58,12 +57,12 @@ public class SeasonPricingStrategy implements PricingStrategy {
         String description = buildDescription(peakDays, offpeakDays, regularDays, totalDays);
 
         if (weightedMultiplier.compareTo(BigDecimal.ONE) > 0) {
-            return PriceModifier.surcharge(getStrategyName(), weightedMultiplier, description);
+            return PriceModifier.surcharge(getCode(), getStrategyName(), weightedMultiplier, description);
         } else if (weightedMultiplier.compareTo(BigDecimal.ONE) < 0) {
-            return PriceModifier.discount(getStrategyName(), weightedMultiplier, description);
+            return PriceModifier.discount(getCode(), getStrategyName(), weightedMultiplier, description);
         }
 
-        return PriceModifier.neutral(getStrategyName(), description);
+        return PriceModifier.neutral(getCode(), getStrategyName(), description);
     }
 
     private int countDaysInSeason(LocalDate startDate, LocalDate endDate, MonthDay seasonStart, MonthDay seasonEnd) {
@@ -92,6 +91,11 @@ public class SeasonPricingStrategy implements PricingStrategy {
             return String.format("Off-peak season (%d/%d days)", offpeakDays, totalDays);
         }
         return "Regular season";
+    }
+
+    @Override
+    public PricingStrategyCode getCode() {
+        return PricingStrategyCode.SEASON;
     }
 
     @Override

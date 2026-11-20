@@ -3,10 +3,10 @@ package com.akif.car.internal.service.pricing.strategy;
 import com.akif.shared.time.RentalDays;
 import com.akif.car.internal.config.PricingConfig;
 import com.akif.car.api.PriceModifier;
+import com.akif.car.api.PricingStrategyCode;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.service.pricing.PricingStrategy;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -15,7 +15,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 @Component
-@Order(4)
 @RequiredArgsConstructor
 public class WeekendPricingStrategy implements PricingStrategy {
 
@@ -27,7 +26,7 @@ public class WeekendPricingStrategy implements PricingStrategy {
         int totalDays = context.rentalDays();
 
         if (weekendDays == 0) {
-            return PriceModifier.neutral(getStrategyName(), "No weekend days");
+            return PriceModifier.neutral(getCode(), getStrategyName(), "No weekend days");
         }
 
         BigDecimal weekendMultiplier = config.weekend().multiplier();
@@ -41,16 +40,21 @@ public class WeekendPricingStrategy implements PricingStrategy {
         String description = String.format("Weekend pricing (%d/%d days)", weekendDays, totalDays);
 
         if (weightedMultiplier.compareTo(BigDecimal.ONE) > 0) {
-            return PriceModifier.surcharge(getStrategyName(), weightedMultiplier, description);
+            return PriceModifier.surcharge(getCode(), getStrategyName(), weightedMultiplier, description);
         }
 
-        return PriceModifier.neutral(getStrategyName(), description);
+        return PriceModifier.neutral(getCode(), getStrategyName(), description);
     }
 
     private int countWeekendDays(LocalDate startDate, LocalDate endDate) {
         return (int) RentalDays.eachDay(startDate, endDate)
                 .filter(date -> config.weekend().days().contains(date.getDayOfWeek()))
                 .count();
+    }
+
+    @Override
+    public PricingStrategyCode getCode() {
+        return PricingStrategyCode.WEEKEND;
     }
 
     @Override

@@ -24,7 +24,7 @@ final class PriceBreakdown {
         for (PriceModifier modifier : pricing.appliedModifiers()) {
             running = running.multiply(modifier.multiplier());
             BigDecimal roundedNext = running.setScale(decimalPlaces, RoundingMode.HALF_UP);
-            adjustments.add(new PriceAdjustment(modifier.strategyName(), modifier.description(),
+            adjustments.add(new PriceAdjustment(modifier.code().name(), modifier.description(),
                     modifier.multiplier(), roundedNext.subtract(roundedRunning)));
             roundedRunning = roundedNext;
         }

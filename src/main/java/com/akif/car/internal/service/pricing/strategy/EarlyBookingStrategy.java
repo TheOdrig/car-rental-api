@@ -2,14 +2,13 @@ package com.akif.car.internal.service.pricing.strategy;
 
 import com.akif.car.internal.config.PricingConfig;
 import com.akif.car.api.PriceModifier;
+import com.akif.car.api.PricingStrategyCode;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.service.pricing.PricingStrategy;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
-@Order(2)
 @RequiredArgsConstructor
 public class EarlyBookingStrategy implements PricingStrategy {
 
@@ -20,8 +19,7 @@ public class EarlyBookingStrategy implements PricingStrategy {
         int leadTimeDays = context.leadTimeDays();
 
         if (leadTimeDays >= config.earlyBooking().tier1().days()) {
-            return PriceModifier.discount(
-                getStrategyName(),
+            return PriceModifier.discount(getCode(), getStrategyName(),
                 config.earlyBooking().tier1().multiplier(),
                 String.format("Early booking discount (%d+ days advance)", 
                     config.earlyBooking().tier1().days())
@@ -29,8 +27,7 @@ public class EarlyBookingStrategy implements PricingStrategy {
         }
 
         if (leadTimeDays >= config.earlyBooking().tier2().days()) {
-            return PriceModifier.discount(
-                getStrategyName(),
+            return PriceModifier.discount(getCode(), getStrategyName(),
                 config.earlyBooking().tier2().multiplier(),
                 String.format("Early booking discount (%d-%d days advance)",
                     config.earlyBooking().tier2().days(),
@@ -39,8 +36,7 @@ public class EarlyBookingStrategy implements PricingStrategy {
         }
 
         if (leadTimeDays >= config.earlyBooking().tier3().days()) {
-            return PriceModifier.discount(
-                getStrategyName(),
+            return PriceModifier.discount(getCode(), getStrategyName(),
                 config.earlyBooking().tier3().multiplier(),
                 String.format("Early booking discount (%d-%d days advance)",
                     config.earlyBooking().tier3().days(),
@@ -48,7 +44,12 @@ public class EarlyBookingStrategy implements PricingStrategy {
             );
         }
 
-        return PriceModifier.neutral(getStrategyName(), "No early booking discount");
+        return PriceModifier.neutral(getCode(), getStrategyName(), "No early booking discount");
+    }
+
+    @Override
+    public PricingStrategyCode getCode() {
+        return PricingStrategyCode.EARLY_BOOKING;
     }
 
     @Override

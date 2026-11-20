@@ -116,6 +116,7 @@ class WeekendPricingStrategyTest {
     @DisplayName("Should return correct strategy name")
     void shouldReturnCorrectStrategyName() {
         assertThat(strategy.getStrategyName()).isEqualTo("Weekend Pricing");
+        assertThat(strategy.getCode()).isEqualTo(com.akif.car.api.PricingStrategyCode.WEEKEND);
     }
 
     @Test

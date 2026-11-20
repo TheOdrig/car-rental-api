@@ -135,7 +135,7 @@ class SimilarCarServiceImplTest {
                 pricingResult = PricingResult.builder()
                                 .basePrice(new BigDecimal("500"))
                                 .rentalDays(5)
-                                .appliedModifiers(List.of(PriceModifier.discount("Early booking", new BigDecimal("0.9"),
+                                .appliedModifiers(List.of(PriceModifier.discount(com.akif.car.api.PricingStrategyCode.SEASON, "Early booking", new BigDecimal("0.9"),
                                                 "Early booking discount")))
                                 .combinedMultiplier(new BigDecimal("0.9"))
                                 .finalPrice(new BigDecimal("2250"))

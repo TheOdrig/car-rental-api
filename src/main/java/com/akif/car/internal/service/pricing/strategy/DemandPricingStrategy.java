@@ -4,12 +4,12 @@ import com.akif.car.api.CarBooking;
 import com.akif.car.api.CarBookingCalendar;
 import com.akif.car.api.CarStatusType;
 import com.akif.car.api.PriceModifier;
+import com.akif.car.api.PricingStrategyCode;
 import com.akif.car.internal.config.PricingConfig;
 import com.akif.car.internal.dto.pricing.PricingContext;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.car.internal.service.pricing.PricingStrategy;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 
 @Component
-@Order(5)
 @RequiredArgsConstructor
 public class DemandPricingStrategy implements PricingStrategy {
 
@@ -36,23 +35,20 @@ public class DemandPricingStrategy implements PricingStrategy {
             : fleetOccupancyPercent(context);
 
         if (occupancyPercent > config.demand().high().threshold()) {
-            return PriceModifier.surcharge(
-                getStrategyName(),
+            return PriceModifier.surcharge(getCode(), getStrategyName(),
                 config.demand().high().multiplier(),
                 String.format("High demand (%d%% occupancy)", occupancyPercent)
             );
         }
 
         if (occupancyPercent >= config.demand().moderate().threshold()) {
-            return PriceModifier.surcharge(
-                getStrategyName(),
+            return PriceModifier.surcharge(getCode(), getStrategyName(),
                 config.demand().moderate().multiplier(),
                 String.format("Moderate demand (%d%% occupancy)", occupancyPercent)
             );
         }
 
-        return PriceModifier.neutral(
-            getStrategyName(),
+        return PriceModifier.neutral(getCode(), getStrategyName(),
             String.format("Normal demand (%d%% occupancy)", occupancyPercent)
         );
     }
@@ -88,6 +84,11 @@ public class DemandPricingStrategy implements PricingStrategy {
                 .count())
             .sum();
         return (int) Math.min(occupiedCarDays * 100 / (days * bookable.size()), 100);
+    }
+
+    @Override
+    public PricingStrategyCode getCode() {
+        return PricingStrategyCode.DEMAND;
     }
 
     @Override

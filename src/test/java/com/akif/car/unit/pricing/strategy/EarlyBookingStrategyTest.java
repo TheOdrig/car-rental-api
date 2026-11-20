@@ -198,6 +198,7 @@ class EarlyBookingStrategyTest {
         @DisplayName("Should return correct strategy name")
         void shouldReturnCorrectStrategyName() {
             assertThat(strategy.getStrategyName()).isEqualTo("Early Booking");
+            assertThat(strategy.getCode()).isEqualTo(com.akif.car.api.PricingStrategyCode.EARLY_BOOKING);
         }
 
         @Test

@@ -27,7 +27,7 @@ class PricingResultTest {
     @DisplayName("a discount is reported as savings")
     void discountIsSavings() {
         PricingResult discounted = result("270.00",
-                PriceModifier.discount("EarlyBooking", new BigDecimal("0.90"), "Early booking"));
+                PriceModifier.discount(com.akif.car.api.PricingStrategyCode.SEASON, "EarlyBooking", new BigDecimal("0.90"), "Early booking"));
 
         assertThat(discounted.totalSavings()).isEqualByComparingTo("30.00");
     }
@@ -36,7 +36,7 @@ class PricingResultTest {
     @DisplayName("a surcharge never produces negative savings")
     void surchargeIsNotNegativeSavings() {
         PricingResult surcharged = result("305.04",
-                PriceModifier.surcharge("Weekend", new BigDecimal("1.0168"), "Weekend"));
+                PriceModifier.surcharge(com.akif.car.api.PricingStrategyCode.SEASON, "Weekend", new BigDecimal("1.0168"), "Weekend"));
 
         assertThat(surcharged.totalSavings()).isEqualByComparingTo("0");
     }
