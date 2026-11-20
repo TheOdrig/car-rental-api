@@ -3,7 +3,7 @@ package com.akif.rental.domain.model;
 import com.akif.rental.internal.exception.RentalValidationException;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+import com.akif.shared.time.RentalDays;
 
 public record RentalDatePolicy(int maxLeadDays, int maxRentalDays) {
 
@@ -17,12 +17,8 @@ public record RentalDatePolicy(int maxLeadDays, int maxRentalDays) {
         if (startDate.isAfter(today.plusDays(maxLeadDays))) {
             throw new RentalValidationException("Start date cannot be more than " + maxLeadDays + " days ahead");
         }
-        if (inclusiveDays(startDate, endDate) > maxRentalDays) {
+        if (RentalDays.inclusiveDays(startDate, endDate) > maxRentalDays) {
             throw new RentalValidationException("Rental cannot be longer than " + maxRentalDays + " days");
         }
-    }
-
-    public static int inclusiveDays(LocalDate startDate, LocalDate endDate) {
-        return (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
     }
 }

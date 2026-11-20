@@ -1,6 +1,7 @@
 package com.akif.rental.internal.service.penalty.impl;
 
 import com.akif.shared.time.LateHours;
+import com.akif.shared.time.RentalDays;
 import com.akif.rental.internal.config.PenaltyConfig;
 import com.akif.rental.internal.dto.penalty.PenaltyResult;
 import com.akif.rental.domain.enums.LateReturnStatus;
@@ -44,7 +45,7 @@ public class PenaltyCalculationServiceImpl implements PenaltyCalculationService 
             );
         }
 
-        int lateDays = (lateHours + 23) / 24;
+        int lateDays = RentalDays.lateDays(lateHours);
 
         LateReturnStatus status;
         if (lateHours >= penaltyConfig.severelyLateThresholdHours()) {

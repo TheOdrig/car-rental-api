@@ -57,6 +57,6 @@ class RentalDatePolicyTest {
 
         assertThatCode(() -> relaxed.validate(TODAY.plusDays(300), TODAY.plusDays(340), TODAY))
                 .doesNotThrowAnyException();
-        assertThat(RentalDatePolicy.inclusiveDays(TODAY, TODAY.plusDays(4))).isEqualTo(5);
+        assertThat(com.akif.shared.time.RentalDays.inclusiveDays(TODAY, TODAY.plusDays(4))).isEqualTo(5);
     }
 }

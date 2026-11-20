@@ -1,6 +1,7 @@
 package com.akif.rental.internal.service.detection.impl;
 
 import com.akif.shared.time.LateHours;
+import com.akif.shared.time.RentalDays;
 import com.akif.shared.time.UtcDates;
 import java.time.Clock;
 
@@ -140,7 +141,7 @@ public class LateReturnDetectionServiceImpl implements LateReturnDetectionServic
     public long calculateLateDays(Rental rental, Instant currentTime) {
         long lateHours = calculateLateHours(rental, currentTime);
 
-        return (long) Math.ceil(lateHours / 24.0);
+        return RentalDays.lateDays(lateHours);
     }
     
     private void publishEventForStatusChange(Rental rental, LateReturnStatus newStatus, Instant currentTime) {

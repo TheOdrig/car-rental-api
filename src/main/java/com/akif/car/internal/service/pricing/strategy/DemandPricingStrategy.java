@@ -13,7 +13,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+import com.akif.shared.time.RentalDays;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -73,22 +73,20 @@ public class DemandPricingStrategy implements PricingStrategy {
             return 0;
         }
         Set<Long> bookable = new HashSet<>(bookableIds);
-        long days = ChronoUnit.DAYS.between(context.startDate(), context.endDate()) + 1;
+        long days = RentalDays.inclusiveDays(context.startDate(), context.endDate());
         if (days <= 0) {
             return 0;
         }
         List<CarBooking> bookings = bookingCalendar.findCommittedBookings(context.startDate(), context.endDate());
-        long occupiedCarDays = 0;
-        for (LocalDate day = context.startDate(); !day.isAfter(context.endDate()); day = day.plusDays(1)) {
-            LocalDate current = day;
-            occupiedCarDays += bookings.stream()
+        long occupiedCarDays = RentalDays.eachDay(context.startDate(), context.endDate())
+            .mapToLong(current -> bookings.stream()
                 .filter(booking -> bookable.contains(booking.carId()))
                 .filter(booking -> booking.bookingId() == null || !booking.bookingId().equals(context.excludedBookingId()))
                 .filter(booking -> !current.isBefore(booking.startDate()) && !current.isAfter(booking.endDate()))
                 .map(CarBooking::carId)
                 .distinct()
-                .count();
-        }
+                .count())
+            .sum();
         return (int) Math.min(occupiedCarDays * 100 / (days * bookable.size()), 100);
     }
 

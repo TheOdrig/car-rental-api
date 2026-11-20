@@ -17,6 +17,7 @@ import com.akif.car.internal.exception.AvailabilityValidationException;
 import com.akif.car.domain.Car;
 import com.akif.car.internal.repository.CarRepository;
 import com.akif.car.api.BookedPeriod;
+import com.akif.car.internal.config.AvailabilityProperties;
 import com.akif.car.api.CarBookingCalendar;
 import com.akif.car.internal.service.availability.CarAvailabilityService;
 import com.akif.currency.api.CurrencyConversionService;
@@ -35,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.temporal.ChronoUnit;
+import com.akif.shared.time.RentalDays;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -49,6 +50,7 @@ import java.util.Set;
 public class CarAvailabilityServiceImpl implements CarAvailabilityService {
 
     private final Clock clock;
+    private final AvailabilityProperties availabilityProperties;
 
     private final CarRepository carRepository;
     private final CarBookingCalendar bookingCalendar;
@@ -84,7 +86,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
                 request.maxProductionYear(),
                 pageable);
 
-        int rentalDays = (int) ChronoUnit.DAYS.between(request.startDate(), request.endDate()) + 1;
+        int rentalDays = RentalDays.inclusiveDays(request.startDate(), request.endDate());
 
         Map<Long, PricingResult> prices = batchPricing.priceCars(availableCars.getContent(), request.startDate(),
                 request.endDate(), LocalDate.now(clock));
@@ -189,11 +191,7 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
         List<LocalDate> unavailableDates = new ArrayList<>();
 
         if (Arrays.asList(CarStatusType.getUnavailableStatuses()).contains(car.getCarStatusType())) {
-            LocalDate current = startDate;
-            while (!current.isAfter(endDate)) {
-                unavailableDates.add(current);
-                current = current.plusDays(1);
-            }
+            RentalDays.eachDay(startDate, endDate).forEach(unavailableDates::add);
             log.debug("Car {} has blocking status, all {} dates unavailable", carId, unavailableDates.size());
             return unavailableDates;
         }
@@ -204,13 +202,9 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
             LocalDate rentalStart = rental.startDate().isBefore(startDate) ? startDate : rental.startDate();
             LocalDate rentalEnd = rental.endDate().isAfter(endDate) ? endDate : rental.endDate();
 
-            LocalDate current = rentalStart;
-            while (!current.isAfter(rentalEnd)) {
-                if (!unavailableDates.contains(current)) {
-                    unavailableDates.add(current);
-                }
-                current = current.plusDays(1);
-            }
+            RentalDays.eachDay(rentalStart, rentalEnd)
+                    .filter(date -> !unavailableDates.contains(date))
+                    .forEach(unavailableDates::add);
         }
 
         log.debug("Found {} unavailable dates for car: {}", unavailableDates.size(), carId);
@@ -228,9 +222,9 @@ public class CarAvailabilityServiceImpl implements CarAvailabilityService {
             throw new AvailabilityValidationException("Invalid date range");
         }
 
-        long days = ChronoUnit.DAYS.between(startDate, endDate);
-        if (days > 90) {
-            throw new AvailabilityValidationException("Rental period cannot exceed 90 days");
+        int maxDays = availabilityProperties.maxSearchDays();
+        if (RentalDays.inclusiveDays(startDate, endDate) > maxDays) {
+            throw new AvailabilityValidationException("Rental period cannot exceed " + maxDays + " days");
         }
     }
 

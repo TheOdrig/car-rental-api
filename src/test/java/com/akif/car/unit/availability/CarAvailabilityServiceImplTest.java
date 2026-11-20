@@ -60,6 +60,9 @@ class CarAvailabilityServiceImplTest {
         @Mock
         private CurrencyConversionService currencyConversionService;
 
+        @Mock
+        private com.akif.car.internal.config.AvailabilityProperties availabilityProperties;
+
     @Spy
     private Clock clock = Clock.systemDefaultZone();
 
@@ -72,6 +75,7 @@ class CarAvailabilityServiceImplTest {
 
         @BeforeEach
         void setUp() {
+                org.mockito.Mockito.lenient().when(availabilityProperties.maxSearchDays()).thenReturn(90);
                 testCar = Car.builder()
                                 .id(1L)
                                 .licensePlate("34ABC123")

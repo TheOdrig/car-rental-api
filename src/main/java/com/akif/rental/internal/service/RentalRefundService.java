@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+import com.akif.shared.time.RentalDays;
 
 @Component
 @RequiredArgsConstructor
@@ -66,9 +66,7 @@ public class RentalRefundService {
 
     EarlyReturnPreview quoteEarlyReturn(Rental rental, PaymentDto payment) {
         LocalDate today = LocalDate.now(clock);
-        long daysUsed = today.isBefore(rental.getStartDate())
-                ? 0
-                : ChronoUnit.DAYS.between(rental.getStartDate(), today) + 1;
+        long daysUsed = RentalDays.elapsedInclusiveDays(rental.getStartDate(), today);
         int places = rental.getCurrency().getDecimalPlaces();
         BigDecimal none = BigDecimal.ZERO.setScale(places, RoundingMode.DOWN);
         int unusedDays = (int) Math.max(0, rental.getDays() - daysUsed);

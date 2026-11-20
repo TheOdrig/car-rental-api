@@ -2,7 +2,7 @@ package com.akif.car.internal.dto.pricing;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+import com.akif.shared.time.RentalDays;
 
 public record PricingContext(
     Long carId,
@@ -56,8 +56,8 @@ public record PricingContext(
             LocalDate bookingDate,
             String carCategory) {
 
-        int rentalDays = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
-        int leadTimeDays = (int) ChronoUnit.DAYS.between(bookingDate, startDate);
+        int rentalDays = RentalDays.inclusiveDays(startDate, endDate);
+        int leadTimeDays = RentalDays.daysBetween(bookingDate, startDate);
 
         return new PricingContext(
             carId,

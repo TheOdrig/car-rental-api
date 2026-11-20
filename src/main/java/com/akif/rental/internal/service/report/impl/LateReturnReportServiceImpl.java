@@ -1,6 +1,7 @@
 package com.akif.rental.internal.service.report.impl;
 
 import com.akif.rental.internal.dto.report.LateReturnFilterDto;
+import com.akif.shared.time.RentalDays;
 import com.akif.rental.internal.dto.report.LateReturnReportDto;
 import com.akif.rental.internal.dto.report.LateReturnStatisticsDto;
 import com.akif.rental.domain.enums.LateReturnStatus;
@@ -127,7 +128,7 @@ public class LateReturnReportServiceImpl implements LateReturnReportService {
 
     private LateReturnReportDto mapToReportDto(Rental rental) {
         Integer lateDays = rental.getLateHours() != null
-                ? (rental.getLateHours() + 23) / 24
+                ? RentalDays.lateDays(rental.getLateHours())
                 : null;
 
         return new LateReturnReportDto(

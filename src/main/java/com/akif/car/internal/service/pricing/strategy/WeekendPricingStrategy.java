@@ -1,5 +1,6 @@
 package com.akif.car.internal.service.pricing.strategy;
 
+import com.akif.shared.time.RentalDays;
 import com.akif.car.internal.config.PricingConfig;
 import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.dto.pricing.PricingContext;
@@ -47,18 +48,9 @@ public class WeekendPricingStrategy implements PricingStrategy {
     }
 
     private int countWeekendDays(LocalDate startDate, LocalDate endDate) {
-        int count = 0;
-        LocalDate current = startDate;
-
-        while (!current.isAfter(endDate)) {
-            DayOfWeek dayOfWeek = current.getDayOfWeek();
-            if (config.weekend().days().contains(dayOfWeek)) {
-                count++;
-            }
-            current = current.plusDays(1);
-        }
-
-        return count;
+        return (int) RentalDays.eachDay(startDate, endDate)
+                .filter(date -> config.weekend().days().contains(date.getDayOfWeek()))
+                .count();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.akif.car.internal.service.pricing.strategy;
 
+import com.akif.shared.time.RentalDays;
 import com.akif.car.internal.config.PricingConfig;
 import com.akif.car.api.PriceModifier;
 import com.akif.car.internal.dto.pricing.PricingContext;
@@ -66,17 +67,9 @@ public class SeasonPricingStrategy implements PricingStrategy {
     }
 
     private int countDaysInSeason(LocalDate startDate, LocalDate endDate, MonthDay seasonStart, MonthDay seasonEnd) {
-        int count = 0;
-        LocalDate current = startDate;
-
-        while (!current.isAfter(endDate)) {
-            if (isDateInSeason(current, seasonStart, seasonEnd)) {
-                count++;
-            }
-            current = current.plusDays(1);
-        }
-
-        return count;
+        return (int) RentalDays.eachDay(startDate, endDate)
+                .filter(date -> isDateInSeason(date, seasonStart, seasonEnd))
+                .count();
     }
 
     private boolean isDateInSeason(LocalDate date, MonthDay seasonStart, MonthDay seasonEnd) {

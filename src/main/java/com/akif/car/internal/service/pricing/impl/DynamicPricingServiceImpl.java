@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+import com.akif.shared.time.RentalDays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -159,8 +159,8 @@ public class DynamicPricingServiceImpl implements DynamicPricingService, Pricing
 
     private PricingContext createContext(Car car, LocalDate startDate, LocalDate endDate, LocalDate bookingDate,
                                          Long excludedBookingId) {
-        int rentalDays = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
-        int leadTimeDays = (int) ChronoUnit.DAYS.between(bookingDate, startDate);
+        int rentalDays = RentalDays.inclusiveDays(startDate, endDate);
+        int leadTimeDays = RentalDays.daysBetween(bookingDate, startDate);
 
         return new PricingContext(
             car.getId(),
