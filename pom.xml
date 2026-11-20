@@ -13,7 +13,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>Car Rental API</name>
     <description>REST API for a car rental platform: fleet, rentals, payments, damages and admin tooling.</description>
-    <url>https://github.com/TheOdrig/car-rental</url>
+    <url>https://github.com/TheOdrig/car-rental-api</url>
     <licenses>
         <license>
             <name>MIT License</name>
@@ -21,8 +21,8 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:git:https://github.com/TheOdrig/car-rental.git</connection>
-        <url>https://github.com/TheOdrig/car-rental</url>
+        <connection>scm:git:https://github.com/TheOdrig/car-rental-api.git</connection>
+        <url>https://github.com/TheOdrig/car-rental-api</url>
     </scm>
 
     <properties>

@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 Set-Location (git rev-parse --show-toplevel)
-$pattern = '(^|/)(\.kiro|kiro\.steering|\.agent|\.agents|\.claude|\.codex|\.cursor|\.windsurf|\.obsidian|specs|notes)/|(^|/)\.aider[^/]*$|(^|/)(AGENTS|CLAUDE|GEMINI)\.md$|(^|/)\.(cursorrules|windsurfrules)$|(^|/)\.github/copilot-instructions\.md$|Zone\.Identifier$'
+$pattern = '(^|/)(\.kiro|kiro\.steering|\.agent|\.agents|\.claude|\.codex|\.cursor|\.windsurf|\.obsidian|specs|steering|\.gemini)/|^(notes|prompts)/|(^|/)\.clinerules(/|$)|^\.github/instructions/|(^|/)\.aider[^/]*$|(^|/)(AGENTS|CLAUDE|GEMINI)\.md$|(^|/)\.(cursorrules|windsurfrules)$|(^|/)\.github/copilot-instructions\.md$|Zone\.Identifier$'
 $bad = git ls-files | Where-Object { $_ -match $pattern }
 if ($bad) {
     Write-Error ("check-no-ai-files: tracked files that must stay local-only:`n" + ($bad -join "`n"))

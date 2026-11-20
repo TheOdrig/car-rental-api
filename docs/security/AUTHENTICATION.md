@@ -102,6 +102,11 @@ sequenceDiagram
 - Accounts created through OAuth2 are marked verified.
 - Linking requires an authenticated user, and a social account that is already linked to another user answers 409 `OAUTH2_ACCOUNT_ALREADY_LINKED`.
 
+## Known limitations
+
+- Access tokens stay valid until they expire (15 minutes by default, `jwt.access-token-expiration`) after a ban or a password change, because revocation applies to refresh tokens only.
+- The OAuth2 `state` is signed and time-limited but is not bound to a client session inside the API. The client must bind it to its own session; the web backend-for-frontend does so with an httpOnly state cookie.
+
 ## Authorization
 
 `ApiAccessPolicy` is the single source of the path and role rules. `SecurityConfig` enforces them, `openapi/endpoint-inventory.txt` lists the resulting access level of every operation, and `EndpointInventoryTest` asserts that the security chain enforces the inventory. A request that matches no rule requires authentication.

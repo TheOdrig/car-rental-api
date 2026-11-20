@@ -31,7 +31,8 @@ class RentalRequestExpirySchedulerUnitTest {
         private final org.springframework.context.ApplicationEventPublisher publisher =
             mock(org.springframework.context.ApplicationEventPublisher.class);
     private final RentalRequestExpiryScheduler scheduler =
-            new RentalRequestExpiryScheduler(clock, repository, ConfigFixtures.rentalPropertiesWithRequestExpiryHours(10), publisher);
+            new RentalRequestExpiryScheduler(clock, repository, ConfigFixtures.rentalPropertiesWithRequestExpiryHours(10), publisher,
+                    mock(org.springframework.transaction.PlatformTransactionManager.class));
 
     @Test
     @DisplayName("derives the cutoff from the injected clock and the configured hours")
@@ -48,8 +49,7 @@ class RentalRequestExpirySchedulerUnitTest {
     @Test
     @DisplayName("cancels each stale request with the expiry reason")
     void cancelsStaleRequests() {
-        Rental stale = Rental.builder().status(RentalStatus.REQUESTED).build();
-        when(repository.findStaleRequests(any(), any())).thenReturn(List.of(stale));
+        Rental stale = staleRental(5L);
 
         int expired = scheduler.expireStaleRequests();
 
@@ -72,9 +72,7 @@ class RentalRequestExpirySchedulerUnitTest {
     @Test
     @DisplayName("publishes the normal cancellation event for every expired request so the customer is notified")
     void publishesCancellationEvent() {
-        Rental stale = Rental.builder().status(RentalStatus.REQUESTED).userEmail("customer@example.com").build();
-        stale.setId(77L);
-        when(repository.findStaleRequests(any(), any())).thenReturn(List.of(stale));
+        staleRental(77L, RentalStatus.REQUESTED, "customer@example.com");
 
         scheduler.expireStaleRequests();
 
@@ -92,12 +90,50 @@ class RentalRequestExpirySchedulerUnitTest {
     @Test
     @DisplayName("publishes one event per expired request")
     void publishesOneEventPerRequest() {
-        Rental first = Rental.builder().status(RentalStatus.REQUESTED).build();
-        Rental second = Rental.builder().status(RentalStatus.REQUESTED).build();
-        when(repository.findStaleRequests(any(), any())).thenReturn(List.of(first, second));
+        staleRental(1L);
+        staleRental(2L);
 
         scheduler.expireStaleRequests();
 
         verify(publisher, org.mockito.Mockito.times(2)).publishEvent(any(com.akif.rental.api.RentalCancelledEvent.class));
+    }
+
+    @Test
+    @DisplayName("a failure on one request does not stop the others")
+    void failureDoesNotStopTheBatch() {
+        Rental broken = staleRental(10L);
+        Rental healthy = staleRental(11L);
+        when(repository.findByIdForUpdate(10L)).thenThrow(new RuntimeException("optimistic lock"));
+
+        int expired = scheduler.expireStaleRequests();
+
+        assertThat(expired).isEqualTo(1);
+        assertThat(broken.getStatus()).isEqualTo(RentalStatus.REQUESTED);
+        assertThat(healthy.getStatus()).isEqualTo(RentalStatus.CANCELLED);
+        verify(publisher).publishEvent(any(com.akif.rental.api.RentalCancelledEvent.class));
+    }
+
+    @Test
+    @DisplayName("skips a request that is no longer in REQUESTED once locked")
+    void skipsRequestThatChangedState() {
+        staleRental(20L, RentalStatus.CONFIRMED, null);
+
+        assertThat(scheduler.expireStaleRequests()).isZero();
+        verify(repository, never()).save(any());
+    }
+
+    private Rental staleRental(Long id) {
+        return staleRental(id, RentalStatus.REQUESTED, null);
+    }
+
+    private Rental staleRental(Long id, RentalStatus status, String email) {
+        Rental rental = Rental.builder().status(status).userEmail(email).build();
+        rental.setId(id);
+        List<Rental> current = new java.util.ArrayList<>(
+                repository.findStaleRequests(RentalStatus.REQUESTED, Instant.EPOCH));
+        current.add(rental);
+        when(repository.findStaleRequests(any(), any())).thenReturn(current);
+        when(repository.findByIdForUpdate(id)).thenReturn(java.util.Optional.of(rental));
+        return rental;
     }
 }

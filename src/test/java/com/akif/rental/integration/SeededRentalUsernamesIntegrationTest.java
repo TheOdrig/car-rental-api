@@ -101,4 +101,21 @@ class SeededRentalUsernamesIntegrationTest {
                 .andExpect(jsonPath("$.content.length()").value(total.intValue()))
                 .andExpect(jsonPath("$.content[?(!@.userSummary.username)]").isEmpty());
     }
+
+    @Test
+    @DisplayName("seeded rentals count days inclusively and price them from the daily rate")
+    void seededDaysAndPricesAreConsistent() {
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM car_rental.rentals WHERE id >= 900001 AND "
+                        + "(days <> (end_date - start_date) + 1 OR total_price <> days * daily_price)",
+                Long.class)).isZero();
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM car_rental.payments p JOIN car_rental.rentals r ON r.id = p.rental_id "
+                        + "WHERE p.id >= 910001 AND p.status = 'CAPTURED' AND r.penalty_paid = FALSE "
+                        + "AND p.amount <> r.total_price",
+                Long.class)).isZero();
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM car_rental.payments WHERE id >= 910001 AND rental_id IS NULL",
+                Long.class)).isZero();
+    }
 }

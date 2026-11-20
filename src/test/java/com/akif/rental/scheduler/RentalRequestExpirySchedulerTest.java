@@ -54,6 +54,9 @@ class RentalRequestExpirySchedulerTest {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
+    private org.springframework.transaction.PlatformTransactionManager transactionManager;
+
+    @Autowired
     private Clock clock;
 
     private User user;
@@ -107,7 +110,7 @@ class RentalRequestExpirySchedulerTest {
     @DisplayName("uses the configured expiry window")
     void usesConfiguredWindow() {
         RentalRequestExpiryScheduler scheduler = new RentalRequestExpiryScheduler(
-                clock, rentalRepository, com.akif.testsupport.ConfigFixtures.rentalPropertiesWithRequestExpiryHours(6), publisher);
+                clock, rentalRepository, com.akif.testsupport.ConfigFixtures.rentalPropertiesWithRequestExpiryHours(6), publisher, transactionManager);
         Instant now = Instant.now(clock);
         Rental twelveHoursOld = rental(RentalStatus.REQUESTED, now.minus(Duration.ofHours(12)), 0);
         Rental oneHourOld = rental(RentalStatus.REQUESTED, now.minus(Duration.ofHours(1)), 1);
