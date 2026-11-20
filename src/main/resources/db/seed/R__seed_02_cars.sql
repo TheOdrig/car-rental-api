@@ -164,8 +164,8 @@ INSERT INTO car_rental.car (
     '35FIA004', 'ZFA35600000000009', 'Fiat', 'Egea', 2021,
     42.00, 'USD', 'AVAILABLE',
     'Diesel', 'Manual', 'Sedan', 'White', 42000, 4, 5,
-    'https://images.unsplash.com/photo-1605515321331-46a63d31758c?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1605515321331-46a63d31758c?auto=format&fit=crop&q=80&w=400'
+    'https://images.unsplash.com/photo-1623869675781-80aa31012a5a?auto=format&fit=crop&q=80&w=1200',
+    'https://images.unsplash.com/photo-1623869675781-80aa31012a5a?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO UPDATE SET
     brand = EXCLUDED.brand,
     model = EXCLUDED.model,
@@ -257,8 +257,8 @@ INSERT INTO car_rental.car (
     '35SEA013', 'VSSZZZ5FZJR000018', 'Seat', 'Leon', 2019,
     45.00, 'USD', 'AVAILABLE',
     'Gasoline', 'Manual', 'Hatchback', 'Yellow', 62000, 5, 5,
-    'https://images.unsplash.com/photo-1708849894321-2c9bc515df0e?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1708849894321-2c9bc515df0e?auto=format&fit=crop&q=80&w=400'
+    'https://images.unsplash.com/photo-1659786674426-e663513da556?auto=format&fit=crop&q=80&w=1200',
+    'https://images.unsplash.com/photo-1659786674426-e663513da556?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO UPDATE SET
     brand = EXCLUDED.brand,
     model = EXCLUDED.model,
@@ -319,8 +319,8 @@ INSERT INTO car_rental.car (
     '01MNO654', 'JTDKBRFU9H3511234', 'Toyota', 'Corolla', 2021,
     65.00, 'USD', 'AVAILABLE',
     'Hybrid', 'Automatic', 'Sedan', 'Red', 28000, 4, 5,
-    'https://images.unsplash.com/photo-1643142311721-c36cd233fb95?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1643142311721-c36cd233fb95?auto=format&fit=crop&q=80&w=400'
+    'https://images.unsplash.com/photo-1638618164682-12b986ec2a75?auto=format&fit=crop&q=80&w=1200',
+    'https://images.unsplash.com/photo-1638618164682-12b986ec2a75?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO UPDATE SET
     brand = EXCLUDED.brand,
     model = EXCLUDED.model,
@@ -474,8 +474,8 @@ INSERT INTO car_rental.car (
     '06DEF456', 'WBA3A51000F000002', 'BMW', '320i', 2020,
     95.00, 'USD', 'AVAILABLE',
     'Diesel', 'Automatic', 'Sedan', 'Black', 45000, 4, 5,
-    'https://images.unsplash.com/photo-1639056067266-43a821cf0a1f?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1639056067266-43a821cf0a1f?auto=format&fit=crop&q=80&w=400'
+    'https://images.unsplash.com/photo-1594051673969-172a6f721d3c?auto=format&fit=crop&q=80&w=1200',
+    'https://images.unsplash.com/photo-1594051673969-172a6f721d3c?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO UPDATE SET
     brand = EXCLUDED.brand,
     model = EXCLUDED.model,
@@ -536,8 +536,8 @@ INSERT INTO car_rental.car (
     '34MRC001', 'WDD2050421A000006', 'Mercedes', 'C200', 2022,
     120.00, 'USD', 'AVAILABLE',
     'Gasoline', 'Automatic', 'Sedan', 'Silver', 25000, 4, 5,
-    'https://images.unsplash.com/photo-1710011115921-7e67a8e4b483?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1710011115921-7e67a8e4b483?auto=format&fit=crop&q=80&w=400'
+    'https://images.unsplash.com/photo-1615228939096-9ead6c74008e?auto=format&fit=crop&q=80&w=1200',
+    'https://images.unsplash.com/photo-1615228939096-9ead6c74008e?auto=format&fit=crop&q=80&w=400'
 ) ON CONFLICT (license_plate) DO UPDATE SET
     brand = EXCLUDED.brand,
     model = EXCLUDED.model,
