@@ -73,6 +73,9 @@ class RentalLifecycleE2ETest extends E2ETestBase {
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.id").exists())
                     .andExpect(jsonPath("$.status").value(RentalStatus.REQUESTED.name()))
+                    .andExpect(jsonPath("$.priceAdjustments").isArray())
+                    .andExpect(jsonPath("$.originalPrice").isNumber())
+                    .andExpect(jsonPath("$.confirmedAt").doesNotExist())
                     .andReturn()
                     .getResponse()
                     .getContentAsString();
@@ -85,7 +88,9 @@ class RentalLifecycleE2ETest extends E2ETestBase {
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(rentalId))
-                    .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.name()));
+                    .andExpect(jsonPath("$.status").value(RentalStatus.CONFIRMED.name()))
+                    .andExpect(jsonPath("$.confirmedAt").exists())
+                    .andExpect(jsonPath("$.pickedUpAt").doesNotExist());
 
             Payment payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
@@ -102,7 +107,10 @@ class RentalLifecycleE2ETest extends E2ETestBase {
                             .content("{}"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(rentalId))
-                    .andExpect(jsonPath("$.status").value(RentalStatus.IN_USE.name()));
+                    .andExpect(jsonPath("$.status").value(RentalStatus.IN_USE.name()))
+                    .andExpect(jsonPath("$.confirmedAt").exists())
+                    .andExpect(jsonPath("$.pickedUpAt").exists())
+                    .andExpect(jsonPath("$.returnedAt").doesNotExist());
 
             payment = paymentRepository.findByRentalIdAndKindAndIsDeletedFalse(rentalId, com.akif.payment.domain.enums.PaymentKind.RENTAL)
                     .orElseThrow(() -> new AssertionError("Payment not found for rental: " + rentalId));
@@ -114,7 +122,18 @@ class RentalLifecycleE2ETest extends E2ETestBase {
                             .content("{}"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(rentalId))
-                    .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.name()));
+                    .andExpect(jsonPath("$.status").value(RentalStatus.RETURNED.name()))
+                    .andExpect(jsonPath("$.pickedUpAt").exists())
+                    .andExpect(jsonPath("$.returnedAt").exists());
+
+            mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/rentals/{id}", rentalId)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.priceAdjustments").isArray())
+                    .andExpect(jsonPath("$.finalPrice").isNumber())
+                    .andExpect(jsonPath("$.confirmedAt").exists())
+                    .andExpect(jsonPath("$.pickedUpAt").exists())
+                    .andExpect(jsonPath("$.returnedAt").exists());
 
             Long carId = testCar.getId();
             Car updatedCar = carRepository.findById(carId)

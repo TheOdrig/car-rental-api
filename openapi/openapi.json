@@ -2248,6 +2248,23 @@
         },
         "type" : "object"
       },
+      "PriceAdjustment" : {
+        "properties" : {
+          "amount" : {
+            "type" : "number"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "multiplier" : {
+            "type" : "number"
+          }
+        },
+        "type" : "object"
+      },
       "PricingRequest" : {
         "properties" : {
           "carId" : {
@@ -2662,6 +2679,10 @@
           "carSummary" : {
             "$ref" : "#/components/schemas/CarSummaryResponse"
           },
+          "confirmedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
           "convertedTotalPrice" : {
             "type" : "number"
           },
@@ -2716,13 +2737,27 @@
             "enum" : [ "PENDING", "AUTHORIZED", "CAPTURED", "FAILED", "REFUNDED", "CANCELLED" ],
             "type" : "string"
           },
+          "pickedUpAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
           "pickupNotes" : {
             "type" : "string"
+          },
+          "priceAdjustments" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PriceAdjustment"
+            },
+            "type" : "array"
           },
           "rateSource" : {
             "type" : "string"
           },
           "returnNotes" : {
+            "type" : "string"
+          },
+          "returnedAt" : {
+            "format" : "date-time",
             "type" : "string"
           },
           "startDate" : {

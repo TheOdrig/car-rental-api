@@ -16,7 +16,6 @@ import com.akif.rental.domain.model.RentalDatePolicy;
 import com.akif.auth.api.UserDto;
 import com.akif.rental.internal.repository.RentalRepository;
 import com.akif.car.api.DynamicPricingService;
-import com.akif.car.api.PriceModifier;
 import com.akif.car.api.PricingResult;
 import com.akif.shared.enums.*;
 import lombok.RequiredArgsConstructor;
@@ -90,21 +89,14 @@ public class RentalBookingService {
                 .days(days)
                 .dailyPrice(dailyPrice)
                 .totalPrice(totalPrice)
+                .originalPrice(pricingResult.baseTotalPrice().setScale(currency.getDecimalPlaces(), java.math.RoundingMode.HALF_UP))
+                .priceAdjustments(PriceBreakdown.adjustments(pricingResult, currency.getDecimalPlaces()))
                 .currency(currency)
                 .status(RentalStatus.REQUESTED)
                 .build();
 
         Rental savedRental = saveBooking(rental);
         RentalResponse result = assembler.toResponse(savedRental);
-
-        result = result.toBuilder()
-                .originalPrice(pricingResult.baseTotalPrice())
-                .finalPrice(pricingResult.finalPrice())
-                .totalSavings(pricingResult.totalSavings())
-                .appliedDiscounts(pricingResult.appliedModifiers().stream()
-                        .map(PriceModifier::description)
-                        .toList())
-                .build();
 
         lookups.logRentalOperationSuccess("created", result);
         return result;

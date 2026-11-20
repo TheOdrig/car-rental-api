@@ -46,7 +46,7 @@ class RentalLifecycleTest {
     void pickUpMovesConfirmedRental() {
         Rental rental = rentalIn(RentalStatus.CONFIRMED);
 
-        rental.pickUp("keys handed over");
+        rental.pickUp("keys handed over", java.time.Instant.now());
 
         assertThat(rental.getStatus()).isEqualTo(RentalStatus.IN_USE);
         assertThat(rental.getPickupNotes()).isEqualTo("keys handed over");
@@ -55,7 +55,7 @@ class RentalLifecycleTest {
     @Test
     @DisplayName("pickUp is rejected before the rental is confirmed")
     void pickUpRejectsRequestedRental() {
-        assertThatThrownBy(() -> rentalIn(RentalStatus.REQUESTED).pickUp(null))
+        assertThatThrownBy(() -> rentalIn(RentalStatus.REQUESTED).pickUp(null, java.time.Instant.now()))
                 .isInstanceOf(InvalidStatusTransitionException.class);
     }
 

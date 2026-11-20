@@ -142,7 +142,7 @@ public class RentalLifecycleService {
                     "Payment capture failed: " + captureResult.message());
         }
 
-        rental.pickUp(pickupNotes);
+        rental.pickUp(pickupNotes, Instant.now(clock));
         Rental updatedRental = rentalRepository.save(rental);
         RentalResponse result = assembler.toResponse(updatedRental);
 

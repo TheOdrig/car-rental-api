@@ -3,6 +3,7 @@ package com.akif.rental.domain.model;
 import com.akif.shared.enums.CurrencyType;
 import com.akif.rental.domain.enums.LateReturnStatus;
 import com.akif.rental.api.CancelledBy;
+import com.akif.rental.api.PriceAdjustment;
 import com.akif.rental.api.RentalStatus;
 import com.akif.shared.exception.InvalidStatusTransitionException;
 import com.akif.shared.domain.BaseEntity;
@@ -13,6 +14,7 @@ import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "rentals", indexes = {
@@ -95,6 +97,16 @@ public class Rental extends BaseEntity {
     @Column(name = "confirmed_at")
     private Instant confirmedAt;
 
+    @Column(name = "picked_up_at")
+    private Instant pickedUpAt;
+
+    @Column(name = "original_price", precision = 12, scale = 2)
+    private BigDecimal originalPrice;
+
+    @Convert(converter = PriceAdjustmentsConverter.class)
+    @Column(name = "price_adjustments", columnDefinition = "TEXT")
+    private List<PriceAdjustment> priceAdjustments;
+
     @Column(name = "cancellation_reason", columnDefinition = "TEXT")
     private String cancellationReason;
 
@@ -145,9 +157,10 @@ public class Rental extends BaseEntity {
         this.approvalNotes = notes;
     }
 
-    public void pickUp(String notes) {
+    public void pickUp(String notes, Instant pickedUpAtTime) {
         requireTransition(status.canPickup(), RentalStatus.IN_USE);
         this.status = RentalStatus.IN_USE;
+        this.pickedUpAt = pickedUpAtTime;
         this.pickupNotes = notes;
     }
 

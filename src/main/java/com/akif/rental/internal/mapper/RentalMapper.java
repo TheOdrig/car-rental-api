@@ -20,5 +20,10 @@ public interface RentalMapper {
     @Mapping(target = "userSummary.fullName", source = "userFullName")
     @Mapping(target = "notes", source = "customerNotes")
     @Mapping(target = "paymentOpensOn", source = "startDate", qualifiedByName = "paymentOpensOn")
+    @Mapping(target = "returnedAt", source = "actualReturnTime")
+    @Mapping(target = "priceAdjustments", expression = "java(com.akif.rental.api.PriceAdjustment.changingThePrice(rental.getPriceAdjustments()))")
+    @Mapping(target = "finalPrice", expression = "java(rental.getOriginalPrice() != null ? rental.getTotalPrice() : null)")
+    @Mapping(target = "totalSavings", expression = "java(rental.getOriginalPrice() != null ? rental.getOriginalPrice().subtract(rental.getTotalPrice()).max(java.math.BigDecimal.ZERO) : null)")
+    @Mapping(target = "appliedDiscounts", expression = "java(rental.getPriceAdjustments() != null ? rental.getPriceAdjustments().stream().map(com.akif.rental.api.PriceAdjustment::label).toList() : null)")
     RentalResponse toDto(Rental rental);
 }
